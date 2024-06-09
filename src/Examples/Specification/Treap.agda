@@ -5,7 +5,7 @@ module Examples.Specification.Treap where
 open import Cubical.Data.List
 open import Cubical.Data.Nat using (ℕ)
 open import Data.Product
-open import Cubical.Foundations.Everything using (_≡_; _≃_; equiv-proof; isContr;  i0; i1; isoToEquiv; section; retract; cong; cong₂; _∙_ ; sym; refl)
+open import Cubical.Foundations.Everything using (_≡_; _≃_; equiv-proof; isContr;  i0; i1; isoToEquiv; section; retract; cong; cong₂; _∙_ ; sym; refl; Square; _∙₂_; isSet')
 open import Cubical.Data.List.Properties using (++-assoc)
 open import Agda.Builtin.Cubical.HCompU
 
@@ -63,7 +63,21 @@ module _ (A : Set) where
   ret-inord-spine u (node t₁ x t₂) =
     right-spine-lemma (inord t₁) x (inord t₂) u
     ∙ cong₂ (λ t₁ t₂ → node t₁ x t₂) (ret-inord-spine u t₁) (ret-inord-spine u t₂)
-  ret-inord-spine u (assoc u i) = {!   !}
+  ret-inord-spine u (assoc {t₁} {t₂} {t₃} {a} {a'} u' i) j = lemma i j
+    where
+    lemma : Square
+      (right-spine-lemma (inord t₁ ++ a ∷ inord t₂) a' (inord t₃) u ∙
+          (λ i₁ → node ((right-spine-lemma (inord t₁) a (inord t₂) u ∙
+            (λ i₂ → node (ret-inord-spine u t₁ i₂) a (ret-inord-spine u t₂ i₂)))
+              i₁) a' (ret-inord-spine u t₃ i₁)))
+      (right-spine-lemma (inord t₁) a (inord t₂ ++ a' ∷ inord t₃) u ∙
+          (λ i₁ → node (ret-inord-spine u t₁ i₁) a
+             ((right-spine-lemma (inord t₂) a' (inord t₃) u ∙
+               (λ i₂ → node (ret-inord-spine u t₂ i₂) a' (ret-inord-spine u t₃ i₂)))
+              i₁)))
+      (cong right-spine (++-assoc (inord t₁) (a ∷ inord t₂) (a' ∷ inord t₃)))
+      (assoc u')
+    lemma = {!   !}
 
   theorem : ext → Tree ≃ List A
   theorem u = isoToEquiv (Cubical.Foundations.Everything.iso inord right-spine sec-inord-spine (ret-inord-spine u))
