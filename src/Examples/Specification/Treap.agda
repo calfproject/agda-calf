@@ -5,7 +5,8 @@ module Examples.Specification.Treap where
 open import Cubical.Data.List
 open import Cubical.Data.Nat using (ℕ)
 open import Data.Product
-open import Cubical.Foundations.Everything using (_≡_; _≃_; equiv-proof; isContr;  i0; i1; isoToEquiv; section; retract; cong; cong₂; _∙_ ; sym; refl; Square; _∙₂_; isSet')
+open import Cubical.Foundations.Prelude hiding (empty)
+open import Cubical.Foundations.Everything using (section; retract; _≃_; isoToEquiv)
 open import Cubical.Data.List.Properties using (++-assoc)
 open import Agda.Builtin.Cubical.HCompU
 
@@ -77,7 +78,15 @@ module _ (A : Set) where
               i₁)))
       (cong right-spine (++-assoc (inord t₁) (a ∷ inord t₂) (a' ∷ inord t₃)))
       (assoc u')
-    lemma = {!   !}
+    lemma i j =
+      hcomp
+        (λ
+          { k (i = i0) → {!   !}
+          ; k (i = i1) → {!   !}
+          ; k (j = i0) → {!   !}
+          ; k (j = i1) → {!   !}
+          })
+        {!   !}
 
   theorem : ext → Tree ≃ List A
   theorem u = isoToEquiv (Cubical.Foundations.Everything.iso inord right-spine sec-inord-spine (ret-inord-spine u))
