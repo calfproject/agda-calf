@@ -34,13 +34,13 @@ record Coalgebra (H⁻ : Functor) : Set where
     coalg : cmp Carrier → cmp (H⁻ .₀ Carrier)
 
 _≥⁻_ : cmp X → cmp X → □
-e₁ ≥⁻ e₂ = e₂ ≤⁻ e₁
+_≥⁻_ {X} e₁ e₂ = _≤⁻_ {X} e₂ e₁
 
 record CoalgebraMorphism {H⁻ : Functor} (χ ψ : Coalgebra H⁻) : Set where
   open Coalgebra
   field
     Φ : cmp (χ .Carrier) → cmp (ψ .Carrier)
-    coalg : (ψ .coalg ∘ Φ) ≡ (H⁻ .₁ Φ ∘ χ .coalg)
+    coalg : _≥⁻_ {Π (meta⁺ (cmp (χ .Carrier))) λ _ → H⁻ .₀ (ψ .Carrier)} (ψ .coalg ∘ Φ) (H⁻ .₁ Φ ∘ χ .coalg)
 
 
 
@@ -71,13 +71,13 @@ module Weekly (A : tp⁺) where
     bind (F _) e λ n →
     step (F _) (7 ∸ toℕ n) (ret triv)
   CoalgebraMorphism.coalg amortized-analysis =
-    funext λ e → Eq.cong (bind (F _) e) (funext lemma)
+    ≤⁻-reflexive (Eq.sym (funext λ e → Eq.cong (bind (F unit) e) (funext (lemma A))))
     where
       lemma : (n : Fin 7) →
-        step (F _) ((7 ∸ toℕ n) Nat.+ 1) (ret triv) ≡
-        (bind (F _) (aux n) λ n' → step (F _) (7 ∸ toℕ n') (ret triv))
+        step (F unit) ((7 ∸ toℕ n) Nat.+ 1) (ret triv) ≡
+        (bind (F unit) (aux n) λ n' → step (F unit) (7 ∸ toℕ n') (ret triv))
       lemma zero = Eq.refl
-      lemma (suc n) = Eq.cong (λ x → step (F _) x (ret triv)) $
+      lemma (suc n) = Eq.cong (λ x → step (F unit) x (ret triv)) $
         let open ≡-Reasoning in
         begin
           (6 ∸ toℕ n) Nat.+ 1
@@ -187,7 +187,7 @@ module DynamicArray (A : tp⁺) where
     bind (F _) e λ (log[s] , l , _) →
     step (F _) (suc (2 * length l) ∸ pred[2^ suc log[s] ]) (ret triv)
   CoalgebraMorphism.coalg amortized-analysis =
-    funext λ e → funext λ a → Eq.cong (bind (F _) e) (funext (lemma a))
+    ≤⁻-reflexive (Eq.sym (funext λ e → funext λ a → Eq.cong (bind (F _) e) (funext (lemma A a))))
     where
       lemma : (a : val A) (x₀@(log[s] , l , _) : val X₀) →
         step (F unit) ((suc (2 * length l) ∸ pred[2^ suc log[s] ]) + 3) (ret triv) ≡
@@ -344,66 +344,67 @@ module Stack (A : tp⁺) where
   CoalgebraMorphism.Φ amortized-analysis e =
     bind (F _) e λ (log[s] , l , h₀ , h₁) →
     step (F _) ((suc (2 * length l) ∸ pred[2^ 2+ log[s] ]) ⊔ (pred[2^ suc log[s] ] ∸ length l)) (ret l)
-  CoalgebraMorphism.coalg amortized-analysis =
-    funext λ e → Eq.cong₂ _,_ (funext λ a → Eq.cong (bind (F _) e) (funext (lemma₁ a))) (lemma₂ e)
-    where
-      lemma₁ : (a : val A) (x₀@(log[s] , l , _) : val X₀) →
-        step (F _) (((suc (2 * length l) ∸ pred[2^ 2+ log[s] ]) ⊔ (pred[2^ suc log[s] ] ∸ length l)) + 3) (ret (a ∷ l)) ≡
-        (bind (F _) (aux₁ x₀ a) λ (log[s]' , l' , _) → step (F _) (suc (2 * length l') ∸ pred[2^ 2+ log[s]' ] ⊔ (pred[2^ suc log[s]' ] ∸ length l')) (ret l'))
-      lemma₁ a (log[s] , l , h₀ , h₁) with suc (length l) Nat.≟ pred[2^ 2+ log[s] ]
-      ... | no ¬h' = Eq.cong (λ c → step (F _) c (ret (a ∷ l))) $
-        let open Nat.≤-Reasoning in
-        let
-          baz : pred[2^ 2+ log[s] ] Nat.≤ suc (2 * length l)
-          baz =
-            begin
-              pred[2^ 2+ log[s] ]
-            ≡⟨⟩
-              2 ^ (2+ log[s]) ∸ 1
-            ≤⟨ {!   !} ⟩
-              suc (2 ^ (suc log[s]) ∸ 2)
-            ≡⟨ Eq.cong suc (Nat.*-distribˡ-∸ 2 (2 ^ log[s]) 1) ⟨
-              suc (2 * (2 ^ log[s] ∸ 1))
-            ≡⟨⟩
-              suc (2 * pred[2^ log[s] ])
-            ≤⟨ Nat.s≤s (Nat.*-monoʳ-≤ 2 h₀) ⟩
-              suc (2 * length l)
-            ∎
+  CoalgebraMorphism.coalg amortized-analysis = {!   !}
+    -- λ-mono-≤⁻ λ e → ≤⁻-mono₂ _,_ (λ-mono-≤⁻ λ a → ≤⁻-mono (bind (F _) e) (λ-mono-≤⁻ (lemma₁ a))) {! lemma₂ e !}
+    -- where
+    --   lemma₁ : (a : val A) (x₀@(log[s] , l , _) : val X₀) →
+    --     _≥⁻_ {F (list A)}
+    --       (step (F (list A)) (((suc (2 * length l) ∸ pred[2^ 2+ log[s] ]) ⊔ (pred[2^ suc log[s] ] ∸ length l)) + 3) (ret (a ∷ l)))
+    --       (bind (F (list A)) (aux₁ x₀ a) λ (log[s]' , l' , _) → step (F _) (suc (2 * length l') ∸ pred[2^ 2+ log[s]' ] ⊔ (pred[2^ suc log[s]' ] ∸ length l')) (ret l'))
+    --   lemma₁ a (log[s] , l , h₀ , h₁) with suc (length l) Nat.≟ pred[2^ 2+ log[s] ]
+    --   ... | no ¬h' = {!   !} -- Eq.cong (λ c → step (F _) c (ret (a ∷ l))) $
+    --     -- let open Nat.≤-Reasoning in
+    --     -- let
+    --     --   baz : pred[2^ 2+ log[s] ] Nat.≤ suc (2 * length l)
+    --     --   baz =
+    --     --     begin
+    --     --       pred[2^ 2+ log[s] ]
+    --     --     ≡⟨⟩
+    --     --       2 ^ (2+ log[s]) ∸ 1
+    --     --     ≤⟨ {!   !} ⟩
+    --     --       suc (2 ^ (suc log[s]) ∸ 2)
+    --     --     ≡⟨ Eq.cong suc (Nat.*-distribˡ-∸ 2 (2 ^ log[s]) 1) ⟨
+    --     --       suc (2 * (2 ^ log[s] ∸ 1))
+    --     --     ≡⟨⟩
+    --     --       suc (2 * pred[2^ log[s] ])
+    --     --     ≤⟨ Nat.s≤s (Nat.*-monoʳ-≤ 2 h₀) ⟩
+    --     --       suc (2 * length l)
+    --     --     ∎
 
-          foo : 2 + (suc (2 * length l) ∸ pred[2^ 2+ log[s] ]) ≡ suc (2 * length (a ∷ l)) ∸ pred[2^ 2+ log[s] ]
-          foo =
-            begin-equality
-              2 + (suc (2 * length l) ∸ pred[2^ 2+ log[s] ])
-            ≡⟨ Nat.+-∸-assoc 2 {suc (2 * length l)} {pred[2^ 2+ log[s] ]} baz ⟨
-              (3 + 2 * length l) ∸ pred[2^ 2+ log[s] ]
-            ≡⟨ Eq.cong (λ c → suc c ∸ pred[2^ 2+ log[s] ]) (Nat.*-distribˡ-+ 2 1 (length l)) ⟨
-              suc (2 * length (a ∷ l)) ∸ pred[2^ 2+ log[s] ]
-            ∎
+    --     --   foo : 2 + (suc (2 * length l) ∸ pred[2^ 2+ log[s] ]) ≡ suc (2 * length (a ∷ l)) ∸ pred[2^ 2+ log[s] ]
+    --     --   foo =
+    --     --     begin-equality
+    --     --       2 + (suc (2 * length l) ∸ pred[2^ 2+ log[s] ])
+    --     --     ≡⟨ Nat.+-∸-assoc 2 {suc (2 * length l)} {pred[2^ 2+ log[s] ]} baz ⟨
+    --     --       (3 + 2 * length l) ∸ pred[2^ 2+ log[s] ]
+    --     --     ≡⟨ Eq.cong (λ c → suc c ∸ pred[2^ 2+ log[s] ]) (Nat.*-distribˡ-+ 2 1 (length l)) ⟨
+    --     --       suc (2 * length (a ∷ l)) ∸ pred[2^ 2+ log[s] ]
+    --     --     ∎
 
-          bar : 2 + (pred[2^ suc log[s] ] ∸ length l) ≡ pred[2^ suc log[s] ] ∸ length (a ∷ l)
-          bar =
-            begin-equality
-              {!   !}
-            ≡⟨ {!   !} ⟩
-              {!   !}
-            ∎
-        in
-        begin-equality
-          ((suc (2 * length l) ∸ pred[2^ 2+ log[s] ]) ⊔ (pred[2^ suc log[s] ] ∸ length l)) + 3
-        ≡⟨ Nat.+-comm _ 3 ⟩
-          3 + ((suc (2 * length l) ∸ pred[2^ 2+ log[s] ]) ⊔ (pred[2^ suc log[s] ] ∸ length l))
-        ≡⟨⟩
-          1 + (2 + ((suc (2 * length l) ∸ pred[2^ 2+ log[s] ]) ⊔ (pred[2^ suc log[s] ] ∸ length l)))
-        ≡⟨ Eq.cong (1 +_) (Nat.+-distribˡ-⊔ 2 (suc (2 * length l) ∸ pred[2^ 2+ log[s] ]) (pred[2^ suc log[s] ] ∸ length l)) ⟩
-          1 + ((2 + (suc (2 * length l) ∸ pred[2^ 2+ log[s] ])) ⊔ (2 + (pred[2^ suc log[s] ] ∸ length l)))
-        -- ≡⟨ Eq.cong (1 +_) (Nat.+-∸-assoc 2 {suc (2 * length l)} {pred[2^ suc log[s] ]} h₀') ⟨
-        --   1 + (suc (2 + 2 * length l) ∸ pred[2^ suc log[s] ])
-        -- ≡⟨ Eq.cong (λ c → 1 + (suc c ∸ pred[2^ suc log[s] ])) (Nat.*-distribˡ-+ 2 1 (length l)) ⟨
-        --   1 + (suc (2 * suc (length l)) ∸ pred[2^ suc log[s] ])
-        ≡⟨ Eq.cong (1 +_) (Eq.cong₂ _⊔_ foo bar) ⟩
-          1 + ((suc (2 * length (a ∷ l)) ∸ pred[2^ 2+ log[s] ]) ⊔ (pred[2^ suc log[s] ] ∸ length (a ∷ l)))
-        ∎
-      ... | yes h' = {!   !}
+    --     --   bar : 2 + (pred[2^ suc log[s] ] ∸ length l) ≡ pred[2^ suc log[s] ] ∸ length (a ∷ l)
+    --     --   bar =
+    --     --     begin-equality
+    --     --       {!   !}
+    --     --     ≡⟨ {!   !} ⟩
+    --     --       {!   !}
+    --     --     ∎
+    --     -- in
+    --     -- begin-equality
+    --     --   ((suc (2 * length l) ∸ pred[2^ 2+ log[s] ]) ⊔ (pred[2^ suc log[s] ] ∸ length l)) + 3
+    --     -- ≡⟨ Nat.+-comm _ 3 ⟩
+    --     --   3 + ((suc (2 * length l) ∸ pred[2^ 2+ log[s] ]) ⊔ (pred[2^ suc log[s] ] ∸ length l))
+    --     -- ≡⟨⟩
+    --     --   1 + (2 + ((suc (2 * length l) ∸ pred[2^ 2+ log[s] ]) ⊔ (pred[2^ suc log[s] ] ∸ length l)))
+    --     -- ≡⟨ Eq.cong (1 +_) (Nat.+-distribˡ-⊔ 2 (suc (2 * length l) ∸ pred[2^ 2+ log[s] ]) (pred[2^ suc log[s] ] ∸ length l)) ⟩
+    --     --   1 + ((2 + (suc (2 * length l) ∸ pred[2^ 2+ log[s] ])) ⊔ (2 + (pred[2^ suc log[s] ] ∸ length l)))
+    --     -- -- ≡⟨ Eq.cong (1 +_) (Nat.+-∸-assoc 2 {suc (2 * length l)} {pred[2^ suc log[s] ]} h₀') ⟨
+    --     -- --   1 + (suc (2 + 2 * length l) ∸ pred[2^ suc log[s] ])
+    --     -- -- ≡⟨ Eq.cong (λ c → 1 + (suc c ∸ pred[2^ suc log[s] ])) (Nat.*-distribˡ-+ 2 1 (length l)) ⟨
+    --     -- --   1 + (suc (2 * suc (length l)) ∸ pred[2^ suc log[s] ])
+    --     -- ≡⟨ Eq.cong (1 +_) (Eq.cong₂ _⊔_ foo bar) ⟩
+    --     --   1 + ((suc (2 * length (a ∷ l)) ∸ pred[2^ 2+ log[s] ]) ⊔ (pred[2^ suc log[s] ] ∸ length (a ∷ l)))
+    --     -- ∎
+    --   ... | yes h' = {!   !}
 
-      lemma₂ : (e : cmp (F X₀)) → {!   !} ≡ {!   !}
-      lemma₂ = {!   !}
+    --   lemma₂ : (e : cmp (F X₀)) → {!   !} ≡ {!   !}
+    --   lemma₂ = {!   !}
