@@ -3,26 +3,69 @@
 module Examples.Specification.Treap where
 
 open import Cubical.Data.List
-open import Cubical.Data.Nat using (ℕ)
-open import Data.Product
+open import Cubical.Data.Nat using (ℕ; +-assoc; +-suc)
+open import Data.Product 
+open import Data.Interval.Base using (_/_)
 open import Cubical.Foundations.Prelude hiding (empty)
-open import Cubical.Foundations.Everything using (section; retract; _≃_; isoToEquiv; equiv-proof)
+open import Cubical.Foundations.Everything using (section; retract; _≃_; isoToEquiv; equiv-proof; I)
 open import Cubical.Data.List.Properties using (++-assoc)
 open import Agda.Builtin.Cubical.HCompU
+open import Examples.Decalf.ProbabilisticChoice
+open import Function using (_$_)
+open import Calf.Data.Nat as Nat using (nat; zero; suc; _+_) 
 
 open import Calf
 
 
-module _ (A : Set) where
+module _ (A : Set) (B : tp⁺) where
   data Tree : Set where
     empty : Tree
     node  : Tree → A → Tree → Tree
     assoc : {t₁ t₂ t₃ : Tree} {a a' : A} → ext → node (node t₁ a t₂) a' t₃ ≡ node t₁ a (node t₂ a' t₃)
 
+
   inord : Tree → List A
   inord empty = []
   inord (node t₁ a t₂) = inord t₁ ++ [ a ] ++ inord t₂
   inord (assoc {t₁} {t₂} {t₃} {a} {a'} u i) = ++-assoc (inord t₁) (a ∷ inord t₂) (a' ∷ inord t₃) i
+
+  data ITreap : Set where
+    leaf : ITreap
+    vtx : ITreap → val B → ITreap → ITreap
+    law : {t₁ t₂ t₃ : ITreap} {b b' : val B} → ext → vtx (vtx t₁ b t₂) b' t₃ ≡ vtx t₁ b (vtx t₂ b' t₃)
+  
+  itreap : tp⁺
+  itreap = meta⁺ ITreap
+
+  size : ITreap → ℕ
+  size leaf = 0
+  size (vtx t₁ x t₂) = 1 + size t₁ + size t₂
+  size (law {t₁} {t₂} {t₃} x i) = lemma t₁ t₂ t₃ i 
+    where 
+    lemma : (t₁ t₂ t₃ : ITreap) → suc (suc (size t₁ + size t₂ + size t₃)) ≡ suc (size t₁ + suc (size t₂ + size t₃))
+    lemma t₁ t₂ t₃ = cong suc (cong suc (sym (+-assoc (size t₁) _ _)) ∙ sym (+-suc _ _))
+
+  no-flip-join : cmp $ Π itreap λ _ → Π B λ _ → Π itreap λ _ → F itreap
+  no-flip-join leaf x leaf = ret (vtx leaf x leaf)
+  no-flip-join leaf x t@(vtx t₂ x₁ t₃) = ret (vtx leaf x t)
+  no-flip-join leaf x (law {t₁} {t₂} {t₃} {b} {b'} u i) = lemma i
+    where 
+    lemma : ret (vtx leaf x (vtx (vtx t₁ b t₂) b' t₃)) ≡ ret (vtx leaf x (vtx t₁ b (vtx t₂ b' t₃)))
+    lemma = cong (λ t → ret (vtx leaf x t)) (law u)
+  no-flip-join (vtx t₁ x₁ t₃) x t₂ = {!   !}
+  no-flip-join (law x₁ i) x t₂ = {!   !}
+
+  det-join : cmp $ Π itreap λ _ → Π B λ _ → Π itreap λ _ → F itreap
+  det-join leaf x leaf = ret (vtx leaf x leaf)
+  det-join leaf x t@(vtx t₂₁ y t₂₂) = flip (F _) (1 / 1) (bind (F _) (det-join leaf x t₂₁) λ t' → ret (vtx t' y t₂₂)) (ret (vtx leaf x t))
+  det-join leaf x (law x₁ i) = {!   !}
+  det-join (vtx t₁ x₁ t₃) x t₂ = {!   !}
+  det-join (law x₁ i) x t₂ = {!   !}
+
+  -- data ITreap : val nat → Set where 
+  --   leaf : ITreap 0
+  --   vtx : {n m : val nat} → ITreap n → val B → ITreap m → ITreap (1 + n + m)
+  --   law : {n m k : val nat} → {t₁ : ITreap n} → {t₂ : ITreap m} → {t₃ : ITreap k} → {b b' : val B} → ext → vtx (vtx t₁ b t₂) b' t₃ ≡ vtx t₁ b (vtx t₂ b' t₃)
 
   right-spine : List A → Tree
   right-spine [] = empty
@@ -78,15 +121,7 @@ module _ (A : Set) where
               i₁)))
       (cong right-spine (++-assoc (inord t₁) (a ∷ inord t₂) (a' ∷ inord t₃)))
       (assoc u')
-    lemma i j =
-      hcomp
-        (λ
-          { k (i = i0) → {!   !}
-          ; k (i = i1) → {!   !}
-          ; k (j = i0) → {!   !}
-          ; k (j = i1) → {!   !}
-          })
-        {!   !}
+    lemma i j = {!   !}
 
   theorem : ext → Tree ≃ List A
   theorem u = isoToEquiv (Cubical.Foundations.Everything.iso inord right-spine sec-inord-spine (ret-inord-spine u))
