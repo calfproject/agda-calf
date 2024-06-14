@@ -1,4 +1,4 @@
-{-# OPTIONS --cubical #-}
+{-# OPTIONS --cubical --rewriting #-}
 
 module Examples.Specification.Treap where
 
@@ -6,12 +6,12 @@ open import Cubical.Data.List
 open import Cubical.Data.Nat using (ℕ)
 open import Data.Product
 open import Cubical.Foundations.Prelude hiding (empty)
-open import Cubical.Foundations.Everything using (section; retract; _≃_; isoToEquiv)
+open import Cubical.Foundations.Everything using (section; retract; _≃_; isoToEquiv; equiv-proof)
 open import Cubical.Data.List.Properties using (++-assoc)
 open import Agda.Builtin.Cubical.HCompU
 
-postulate
-  ext : Prop
+open import Calf
+
 
 module _ (A : Set) where
   data Tree : Set where
@@ -90,3 +90,6 @@ module _ (A : Set) where
 
   theorem : ext → Tree ≃ List A
   theorem u = isoToEquiv (Cubical.Foundations.Everything.iso inord right-spine sec-inord-spine (ret-inord-spine u))
+  -- proj₁ (theorem u) = inord
+  -- proj₁ (equiv-proof (proj₂ (theorem u)) l) = right-spine l , sec-inord-spine l
+  -- proj₂ (equiv-proof (proj₂ (theorem u)) l) (t , h) = cong₂ _,_ (cong right-spine (sym h) ∙ ret-inord-spine u t) {!   !}
