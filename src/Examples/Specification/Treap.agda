@@ -52,8 +52,18 @@ module _ (A : Set) (B : tp⁺) where
     where 
     lemma : ret (vtx leaf x (vtx (vtx t₁ b t₂) b' t₃)) ≡ ret (vtx leaf x (vtx t₁ b (vtx t₂ b' t₃)))
     lemma = cong (λ t → ret (vtx leaf x t)) (law u)
-  no-flip-join (vtx t₁ x₁ t₃) x t₂ = {!   !}
-  no-flip-join (law x₁ i) x t₂ = {!   !}
+  no-flip-join t@(vtx t₁₁ x t₁₂) y leaf = ret (vtx t y leaf)
+  no-flip-join t@(vtx t₁₁ x t₁₂) y (vtx t₂₁ z t₂₂) = bind (F itreap) (no-flip-join t y t₂₁) λ t' → ret (vtx t' z t₂₂)
+  no-flip-join (vtx t₁₁ x t₁₂) y (law {t₁} {t₂} {t₃} {b} {b'} u i) = lemma i
+    where 
+    lemma2 : (λ t' → ret (vtx (vtx t' b t₂) b' t₃)) ≡ (λ t' → ret (vtx t' b (vtx t₂ b' t₃)))
+    lemma2 = {!   !}
+    lemma : bind (F itreap) (no-flip-join (vtx t₁₁ x t₁₂) y t₁) (λ a → ret (vtx (vtx a b t₂) b' t₃)) ≡ bind (F itreap) (no-flip-join (vtx t₁₁ x t₁₂) y t₁) (λ t' → ret (vtx t' b (vtx t₂ b' t₃)))
+    lemma = cong  (λ f → bind (F itreap) (no-flip-join (vtx t₁₁ x t₁₂) y t₁) f) lemma2
+  no-flip-join (law {t₁} {t₃} {t₄} {b} {b'} u i) x t₂ = lemma i
+    where 
+    lemma : no-flip-join (vtx (vtx t₁ b t₃) b' t₄) x t₂ ≡ no-flip-join (vtx t₁ b (vtx t₃ b' t₄)) x t₂
+    lemma = cong (λ t → no-flip-join t x t₂) (law u)
 
   det-join : cmp $ Π itreap λ _ → Π B λ _ → Π itreap λ _ → F itreap
   det-join leaf x leaf = ret (vtx leaf x leaf)
