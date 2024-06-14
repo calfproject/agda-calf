@@ -45,6 +45,22 @@ module _ (A : Set) (B : tp⁺) where
     lemma : (t₁ t₂ t₃ : ITreap) → suc (suc (size t₁ + size t₂ + size t₃)) ≡ suc (size t₁ + suc (size t₂ + size t₃))
     lemma t₁ t₂ t₃ = cong suc (cong suc (sym (+-assoc (size t₁) _ _)) ∙ sym (+-suc _ _))
 
+  -- no-flip-join-Tree : Tree → A → Tree → Tree
+  -- no-flip-join-Tree empty a empty = node empty a empty
+  -- no-flip-join-Tree empty a t@(node t₂₁ a' t₃₂) = node empty a t
+  -- no-flip-join-Tree empty b (assoc {t₁} {t₂} {t₃} {a} {a'} u i) = lemma i
+  --   where 
+  --   lemma : node empty b (node (node t₁ a t₂) a' t₃) ≡ node empty b (node t₁ a (node t₂ a' t₃))
+  --   lemma = cong (node empty b) (assoc u)
+  -- no-flip-join-Tree (node t₁ x t₃) a empty = {!   !}
+  -- no-flip-join-Tree (node t₁ x t₃) a (node t₂ x₁ t₄) = {!   !}
+  -- no-flip-join-Tree (node t₁ x t₃) a (assoc x₁ i) = {!   !}
+  -- no-flip-join-Tree (assoc {t₁} {t₂} {t₃} {a} {a'} u i) b t₄ = lemma i
+  --   where
+  --   lemma : no-flip-join-Tree (node (node t₁ a t₂) a' t₃) b t₄ ≡ no-flip-join-Tree (node t₁ a (node t₂ a' t₃)) b t₄
+  --   lemma = cong (λ t → no-flip-join-Tree t b t₄) (assoc u)
+
+
   no-flip-join : cmp $ Π itreap λ _ → Π B λ _ → Π itreap λ _ → F itreap
   no-flip-join leaf x leaf = ret (vtx leaf x leaf)
   no-flip-join leaf x t@(vtx t₂ x₁ t₃) = ret (vtx leaf x t)
@@ -60,10 +76,15 @@ module _ (A : Set) (B : tp⁺) where
     lemma2 = {!   !}
     lemma : bind (F itreap) (no-flip-join (vtx t₁₁ x t₁₂) y t₁) (λ a → ret (vtx (vtx a b t₂) b' t₃)) ≡ bind (F itreap) (no-flip-join (vtx t₁₁ x t₁₂) y t₁) (λ t' → ret (vtx t' b (vtx t₂ b' t₃)))
     lemma = cong  (λ f → bind (F itreap) (no-flip-join (vtx t₁₁ x t₁₂) y t₁) f) lemma2
-  no-flip-join (law {t₁} {t₃} {t₄} {b} {b'} u i) x t₂ = lemma i
+  no-flip-join (law {t₁} {t₃} {t₄} {b} {b'} u i) x leaf = lemma i
     where 
-    lemma : no-flip-join (vtx (vtx t₁ b t₃) b' t₄) x t₂ ≡ no-flip-join (vtx t₁ b (vtx t₃ b' t₄)) x t₂
-    lemma = cong (λ t → no-flip-join t x t₂) (law u)
+    lemma : ret (vtx (vtx (vtx t₁ b t₃) b' t₄) x leaf) ≡ ret (vtx (vtx t₁ b (vtx t₃ b' t₄)) x leaf)
+    lemma = cong (λ t → ret (vtx t x leaf)) (law u)
+  no-flip-join (law {t₁} {t₃} {t₄} {b} {b'} u i) x (vtx t₂ x₁ t₅) = lemmb i
+    where 
+    lemmb : bind (F itreap) (no-flip-join (vtx (vtx t₁ b t₃) b' t₄) x t₂) (λ t' → ret (vtx t' x₁ t₅)) ≡ bind (F itreap) (no-flip-join (vtx t₁ b (vtx t₃ b' t₄)) x t₂) (λ t' → ret (vtx t' x₁ t₅))
+    lemmb = cong (λ foo → bind (F itreap) (no-flip-join foo x t₂) (λ t' → ret (vtx t' x₁ t₅))) (law u)
+  no-flip-join (law {t₁} {t₃} {t₄} {b} {b'} u i) x (law x₁ i₁) = {!   !}
 
   det-join : cmp $ Π itreap λ _ → Π B λ _ → Π itreap λ _ → F itreap
   det-join leaf x leaf = ret (vtx leaf x leaf)
