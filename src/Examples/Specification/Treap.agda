@@ -40,18 +40,12 @@ module _ (A : Set) (B : tp⁺) (u : ext) where
   size : ITreap → ℕ
   size leaf = 0
   size (vtx t₁ x t₂) = 1 + size t₁ + size t₂
-  size (law t₁ t₂ t₃ _ _ x i) = lemma t₁ t₂ t₃ i 
-    where 
-    lemma : (t₁ t₂ t₃ : ITreap) → suc (suc (size t₁ + size t₂ + size t₃)) ≡ suc (size t₁ + suc (size t₂ + size t₃))
-    lemma t₁ t₂ t₃ = cong suc (cong suc (sym (+-assoc (size t₁) _ _)) ∙ sym (+-suc _ _))
+  size (law t₁ t₂ t₃ _ _ x i) = cong suc (cong suc (sym (+-assoc (size t₁) (size t₂) (size t₃))) ∙ sym (+-suc (size t₁) (size t₂ + size t₃))) i
 
   no-flip-join-Tree : Tree → A → Tree → Tree
   no-flip-join-Tree empty a empty = node empty a empty
   no-flip-join-Tree empty a t@(node t₂₁ a' t₃₂) = node empty a t
-  no-flip-join-Tree empty b (assoc t₁ t₂ t₃ a a' u i) = lemma i
-    where 
-    lemma : node empty b (node (node t₁ a t₂) a' t₃) ≡ node empty b (node t₁ a (node t₂ a' t₃))
-    lemma = cong (node empty b) (assoc _ _ _ _ _ u)
+  no-flip-join-Tree empty b (assoc t₁ t₂ t₃ a a' u i) = cong (node empty b) (assoc t₁ t₂ t₃ a a' u) i
   no-flip-join-Tree t@(node t₁ x t₃) a empty = node t a empty
   no-flip-join-Tree t@(node t₁ x t₂) a (node t₃ y t₄) = node (no-flip-join-Tree t a t₃) y t₄
   no-flip-join-Tree (node t₁ x t₂) a (assoc t₃ t₄ t₅ a' a'' u i) = assoc (no-flip-join-Tree (node t₁ x t₂) a t₃) t₄ t₅ a' a'' u i
