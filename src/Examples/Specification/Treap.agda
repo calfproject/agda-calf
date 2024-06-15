@@ -37,10 +37,12 @@ module _ (A : Set) (B : tp⁺) (u : ext) where
   itreap : tp⁺
   itreap = meta⁺ ITreap
 
+  -- TODO: Optimize this proof
   size : ITreap → ℕ
   size leaf = 0
   size (vtx t₁ x t₂) = 1 + size t₁ + size t₂
   size (law t₁ t₂ t₃ _ _ x i) = cong suc (cong suc (sym (+-assoc (size t₁) (size t₂) (size t₃))) ∙ sym (+-suc (size t₁) (size t₂ + size t₃))) i
+
 
   no-flip-join-Tree : Tree → A → Tree → Tree
   no-flip-join-Tree empty a empty = node empty a empty
@@ -51,7 +53,7 @@ module _ (A : Set) (B : tp⁺) (u : ext) where
   no-flip-join-Tree (node t₁ x t₂) a (assoc t₃ t₄ t₅ a' a'' u i) = assoc (no-flip-join-Tree (node t₁ x t₂) a t₃) t₄ t₅ a' a'' u i
   no-flip-join-Tree (assoc t₁ t₂ t₃ a a' u i) b empty = cong (λ eq → node eq b empty) (assoc t₁ t₂ t₃ a a' u) i
   no-flip-join-Tree (assoc t₁ t₂ t₃ a a' u i) b (node t₄ x t₅) = cong (λ eq → node (no-flip-join-Tree eq b t₄) x t₅) ((assoc t₁ t₂ t₃ a a' u)) i
-  no-flip-join-Tree (assoc t₁ t₂ t₃ a a' u i) b (assoc t₄ t₅ t₆ a'' a''' u j) = {!   !}
+  no-flip-join-Tree (assoc t₁ t₂ t₃ a a' u i) b (assoc t₄ t₅ t₆ a'' a''' u' j) = cong (λ eq → (assoc (no-flip-join-Tree eq b t₄) t₅ t₆ a'' a''' u) j) (assoc t₁ t₂ t₃ a a' u) i
 
   inord-nfjT : (t₁ t₂ : Tree) → (x : A) → inord (no-flip-join-Tree t₁ x t₂) ≡ inord t₁ ++ x ∷ inord t₂
   inord-nfjT empty empty x = refl
@@ -73,11 +75,7 @@ module _ (A : Set) (B : tp⁺) (u : ext) where
   no-flip-join (vtx t₁₁ x t₁₂) y (law t₁ t₂ t₃ b b' u i) = cong (λ f → bind (F itreap) (no-flip-join (vtx t₁₁ x t₁₂) y t₁) f) (funExt λ t → cong ret (law t t₂ t₃ b b' u)) i
   no-flip-join (law t₁ t₃ t₄ b b' u i) x leaf = cong (λ t → ret {A = itreap} (vtx t x leaf)) (law t₁ t₃ t₄ b b' u) i
   no-flip-join (law t₁ t₃ t₄ b b' u i) x (vtx t₂ x₁ t₅) = (cong (λ foo → bind (F itreap) (no-flip-join foo x t₂) (λ t' → ret (vtx t' x₁ t₅))) (law t₁ t₃ t₄ b b' u)) i
-  no-flip-join (law t₁ t₂ t₃ b b' u i) x (law t₄ t₅ t₆ b'' b''' u' j) = {! lemma i j !}
-    where 
-    lemma : Square {! !} {!   !} {!   !} {!   !}
-    lemma = {!   !}
-
+  no-flip-join (law t₁ t₂ t₃ b b' u i) x (law t₄ t₅ t₆ b'' b''' u' j) = cong (λ eq → bind (F itreap) (no-flip-join eq x t₄) (funExt (λ t i₁ → ret (law t t₅ t₆ b'' b''' u i₁)) j)) (law t₁ t₂ t₃ b b' u) i
 
   right-spine : List A → Tree
   right-spine [] = empty
@@ -140,4 +138,4 @@ module _ (A : Set) (B : tp⁺) (u : ext) where
   -- proj₁ (theorem u) = inord
   -- proj₁ (equiv-proof (proj₂ (theorem u)) l) = right-spine l , sec-inord-spine l
   -- proj₂ (equiv-proof (proj₂ (theorem u)) l) (t , h) = cong₂ _,_ (cong right-spine (sym h) ∙ ret-inord-spine u t) {!   !}
- 
+  
