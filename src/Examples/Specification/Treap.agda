@@ -63,7 +63,18 @@ module _ (A : Set) (B : tp⁺) (u : ext) where
   inord-nfjT (node t₁ x t₂) (node t₃ x₁ t₄) y = cong (λ eq → eq ++ x₁ ∷ inord t₄) (inord-nfjT (node t₁ x t₂) t₃ y) ∙ ++-assoc ((inord t₁ ++ x ∷ inord t₂)) (y ∷ inord t₃) (x₁ ∷ inord t₄)
   inord-nfjT (node t₁ x t₂) (assoc t₃ t₄ t₅ a a' _ i) y = {!   !}
   inord-nfjT (assoc t₁ t₂ t₃ a a' _ i) empty x = refl
-  inord-nfjT (assoc t₁ t₂ t₃ a a' _ i) (node t₄ x₁ t₅) x = {!   !}
+  inord-nfjT (assoc t₁ t₂ t₃ a a' _ i) (node t₄ x₁ t₅) x = cong₂ (λ eq₁ eq₂ → (λ i₁ → inord-nfjT eq₁ t₄ x i₁ ++ x₁ ∷ inord t₅) ∙ ++-assoc (eq₂ i) (x ∷ inord t₄) (x₁ ∷ inord t₅)) (assoc t₁ t₂ t₃ a a' u) (++-assoc {A = A} (inord t₁) (a ∷ inord t₂) (a' ∷ inord t₃)) i
+
+    
+  --           inord-nfjT (node (node t₁ a t₂) a' t₃) t₄ x i₁ ++ x₁ ∷ inord t₅)
+  --        ∙
+  --        ++-assoc ((inord t₁ ++ a ∷ inord t₂) ++ a' ∷ inord t₃)
+  --        (x ∷ inord t₄) (x₁ ∷ inord t₅)
+-- i = i1 ⊢ (λ i₁ →
+--             inord-nfjT (node t₁ a (node t₂ a' t₃)) t₄ x i₁ ++ x₁ ∷ inord t₅)
+--          ∙
+--          ++-assoc (inord t₁ ++ a ∷ inord t₂ ++ a' ∷ inord t₃) (x ∷ inord t₄)
+--          (x₁ ∷ inord t₅)
   inord-nfjT (assoc t₁ t₂ t₃ a a' _ i) (assoc t₄ t₅ t₆ a₁ a'' x₁ i₁) x = {!   !}
   
   no-flip-join : cmp $ Π itreap λ _ → Π B λ _ → Π itreap λ _ → F itreap
@@ -125,8 +136,7 @@ module _ (A : Set) (B : tp⁺) (u : ext) where
             (λ i₂ → node (ret-inord-spine u t₁ i₂) a (ret-inord-spine u t₂ i₂)))
               i₁) a' (ret-inord-spine u t₃ i₁)))
       (right-spine-lemma (inord t₁) a (inord t₂ ++ a' ∷ inord t₃) u ∙
-          (λ i₁ → node (ret-inord-spine u t₁ i₁) a
-             ((right-spine-lemma (inord t₂) a' (inord t₃) u ∙
+          (λ i₁ → node (ret-inord-spine u t₁ i₁) a ((right-spine-lemma (inord t₂) a' (inord t₃) u ∙
                (λ i₂ → node (ret-inord-spine u t₂ i₂) a' (ret-inord-spine u t₃ i₂)))
               i₁)))
       (cong right-spine (++-assoc (inord t₁) (a ∷ inord t₂) (a' ∷ inord t₃)))
