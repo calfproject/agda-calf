@@ -64,17 +64,6 @@ module _ (A : Set) (B : tp⁺) (u : ext) where
   inord-nfjT (node t₁ x t₂) (assoc t₃ t₄ t₅ a a' _ i) y = {!   !}
   inord-nfjT (assoc t₁ t₂ t₃ a a' _ i) empty x = refl
   inord-nfjT (assoc t₁ t₂ t₃ a a' _ i) (node t₄ x₁ t₅) x = cong₂ (λ eq₁ eq₂ → (λ i₁ → inord-nfjT eq₁ t₄ x i₁ ++ x₁ ∷ inord t₅) ∙ ++-assoc (eq₂ i) (x ∷ inord t₄) (x₁ ∷ inord t₅)) (assoc t₁ t₂ t₃ a a' u) (++-assoc {A = A} (inord t₁) (a ∷ inord t₂) (a' ∷ inord t₃)) i
-
-    
-  --           inord-nfjT (node (node t₁ a t₂) a' t₃) t₄ x i₁ ++ x₁ ∷ inord t₅)
-  --        ∙
-  --        ++-assoc ((inord t₁ ++ a ∷ inord t₂) ++ a' ∷ inord t₃)
-  --        (x ∷ inord t₄) (x₁ ∷ inord t₅)
--- i = i1 ⊢ (λ i₁ →
---             inord-nfjT (node t₁ a (node t₂ a' t₃)) t₄ x i₁ ++ x₁ ∷ inord t₅)
---          ∙
---          ++-assoc (inord t₁ ++ a ∷ inord t₂ ++ a' ∷ inord t₃) (x ∷ inord t₄)
---          (x₁ ∷ inord t₅)
   inord-nfjT (assoc t₁ t₂ t₃ a a' _ i) (assoc t₄ t₅ t₆ a₁ a'' x₁ i₁) x = {!   !}
   
   no-flip-join : cmp $ Π itreap λ _ → Π B λ _ → Π itreap λ _ → F itreap
@@ -88,6 +77,12 @@ module _ (A : Set) (B : tp⁺) (u : ext) where
   no-flip-join (law t₁ t₃ t₄ b b' u i) x (vtx t₂ x₁ t₅) = (cong (λ foo → bind (F itreap) (no-flip-join foo x t₂) (λ t' → ret (vtx t' x₁ t₅))) (law t₁ t₃ t₄ b b' u)) i
   no-flip-join (law t₁ t₂ t₃ b b' u i) x (law t₄ t₅ t₆ b'' b''' u' j) = cong (λ eq → bind (F itreap) (no-flip-join eq x t₄) (funExt (λ t i₁ → ret (law t t₅ t₆ b'' b''' u i₁)) j)) (law t₁ t₂ t₃ b b' u) i
 
+  join : cmp $ Π itreap λ _ → Π B λ _ → Π itreap λ _ → F itreap
+  join leaf x leaf = ret (vtx leaf x leaf)
+  join leaf x t₂@(vtx t₂₁ y t₂₂) = flip (F itreap) ( 1 / size t₂) (bind (F itreap) (join leaf x t₂₁) (λ t' → ret (vtx t' y t₂₂))) (ret (vtx leaf x t₂))
+  join leaf x (law t₂ t₃ t₄ b b' y i) = {!   !}
+  join (vtx t₁ x₁ t₃) x t₂ = {!   !}
+  join (law t₁ t₃ t₄ b b' x₁ i) x t₂ = {!   !}
   right-spine : List A → Tree
   right-spine [] = empty
   right-spine (x ∷ l) = node empty x (right-spine l)
