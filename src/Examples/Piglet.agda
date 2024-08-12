@@ -6,8 +6,11 @@ open import Relation.Binary.PropositionalEquality as Eq
 open import Data.Rational as ℚ
 open import Data.Integer.Base as ℤ using (ℤ; +_; +0; +[1+_]; -[1+_])
 
+open import Calf.Data.Product
+open import Calf.Data.Sum
+
 open import Data.Interval as 𝕀
-open import Calf.Data.Nat as Nat
+open import Calf.Data.Nat as ℕ
 
 open import Function using (_$_)
 
@@ -65,8 +68,14 @@ X ⊗[ p ] Y = convex p X Y
 postulate
   ℚ⁻ : tp⁻
 
-  ℚ/decode : val (U ℚ⁻) ≡ ℚ
-  {-# REWRITE ℚ/decode #-}
+  ℚ⁻/decode : val (U ℚ⁻) ≡ ℚ
+  {-# REWRITE ℚ⁻/decode #-}
+
+postulate
+  𝒰⁻ : tp⁻
+
+  𝒰⁻/decode : val (U 𝒰⁻) ≡ tp⁻
+  {-# REWRITE 𝒰⁻/decode #-}
 
 
 die : cmp (F nat)
@@ -86,4 +95,8 @@ _ = {!   !}
 
 -- ℙ P = bind
 
--- _ : (bind ? die λ x → F (x Nat.> 1)) ≡ flip ? (F ⊤) (F ⊥)
+_ : (bind 𝒰⁻ die λ x → F (meta⁺ (x ℕ.> 1))) ≡ flip 𝒰⁻ (5 𝕀./ 6) (F unit) (F void)
+_ = {!   !}
+
+_ : (bind 𝒰⁻ die λ x → F (meta⁺ (x ℕ.> 1 → x ℕ.> 2))) ≡ flip 𝒰⁻ (4 𝕀./ 6) (F unit) (F void)  -- ???
+_ = {!   !}
