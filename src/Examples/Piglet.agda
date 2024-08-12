@@ -19,8 +19,6 @@ postulate
 
   flip/0 : {e₀ e₁ : cmp X} →
     flip X 0𝕀 e₀ e₁ ≡ e₀
-  flip/1 : {e₀ e₁ : cmp X} →
-    flip X 1𝕀 e₀ e₁ ≡ e₁
   flip/same : (X : tp⁻) (e : cmp X) {p : 𝕀} →
     flip X p e e ≡ e
 
@@ -28,6 +26,17 @@ postulate
     flip X p e₀ e₁ ≡ flip X (1- p) e₁ e₀
   flip/assocʳ : (X : tp⁻) (e₀ e₁ e₂ : cmp X) {p q r : 𝕀} → p ≡ (p ∨ q) ∧ r →
     flip X p (flip X q e₀ e₁) e₂ ≡ flip X (p ∨ q) e₀ (flip X r e₁ e₂)
+
+flip/1 : {e₀ e₁ : cmp X} → flip X 1𝕀 e₀ e₁ ≡ e₁
+flip/1 {X} {e₀} {e₁} =
+  let open ≡-Reasoning in
+  begin
+    flip X 1𝕀 e₀ e₁
+  ≡⟨ flip/sym X 1𝕀 e₀ e₁ ⟩
+    flip X 0𝕀 e₁ e₀
+  ≡⟨ flip/0 ⟩
+    e₁
+  ∎
 
 flip/assocˡ : (X : tp⁻) (e₀ e₁ e₂ : cmp X) {p q r : 𝕀} → p ≡ (p ∧ q) ∨ r →
   flip X p e₀ (flip X q e₁ e₂) ≡ flip X (p ∧ q) (flip X r e₀ e₁) e₂
