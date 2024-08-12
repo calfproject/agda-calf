@@ -6,8 +6,10 @@ open import Relation.Binary.PropositionalEquality as Eq
 open import Data.Rational as ℚ
 open import Data.Integer.Base as ℤ using (ℤ; +_; +0; +[1+_]; -[1+_])
 
-open import Data.Interval
+open import Data.Interval as 𝕀
 open import Calf.Data.Nat as Nat
+
+open import Function using (_$_)
 
 open import Piglet
 
@@ -59,7 +61,10 @@ postulate
 
 
 die : cmp (F nat)
-die = {!   !}
+die =
+  flip (F nat) (1 𝕀./ 6) (ret 1) $
+  flip (F nat) (1 𝕀./ 5) (ret 2) $
+  {!   !}
 
 nat-to-real : ℕ → ℚ
 nat-to-real = {! ...from stdlib...  !}
