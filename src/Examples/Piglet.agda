@@ -3,7 +3,8 @@
 module Examples.Piglet where
 
 open import Relation.Binary.PropositionalEquality as Eq
-open import Data.Rational
+open import Data.Rational as ℚ
+open import Data.Integer.Base as ℤ using (ℤ; +_; +0; +[1+_]; -[1+_])
 
 open import Data.Interval
 open import Calf.Data.Nat as Nat
@@ -66,7 +67,7 @@ nat-to-real = {! ...from stdlib...  !}
 𝔼 : cmp (F nat) → cmp ℚ⁻
 𝔼 e = bind ℚ⁻ e nat-to-real
 
-_ : 𝔼 die ≡ {! 3.5  !}
+_ : 𝔼 die ≡ + 7 ℚ./ 2
 _ = {!   !}
 
 -- ℙ P = bind
