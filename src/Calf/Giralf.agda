@@ -12,6 +12,7 @@ open import Calf.CBPV
 open import Calf.Directed
 open import Calf.Step costMonoid
 open import Calf.Data.Product
+open import Calf.Data.List
 
 
 record Giralf : Set₁ where
@@ -21,9 +22,11 @@ record Giralf : Set₁ where
 
     charge : ∀ {Δ q A} (p : ℂ) → Δ ⨾ q ⊢ A → Δ ⨾ p + q ⊢ A
 
-    _g⋊_ : ℂ → 𝓒 → 𝓒
+    _⋊ᵍ_ : ℂ → 𝓒 → 𝓒
     store : {!   !}
     release : {!   !}
+
+    ⊤ : 𝓒
 
     _⊗_ : 𝓒 → 𝓒 → 𝓒
     tensor : ∀ {Δ₁ Δ₂ q₁ q₂ A₁ A₂}
@@ -31,6 +34,18 @@ record Giralf : Set₁ where
       → Δ₂ ⨾ q₂ ⊢ A₂
       → (Δ₁ ⊗ Δ₂) ⨾ (q₁ + q₂) ⊢ (A₁ ⊗ A₂)
     split : {!   !}
+
+    listᵍ : 𝓒 → 𝓒
+    nil : ∀ {A} → ⊤ ⨾ zero ⊢ listᵍ A
+    cons : ∀ {Δ₁ Δ₂ q₁ q₂ A}
+      → Δ₁ ⨾ q₁ ⊢ A
+      → Δ₂ ⨾ q₂ ⊢ (listᵍ A)
+      → (Δ₁ ⊗ Δ₂) ⨾ (q₁ + q₂) ⊢ (listᵍ A)
+    foldrᵍ : ∀ {Δ q A B}
+      → Δ ⨾ q ⊢ listᵍ A
+      → ⊤ ⨾ zero ⊢ B
+      → (A ⊗ B) ⨾ zero ⊢ B
+      → Δ ⨾ q ⊢ B
 open Giralf
 
 _⊸F_ : tp⁺ → tp⁺ → Set
@@ -57,9 +72,11 @@ giralf ._⨾_⊢_ = Square
 giralf .charge p e .top δ = step (F _) p (e .top δ)
 giralf .charge p e .bot = e .bot
 giralf .charge p e .square δ = {!   !}
-giralf ._g⋊_ p A = {!   !}
+giralf ._⋊ᵍ_ p A = {!   !}
 giralf .store = {!   !}
 giralf .release = {!   !}
+giralf .⊤ .X = unit
+giralf .⊤ .Φ triv = ret triv
 giralf ._⊗_ A B .X = A .X ×⁺ B .X
 giralf ._⊗_ A B .Φ (a , b) =
   bind (F _) (A .Φ a) λ a' →
@@ -130,3 +147,14 @@ giralf .tensor {Δ₁ = Δ₁} {Δ₂} {A₁ = A₁} {A₂} e₁ e₂ .square (�
     )
   ∎
 giralf .split = {!   !}
+giralf .listᵍ A .X = list (A .X)
+giralf .listᵍ A .Φ [] = ret []
+giralf .listᵍ A .Φ (a ∷ l) =
+  bind (F _) (A .Φ a) λ a' →
+  bind (F _) (giralf .listᵍ A .Φ l) λ l' →
+  ret (a' ∷ l')
+giralf .nil .top triv = ret []
+giralf .nil .bot triv = ret []
+giralf .nil .square triv = ≤⁻-refl
+giralf .cons e₁ e₂ = {!   !}
+giralf .foldrᵍ = {!   !}
