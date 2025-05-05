@@ -17,6 +17,11 @@ open import Relation.Binary.Core using (_⇒_)
 open import Relation.Binary.PropositionalEquality
 
 
+private
+  variable
+    A B C : tp⁺
+    X Y Z : tp⁻
+
 variable
   c c' c₁ c₂ : ℂ
 

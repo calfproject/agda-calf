@@ -27,9 +27,10 @@ postulate
 cmp : tp⁻ → □
 cmp X = val (U X)
 
-variable
-  A B C : tp⁺
-  X Y Z : tp⁻
+private
+  variable
+    A B C : tp⁺
+    X Y Z : tp⁻
 
 
 -- Value types
@@ -71,6 +72,9 @@ postulate
   Σ⁻ : (A : tp⁺) (X : val A → tp⁻) → tp⁻
   Σ⁻/decode : {X : val A → tp⁻} → val (U (Σ⁻ A X)) ≡ Σ (val A) λ a → cmp (X a)
   {-# REWRITE Σ⁻/decode #-}
+
+_⇀_ : tp⁺ → tp⁻ → tp⁻
+A ⇀ X = Π A λ _ → X
 
 _⋉_ : tp⁺ → tp⁻ → tp⁻
 A ⋉ X = Σ⁻ A λ _ → X

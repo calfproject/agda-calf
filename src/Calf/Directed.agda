@@ -12,6 +12,12 @@ open import Relation.Binary.Structures
 
 -- Directed ordering on positive types.
 
+private
+  variable
+    A B C : tp⁺
+    X Y Z : tp⁻
+
+
 infix 4 _≤⁺_
 postulate
   _≤⁺_ : val A → val A → □
