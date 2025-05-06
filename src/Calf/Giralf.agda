@@ -80,6 +80,11 @@ record Giralf : Set₁ where
       → cmpᵍ A
       → (val X → A ⨾ p ⊢ A)
       → Δ ⨾ q ⊢ A
+
+  variable
+    X Y Z : 𝓥
+    A B C : 𝓒
+    p q r : ℂ
 open Giralf
 
 _⊸F_ : tp⁺ → tp⁺ → Set
@@ -87,16 +92,16 @@ X ⊸F Y = cmp (X ⇀ F Y)
 
 record PotentialFunction : Set where
   field
-    X : tp⁺
-    Φ : X ⊸F X
+    ₀ : tp⁺
+    Φ : ₀ ⊸F ₀
 open PotentialFunction
 
 record Square (Δ : PotentialFunction) (q : ℂ) (A : PotentialFunction) : Set where
   field
-    top : Δ .X ⊸F A .X
-    bot : Δ .X ⊸F A .X
+    top : Δ .₀ ⊸F A .₀
+    bot : Δ .₀ ⊸F A .₀
     square :
-      (δ : val (Δ .X)) →
+      (δ : val (Δ .₀)) →
         bind (F _) (top δ) (A .Φ) ≤⁻[ F _ ] bind (F _) (Δ .Φ δ) (step (F _) q ∘ bot)
 open Square
 
@@ -116,7 +121,7 @@ giralf .id .square δ = ≤⁻-refl
 -- giralf .suspᵍ = {!   !}
 -- giralf .forceᵍ = {!   !}
 
-giralf .⊤ .X = unit
+giralf .⊤ .₀ = unit
 giralf .⊤ .Φ = ret
 giralf .trivᵍ .top = ret
 giralf .trivᵍ .bot = ret
@@ -211,7 +216,7 @@ giralf .release = {!   !}
 --   ∎
 -- giralf .split = {!   !}
 
-giralf .listᵍ p X .X = list X
+giralf .listᵍ p X .₀ = list X
 giralf .listᵍ p X .Φ = foldr (λ x e → bind (F _) e (step (F _) p ∘ ret ∘ (x ∷_))) (ret [])
 giralf .nil .top triv = ret []
 giralf .nil .bot triv = ret []
@@ -265,7 +270,7 @@ giralf .foldrᵍ {Δ} {q} {p} {X} {A} e e[] e∷ .square δ =
         bind (F _) (bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv) l) (e∷ x .top)) (A .Φ)
       ≡⟨⟩
         bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv) l) (λ ih → bind (F _) (e∷ x .top ih) (A .Φ))
-      ≲⟨ ≤⁻-mono {X = A .PotentialFunction.X ⇀ F _} (bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv) l)) (λ-mono-≤⁻ (e∷ x .square)) ⟩
+      ≲⟨ ≤⁻-mono {X = A .₀ ⇀ F _} (bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv) l)) (λ-mono-≤⁻ (e∷ x .square)) ⟩
         bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv) l) (λ ih → bind (F _) (A .Φ ih) (step (F _) p ∘ e∷ x .bot))
       ≡⟨⟩
         bind (F _) (bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv) l) (A .Φ)) (step (F _) p ∘ e∷ x .bot)
@@ -273,7 +278,7 @@ giralf .foldrᵍ {Δ} {q} {p} {X} {A} e e[] e∷ .square δ =
         bind (F _) (bind {list X} (F _) (foldr (λ x e → bind (F _) e (step (F _) p ∘ ret ∘ (x ∷_))) (ret []) l) (foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv))) (step (F _) p ∘ e∷ x .bot)
       ≡⟨⟩
         bind {list X} (F _) (foldr (λ x e → bind (F _) e (step (F _) p ∘ ret ∘ (x ∷_))) (ret []) l) (λ l → bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv) l) (step (F _) p ∘ e∷ x .bot))
-      ≡⟨ Eq.cong (bind {list X} (F _) (foldr (λ x e → bind (F _) e (step (F _) p ∘ ret ∘ (x ∷_))) (ret []) l)) (funext (λ l → step/comm {X = A .PotentialFunction.X} {A = F _} {c = p} {e = foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv) l} {f = e∷ x .bot})) ⟨
+      ≡⟨ Eq.cong (bind {list X} (F _) (foldr (λ x e → bind (F _) e (step (F _) p ∘ ret ∘ (x ∷_))) (ret []) l)) (funext (λ l → step/comm {X = A .₀} {A = F _} {c = p} {e = foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv) l} {f = e∷ x .bot})) ⟨
         bind {list X} (F _) (foldr (λ x e → bind (F _) e (step (F _) p ∘ ret ∘ (x ∷_))) (ret []) l) (λ l → step (F _) p (bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv) l) (e∷ x .bot)))
       ≡⟨⟩
         bind {list X} (F _) (foldr (λ x e → bind (F _) e (step (F _) p ∘ ret ∘ (x ∷_))) (ret []) l) (λ l → step (F _) p (foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv) (x ∷ l)))
