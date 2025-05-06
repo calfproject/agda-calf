@@ -57,8 +57,8 @@ record Giralf : Set₁ where
     charge : ∀ {Δ q A} (p : ℂ) → Δ ⨾ q ⊢ A → Δ ⨾ p + q ⊢ A
 
     _⋊ᵍ_ : ℂ → 𝓒 → 𝓒
-    store : {!   !}
-    release : {!   !}
+    store : ∀ {Δ q A} (p : ℂ) → Δ ⨾ q ⊢ A → Δ ⨾ p + q ⊢ (p ⋊ᵍ A)
+    release : ∀ {Δ p q A B} → Δ ⨾ q ⊢ (p ⋊ᵍ A) → A ⨾ p ⊢ B → Δ ⨾ q ⊢ B
 
     -- ⊤ : 𝓒
 
@@ -130,14 +130,29 @@ giralf .charge {Δ} {q} {A} p e .square δ =
     step (F _) p (bind (F _) (e .top δ) (A .Φ))
   ≲⟨ step-monoʳ-≤⁻ p (e .square δ) ⟩
     step (F _) p (bind (F _) (Δ .Φ δ) (step (F _) q ∘ e .bot))
-  ≡⟨ {! commutativity of step over bind  !} ⟩
+  ≡⟨ step/comm {X = Δ .X} {A = F _} {c = p} {e = Δ .Φ δ} {f = step (F _) q ∘ e .bot} ⟩
     bind (F _) (Δ .Φ δ) (step (F _) p ∘ step (F _) q ∘ e .bot)
   ≡⟨⟩
     bind (F _) (Δ .Φ δ) (step (F _) (p + q) ∘ e .bot)
   ∎
 
-giralf ._⋊ᵍ_ p A = {!   !}
-giralf .store = {!   !}
+(giralf ⋊ᵍ p) A .X = A .X
+(giralf ⋊ᵍ p) A .Φ a = step (F _) p (A .Φ a)
+giralf .store p e .top = e .top
+giralf .store p e .bot = e. bot
+giralf .store {Δ} {q} {A} p e .square δ =
+  let open ≤⁻-Reasoning (F _) in
+  begin
+    bind (F _) (e .top δ) (step (F _) p ∘ (A .Φ))
+  ≡⟨ Eq.sym (step/comm {X = A .X} {A = F _} {c = p} {e = e .top δ} {f = A .Φ}) ⟩
+    step (F _) p (bind (F _) (e .top δ) (A .Φ))
+  ≲⟨ step-monoʳ-≤⁻ p (e .square δ) ⟩
+    step (F _) p (bind (F _) (Δ .Φ δ) (step (F _) q ∘ e .bot))
+  ≡⟨ step/comm {X = Δ .X} {A = F _} {c = p} {e = Δ .Φ δ} {f = step (F _) q ∘ e .bot} ⟩
+    bind (F _) (Δ .Φ δ) (step (F _) p ∘ step (F _) q ∘ e .bot)
+  ≡⟨⟩
+    bind (F _) (Δ .Φ δ) (step (F _) (p + q) ∘ e .bot)
+  ∎
 giralf .release = {!   !}
 
 -- giralf ._⊗_ A B .X = A .X ×⁺ B .X
