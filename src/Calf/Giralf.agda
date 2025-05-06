@@ -113,7 +113,7 @@ open Square
 giralf : Giralf
 
 giralf .𝓒 = PotentialFunction
--- giralf .cmpᵍ A = cmp (F (A .X)) -- problematic?
+-- giralf .cmpᵍ A = cmp (F (A .₀)) -- problematic?
 giralf ._⨾_⊢_ = Square
 giralf .id .top = ret
 giralf .id .bot = ret
@@ -140,13 +140,13 @@ giralf .charge {Δ} {q} {A} p e .square δ =
     step (F _) p (bind (F _) (e .top δ) (A .Φ))
   ≲⟨ step-monoʳ-≤⁻ p (e .square δ) ⟩
     step (F _) p (bind (F _) (Δ .Φ δ) (step (F _) q ∘ e .bot))
-  ≡⟨ step/comm {X = Δ .X} {A = F _} {c = p} {e = Δ .Φ δ} {f = step (F _) q ∘ e .bot} ⟩
+  ≡⟨ step/comm {X = Δ .₀} {A = F _} {c = p} {e = Δ .Φ δ} {f = step (F _) q ∘ e .bot} ⟩
     bind (F _) (Δ .Φ δ) (step (F _) p ∘ step (F _) q ∘ e .bot)
   ≡⟨⟩
     bind (F _) (Δ .Φ δ) (step (F _) (p + q) ∘ e .bot)
   ∎
 
-giralf ._⋊ᵍ_ p A .X = A .X
+giralf ._⋊ᵍ_ p A .₀ = A .₀
 giralf ._⋊ᵍ_ p A .Φ a = step (F _) p (A .Φ a)
 giralf .store p e .top = e .top
 giralf .store p e .bot = e. bot
@@ -154,11 +154,11 @@ giralf .store {Δ} {q} {A} p e .square δ =
   let open ≤⁻-Reasoning (F _) in
   begin
     bind (F _) (e .top δ) (step (F _) p ∘ (A .Φ))
-  ≡⟨ Eq.sym (step/comm {X = A .X} {A = F _} {c = p} {e = e .top δ} {f = A .Φ}) ⟩
+  ≡⟨ Eq.sym (step/comm {X = A .₀} {A = F _} {c = p} {e = e .top δ} {f = A .Φ}) ⟩
     step (F _) p (bind (F _) (e .top δ) (A .Φ))
   ≲⟨ step-monoʳ-≤⁻ p (e .square δ) ⟩
     step (F _) p (bind (F _) (Δ .Φ δ) (step (F _) q ∘ e .bot))
-  ≡⟨ step/comm {X = Δ .X} {A = F _} {c = p} {e = Δ .Φ δ} ⟩
+  ≡⟨ step/comm {X = Δ .₀} {A = F _} {c = p} {e = Δ .Φ δ} ⟩
     bind (F _) (Δ .Φ δ) (step (F _) p ∘ step (F _) q ∘ e .bot)
   ≡⟨⟩
     bind (F _) (Δ .Φ δ) (step (F _) (p + q) ∘ e .bot)
@@ -171,7 +171,7 @@ giralf .release {Δ} {p} {q} {A} {B} e₁ e₂ .square δ =
     bind (F _) (e₁ .top δ) (λ a → bind (F _) (e₂ .top a) (B .Φ))
   ≲⟨ bind-monoʳ-≤⁻ (e₁ .top δ) (e₂ .square) ⟩
     bind (F _) (e₁ .top δ) (λ a → bind (F _) (A .Φ a) (step (F _) p ∘ e₂ .bot))
-  ≡⟨ Eq.cong (bind (F _) (e₁ .top δ)) (funext (λ a → Eq.sym (step/comm {X = A .X} {A = F _} {c = p} {e = A .Φ a}))) ⟩
+  ≡⟨ Eq.cong (bind (F _) (e₁ .top δ)) (funext (λ a → Eq.sym (step/comm {X = A .₀} {A = F _} {c = p} {e = A .Φ a}))) ⟩
     bind (F _) (e₁ .top δ) (λ a → bind (F _) (step (F _) p (A .Φ a)) (e₂ .bot))
   ≡⟨⟩ -- bind assoc
     bind (F _) (bind (F _) (e₁ .top δ) (step (F _) p ∘ A .Φ)) (e₂ .bot)
@@ -181,7 +181,7 @@ giralf .release {Δ} {p} {q} {A} {B} e₁ e₂ .square δ =
     bind (F _) (Δ .Φ δ) (step (F _) q ∘ (λ δ' → bind (F _) (e₁ .bot δ') (e₂ .bot)))
   ∎
 
-giralf ._⊎ᵍ_ A B .X = A .X ⊎⁺ B .X
+giralf ._⊎ᵍ_ A B .₀ = A .₀ ⊎⁺ B .₀
 giralf ._⊎ᵍ_ A B .Φ (inj₁ a) = bind (F _) (A .Φ a) λ a' → ret (inj₁ a')
 giralf ._⊎ᵍ_ A B .Φ (inj₂ b) = bind (F _) (B .Φ b) λ b' → ret (inj₂ b')
 giralf .inj₁ᵍ e .top δ = bind (F _) (e .top δ) λ a → ret (inj₁ a)
@@ -212,7 +212,7 @@ giralf .caseᵍ {Δ} {q} {A} {B} {C} e e₁ e₂ .square δ =
     bind (F _) (Δ .Φ δ) (step (F _) q ∘ (λ a → bind (F _) (e .bot a) [ e₁ .bot , e₂ .bot ]′))
   ∎
 
--- giralf ._⊗_ A B .X = A .X ×⁺ B .X
+-- giralf ._⊗_ A B .₀ = A .₀ ×⁺ B .₀
 -- giralf ._⊗_ A B .Φ (a , b) =
 --   bind (F _) (A .Φ a) λ a' →
 --   bind (F _) (B .Φ b) λ b' →
@@ -259,7 +259,7 @@ giralf .caseᵍ {Δ} {q} {A} {B} {C} e e₁ e₂ .square δ =
 --       ret (a₁' , a₂')
 --     )
 --   ≲⟨
---     ≤⁻-mono {X = A₁ .X ⇀ F _} (bind (F _) (bind (F _) (Δ₁ .Φ δ₁) (e₁ .bot))) (λ-mono-≤⁻ λ a₁' →
+--     ≤⁻-mono {X = A₁ .₀ ⇀ F _} (bind (F _) (bind (F _) (Δ₁ .Φ δ₁) (e₁ .bot))) (λ-mono-≤⁻ λ a₁' →
 --     ≤⁻-mono (λ e → bind (F _) e λ a₂' → ret (a₁' , a₂')) (e₂ .square δ₂))
 --   ⟩
 --     ( bind (F _) (bind (F _) (Δ₁ .Φ δ₁) (e₁ .bot)) λ a₁' →
