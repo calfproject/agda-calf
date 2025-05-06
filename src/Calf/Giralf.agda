@@ -12,6 +12,7 @@ open import Calf.CBPV
 open import Calf.Directed
 open import Calf.Step costMonoid
 open import Calf.Data.Product
+open import Calf.Data.Sum as Sum
 open import Calf.Data.List
 
 open import Function using (_∘_; const)
@@ -60,8 +61,12 @@ record Giralf : Set₁ where
     store : ∀ {Δ q A} (p : ℂ) → Δ ⨾ q ⊢ A → Δ ⨾ p + q ⊢ (p ⋊ᵍ A)
     release : ∀ {Δ p q A B} → Δ ⨾ q ⊢ (p ⋊ᵍ A) → A ⨾ p ⊢ B → Δ ⨾ q ⊢ B
 
-    -- ⊤ : 𝓒
+    _⊎ᵍ_ : 𝓒 → 𝓒 → 𝓒
+    inj₁ᵍ : ∀ {Δ q A B} → Δ ⨾ q ⊢ A → Δ ⨾ q ⊢ (A ⊎ᵍ B)
+    inj₂ᵍ : ∀ {Δ q A B} → Δ ⨾ q ⊢ B → Δ ⨾ q ⊢ (A ⊎ᵍ B)
+    caseᵍ : ∀ {Δ q A B C} → Δ ⨾ q ⊢ (A ⊎ᵍ B) → A ⨾ zero ⊢ C → B ⨾ zero ⊢ C → Δ ⨾ q ⊢ C
 
+    -- ⊤ : 𝓒
     -- _⊗_ : 𝓒 → 𝓒 → 𝓒
     -- tensor : ∀ {Δ₁ Δ₂ q₁ q₂ A₁ A₂}
     --   → Δ₁ ⨾ q₁ ⊢ A₁
@@ -136,8 +141,8 @@ giralf .charge {Δ} {q} {A} p e .square δ =
     bind (F _) (Δ .Φ δ) (step (F _) (p + q) ∘ e .bot)
   ∎
 
-(giralf ⋊ᵍ p) A .X = A .X
-(giralf ⋊ᵍ p) A .Φ a = step (F _) p (A .Φ a)
+giralf ._⋊ᵍ_ p A .X = A .X
+giralf ._⋊ᵍ_ p A .Φ a = step (F _) p (A .Φ a)
 giralf .store p e .top = e .top
 giralf .store p e .bot = e. bot
 giralf .store {Δ} {q} {A} p e .square δ =
@@ -169,6 +174,37 @@ giralf .release {Δ} {p} {q} {A} {B} e₁ e₂ .square δ =
     bind (F _) (bind (F _) (Δ .Φ δ) (step (F _) q ∘ e₁ .bot)) (e₂ .bot)
   ≡⟨⟩ -- bind assoc
     bind (F _) (Δ .Φ δ) (step (F _) q ∘ (λ δ' → bind (F _) (e₁ .bot δ') (e₂ .bot)))
+  ∎
+
+giralf ._⊎ᵍ_ A B .X = A .X ⊎⁺ B .X
+giralf ._⊎ᵍ_ A B .Φ (inj₁ a) = bind (F _) (A .Φ a) λ a' → ret (inj₁ a')
+giralf ._⊎ᵍ_ A B .Φ (inj₂ b) = bind (F _) (B .Φ b) λ b' → ret (inj₂ b')
+giralf .inj₁ᵍ e .top δ = bind (F _) (e .top δ) λ a → ret (inj₁ a)
+giralf .inj₁ᵍ e .bot δ = bind (F _) (e .bot δ) λ a → ret (inj₁ a)
+giralf .inj₁ᵍ e .square δ = bind-monoˡ-≤⁻ _ (e .square δ)
+giralf .inj₂ᵍ e .top δ = bind (F _) (e .top δ) λ b → ret (inj₂ b)
+giralf .inj₂ᵍ e .bot δ = bind (F _) (e .bot δ) λ b → ret (inj₂ b)
+giralf .inj₂ᵍ e .square δ = bind-monoˡ-≤⁻ _ (e .square δ)
+giralf .caseᵍ e e₁ e₂ .top δ = bind (F _) (e .top δ) [ e₁ .top , e₂ .top ]′
+giralf .caseᵍ e e₁ e₂ .bot δ = bind (F _) (e .bot δ) [ e₁ .bot , e₂ .bot ]′
+giralf .caseᵍ {Δ} {q} {A} {B} {C} e e₁ e₂ .square δ =
+  let open ≤⁻-Reasoning (F _) in
+  begin
+    bind (F _) (e .top δ) (λ a → bind (F _) ([ e₁ .top , e₂ .top ]′ a) (C .Φ))
+  ≲⟨ bind-monoʳ-≤⁻ (e .top δ) Sum.[ e₁ .square , e₂ .square ] ⟩
+    bind (F _) (e .top δ)
+      [ (λ a → bind (F _) (A .Φ a) (step (F _) zero ∘ e₁ .bot)) ,
+        (λ b → bind (F _) (B .Φ b) (step (F _) zero ∘ e₂ .bot)) ]′
+  ≡⟨⟩ -- step-0
+    bind (F _) (e .top δ)
+      [ (λ a → bind (F _) (A .Φ a) (e₁ .bot)) ,
+        (λ b → bind (F _) (B .Φ b) (e₂ .bot)) ]′
+  ≡⟨ Eq.cong (bind (F _) (e .top δ)) (funext λ { (inj₁ a) → refl ; (inj₂ b) → refl }) ⟩
+    bind (F _) (bind (F _) (e .top δ) (giralf ._⊎ᵍ_ A B .Φ)) [ e₁ .bot , e₂ .bot ]′
+  ≲⟨ bind-monoˡ-≤⁻ _ (e .square δ) ⟩
+    bind (F _) (bind (F _) (Δ .Φ δ) (step (F _) q ∘ e .bot)) [ e₁ .bot , e₂ .bot ]′
+  ≡⟨⟩ -- bind assoc
+    bind (F _) (Δ .Φ δ) (step (F _) q ∘ (λ a → bind (F _) (e .bot a) [ e₁ .bot , e₂ .bot ]′))
   ∎
 
 -- giralf ._⊗_ A B .X = A .X ×⁺ B .X
