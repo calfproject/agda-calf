@@ -22,8 +22,8 @@ module Examples (impl : Giralf) where
   ex₂ : ⊤ ⨾ 2 ⊢ listᵍ 1 unit
   ex₂ = cons triv (cons triv nil)
 
-  double : ∀ {p X} → val (listᵍ (2 * p) X ⊸ listᵍ p X)
-  double = foldrᵍ id nil (λ x → cons x (cons x id))
+  double : ∀ {p X} → val (listᵍ (1 + 2 * p) X ⊸ listᵍ p X)
+  double = foldrᵍ id nil (λ x → charge 1 (cons x (cons x id)))
 
 
 module ExamplesCompiled = Examples giralf

@@ -17,6 +17,11 @@ open import Calf.Data.List
 open import Function using (_∘_; const)
 
 
+open import Relation.Binary.PropositionalEquality as Eq using (_≡_; refl)
+postulate
+  step/comm : ∀ {X A c e f} →  -- commutativity of step with other effects
+    bind {X} A (step (F X) c e) f ≡ bind A e (step A c ∘ f)
+
 record Giralf : Set₁ where
   𝓥 : Set
   𝓥 = tp⁺
@@ -213,7 +218,21 @@ giralf .nil .bot triv = ret []
 giralf .nil .square triv = ≤⁻-refl
 giralf .cons x e .top δ = bind (F _) (e .top δ) (ret ∘ (x ∷_))
 giralf .cons x e .bot δ = bind (F _) (e .bot δ) (ret ∘ (x ∷_))
-giralf .cons x e .square δ = {!   !}
+giralf .cons {Δ} {q} {p} {X} x e .square δ =
+  let open ≤⁻-Reasoning (F _) in
+  begin
+    bind (F _) (e .top δ) (λ l → foldr (λ x e → bind (F _) e (step (F _) p ∘ ret ∘ (x ∷_))) (ret []) (x ∷ l))
+  ≡⟨⟩
+    bind (F _) (e .top δ) (λ l → bind {list X} (F _) (foldr (λ x e → bind (F _) e (step (F _) p ∘ ret ∘ (x ∷_))) (ret []) l) (step (F _) p ∘ ret ∘ (x ∷_)))
+  ≡⟨⟩
+    bind {list X} (F _) (bind (F _) (e .top δ) (foldr (λ x e → bind (F _) e (step (F _) p ∘ ret ∘ (x ∷_))) (ret []))) (step (F _) p ∘ ret ∘ (x ∷_))
+  ≲⟨ bind-monoˡ-≤⁻ (step (F _) p ∘ ret ∘ (x ∷_)) (e .square δ) ⟩
+    bind {list X} (F _) (bind (F _) (Δ .Φ δ) (step (F _) q ∘ e .bot)) (step (F _) p ∘ ret ∘ (x ∷_))
+  ≡⟨⟩
+    bind (F _) (Δ .Φ δ) (λ δ' → bind (F _) (step (F _) q (e .bot δ')) (step (F _) p ∘ ret ∘ (x ∷_)))
+  ≡⟨ Eq.cong (bind (F _) (Δ .Φ δ)) (funext (λ δ' → step/comm {list X} {F _} {p} {step (F _) q (e .bot δ')} {ret ∘ (x ∷_)})) ⟨
+    bind (F _) (Δ .Φ δ) (λ δ' → step (F _) (p + q) (bind (F _) (e .bot δ') (ret ∘ (x ∷_))))
+  ∎
 giralf .foldrᵍ e e[] e∷ .top δ =
   bind (F _) (e .top δ) (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv))
 giralf .foldrᵍ e e[] e∷ .bot δ =
@@ -224,11 +243,44 @@ giralf .foldrᵍ {Δ} {q} {p} {X} {A} e e[] e∷ .square δ =
     bind (F _) (bind (F _) (e .top δ) (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv))) (A .Φ)
   ≡⟨⟩
     bind (F _) (e .top δ) (λ l → bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv) l) (A .Φ))
-  ≲⟨ {! e∷ ? .square ?  !} ⟩
-    bind (F _) (e .top δ) (λ l → bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv) l) (A .Φ))
-    -- bind (F _) (bind (F _) (e .top δ) (foldr (const (step (F _) p)) (ret []))) (λ l → bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .top)) e[] l) (A .Φ))
-  ≲⟨ {! e .square δ  !} ⟩
+  ≲⟨ bind-monoʳ-≤⁻ (e .top δ) lemma ⟩
+    bind (F _) (e .top δ) (λ l → bind {list X} (F _) (foldr (λ x e → bind (F _) e (step (F _) p ∘ ret ∘ (x ∷_))) (ret []) l) (foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv)))
+  ≡⟨⟩
+    bind {list X} (F _) (bind (F _) (e .top δ) (foldr (λ x e → bind (F _) e (step (F _) p ∘ ret ∘ (x ∷_))) (ret []))) (foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv))
+  ≲⟨ bind-monoˡ-≤⁻ (foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv)) (e .square δ) ⟩
+    bind (F _) (bind (F _) (Δ .Φ δ) (λ l → step (F _) q (e .bot l))) (foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv))
+  ≡⟨⟩
     bind (F _) (Δ .Φ δ) (λ l → step (F _) q (bind (F _) (e .bot l) (foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv))))
   ∎
-  -- where
-  --   lemma :
+  where
+    lemma : ∀ l →
+      bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv) l) (A .Φ) ≤⁻[ F _ ]
+      bind {list X} (F _) (foldr (λ x e → bind (F _) e (step (F _) p ∘ ret ∘ (x ∷_))) (ret []) l) (foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv))
+    lemma [] = e[] .square triv
+    lemma (x ∷ l) =
+      let open ≤⁻-Reasoning (F _) in
+      begin
+        bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv) (x ∷ l)) (A .Φ)
+      ≡⟨⟩
+        bind (F _) (bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv) l) (e∷ x .top)) (A .Φ)
+      ≡⟨⟩
+        bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv) l) (λ ih → bind (F _) (e∷ x .top ih) (A .Φ))
+      ≲⟨ ≤⁻-mono {X = A .PotentialFunction.X ⇀ F _} (bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv) l)) (λ-mono-≤⁻ (e∷ x .square)) ⟩
+        bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv) l) (λ ih → bind (F _) (A .Φ ih) (step (F _) p ∘ e∷ x .bot))
+      ≡⟨⟩
+        bind (F _) (bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv) l) (A .Φ)) (step (F _) p ∘ e∷ x .bot)
+      ≲⟨ bind-monoˡ-≤⁻ (step (F _) p ∘ e∷ x .bot) (lemma l) ⟩
+        bind (F _) (bind {list X} (F _) (foldr (λ x e → bind (F _) e (step (F _) p ∘ ret ∘ (x ∷_))) (ret []) l) (foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv))) (step (F _) p ∘ e∷ x .bot)
+      ≡⟨⟩
+        bind {list X} (F _) (foldr (λ x e → bind (F _) e (step (F _) p ∘ ret ∘ (x ∷_))) (ret []) l) (λ l → bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv) l) (step (F _) p ∘ e∷ x .bot))
+      ≡⟨ Eq.cong (bind {list X} (F _) (foldr (λ x e → bind (F _) e (step (F _) p ∘ ret ∘ (x ∷_))) (ret []) l)) (funext (λ l → step/comm {X = A .PotentialFunction.X} {A = F _} {c = p} {e = foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv) l} {f = e∷ x .bot})) ⟨
+        bind {list X} (F _) (foldr (λ x e → bind (F _) e (step (F _) p ∘ ret ∘ (x ∷_))) (ret []) l) (λ l → step (F _) p (bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv) l) (e∷ x .bot)))
+      ≡⟨⟩
+        bind {list X} (F _) (foldr (λ x e → bind (F _) e (step (F _) p ∘ ret ∘ (x ∷_))) (ret []) l) (λ l → step (F _) p (foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv) (x ∷ l)))
+      ≡⟨⟩
+        bind {list X} (F _) (foldr (λ x e → bind (F _) e (step (F _) p ∘ ret ∘ (x ∷_))) (ret []) l) (λ l → bind {list X} (F _) (step (F _) p (ret (x ∷ l))) (foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv)))
+      ≡⟨⟩
+        bind {list X} (F _) (bind {list X} (F _) (foldr (λ x e → bind (F _) e (step (F _) p ∘ ret ∘ (x ∷_))) (ret []) l) (step (F _) p ∘ ret ∘ (x ∷_))) (foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv))
+      ≡⟨⟩
+        bind {list X} (F _) (foldr (λ x e → bind (F _) e (step (F _) p ∘ ret ∘ (x ∷_))) (ret []) (x ∷ l)) (foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv))
+      ∎
