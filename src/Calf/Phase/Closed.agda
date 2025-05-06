@@ -10,6 +10,10 @@ open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; subst
 
 open import Calf.Phase.Core
 
+private
+  variable
+    A B C : tp⁺
+    X Y Z : tp⁻
 
 -- data ● (A : tp⁺) : tp⁺ where
 --   η : A → ● A

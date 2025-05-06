@@ -14,38 +14,67 @@ open import Calf.Step costMonoid
 open import Calf.Data.Product
 open import Calf.Data.List
 
+open import Function using (_∘_; const)
+
 
 record Giralf : Set₁ where
+  𝓥 : Set
+  𝓥 = tp⁺
+
+  valᵍ : 𝓥 → Set
+  valᵍ = val
+
   field
     𝓒 : Set
     _⨾_⊢_ : 𝓒 → ℂ → 𝓒 → Set
 
+    id : ∀ {A} → A ⨾ zero ⊢ A
+
+    -- Fᵍ : 𝓥 → 𝓒
+    -- retᵍ : ∀ {X} → valᵍ X → cmpᵍ (Fᵍ X)
+    -- bindᵍ : ∀ {Δ q X A} → Δ ⨾ q ⊢ (Fᵍ X) → (valᵍ X → cmpᵍ A) → Δ ⨾ q ⊢ A
+
+    -- Uᵍ : 𝓒 → 𝓥
+    -- suspᵍ : {!   !}
+    -- forceᵍ : {!   !}
+
+    ⊤ : 𝓒
+    trivᵍ : ⊤ ⨾ zero ⊢ ⊤
+  -- ⊤ = Fᵍ unit
+
+  cmpᵍ : 𝓒 → Set
+  cmpᵍ A = ⊤ ⨾ zero ⊢ A
+
+  _⊸_ : 𝓒 → 𝓒 → 𝓥
+  A ⊸ B = meta⁺ (A ⨾ zero ⊢ B)
+
+  field
     charge : ∀ {Δ q A} (p : ℂ) → Δ ⨾ q ⊢ A → Δ ⨾ p + q ⊢ A
 
     _⋊ᵍ_ : ℂ → 𝓒 → 𝓒
     store : {!   !}
     release : {!   !}
 
-    ⊤ : 𝓒
+    -- ⊤ : 𝓒
 
-    _⊗_ : 𝓒 → 𝓒 → 𝓒
-    tensor : ∀ {Δ₁ Δ₂ q₁ q₂ A₁ A₂}
-      → Δ₁ ⨾ q₁ ⊢ A₁
-      → Δ₂ ⨾ q₂ ⊢ A₂
-      → (Δ₁ ⊗ Δ₂) ⨾ (q₁ + q₂) ⊢ (A₁ ⊗ A₂)
-    split : {!   !}
+    -- _⊗_ : 𝓒 → 𝓒 → 𝓒
+    -- tensor : ∀ {Δ₁ Δ₂ q₁ q₂ A₁ A₂}
+    --   → Δ₁ ⨾ q₁ ⊢ A₁
+    --   → Δ₂ ⨾ q₂ ⊢ A₂
+    --   → (Δ₁ ⊗ Δ₂) ⨾ (q₁ + q₂) ⊢ (A₁ ⊗ A₂)
+    -- split : {!   !}
 
-    listᵍ : 𝓒 → 𝓒
-    nil : ∀ {A} → ⊤ ⨾ zero ⊢ listᵍ A
-    cons : ∀ {Δ₁ Δ₂ q₁ q₂ A}
-      → Δ₁ ⨾ q₁ ⊢ A
-      → Δ₂ ⨾ q₂ ⊢ (listᵍ A)
-      → (Δ₁ ⊗ Δ₂) ⨾ (q₁ + q₂) ⊢ (listᵍ A)
-    foldrᵍ : ∀ {Δ q A B}
-      → Δ ⨾ q ⊢ listᵍ A
-      → ⊤ ⨾ zero ⊢ B
-      → (A ⊗ B) ⨾ zero ⊢ B
-      → Δ ⨾ q ⊢ B
+    listᵍ : ℂ → 𝓥 → 𝓒
+    nil : ∀ {p X} → cmpᵍ (listᵍ p X)
+    cons : ∀ {Δ q p X}
+      → val X
+      → Δ ⨾ q ⊢ listᵍ p X
+      → Δ ⨾ (p + q) ⊢ listᵍ p X
+    foldrᵍ : ∀ {Δ q p X A}
+      → Δ ⨾ q ⊢ listᵍ p X
+      → cmpᵍ A
+      → (val X → A ⨾ p ⊢ A)
+      → Δ ⨾ q ⊢ A
 open Giralf
 
 _⊸F_ : tp⁺ → tp⁺ → Set
@@ -57,104 +86,149 @@ record PotentialFunction : Set where
     Φ : X ⊸F X
 open PotentialFunction
 
-record Square (Δ : PotentialFunction) (p : ℂ) (A : PotentialFunction) : Set where
+record Square (Δ : PotentialFunction) (q : ℂ) (A : PotentialFunction) : Set where
   field
     top : Δ .X ⊸F A .X
     bot : Δ .X ⊸F A .X
     square :
       (δ : val (Δ .X)) →
-        bind (F _) (top δ) (A .Φ) ≤⁻[ F _ ] bind (F _) (Δ .Φ δ) bot
+        bind (F _) (top δ) (A .Φ) ≤⁻[ F _ ] bind (F _) (Δ .Φ δ) (step (F _) q ∘ bot)
 open Square
 
 giralf : Giralf
+
 giralf .𝓒 = PotentialFunction
+-- giralf .cmpᵍ A = cmp (F (A .X)) -- problematic?
 giralf ._⨾_⊢_ = Square
+giralf .id .top = ret
+giralf .id .bot = ret
+giralf .id .square δ = ≤⁻-refl
+
+-- giralf .Fᵍ = {!   !}
+-- giralf .retᵍ = {!   !}
+-- giralf .bindᵍ = {!   !}
+-- giralf .Uᵍ = {!   !}
+-- giralf .suspᵍ = {!   !}
+-- giralf .forceᵍ = {!   !}
+
+giralf .⊤ .X = unit
+giralf .⊤ .Φ = ret
+giralf .trivᵍ .top = ret
+giralf .trivᵍ .bot = ret
+giralf .trivᵍ .square triv = ≤⁻-refl
+
 giralf .charge p e .top δ = step (F _) p (e .top δ)
 giralf .charge p e .bot = e .bot
-giralf .charge p e .square δ = {!   !}
+giralf .charge {Δ} {q} {A} p e .square δ =
+  let open ≤⁻-Reasoning (F _) in
+  begin
+    step (F _) p (bind (F _) (e .top δ) (A .Φ))
+  ≲⟨ step-monoʳ-≤⁻ p (e .square δ) ⟩
+    step (F _) p (bind (F _) (Δ .Φ δ) (step (F _) q ∘ e .bot))
+  ≡⟨ {! commutativity of step over bind  !} ⟩
+    bind (F _) (Δ .Φ δ) (step (F _) p ∘ step (F _) q ∘ e .bot)
+  ≡⟨⟩
+    bind (F _) (Δ .Φ δ) (step (F _) (p + q) ∘ e .bot)
+  ∎
+
 giralf ._⋊ᵍ_ p A = {!   !}
 giralf .store = {!   !}
 giralf .release = {!   !}
-giralf .⊤ .X = unit
-giralf .⊤ .Φ triv = ret triv
-giralf ._⊗_ A B .X = A .X ×⁺ B .X
-giralf ._⊗_ A B .Φ (a , b) =
-  bind (F _) (A .Φ a) λ a' →
-  bind (F _) (B .Φ b) λ b' →
-  ret (a' , b')
-giralf .tensor e₁ e₂ .top (δ₁ , δ₂) =
-  bind (F _) (e₁ .top δ₁) λ a₁ →
-  bind (F _) (e₂ .top δ₂) λ a₂ →
-  ret (a₁ , a₂)
-giralf .tensor e₁ e₂ .bot (δ₁ , δ₂) =
-  bind (F _) (e₁ .bot δ₁) λ a₁ →
-  bind (F _) (e₂ .bot δ₂) λ a₂ →
-  ret (a₁ , a₂)
-giralf .tensor {Δ₁ = Δ₁} {Δ₂} {A₁ = A₁} {A₂} e₁ e₂ .square (δ₁ , δ₂) =
-  let open ≤⁻-Reasoning (F _) in
-  begin
-    ( bind (F _) (e₁ .top δ₁) λ a₁ →
-      bind (F _) (e₂ .top δ₂) λ a₂ →
-      bind (F _) (A₁ .Φ a₁) λ a₁' →
-      bind (F _) (A₂ .Φ a₂) λ a₂' →
-      ret (a₁' , a₂')
-    )
-  ≡⟨ {! commutativity of effects  !} ⟩
-    ( bind (F _) (e₁ .top δ₁) λ a₁ →
-      bind (F _) (A₁ .Φ a₁) λ a₁' →
-      bind (F _) (e₂ .top δ₂) λ a₂ →
-      bind (F _) (A₂ .Φ a₂) λ a₂' →
-      ret (a₁' , a₂')
-    )
-  ≡⟨⟩
-    ( bind (F _) (bind (F _) (e₁ .top δ₁) (A₁ .Φ)) λ a₁' →
-      bind (F _) (bind (F _) (e₂ .top δ₂) (A₂ .Φ)) λ a₂' →
-      ret (a₁' , a₂')
-    )
-  ≲⟨ ≤⁻-mono
-      (λ e →
-        bind (F _) e λ a₁' →
-        bind (F _) (bind (F _) (e₂ .top δ₂) (A₂ .Φ)) λ a₂' →
-        ret (a₁' , a₂')
-      )
-      (e₁ .square δ₁)
-  ⟩
-    ( bind (F _) (bind (F _) (Δ₁ .Φ δ₁) (e₁ .bot)) λ a₁' →
-      bind (F _) (bind (F _) (e₂ .top δ₂) (A₂ .Φ)) λ a₂' →
-      ret (a₁' , a₂')
-    )
-  ≲⟨
-    ≤⁻-mono {X = A₁ .X ⇀ F _} (bind (F _) (bind (F _) (Δ₁ .Φ δ₁) (e₁ .bot))) (λ-mono-≤⁻ λ a₁' →
-    ≤⁻-mono (λ e → bind (F _) e λ a₂' → ret (a₁' , a₂')) (e₂ .square δ₂))
-  ⟩
-    ( bind (F _) (bind (F _) (Δ₁ .Φ δ₁) (e₁ .bot)) λ a₁' →
-      bind (F _) (bind (F _) (Δ₂ .Φ δ₂) (e₂ .bot)) λ a₂' →
-      ret (a₁' , a₂')
-    )
-  ≡⟨⟩
-    ( bind (F _) (Δ₁ .Φ δ₁) λ δ₁' →
-      bind (F _) (e₁ .bot δ₁') λ a₁' →
-      bind (F _) (Δ₂ .Φ δ₂) λ δ₂' →
-      bind (F _) (e₂ .bot δ₂') λ a₂' →
-      ret (a₁' , a₂')
-    )
-  ≡⟨ {! commutativity of effects  !} ⟩
-    ( bind (F _) (Δ₁ .Φ δ₁) λ δ₁' →
-      bind (F _) (Δ₂ .Φ δ₂) λ δ₂' →
-      bind (F _) (e₁ .bot δ₁') λ a₁' →
-      bind (F _) (e₂ .bot δ₂') λ a₂' →
-      ret (a₁' , a₂')
-    )
-  ∎
-giralf .split = {!   !}
-giralf .listᵍ A .X = list (A .X)
-giralf .listᵍ A .Φ [] = ret []
-giralf .listᵍ A .Φ (a ∷ l) =
-  bind (F _) (A .Φ a) λ a' →
-  bind (F _) (giralf .listᵍ A .Φ l) λ l' →
-  ret (a' ∷ l')
+
+-- giralf ._⊗_ A B .X = A .X ×⁺ B .X
+-- giralf ._⊗_ A B .Φ (a , b) =
+--   bind (F _) (A .Φ a) λ a' →
+--   bind (F _) (B .Φ b) λ b' →
+--   ret (a' , b')
+-- giralf .tensor e₁ e₂ .top (δ₁ , δ₂) =
+--   bind (F _) (e₁ .top δ₁) λ a₁ →
+--   bind (F _) (e₂ .top δ₂) λ a₂ →
+--   ret (a₁ , a₂)
+-- giralf .tensor e₁ e₂ .bot (δ₁ , δ₂) =
+--   bind (F _) (e₁ .bot δ₁) λ a₁ →
+--   bind (F _) (e₂ .bot δ₂) λ a₂ →
+--   ret (a₁ , a₂)
+-- giralf .tensor {Δ₁ = Δ₁} {Δ₂} {A₁ = A₁} {A₂} e₁ e₂ .square (δ₁ , δ₂) =
+--   let open ≤⁻-Reasoning (F _) in
+--   begin
+--     ( bind (F _) (e₁ .top δ₁) λ a₁ →
+--       bind (F _) (e₂ .top δ₂) λ a₂ →
+--       bind (F _) (A₁ .Φ a₁) λ a₁' →
+--       bind (F _) (A₂ .Φ a₂) λ a₂' →
+--       ret (a₁' , a₂')
+--     )
+--   ≡⟨ {! commutativity of effects  !} ⟩
+--     ( bind (F _) (e₁ .top δ₁) λ a₁ →
+--       bind (F _) (A₁ .Φ a₁) λ a₁' →
+--       bind (F _) (e₂ .top δ₂) λ a₂ →
+--       bind (F _) (A₂ .Φ a₂) λ a₂' →
+--       ret (a₁' , a₂')
+--     )
+--   ≡⟨⟩
+--     ( bind (F _) (bind (F _) (e₁ .top δ₁) (A₁ .Φ)) λ a₁' →
+--       bind (F _) (bind (F _) (e₂ .top δ₂) (A₂ .Φ)) λ a₂' →
+--       ret (a₁' , a₂')
+--     )
+--   ≲⟨ ≤⁻-mono
+--       (λ e →
+--         bind (F _) e λ a₁' →
+--         bind (F _) (bind (F _) (e₂ .top δ₂) (A₂ .Φ)) λ a₂' →
+--         ret (a₁' , a₂')
+--       )
+--       (e₁ .square δ₁)
+--   ⟩
+--     ( bind (F _) (bind (F _) (Δ₁ .Φ δ₁) (e₁ .bot)) λ a₁' →
+--       bind (F _) (bind (F _) (e₂ .top δ₂) (A₂ .Φ)) λ a₂' →
+--       ret (a₁' , a₂')
+--     )
+--   ≲⟨
+--     ≤⁻-mono {X = A₁ .X ⇀ F _} (bind (F _) (bind (F _) (Δ₁ .Φ δ₁) (e₁ .bot))) (λ-mono-≤⁻ λ a₁' →
+--     ≤⁻-mono (λ e → bind (F _) e λ a₂' → ret (a₁' , a₂')) (e₂ .square δ₂))
+--   ⟩
+--     ( bind (F _) (bind (F _) (Δ₁ .Φ δ₁) (e₁ .bot)) λ a₁' →
+--       bind (F _) (bind (F _) (Δ₂ .Φ δ₂) (e₂ .bot)) λ a₂' →
+--       ret (a₁' , a₂')
+--     )
+--   ≡⟨⟩
+--     ( bind (F _) (Δ₁ .Φ δ₁) λ δ₁' →
+--       bind (F _) (e₁ .bot δ₁') λ a₁' →
+--       bind (F _) (Δ₂ .Φ δ₂) λ δ₂' →
+--       bind (F _) (e₂ .bot δ₂') λ a₂' →
+--       ret (a₁' , a₂')
+--     )
+--   ≡⟨ {! commutativity of effects  !} ⟩
+--     ( bind (F _) (Δ₁ .Φ δ₁) λ δ₁' →
+--       bind (F _) (Δ₂ .Φ δ₂) λ δ₂' →
+--       bind (F _) (e₁ .bot δ₁') λ a₁' →
+--       bind (F _) (e₂ .bot δ₂') λ a₂' →
+--       ret (a₁' , a₂')
+--     )
+--   ∎
+-- giralf .split = {!   !}
+
+giralf .listᵍ p X .X = list X
+giralf .listᵍ p X .Φ = foldr (λ x e → bind (F _) e (step (F _) p ∘ ret ∘ (x ∷_))) (ret [])
 giralf .nil .top triv = ret []
 giralf .nil .bot triv = ret []
 giralf .nil .square triv = ≤⁻-refl
-giralf .cons e₁ e₂ = {!   !}
-giralf .foldrᵍ = {!   !}
+giralf .cons x e .top δ = bind (F _) (e .top δ) (ret ∘ (x ∷_))
+giralf .cons x e .bot δ = bind (F _) (e .bot δ) (ret ∘ (x ∷_))
+giralf .cons x e .square δ = {!   !}
+giralf .foldrᵍ e e[] e∷ .top δ =
+  bind (F _) (e .top δ) (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv))
+giralf .foldrᵍ e e[] e∷ .bot δ =
+  bind (F _) (e .bot δ) (foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv))
+giralf .foldrᵍ {Δ} {q} {p} {X} {A} e e[] e∷ .square δ =
+  let open ≤⁻-Reasoning (F _) in
+  begin
+    bind (F _) (bind (F _) (e .top δ) (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv))) (A .Φ)
+  ≡⟨⟩
+    bind (F _) (e .top δ) (λ l → bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv) l) (A .Φ))
+  ≲⟨ {! e∷ ? .square ?  !} ⟩
+    bind (F _) (e .top δ) (λ l → bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv) l) (A .Φ))
+    -- bind (F _) (bind (F _) (e .top δ) (foldr (const (step (F _) p)) (ret []))) (λ l → bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .top)) e[] l) (A .Φ))
+  ≲⟨ {! e .square δ  !} ⟩
+    bind (F _) (Δ .Φ δ) (λ l → step (F _) q (bind (F _) (e .bot l) (foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv))))
+  ∎
+  -- where
+  --   lemma :

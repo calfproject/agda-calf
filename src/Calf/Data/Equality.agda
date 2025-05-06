@@ -7,6 +7,11 @@ open import Calf.CBPV
 
 open import Relation.Binary.PropositionalEquality public
 
+private
+  variable
+    A B C : tp⁺
+    X Y Z : tp⁻
+
 _≡⁺_ : val A → val A → tp⁺
 a ≡⁺ a' = meta⁺ (a ≡ a')
 

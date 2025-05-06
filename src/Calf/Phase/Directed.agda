@@ -11,6 +11,11 @@ open import Relation.Binary.PropositionalEquality using (_≡_)
 
 open import Calf.Phase.Core
 
+private
+  variable
+    A B C : tp⁺
+    X Y Z : tp⁻
+
 postulate
   ≤⁺-ext-≡ : {a a' : val A} → ext → a ≤⁺[ A ] a' → a ≡ a'
 
