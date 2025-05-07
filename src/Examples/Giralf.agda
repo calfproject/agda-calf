@@ -4,7 +4,7 @@ module Examples.Giralf where
 
 open import Algebra.Cost
 
-costMonoid = ℕ-CostMonoid
+costMonoid = cm-rev ℕ-CostMonoid
 open CostMonoid costMonoid
 open import Data.Nat using (_*_)
 
@@ -22,7 +22,7 @@ module Examples (impl : Giralf) where
   ex₂ : ⊤ ⨾ 2 ⊢ listᵍ 1 unit
   ex₂ = cons triv (cons triv nil)
 
-  double : val (listᵍ (1 + 2 * p) X ⊸ listᵍ p X)
+  double : val (listᵍ (2 * p + 1) X ⊸ listᵍ p X)
   double = foldrᵍ id nil (λ x → charge 1 (cons x (cons x id)))
 
 

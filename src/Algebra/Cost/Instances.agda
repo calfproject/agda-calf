@@ -313,6 +313,26 @@ cm-× cm₁ cm₂ = record
   where
     open CostMonoid
 
+cm-rev : CostMonoid → CostMonoid
+cm-rev cm .CostMonoid.ℂ = cm .CostMonoid.ℂ
+cm-rev cm .CostMonoid.zero = cm .CostMonoid.zero
+cm-rev cm .CostMonoid._+_ x y = cm .CostMonoid._+_ y x
+cm-rev cm .CostMonoid._≤_ = cm .CostMonoid._≤_
+cm-rev cm .CostMonoid.isCostMonoid .IsCostMonoid.isMonoid .IsMonoid.isSemigroup .IsSemigroup.isMagma .IsMagma.isEquivalence =
+  cm .CostMonoid.isCostMonoid .IsCostMonoid.isMonoid .IsMonoid.isSemigroup .IsSemigroup.isMagma .IsMagma.isEquivalence
+cm-rev cm .CostMonoid.isCostMonoid .IsCostMonoid.isMonoid .IsMonoid.isSemigroup .IsSemigroup.isMagma .IsMagma.∙-cong h₁ h₂ =
+  cm .CostMonoid.isCostMonoid .IsCostMonoid.isMonoid .IsMonoid.isSemigroup .IsSemigroup.isMagma .IsMagma.∙-cong h₂ h₁
+cm-rev cm .CostMonoid.isCostMonoid .IsCostMonoid.isMonoid .IsMonoid.isSemigroup .IsSemigroup.assoc x y z =
+  Eq.sym (cm .CostMonoid.isCostMonoid .IsCostMonoid.isMonoid .IsMonoid.isSemigroup .IsSemigroup.assoc z y x)
+cm-rev cm .CostMonoid.isCostMonoid .IsCostMonoid.isMonoid .IsMonoid.identity .proj₁ =
+  cm .CostMonoid.isCostMonoid .IsCostMonoid.isMonoid .IsMonoid.identity .proj₂
+cm-rev cm .CostMonoid.isCostMonoid .IsCostMonoid.isMonoid .IsMonoid.identity .proj₂ =
+  cm .CostMonoid.isCostMonoid .IsCostMonoid.isMonoid .IsMonoid.identity .proj₁
+cm-rev cm .CostMonoid.isCostMonoid .IsCostMonoid.isPreorder =
+  cm .CostMonoid.isCostMonoid .IsCostMonoid.isPreorder
+cm-rev cm .CostMonoid.isCostMonoid .IsCostMonoid.isMonotone .IsMonotone.∙-mono-≤ h₁ h₂ =
+  IsMonotone.∙-mono-≤ (IsCostMonoid.isMonotone (CostMonoid.isCostMonoid cm)) h₂ h₁
+
 
 sequentialParCostMonoid :
   (cm : CostMonoid)
