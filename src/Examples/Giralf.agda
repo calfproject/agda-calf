@@ -11,19 +11,24 @@ open import Data.Nat using (_*_)
 open import Calf costMonoid
 open import Calf.Giralf costMonoid
 open import Calf.Data.Product
+open import Calf.Data.Sum
 open import Calf.Data.List
 
 module Examples (impl : Giralf) where
   open Giralf impl
 
   ex₁ : ⊤ ⨾ 500 ⊢ (413 ⋊ᵍ ⊤)
-  ex₁ = charge 87 {! store 413 trivᵍ  !}
+  ex₁ = charge 87 (store 413 trivᵍ)
 
   ex₂ : ⊤ ⨾ 2 ⊢ listᵍ 1 unit
   ex₂ = cons triv (cons triv nil)
 
   double : val (listᵍ (1 + 2 * p) X ⊸ listᵍ p X)
   double = foldrᵍ id nil (λ x → charge 1 (cons x (cons x id)))
+
+  ex₃ : val (((413 ⋊ᵍ ⊤) ⊎ᵍ (312 ⋊ᵍ ⊤)) ⊸ ((150 ⋊ᵍ ⊤) ⊎ᵍ (100 ⋊ᵍ ⊤)))
+  ex₃ = caseᵍ id (release id (inj₂ᵍ (charge 313 (store 100 trivᵍ))))
+                   (release id (inj₁ᵍ (charge 162 (store 150 trivᵍ))))
 
 
 module ExamplesCompiled = Examples giralf
@@ -32,3 +37,4 @@ module ExamplesCompiled = Examples giralf
 norm-ex₁ = {! ExamplesCompiled.ex₁ .Square.square triv  !}
 norm-ex₂ = {! ExamplesCompiled.ex₂ .Square.square triv  !}
 norm-double = {! ExamplesCompiled.double .Square.square (1 ∷ 2 ∷ 3 ∷ [])  !}
+norm-ex₃ = {! ExamplesCompiled.ex₃ .Square.square (inj₁ triv) !}
