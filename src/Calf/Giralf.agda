@@ -56,6 +56,7 @@ record Giralf : Set₁ where
 
   field
     charge : ∀ {Δ q A} (p : ℂ) → Δ ⨾ q ⊢ A → Δ ⨾ p + q ⊢ A
+    weaken : ∀ {Δ p q A} → Δ ⨾ q ⊢ A → Δ ⨾ p + q ⊢ A
 
     _⋊ᵍ_ : ℂ → 𝓒 → 𝓒
     store : ∀ {Δ q A} (p : ℂ) → Δ ⨾ q ⊢ A → Δ ⨾ p + q ⊢ (p ⋊ᵍ A)
@@ -137,6 +138,24 @@ giralf .charge p e .bot = e .bot
 giralf .charge {Δ} {q} {A} p e .square δ =
   let open ≤⁻-Reasoning (F _) in
   begin
+    step (F _) p (bind (F _) (e .top δ) (A .Φ))
+  ≲⟨ step-monoʳ-≤⁻ p (e .square δ) ⟩
+    step (F _) p (bind (F _) (Δ .Φ δ) (step (F _) q ∘ e .bot))
+  ≡⟨ step/comm {X = Δ .₀} {A = F _} {c = p} {e = Δ .Φ δ} {f = step (F _) q ∘ e .bot} ⟩
+    bind (F _) (Δ .Φ δ) (step (F _) p ∘ step (F _) q ∘ e .bot)
+  ≡⟨⟩
+    bind (F _) (Δ .Φ δ) (step (F _) (p + q) ∘ e .bot)
+  ∎
+
+giralf .weaken e .top = e .top
+giralf .weaken e .bot = e .bot
+giralf .weaken {Δ} {p} {q} {A} e .square δ =
+  let open ≤⁻-Reasoning (F _) in
+  begin
+    bind (F _) (e .top δ) (A .Φ)
+  ≡⟨⟩ -- step-0
+    step (F _) zero (bind (F _) (e .top δ) (A .Φ))
+  ≲⟨ step-monoˡ-≤⁻ (bind (F _) (e .top δ) (A .Φ)) {! z ≤ p !} ⟩
     step (F _) p (bind (F _) (e .top δ) (A .Φ))
   ≲⟨ step-monoʳ-≤⁻ p (e .square δ) ⟩
     step (F _) p (bind (F _) (Δ .Φ δ) (step (F _) q ∘ e .bot))
