@@ -22,6 +22,7 @@ open import Relation.Binary.PropositionalEquality as Eq using (_≡_; refl)
 postulate
   step/comm : ∀ {X A c e f} →  -- commutativity of step with other effects
     bind {X} A (step (F X) c e) f ≡ bind A e (step A c ∘ f)
+  zero/min : (c : ℂ) → zero ≤ c
 
 record Giralf : Set₁ where
   𝓥 : Set
@@ -56,10 +57,10 @@ record Giralf : Set₁ where
 
   field
     charge : ∀ {Δ q A} (p : ℂ) → Δ ⨾ q ⊢ A → Δ ⨾ q + p ⊢ A
-    weaken : ∀ {Δ p q A} → Δ ⨾ q ⊢ A → Δ ⨾ p + q ⊢ A
+    weaken : ∀ {Δ q p A} → Δ ⨾ q ⊢ A → Δ ⨾ q + p ⊢ A
 
     _⋊ᵍ_ : ℂ → 𝓒 → 𝓒
-    store : ∀ {Δ q A} (p : ℂ) → Δ ⨾ q ⊢ A → Δ ⨾ p + q ⊢ (p ⋊ᵍ A)
+    store : ∀ {Δ q A} (p : ℂ) → Δ ⨾ q ⊢ A → Δ ⨾ q + p ⊢ (p ⋊ᵍ A)
     release : ∀ {Δ p q A B} → Δ ⨾ q ⊢ (p ⋊ᵍ A) → A ⨾ p ⊢ B → Δ ⨾ q ⊢ B
 
     _⊎ᵍ_ : 𝓒 → 𝓒 → 𝓒
@@ -146,7 +147,6 @@ giralf-list p X .Φ = foldr (λ x e → bind (F _) e (step (F _) p ∘ ret ∘ (
 giralf : Giralf
 
 giralf .𝓒 = PotentialFunction
--- giralf .cmpᵍ A = cmp (F (A .₀)) -- problematic?
 giralf ._⨾_⊢_ = Square
 giralf .id = id□
 
@@ -168,58 +168,27 @@ giralf .charge {A = A} p e = e ⨾□ step-square
     step-square .bot = ret
     step-square .square a = ≤⁻-reflexive (step/comm {A .₀} {F _} {p} {A .Φ a} {ret})
 
-giralf .weaken e .top = e .top
-giralf .weaken e .bot = e .bot
-giralf .weaken {Δ} {p} {q} {A} e .square δ =
-  let open ≤⁻-Reasoning (F _) in
-  begin
-    bind (F _) (e .top δ) (A .Φ)
-  ≡⟨⟩ -- step-0
-    step (F _) zero (bind (F _) (e .top δ) (A .Φ))
-  ≲⟨ step-monoˡ-≤⁻ (bind (F _) (e .top δ) (A .Φ)) {! z ≤ p !} ⟩
-    step (F _) p (bind (F _) (e .top δ) (A .Φ))
-  ≲⟨ step-monoʳ-≤⁻ p (e .square δ) ⟩
-    step (F _) p (bind (F _) (Δ .Φ δ) (step (F _) q ∘ e .bot))
-  ≡⟨ step/comm {X = Δ .₀} {A = F _} {c = p} {e = Δ .Φ δ} {f = step (F _) q ∘ e .bot} ⟩
-    bind (F _) (Δ .Φ δ) (step (F _) p ∘ step (F _) q ∘ e .bot)
-  ≡⟨⟩
-    bind (F _) (Δ .Φ δ) (step (F _) (p + q) ∘ e .bot)
-  ∎
+giralf .weaken {p = p} {A = A} e = e ⨾□ weaken-square
+  where
+    weaken-square : Square A p A
+    weaken-square .top = ret
+    weaken-square .bot = ret
+    weaken-square .square a = bind-monoʳ-≤⁻ (A .Φ a) (λ a' → step-monoˡ-≤⁻ (ret a') (zero/min p))
 
 giralf ._⋊ᵍ_ p A .₀ = A .₀
 giralf ._⋊ᵍ_ p A .Φ a = step (F _) p (A .Φ a)
-giralf .store p e .top = e .top
-giralf .store p e .bot = e. bot
-giralf .store {Δ} {q} {A} p e .square δ =
-  let open ≤⁻-Reasoning (F _) in
-  begin
-    bind (F _) (e .top δ) (step (F _) p ∘ (A .Φ))
-  ≡⟨ Eq.sym (step/comm {X = A .₀} {A = F _} {c = p} {e = e .top δ} {f = A .Φ}) ⟩
-    step (F _) p (bind (F _) (e .top δ) (A .Φ))
-  ≲⟨ step-monoʳ-≤⁻ p (e .square δ) ⟩
-    step (F _) p (bind (F _) (Δ .Φ δ) (step (F _) q ∘ e .bot))
-  ≡⟨ step/comm {X = Δ .₀} {A = F _} {c = p} {e = Δ .Φ δ} ⟩
-    bind (F _) (Δ .Φ δ) (step (F _) p ∘ step (F _) q ∘ e .bot)
-  ≡⟨⟩
-    bind (F _) (Δ .Φ δ) (step (F _) (p + q) ∘ e .bot)
-  ∎
-giralf .release e₁ e₂ .top δ = bind (F _) (e₁ .top δ) (e₂ .top)
-giralf .release e₁ e₂ .bot δ = bind (F _) (e₁ .bot δ) (e₂ .bot)
-giralf .release {Δ} {p} {q} {A} {B} e₁ e₂ .square δ =
-  let open ≤⁻-Reasoning (F _) in
-  begin
-    bind (F _) (e₁ .top δ) (λ a → bind (F _) (e₂ .top a) (B .Φ))
-  ≲⟨ bind-monoʳ-≤⁻ (e₁ .top δ) (e₂ .square) ⟩
-    bind (F _) (e₁ .top δ) (λ a → bind (F _) (A .Φ a) (step (F _) p ∘ e₂ .bot))
-  ≡⟨ Eq.cong (bind (F _) (e₁ .top δ)) (funext (λ a → Eq.sym (step/comm {X = A .₀} {A = F _} {c = p} {e = A .Φ a}))) ⟩
-    bind (F _) (e₁ .top δ) (λ a → bind (F _) (step (F _) p (A .Φ a)) (e₂ .bot))
-  ≡⟨⟩ -- bind assoc
-    bind (F _) (bind (F _) (e₁ .top δ) (step (F _) p ∘ A .Φ)) (e₂ .bot)
-  ≲⟨ bind-monoˡ-≤⁻ (e₂ .bot) (e₁ .square δ) ⟩
-    bind (F _) (bind (F _) (Δ .Φ δ) (step (F _) q ∘ e₁ .bot)) (e₂ .bot)
-  ≡⟨⟩ -- bind assoc
-    bind (F _) (Δ .Φ δ) (step (F _) q ∘ (λ δ' → bind (F _) (e₁ .bot δ') (e₂ .bot)))
-  ∎
+giralf .store {A = A} p e = e ⨾□ store-square
+  where
+    store-square : Square A p (giralf ._⋊ᵍ_ p A)
+    store-square .top = ret
+    store-square .bot = ret
+    store-square .square a = ≤⁻-reflexive (step/comm {A .₀} {F _} {p} {A .Φ a} {ret})
+giralf .release {Δ} {p} {q} {A} {B} e₁ e₂ = Eq.subst (λ q → Square _ q _) (+-identityʳ _) (e₁ ⨾□ lemma)
+  where
+    lemma : Square (giralf ._⋊ᵍ_ p A) zero B
+    lemma .top = e₂ .top
+    lemma .bot = e₂ .bot
+    lemma .square a = ≤⁻-trans (e₂ .square a) (≤⁻-reflexive (Eq.sym (step/comm {A .₀} {F _} {p} {A .Φ a})))
 
 giralf ._⊎ᵍ_ A B .₀ = A .₀ ⊎⁺ B .₀
 giralf ._⊎ᵍ_ A B .Φ (inj₁ a) = bind (F _) (A .Φ a) λ a' → ret (inj₁ a')
