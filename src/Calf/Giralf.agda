@@ -183,7 +183,7 @@ giralf .store {A = A} p e = e ⨾□ store-square
     store-square .top = ret
     store-square .bot = ret
     store-square .square a = ≤⁻-reflexive (step/comm {A .₀} {F _} {p} {A .Φ a} {ret})
-giralf .release {Δ} {p} {q} {A} {B} e₁ e₂ = Eq.subst (λ q → Square _ q _) (+-identityʳ _) (e₁ ⨾□ lemma)
+giralf .release {p = p} {A = A} {B = B} e₁ e₂ = Eq.subst (λ q → Square _ q _) (+-identityʳ _) (e₁ ⨾□ lemma)
   where
     lemma : Square (giralf ._⋊ᵍ_ p A) zero B
     lemma .top = e₂ .top
@@ -193,33 +193,23 @@ giralf .release {Δ} {p} {q} {A} {B} e₁ e₂ = Eq.subst (λ q → Square _ q _
 giralf ._⊎ᵍ_ A B .₀ = A .₀ ⊎⁺ B .₀
 giralf ._⊎ᵍ_ A B .Φ (inj₁ a) = bind (F _) (A .Φ a) λ a' → ret (inj₁ a')
 giralf ._⊎ᵍ_ A B .Φ (inj₂ b) = bind (F _) (B .Φ b) λ b' → ret (inj₂ b')
-giralf .inj₁ᵍ e .top δ = bind (F _) (e .top δ) λ a → ret (inj₁ a)
-giralf .inj₁ᵍ e .bot δ = bind (F _) (e .bot δ) λ a → ret (inj₁ a)
-giralf .inj₁ᵍ e .square δ = bind-monoˡ-≤⁻ _ (e .square δ)
+giralf .inj₁ᵍ {A = A} {B = B} e = Eq.subst (λ q → Square _ q _) (+-identityʳ _) (e ⨾□ inl-square)
+  where
+    inl-square : Square A zero (giralf ._⊎ᵍ_ A B)
+    inl-square .top = ret ∘ inj₁
+    inl-square .bot = ret ∘ inj₁
+    inl-square .square a = bind-monoʳ-≤⁻ (A .Φ a) (λ _ → ≤⁻-refl)
 giralf .inj₂ᵍ e .top δ = bind (F _) (e .top δ) λ b → ret (inj₂ b)
 giralf .inj₂ᵍ e .bot δ = bind (F _) (e .bot δ) λ b → ret (inj₂ b)
 giralf .inj₂ᵍ e .square δ = bind-monoˡ-≤⁻ _ (e .square δ)
-giralf .caseᵍ e e₁ e₂ .top δ = bind (F _) (e .top δ) [ e₁ .top , e₂ .top ]′
-giralf .caseᵍ e e₁ e₂ .bot δ = bind (F _) (e .bot δ) [ e₁ .bot , e₂ .bot ]′
-giralf .caseᵍ {Δ} {q} {A} {B} {C} e e₁ e₂ .square δ =
-  let open ≤⁻-Reasoning (F _) in
-  begin
-    bind (F _) (e .top δ) (λ a → bind (F _) ([ e₁ .top , e₂ .top ]′ a) (C .Φ))
-  ≲⟨ bind-monoʳ-≤⁻ (e .top δ) Sum.[ e₁ .square , e₂ .square ] ⟩
-    bind (F _) (e .top δ)
-      [ (λ a → bind (F _) (A .Φ a) (step (F _) zero ∘ e₁ .bot)) ,
-        (λ b → bind (F _) (B .Φ b) (step (F _) zero ∘ e₂ .bot)) ]′
-  ≡⟨⟩ -- step-0
-    bind (F _) (e .top δ)
-      [ (λ a → bind (F _) (A .Φ a) (e₁ .bot)) ,
-        (λ b → bind (F _) (B .Φ b) (e₂ .bot)) ]′
-  ≡⟨ Eq.cong (bind (F _) (e .top δ)) (funext λ { (inj₁ a) → refl ; (inj₂ b) → refl }) ⟩
-    bind (F _) (bind (F _) (e .top δ) (giralf ._⊎ᵍ_ A B .Φ)) [ e₁ .bot , e₂ .bot ]′
-  ≲⟨ bind-monoˡ-≤⁻ _ (e .square δ) ⟩
-    bind (F _) (bind (F _) (Δ .Φ δ) (step (F _) q ∘ e .bot)) [ e₁ .bot , e₂ .bot ]′
-  ≡⟨⟩ -- bind assoc
-    bind (F _) (Δ .Φ δ) (step (F _) q ∘ (λ a → bind (F _) (e .bot a) [ e₁ .bot , e₂ .bot ]′))
-  ∎
+giralf .caseᵍ {A = A} {B = B} {C = C} e e₁ e₂ = Eq.subst (λ q → Square _ q _) (+-identityʳ _) (e ⨾□ lemma)
+  where
+    lemma : Square (giralf ._⊎ᵍ_ A B) zero C
+    lemma .top = [ e₁ .top , e₂ .top ]′
+    lemma .bot = [ e₁ .bot , e₂ .bot ]′
+    lemma .square (inj₁ a) = e₁ .square a
+    lemma .square (inj₂ b) = e₂ .square b
+    -- lemma .square = Sum.[ e₁ .square , e₂ .square ]
 
 -- giralf ._⊗_ A B .₀ = A .₀ ×⁺ B .₀
 -- giralf ._⊗_ A B .Φ (a , b) =
