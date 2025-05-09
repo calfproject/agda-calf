@@ -13,7 +13,7 @@ open import Calf.Directed
 open import Calf.Step costMonoid
 open import Calf.Data.Product
 open import Calf.Data.Sum as Sum
--- open import Calf.Data.List
+open import Calf.Data.List
 
 
 open import Function using (_∘_; const)
@@ -98,25 +98,24 @@ record Giralf : Set₁ where
       → (A ∷ B ∷ Δ₂) ⨾ q₂ ⊢ C
       → Δ ⨾ q₁ + q₂ ⊢ C
 
-    -- listᵍ : ℂ → 𝓥 → 𝓒
-    -- nil : ∀ {p X} → cmpᵍ (listᵍ p X)
-    -- cons : ∀ {Δ q p X}
-    --   → val X
-    --   → Δ ⨾ q ⊢ listᵍ p X
-    --   → Δ ⨾ (q + p) ⊢ listᵍ p X
-    -- foldrᵍ : ∀ {Δ q p X A}
-    --   → Δ ⨾ q ⊢ listᵍ p X
-    --   → cmpᵍ A
-    --   → (val X → A ⨾ p ⊢ A)
-    --   → Δ ⨾ q ⊢ A
+    listᵍ : 𝓒 → 𝓒
+    nil : ∀ {p A} → cmpᵍ (listᵍ A)
+    cons : ∀ {Δ Δ₁ Δ₂ q₁ q₂ A}
+      → Δ ≡ Δ₁ ⊔ Δ₂
+      → Δ₁ ⨾ q₁ ⊢ A
+      → Δ₂ ⨾ q₂ ⊢ listᵍ A
+      → Δ ⨾ (q₁ + q₂) ⊢ listᵍ A
+    foldrᵍ : ∀ {Δ q A B}
+      → Δ ⨾ q ⊢ listᵍ A
+      → cmpᵍ B
+      → (A ∷ B ∷ []) ⨾ zero ⊢ B
+      → Δ ⨾ q ⊢ B
 
   variable
     X Y Z : 𝓥
     A B C : 𝓒
     p q r : ℂ
 
-
-open import Calf.Data.List as CalfList
 
 _⊸F_ : tp⁺ → tp⁺ → Set
 X ⊸F Y = cmp (X ⇀ F Y)
@@ -127,9 +126,6 @@ record PotentialFunction : Set where
     Φ : ₀ ⊸F ₀
 open PotentialFunction
 
-giralf-list : ℂ → tp⁺ → PotentialFunction
-giralf-list p X .₀ = list X
-giralf-list p X .Φ = foldr (λ x e → bind (F _) e (step (F _) p ∘ ret ∘ (x ∷_))) (ret [])
 
 record Square (Δ : PotentialFunction) (q : ℂ) (A : PotentialFunction) : Set where
   field
@@ -515,16 +511,28 @@ giralf .split {Δ₂ = Δ₂} {q₂ = q₂} {A} {B} {C} s e e' = s ⨾ e ⨾□�
     lemma .square ((a , b) , δ₂) = e' .square (a , (b , δ₂))
 
 
--- giralf .listᵍ = giralf-list
--- giralf .nil .top triv = ret []
--- giralf .nil .bot triv = ret []
--- giralf .nil .square triv = ≤⁻-refl
--- giralf .cons {p = p} {X = X} x e = e ⨾□ cons-square
---   where
---     cons-square : Square (giralf .listᵍ p X) p (giralf .listᵍ p X)
---     cons-square .top = ret ∘ (x ∷_)
---     cons-square .bot = ret ∘ (x ∷_)
---     cons-square .square _ = ≤⁻-refl
+giralf .listᵍ A .₀ = list (A .₀)
+giralf .listᵍ A .Φ = foldr (λ a e →
+    bind (F _) (A .Φ a) λ a' →
+    bind (F _) e λ e' →
+    ret (a' ∷ e')
+  ) (ret [])
+giralf .nil .top triv = ret []
+giralf .nil .bot triv = ret []
+giralf .nil .square triv = ≤⁻-refl
+giralf .cons {Δ = Δ} {A = A} s eₕ eₜ = Eq.subst (λ q → Square (Tensorfy Δ) q (giralf .listᵍ A)) (+-identityʳ _) ((giralf .tensor s eₕ eₜ) ⨾□ lemma)
+  where
+    lemma : Square (A ⊗ giralf .listᵍ A) zero (giralf .listᵍ A)
+    lemma .top (h , t) = ret (h ∷ t)
+    lemma .bot (h , t) = ret (h ∷ t)
+    lemma .square (h , t) = {! ≤⁻-reflexive  !}
+giralf .foldrᵍ {A = A} {B = B} e e[] e∷ = Eq.subst (λ q → Square _ q _) (+-identityʳ _) (e ⨾□ lemma)
+  where
+    lemma : Square (giralf .listᵍ A) zero B
+    lemma .top = foldr (λ x ih → bind (F _) ih (λ ih' → e∷ .top (x , (ih' , triv)))) (e[] .top triv)
+    lemma .bot = foldr (λ x ih → bind (F _) ih (λ ih' → e∷ .bot (x , (ih' , triv)))) (e[] .bot triv)
+    lemma .square [] = e[] .square triv
+    lemma .square (h ∷ t) = {!   !}
 -- giralf .foldrᵍ {p = p} {X = X} {A = A} e e[] e∷ = Eq.subst (λ q → Square _ q _) (+-identityʳ _) (e ⨾□ lemma)
 --   where
 --     lemma : Square (giralf-list p X) zero A
