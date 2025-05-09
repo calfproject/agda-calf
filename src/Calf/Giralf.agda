@@ -525,7 +525,7 @@ giralf .cons {Δ = Δ} {A = A} s eₕ eₜ = Eq.subst (λ q → Square (Tensorfy
     lemma : Square (A ⊗ giralf .listᵍ A) zero (giralf .listᵍ A)
     lemma .top (h , t) = ret (h ∷ t)
     lemma .bot (h , t) = ret (h ∷ t)
-    lemma .square (h , t) = {! ≤⁻-reflexive  !}
+    lemma .square (h , t) = ≤⁻-reflexive (Eq.cong (bind (F _) (A .Φ h)) (funext λ h' → Eq.cong (bind (F _) (giralf .listᵍ A .Φ t)) (funext λ t' → Eq.cong ret (Eq.cong₂ _∷_ refl refl))))
 giralf .foldrᵍ {A = A} {B = B} e e[] e∷ = Eq.subst (λ q → Square _ q _) (+-identityʳ _) (e ⨾□ lemma)
   where
     lemma : Square (giralf .listᵍ A) zero B
