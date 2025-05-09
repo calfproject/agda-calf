@@ -180,11 +180,15 @@ _⊗_ A B .Φ (a , b) =
 ⊤ .₀ = unit
 ⊤ .Φ = ret
 
+
+Tensorfy : List PotentialFunction → PotentialFunction
+Tensorfy Δ = List.foldr _⊗_ ⊤ Δ
+
 MultiSquare : List PotentialFunction → ℂ → PotentialFunction → Set
-MultiSquare Δ = Square (List.foldr _⊗_ ⊤ Δ)
+MultiSquare Δ = Square (Tensorfy Δ)
 
 
-permute : ∀ {Δ Δ₁ Δ₂ : List PotentialFunction} → Permutation._≡_⊔_ Δ Δ₁ Δ₂ → val (List.foldr _⊗_ ⊤ Δ .₀) → val (List.foldr _⊗_ ⊤ Δ₁ .₀) × val (List.foldr _⊗_ ⊤ Δ₂ .₀)
+permute : ∀ {Δ Δ₁ Δ₂} → Permutation._≡_⊔_ Δ Δ₁ Δ₂ → val (Tensorfy Δ .₀) → val (Tensorfy Δ₁ .₀) × val (Tensorfy Δ₂ .₀)
 permute Permutation.all_right δ = triv , δ
 permute (Permutation.left A s) (a , δ) =
   let δ₁ , δ₂ = permute s δ in
@@ -195,15 +199,15 @@ permute (Permutation.swapa s) δ =
 
 
 permute-Φ : ∀ {Δ Δ₁ Δ₂ X} (s : Permutation._≡_⊔_ Δ Δ₁ Δ₂)
-  → (δ : val (List.foldr _⊗_ ⊤ Δ .₀))
-  → (f : val (List.foldr _⊗_ ⊤ Δ₁ .₀) → val (List.foldr _⊗_ ⊤ Δ₂ .₀) → cmp (F X))
+  → (δ : val (Tensorfy Δ .₀))
+  → (f : val (Tensorfy Δ₁ .₀) → val (Tensorfy Δ₂ .₀) → cmp (F X))
   → (
     let δ₁ , δ₂ = permute s δ in
-    bind (F _) (foldr _⊗_ ⊤ Δ₁ .Φ δ₁) λ δ₁' →
-    bind (F _) (foldr _⊗_ ⊤ Δ₂ .Φ δ₂) λ δ₂' →
+    bind (F _) (Tensorfy Δ₁ .Φ δ₁) λ δ₁' →
+    bind (F _) (Tensorfy Δ₂ .Φ δ₂) λ δ₂' →
     f δ₁' δ₂'
   ) ≡ (
-    bind (F _) (foldr _⊗_ ⊤ Δ .Φ δ) λ δ' →
+    bind (F _) (Tensorfy Δ .Φ δ) λ δ' →
     let δ₁' , δ₂' = permute s δ' in
     f δ₁' δ₂' )
 permute-Φ Permutation.all_right δ f = refl
@@ -213,14 +217,14 @@ permute-Φ {Δ = _ ∷ Δ} {Δ₁ = _ ∷ Δ₁} {Δ₂} (Permutation.left A s) 
   begin
     (
       bind (F _) (A .Φ a) λ a' →
-      bind (F _) (foldr _⊗_ ⊤ Δ₁ .Φ δ₁) λ δ₁' →
-      bind (F _) (foldr _⊗_ ⊤ Δ₂ .Φ δ₂) λ δ₂' →
+      bind (F _) (Tensorfy Δ₁ .Φ δ₁) λ δ₁' →
+      bind (F _) (Tensorfy Δ₂ .Φ δ₂) λ δ₂' →
       f (a' , δ₁') δ₂'
     )
   ≡⟨ Eq.cong (bind (F _) (A .Φ a)) (funext (λ a' → permute-Φ s δ (λ d₁ d₂ → f (a' , d₁) d₂))) ⟩
     (
       bind (F _) (A .Φ a) λ a' →
-      bind (F _) (foldr _⊗_ ⊤ Δ .Φ δ) λ δ' →
+      bind (F _) (Tensorfy Δ .Φ δ) λ δ' →
       let δ₁' , δ₂' = permute s δ' in
       f (a' , δ₁') δ₂'
     )
@@ -231,18 +235,18 @@ permute-Φ {Δ} {Δ₁} {Δ₂} (Permutation.swapa s) δ f =
   let open Eq.≡-Reasoning in
   begin
     (
-      bind (F _) (foldr _⊗_ ⊤ Δ₁ .Φ δ₁) λ δ₁' →
-      bind (F _) (foldr _⊗_ ⊤ Δ₂ .Φ δ₂) λ δ₂' →
+      bind (F _) (Tensorfy Δ₁ .Φ δ₁) λ δ₁' →
+      bind (F _) (Tensorfy Δ₂ .Φ δ₂) λ δ₂' →
       f δ₁' δ₂'
     )
   ≡⟨ {! commute effects !} ⟩
     (
-      bind (F _) (foldr _⊗_ ⊤ Δ₂ .Φ δ₂) λ δ₂' →
-      bind (F _) (foldr _⊗_ ⊤ Δ₁ .Φ δ₁) λ δ₁' →
+      bind (F _) (Tensorfy Δ₂ .Φ δ₂) λ δ₂' →
+      bind (F _) (Tensorfy Δ₁ .Φ δ₁) λ δ₁' →
       f δ₁' δ₂'
     )
   ≡⟨ permute-Φ s δ (λ d₁ d₂ → f d₂ d₁) ⟩
-      bind (F _) (foldr _⊗_ ⊤ Δ .Φ δ) (λ δ' →
+      bind (F _) (Tensorfy Δ .Φ δ) (λ δ' →
       let δ₂' , δ₁' = permute s δ' in
       f δ₁' δ₂')
   ∎
@@ -265,7 +269,7 @@ _⨾_⨾□ᵐ_ : ∀ {Δ Δ₁ Δ₂ q₁ q₂ A B} → Permutation._≡_⊔_ �
     (
       bind (F _) (e .top δ₁) λ a →
       bind (F _) (A .Φ a) λ a' →
-      bind (F _) (foldr _⊗_ ⊤ Δ₂ .Φ δ₂) λ δ₂' →
+      bind (F _) (Tensorfy Δ₂ .Φ δ₂) λ δ₂' →
       step (F _) q₂ (f .bot (a' , δ₂'))
     )
   ≡⟨⟩ -- bind-assoc
@@ -273,41 +277,41 @@ _⨾_⨾□ᵐ_ : ∀ {Δ Δ₁ Δ₂ q₁ q₂ A B} → Permutation._≡_⊔_ �
       (bind (F _) (e .top δ₁) (A .Φ))
       (
         λ a' →
-        bind (F _) (foldr _⊗_ ⊤ Δ₂ .Φ δ₂) λ δ₂' →
+        bind (F _) (Tensorfy Δ₂ .Φ δ₂) λ δ₂' →
         step (F _) q₂ (f .bot (a' , δ₂'))
       )
-  ≲⟨ bind-monoˡ-≤⁻ (λ a' → bind (F _) (foldr _⊗_ ⊤ Δ₂ .Φ δ₂) _) (e .square δ₁) ⟩
+  ≲⟨ bind-monoˡ-≤⁻ (λ a' → bind (F _) (Tensorfy Δ₂ .Φ δ₂) _) (e .square δ₁) ⟩
     bind (F _)
-      (bind (F _) (foldr _⊗_ ⊤ Δ₁ .Φ δ₁) (step (F _) q₁ ∘ e .bot))
+      (bind (F _) (Tensorfy Δ₁ .Φ δ₁) (step (F _) q₁ ∘ e .bot))
       (
         λ a' →
-        bind (F _) (foldr _⊗_ ⊤ Δ₂ .Φ δ₂) λ δ₂' →
+        bind (F _) (Tensorfy Δ₂ .Φ δ₂) λ δ₂' →
         step (F _) q₂ (f .bot (a' , δ₂'))
       )
   ≡⟨⟩ -- bind-assoc
     (
-      bind (F _) (foldr _⊗_ ⊤ Δ₁ .Φ δ₁) λ δ₁' →
+      bind (F _) (Tensorfy Δ₁ .Φ δ₁) λ δ₁' →
       bind (F _) ((step (F _) q₁ ∘ e .bot) δ₁') λ a' →
-      bind (F _) (foldr _⊗_ ⊤ Δ₂ .Φ δ₂) λ δ₂' →
+      bind (F _) (Tensorfy Δ₂ .Φ δ₂) λ δ₂' →
       step (F _) q₂ (f .bot (a' , δ₂'))
     )
   ≡⟨ {! some commutativity thing  !} ⟩
     (
-      bind (F _) (foldr _⊗_ ⊤ Δ₁ .Φ δ₁) λ δ₁' →
-      bind (F _) (foldr _⊗_ ⊤ Δ₂ .Φ δ₂) λ δ₂' →
+      bind (F _) (Tensorfy Δ₁ .Φ δ₁) λ δ₁' →
+      bind (F _) (Tensorfy Δ₂ .Φ δ₂) λ δ₂' →
       bind (F _) ((step (F _) q₁ ∘ e .bot) δ₁') λ a' →
       step (F _) q₂ (f .bot (a' , δ₂'))
     )
   ≡⟨ permute-Φ s δ _ ⟩
     (
-      bind (F _) (foldr _⊗_ ⊤ Δ .Φ δ) λ δ' →
+      bind (F _) (Tensorfy Δ .Φ δ) λ δ' →
       let δ₁' , δ₂' = permute s δ' in
       bind (F _) ((step (F _) q₁ ∘ e .bot) δ₁') λ a' →
       step (F _) q₂ (f .bot (a' , δ₂'))
     )
   ≡⟨⟩
     (
-      bind (F _) (foldr _⊗_ ⊤ Δ .Φ δ)
+      bind (F _) (Tensorfy Δ .Φ δ)
       (
         step (F _) q₁ ∘ (λ δ' →
           let δ₁' , δ₂' = permute s δ' in
@@ -316,8 +320,8 @@ _⨾_⨾□ᵐ_ : ∀ {Δ Δ₁ Δ₂ q₁ q₂ A B} → Permutation._≡_⊔_ �
         )
       )
     )
-  ≡⟨ Eq.cong (bind (F _) (foldr _⊗_ ⊤ Δ .Φ δ)) (funext (λ δ' → Eq.cong (step (F _) q₁) (Eq.sym (step/comm {A .₀} {F _} {q₂} {e .bot (permute s δ' .proj₁)})))) ⟩
-      bind (F _) (foldr _⊗_ ⊤ Δ .Φ δ)
+  ≡⟨ Eq.cong (bind (F _) (Tensorfy Δ .Φ δ)) (funext (λ δ' → Eq.cong (step (F _) q₁) (Eq.sym (step/comm {A .₀} {F _} {q₂} {e .bot (permute s δ' .proj₁)})))) ⟩
+      bind (F _) (Tensorfy Δ .Φ δ)
       (
         step (F _) (q₁ + q₂) ∘ (λ δ' →
           let δ₁' , δ₂' = permute s δ' in
@@ -379,17 +383,23 @@ giralf .release {Δ₂ = Δ₂} {p} {q₂ = q₂} {A} {B} s e₁ e₂ = s ⨾ e�
       begin
         bind (F _) (e₂ .top (a , δ₂)) (B .Φ)
       ≲⟨ e₂ .square (a , δ₂) ⟩
-        bind (F _) (A .Φ a) (λ a' →
-          bind (F _) (foldr _⊗_ ⊤ Δ₂ .Φ δ₂) (λ δ₂' →
-            step (F _) (p + q₂) (e₂ .bot (a' , δ₂'))))
-      ≡⟨ Eq.cong (bind (F _) (A .Φ a)) (funext (λ a' → Eq.sym (step/comm {foldr _⊗_ ⊤ Δ₂ .₀} {F _} {p} {foldr _⊗_ ⊤ Δ₂ .Φ δ₂}))) ⟩
-        bind (F _) (A .Φ a) (λ a' →
-          step (F _) p (bind (F _) (foldr _⊗_ ⊤ Δ₂ .Φ δ₂) (λ δ₂' →
-            step (F _) q₂ (e₂ .bot (a' , δ₂')))))
+        (
+          bind (F _) (A .Φ a) λ a' →
+          bind (F _) (Tensorfy Δ₂ .Φ δ₂) λ δ₂' →
+          step (F _) (p + q₂) (e₂ .bot (a' , δ₂'))
+        )
+      ≡⟨ Eq.cong (bind (F _) (A .Φ a)) (funext (λ a' → Eq.sym (step/comm {Tensorfy Δ₂ .₀} {F _} {p} {Tensorfy Δ₂ .Φ δ₂}))) ⟩
+        (
+          bind (F _) (A .Φ a) λ a' →
+          step (F _) p (bind (F _) (Tensorfy Δ₂ .Φ δ₂) λ δ₂' →
+          step (F _) q₂ (e₂ .bot (a' , δ₂')))
+        )
       ≡⟨ Eq.sym (step/comm {A .₀} {F _} {p} {A .Φ a}) ⟩
-        bind (F _) ((giralf ⋊ᵍ p) A .Φ a) (λ a' →
-          bind (F _) (foldr _⊗_ ⊤ Δ₂ .Φ δ₂) (λ δ₂' →
-            step (F _) q₂ (lemma .bot (a' , δ₂'))))
+        (
+          bind (F _) ((giralf ⋊ᵍ p) A .Φ a) λ a' →
+          bind (F _) (Tensorfy Δ₂ .Φ δ₂) λ δ₂' →
+          step (F _) q₂ (lemma .bot (a' , δ₂'))
+        )
       ∎
 
 giralf ._⊎ᵍ_ A B .₀ = A .₀ ⊎⁺ B .₀
@@ -448,47 +458,47 @@ giralf .tensor {Δ} {Δ₁} {Δ₂} {q₁} {q₂} {A} {B} s e₁ e₂ .square δ
     )
   ≲⟨ bind-monoˡ-≤⁻ _ (e₁ .square δ₁) ⟩
     bind (F _)
-    (bind (F _) (foldr _⊗_ ⊤ Δ₁ .Φ δ₁)  (step (F _) q₁ ∘ e₁ .bot))
+    (bind (F _) (Tensorfy Δ₁ .Φ δ₁)  (step (F _) q₁ ∘ e₁ .bot))
     (
       λ a' →
       bind (F _) (bind (F _) (e₂ .top δ₂) (B .Φ)) λ b' →
       ret (a' , b')
     )
-  ≲⟨ bind-monoʳ-≤⁻ (bind (F _) (foldr _⊗_ ⊤ Δ₁ .Φ δ₁)  (step (F _) q₁ ∘ e₁ .bot)) (λ a' → bind-monoˡ-≤⁻ _ (e₂ .square δ₂)) ⟩
+  ≲⟨ bind-monoʳ-≤⁻ (bind (F _) (Tensorfy Δ₁ .Φ δ₁)  (step (F _) q₁ ∘ e₁ .bot)) (λ a' → bind-monoˡ-≤⁻ _ (e₂ .square δ₂)) ⟩
     bind (F _)
-    (bind (F _) (foldr _⊗_ ⊤ Δ₁ .Φ δ₁)  (step (F _) q₁ ∘ e₁ .bot))
+    (bind (F _) (Tensorfy Δ₁ .Φ δ₁)  (step (F _) q₁ ∘ e₁ .bot))
     (
       λ a' →
       bind (F _)
-        (bind (F _) (foldr _⊗_ ⊤ Δ₂ .Φ δ₂)  (step (F _) q₂ ∘ e₂ .bot))
+        (bind (F _) (Tensorfy Δ₂ .Φ δ₂)  (step (F _) q₂ ∘ e₂ .bot))
         (λ b' → ret (a' , b'))
     )
   ≡⟨⟩
     (
-      bind (F _) (foldr _⊗_ ⊤ Δ₁ .Φ δ₁) λ δ₁' →
+      bind (F _) (Tensorfy Δ₁ .Φ δ₁) λ δ₁' →
       bind (F _) ((step (F _) q₁ ∘ e₁ .bot) δ₁') λ a' →
-      bind (F _) (foldr _⊗_ ⊤ Δ₂ .Φ δ₂) λ δ₂' →
+      bind (F _) (Tensorfy Δ₂ .Φ δ₂) λ δ₂' →
       bind (F _) ((step (F _) q₂ ∘ e₂ .bot) δ₂') λ b' →
       ret (a' , b')
     )
   ≡⟨ {! commutativity thing !} ⟩
     (
-      bind (F _) (foldr _⊗_ ⊤ Δ₁ .Φ δ₁) λ δ₁' →
-      bind (F _) (foldr _⊗_ ⊤ Δ₂ .Φ δ₂) λ δ₂' →
+      bind (F _) (Tensorfy Δ₁ .Φ δ₁) λ δ₁' →
+      bind (F _) (Tensorfy Δ₂ .Φ δ₂) λ δ₂' →
       bind (F _) ((step (F _) q₁ ∘ e₁ .bot) δ₁') λ a' →
       bind (F _) ((step (F _) q₂ ∘ e₂ .bot) δ₂') λ b' →
       ret (a' , b')
     )
   ≡⟨ permute-Φ s δ _ ⟩
     (
-      bind (F _) (foldr _⊗_ ⊤ Δ .Φ δ) λ δ' →
+      bind (F _) (Tensorfy Δ .Φ δ) λ δ' →
       let δ₁' , δ₂' = permute s δ' in
       bind (F _) ((step (F _) q₁ ∘ e₁ .bot) δ₁') λ a' →
       bind (F _) ((step (F _) q₂ ∘ e₂ .bot) δ₂') λ b' →
       ret (a' , b')
     )
-  ≡⟨ Eq.cong (bind (F _) (foldr _⊗_ ⊤ Δ .Φ δ)) (funext (λ δ' → Eq.cong (step (F _) q₁) (Eq.sym (step/comm {A .₀} {F _} {q₂} {e₁ .bot (permute s δ' .proj₁)})))) ⟩
-    bind (F _) (foldr _⊗_ ⊤ Δ .Φ δ)
+  ≡⟨ Eq.cong (bind (F _) (Tensorfy Δ .Φ δ)) (funext (λ δ' → Eq.cong (step (F _) q₁) (Eq.sym (step/comm {A .₀} {F _} {q₂} {e₁ .bot (permute s δ' .proj₁)})))) ⟩
+    bind (F _) (Tensorfy Δ .Φ δ)
       (step (F _) (q₁ + q₂) ∘
       (λ δ' →
         let δ₁' , δ₂' = permute s δ' in
@@ -497,7 +507,7 @@ giralf .tensor {Δ} {Δ₁} {Δ₂} {q₁} {q₂} {A} {B} s e₁ e₂ .square δ
           ret (a , b)
       ))
   ∎
-giralf .split {Δ} {Δ₁} {Δ₂} {q₁} {q₂} {A} {B} {C} s e e' = s ⨾ e ⨾□ᵐ lemma
+giralf .split {Δ₂ = Δ₂} {q₂ = q₂} {A} {B} {C} s e e' = s ⨾ e ⨾□ᵐ lemma
   where
     lemma : MultiSquare ((giralf ._⊗ᵍ_ A B) ∷ Δ₂) q₂ C
     lemma .top ((a , b) , δ₂) = e' .top (a , (b , δ₂))
