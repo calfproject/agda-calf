@@ -108,7 +108,7 @@ record Giralf : Set₁ where
     foldrᵍ : ∀ {Δ q A B}
       → Δ ⨾ q ⊢ listᵍ A
       → cmpᵍ B
-      → (A ∷ B ∷ []) ⨾ zero ⊢ B
+      → (B ∷ A ∷ []) ⨾ zero ⊢ B
       → Δ ⨾ q ⊢ B
 
   variable
@@ -513,55 +513,70 @@ giralf .split {Δ₂ = Δ₂} {q₂ = q₂} {A} {B} {C} s e e' = s ⨾ e ⨾□�
 
 giralf .listᵍ A .₀ = list (A .₀)
 giralf .listᵍ A .Φ = foldr (λ a e →
-    bind (F _) (A .Φ a) λ a' →
     bind (F _) e λ e' →
+    bind (F _) (A .Φ a) λ a' →
     ret (a' ∷ e')
   ) (ret [])
 giralf .nil .top triv = ret []
 giralf .nil .bot triv = ret []
 giralf .nil .square triv = ≤⁻-refl
-giralf .cons {Δ = Δ} {A = A} s eₕ eₜ = Eq.subst (λ q → Square (Tensorfy Δ) q (giralf .listᵍ A)) (+-identityʳ _) ((giralf .tensor s eₕ eₜ) ⨾□ lemma)
+giralf .cons {Δ = Δ} {A = A} s eₕ eₜ = Eq.subst (λ q → MultiSquare Δ q (giralf .listᵍ A)) (+-identityʳ _) ((giralf .tensor s eₕ eₜ) ⨾□ lemma)
   where
     lemma : Square (A ⊗ giralf .listᵍ A) zero (giralf .listᵍ A)
     lemma .top (h , t) = ret (h ∷ t)
     lemma .bot (h , t) = ret (h ∷ t)
-    lemma .square (h , t) = ≤⁻-reflexive (Eq.cong (bind (F _) (A .Φ h)) (funext λ h' → Eq.cong (bind (F _) (giralf .listᵍ A .Φ t)) (funext λ t' → Eq.cong ret (Eq.cong₂ _∷_ refl refl))))
+    lemma .square (h , t) = {!   !}
+    -- ≤⁻-reflexive (Eq.cong (bind (F _) (giralf .listᵍ A .Φ t)) (funext λ t' → Eq.cong (bind (F _) (A .Φ h)) (funext λ h' → Eq.cong ret (Eq.cong₂ _∷_ refl refl))))
 giralf .foldrᵍ {A = A} {B = B} e e[] e∷ = Eq.subst (λ q → Square _ q _) (+-identityʳ _) (e ⨾□ lemma)
   where
     lemma : Square (giralf .listᵍ A) zero B
-    lemma .top = foldr (λ x ih → bind (F _) ih (λ ih' → e∷ .top (x , (ih' , triv)))) (e[] .top triv)
-    lemma .bot = foldr (λ x ih → bind (F _) ih (λ ih' → e∷ .bot (x , (ih' , triv)))) (e[] .bot triv)
+    lemma .top = foldr (λ x ih → bind (F _) ih (λ ih' → e∷ .top (ih' , x , triv))) (e[] .top triv)
+    lemma .bot = foldr (λ x ih → bind (F _) ih (λ ih' → e∷ .bot (ih' , x , triv))) (e[] .bot triv)
     lemma .square [] = e[] .square triv
-    lemma .square (h ∷ t) = {!   !}
--- giralf .foldrᵍ {p = p} {X = X} {A = A} e e[] e∷ = Eq.subst (λ q → Square _ q _) (+-identityʳ _) (e ⨾□ lemma)
---   where
---     lemma : Square (giralf-list p X) zero A
---     lemma .top = foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv)
---     lemma .bot = foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv)
---     lemma .square [] = e[] .square triv
---     lemma .square (x ∷ l) =
---       let open ≤⁻-Reasoning (F _) in
---       begin
---         bind (F _)
---           (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv) l)
---           (λ a → bind (F _) (e∷ x .top a) (A .Φ))
---       ≲⟨ bind-monoʳ-≤⁻ (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv) l) (λ a → e∷ x .square a) ⟩
---         bind (F _)
---           (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv) l)
---           (λ a → bind (F _) (A .Φ a) (step (F _) p ∘ e∷ x .bot))
---       ≡⟨⟩
---         bind (F _)
---           (bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .top)) (e[] .top triv) l) (A .Φ))
---           (step (F _) p ∘ e∷ x .bot)
---       ≲⟨ bind-monoˡ-≤⁻ (step (F _) p ∘ e∷ x .bot) (lemma .square l) ⟩
---         bind (F _)
---           (foldr (λ x ih → bind (F (list X)) ih (λ l → step (F _) p (ret (x ∷ l)))) (ret []) l)
---           (λ l → bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv) l) (step (F _) p ∘ e∷ x .bot))
---       ≡⟨
---         Eq.cong (bind (F _) (foldr (λ x ih → bind (F (list X)) ih (λ l → step (F _) p (ret (x ∷ l)))) (ret []) l)) (funext λ l →
---         step/comm {_} {F (A .₀)} {p} {foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv) l} {e∷ x .bot})
---       ⟨
---         bind (F _)
---           (foldr (λ x ih → bind (F (list X)) ih (λ l → step (F _) p (ret (x ∷ l)))) (ret []) l)
---           (λ l → step (F _) p (bind (F _) (foldr (λ x ih → bind (F _) ih (e∷ x .bot)) (e[] .bot triv) l) (e∷ x .bot)))
---       ∎
+    lemma .square (h ∷ t) =
+      let open ≤⁻-Reasoning (F _) in
+      begin
+        (
+          bind (F _) (lemma .top t) λ b →
+          bind (F _) (e∷ .top (b , h , triv))  (B .Φ)
+        )
+      ≲⟨ bind-monoʳ-≤⁻ (lemma .top t) (λ b → e∷ .square (b , h , triv)) ⟩
+        (
+          bind (F _) (lemma .top t) λ b →
+          bind (F _) ((B ⊗ (A ⊗ ⊤)) .Φ (b , h , triv)) (e∷ .bot)
+        )
+      ≡⟨⟩
+        bind (F _)
+          (bind (F _) (lemma .top t) (B .Φ))
+          (
+            λ b' →
+            bind (F _) (A .Φ h) λ h' →
+            e∷ .bot (b' , h' , triv)
+          )
+      ≲⟨ bind-monoˡ-≤⁻ (λ b' → bind (F _) (A .Φ h) _) (lemma .square t) ⟩
+        bind (F _)
+          (bind (F _) (giralf .listᵍ A .Φ t) (lemma .bot))
+          (
+            λ b' →
+            bind (F _) (A .Φ h) λ h' →
+            e∷ .bot (b' , h' , triv)
+          )
+      ≡⟨⟩
+        (
+          bind (F _) (giralf .listᵍ A .Φ t) λ t' →
+          bind (F _) (lemma .bot t') λ b' →
+          bind (F _) (A .Φ h) λ h' →
+          e∷ .bot (b' , h' , triv)
+        )
+      ≡⟨ {! commutativity of effects !} ⟩
+        (
+          bind (F _) (giralf .listᵍ A .Φ t) λ t' →
+          bind (F _) (A .Φ h) λ h' →
+          bind (F _) (lemma .bot t') λ b' →
+          e∷ .bot (b' , h' , triv)
+        )
+      ≡⟨⟩
+        bind (F _)
+          (giralf .listᵍ A .Φ (h ∷ t))
+          (lemma .bot)
+      ∎
