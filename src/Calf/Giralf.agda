@@ -24,6 +24,9 @@ postulate
   step/comm : ∀ {X A c e f} →  -- commutativity of step with other effects
     bind {X} A (step (F X) c e) f ≡ bind A e (step A c ∘ f)
   zero/min : (c : ℂ) → zero ≤ c
+  bind/comm : ∀ {X Y A e₁ e₂} → (f : val X → val Y → cmp A) →
+      bind {X} A e₁ (λ x → bind {Y} A e₂ (λ y → f x y))
+    ≡ bind {Y} A e₂ (λ y → bind {X} A e₁ (λ x → f x y))
 
 open import Data.List.Base as List
 module Permutation where
@@ -235,7 +238,7 @@ permute-Φ {Δ} {Δ₁} {Δ₂} (Permutation.swapa s) δ f =
       bind (F _) (Tensorfy Δ₂ .Φ δ₂) λ δ₂' →
       f δ₁' δ₂'
     )
-  ≡⟨ {! commute effects !} ⟩
+  ≡⟨ bind/comm {Tensorfy Δ₁ .₀} {Tensorfy Δ₂ .₀} {F _} {Tensorfy Δ₁ .Φ δ₁} {Tensorfy Δ₂ .Φ δ₂} _ ⟩
     (
       bind (F _) (Tensorfy Δ₂ .Φ δ₂) λ δ₂' →
       bind (F _) (Tensorfy Δ₁ .Φ δ₁) λ δ₁' →
@@ -512,11 +515,11 @@ giralf .split {Δ₂ = Δ₂} {q₂ = q₂} {A} {B} {C} s e e' = s ⨾ e ⨾□�
 
 
 giralf .listᵍ A .₀ = list (A .₀)
-giralf .listᵍ A .Φ = foldr (λ a e →
-    bind (F _) e λ e' →
-    bind (F _) (A .Φ a) λ a' →
-    ret (a' ∷ e')
-  ) (ret [])
+giralf .listᵍ A .Φ [] = ret []
+giralf .listᵍ A .Φ (h ∷ t) =
+  bind (F _) (A .Φ h) λ h' →
+  bind (F _) (giralf .listᵍ A .Φ t) λ t' →
+  ret (h' ∷ t')
 giralf .nil .top triv = ret []
 giralf .nil .bot triv = ret []
 giralf .nil .square triv = ≤⁻-refl
@@ -525,13 +528,14 @@ giralf .cons {Δ = Δ} {A = A} s eₕ eₜ = Eq.subst (λ q → MultiSquare Δ q
     lemma : Square (A ⊗ giralf .listᵍ A) zero (giralf .listᵍ A)
     lemma .top (h , t) = ret (h ∷ t)
     lemma .bot (h , t) = ret (h ∷ t)
-    lemma .square (h , t) = {!   !}
-    -- ≤⁻-reflexive (Eq.cong (bind (F _) (giralf .listᵍ A .Φ t)) (funext λ t' → Eq.cong (bind (F _) (A .Φ h)) (funext λ h' → Eq.cong ret (Eq.cong₂ _∷_ refl refl))))
+    lemma .square (h , t) = ≤⁻-refl
 giralf .foldrᵍ {A = A} {B = B} e e[] e∷ = Eq.subst (λ q → Square _ q _) (+-identityʳ _) (e ⨾□ lemma)
   where
     lemma : Square (giralf .listᵍ A) zero B
-    lemma .top = foldr (λ x ih → bind (F _) ih (λ ih' → e∷ .top (ih' , x , triv))) (e[] .top triv)
-    lemma .bot = foldr (λ x ih → bind (F _) ih (λ ih' → e∷ .bot (ih' , x , triv))) (e[] .bot triv)
+    lemma .top [] = e[] .top triv
+    lemma .top (h ∷ t) = bind (F _) (lemma .top t) (λ b' → e∷ .top (b' , h , triv))
+    lemma .bot [] = e[] .bot triv
+    lemma .bot (h ∷ t) = bind (F _) (lemma .bot t) (λ b' → e∷ .bot (b' , h , triv))
     lemma .square [] = e[] .square triv
     lemma .square (h ∷ t) =
       let open ≤⁻-Reasoning (F _) in
@@ -570,8 +574,8 @@ giralf .foldrᵍ {A = A} {B = B} e e[] e∷ = Eq.subst (λ q → Square _ q _) (
         )
       ≡⟨ {! commutativity of effects !} ⟩
         (
-          bind (F _) (giralf .listᵍ A .Φ t) λ t' →
           bind (F _) (A .Φ h) λ h' →
+          bind (F _) (giralf .listᵍ A .Φ t) λ t' →
           bind (F _) (lemma .bot t') λ b' →
           e∷ .bot (b' , h' , triv)
         )
