@@ -73,21 +73,24 @@ record Giralf : Set₁ where
 
     id : ∀ {A} → [ A ] ⨾ zero ⊢ A
 
-    -- Fᵍ : 𝓥 → 𝓒
-    -- retᵍ : ∀ {X} → valᵍ X → cmpᵍ (Fᵍ X)
-    -- bindᵍ : ∀ {Δ q X A} → Δ ⨾ q ⊢ (Fᵍ X) → (valᵍ X → cmpᵍ A) → Δ ⨾ q ⊢ A
-
-    -- Uᵍ : 𝓒 → 𝓥
-    -- suspᵍ : {!   !}
-    -- forceᵍ : {!   !}
-
   cmpᵍ : 𝓒 → Set
   cmpᵍ A = [] ⨾ zero ⊢ A
 
   _⊸_ : 𝓒 → 𝓒 → 𝓥
   A ⊸ B = meta⁺ ([ A ] ⨾ zero ⊢ B)
 
+  Uᵍ : 𝓒 → 𝓥
+  Uᵍ A = meta⁺ (cmpᵍ A)
+
   field
+    Fᵍ : 𝓥 → 𝓒
+    retᵍ : ∀ {X} → valᵍ X → cmpᵍ (Fᵍ X)
+    bindᵍ : ∀ {Δ Δ₁ Δ₂ q₁ q₂ X A}
+      → Δ ≡ Δ₁ ⊔ Δ₂
+      → Δ₁ ⨾ q₁ ⊢ (Fᵍ X)
+      → (valᵍ X → Δ₂ ⨾ q₂ ⊢ A)
+      → Δ ⨾ (q₁ + q₂) ⊢ A
+
     charge : ∀ {Δ q A} (p : ℂ) → Δ ⨾ q ⊢ A → Δ ⨾ q + p ⊢ A
     weaken : ∀ {Δ q p A} → Δ ⨾ q ⊢ A → Δ ⨾ q + p ⊢ A
 
@@ -115,8 +118,8 @@ record Giralf : Set₁ where
     _⊗ᵍ_ : 𝓒 → 𝓒 → 𝓒
     tensorᵍ : ∀ {Δ Δ₁ Δ₂ q₁ q₂ A B}
       → Δ ≡ Δ₁ ⊔ Δ₂
-      → Δ₁ ⨾ q₁ ⊢ A
-      → Δ₂ ⨾ q₂ ⊢ B
+      → Δ₁ ⨾ q₁ ⊢ B
+      → Δ₂ ⨾ q₂ ⊢ A
       → Δ ⨾ (q₁ + q₂) ⊢ (A ⊗ᵍ B)
     splitᵍ : ∀ {Δ Δ₁ Δ₂ q₁ q₂ A B C}
       → Δ ≡ Δ₁ ⊔ Δ₂
@@ -128,8 +131,8 @@ record Giralf : Set₁ where
     nilᵍ : ∀ {A} → cmpᵍ (listᵍ A)
     consᵍ : ∀ {Δ Δ₁ Δ₂ q₁ q₂ A}
       → Δ ≡ Δ₁ ⊔ Δ₂
-      → Δ₁ ⨾ q₁ ⊢ A
-      → Δ₂ ⨾ q₂ ⊢ listᵍ A
+      → Δ₁ ⨾ q₁ ⊢ listᵍ A
+      → Δ₂ ⨾ q₂ ⊢ A
       → Δ ⨾ (q₁ + q₂) ⊢ listᵍ A
     foldrᵍ : ∀ {Δ q A B}
       → Δ ⨾ q ⊢ listᵍ A
@@ -287,6 +290,10 @@ _⨾_⨾□ᵐ_ : ∀ {Δ Δ₁ Δ₂ q₁ q₂ A B} → Permutation._≡_⊔_ �
   ∎
 
 
+giralf-list : PotentialFunction → PotentialFunction
+giralf-list A .₀ = list (A .₀)
+giralf-list A .Φᶜ = foldr (λ h ih → (A .Φᶜ h) + ih) zero
+
 
 open Giralf
 giralf : Giralf
@@ -300,12 +307,17 @@ giralf .id .top (a , _) = ret a
 giralf .id .bot (a , _) = a
 giralf .id .square _ = ≤⁻-reflexive (Eq.cong (λ c → step (F _) c (ret _)) (Eq.sym (+-identityʳ _)))
 
--- giralf .Fᵍ = {!   !}
--- giralf .retᵍ = {!   !}
--- giralf .bindᵍ = {!   !}
--- giralf .Uᵍ = {!   !}
--- giralf .suspᵍ = {!   !}
--- giralf .forceᵍ = {!   !}
+giralf .Fᵍ X .₀ = X
+giralf .Fᵍ X .Φᶜ _ = zero
+giralf .retᵍ x .top triv = ret x
+giralf .retᵍ x .bot triv = x
+giralf .retᵍ x .square triv = ≤⁻-refl
+giralf .bindᵍ {Δ₂ = Δ₂} {q₂ = q₂} {X} {A} s e e' = s ⨾ e ⨾□ᵐ lemma
+  where
+    lemma : MultiSquare ((giralf .Fᵍ X) ∷ Δ₂) q₂ A
+    lemma .top (x , δ₂) = e' x .top δ₂
+    lemma .bot (x , δ₂) = e' x .bot δ₂
+    lemma .square (x , δ₂) = ≤⁻-trans (e' x .square δ₂) (≤⁻-reflexive (Eq.cong (λ c → step (F _) c (ret _)) (Eq.cong (_+ q₂) (Eq.sym (+-identityˡ _)))))
 
 giralf .charge {A = A} p e = e ⨾□ step-square
   where
@@ -329,11 +341,11 @@ giralf .store {A = A} p e = e ⨾□ store-square
     store-square .top = ret
     store-square .bot = Function.id
     store-square .square a = ≤⁻-reflexive (Eq.cong (λ c → step (F _) c (ret _)) (+-comm _ _))
-giralf .release {Δ₂ = Δ₂} {p} {q₂ = q₂} {A} {B} s e₁ e₂ = s ⨾ e₁ ⨾□ᵐ lemma
+giralf .release {Δ₂ = Δ₂} {p} {q₂ = q₂} {A} {B} s e e' = s ⨾ e ⨾□ᵐ lemma
   where
     lemma : MultiSquare ((giralf ._⋊ᵍ_ p A) ∷ Δ₂) q₂ B
-    lemma .top = e₂ .top
-    lemma .bot = e₂ .bot
+    lemma .top = e' .top
+    lemma .bot = e' .bot
     lemma .square (a , δ₂) =
       let helper a b c d =
             let open SolverHelp in let open Vec in
@@ -342,11 +354,11 @@ giralf .release {Δ₂ = Δ₂} {p} {q₂ = q₂} {A} {B} s e₁ e₂ = s ⨾ e�
       in
       let open ≤⁻-Reasoning (F _) in
       begin
-        bind (F _) (e₂ .top (a , δ₂)) (Φ B)
-      ≲⟨ e₂ .square (a , δ₂) ⟩
-         step (F _) (A .Φᶜ a + Tensorfy Δ₂ .Φᶜ δ₂ + (p + q₂)) (ret (e₂ .bot (a , δ₂)))
+        bind (F _) (e' .top (a , δ₂)) (Φ B)
+      ≲⟨ e' .square (a , δ₂) ⟩
+         step (F _) (A .Φᶜ a + Tensorfy Δ₂ .Φᶜ δ₂ + (p + q₂)) (ret (e' .bot (a , δ₂)))
       ≡⟨ Eq.cong (λ c → step (F _) c (ret _)) (helper _ _ _ _) ⟩
-        step (F _) (p + A .Φᶜ a + Tensorfy Δ₂ .Φᶜ δ₂ + q₂) (ret (e₂ .bot (a , δ₂)))
+        step (F _) (p + A .Φᶜ a + Tensorfy Δ₂ .Φᶜ δ₂ + q₂) (ret (e' .bot (a , δ₂)))
       ∎
 
 giralf ._⊎ᵍ_ A B .₀ = A .₀ ⊎⁺ B .₀
@@ -372,29 +384,29 @@ giralf .⊤ᵍ = ⊤
 giralf .trivᵍ = id□
 
 giralf ._⊗ᵍ_ = _⊗_
-giralf .tensorᵍ {Δ} {Δ₁} {Δ₂} {q₁} {q₂} {A} {B} s e₁ e₂ = s ⨾ e₁ ⨾□ᵐ lemma
+giralf .tensorᵍ {Δ₂ = Δ₂} {q₂ = q₂} {A} {B} s e₁ e₂ = s ⨾ e₁ ⨾□ᵐ lemma
   where
-    lemma : MultiSquare (A ∷ Δ₂) q₂ (A ⊗ B)
-    lemma .top (a , δ₂) = bind (F _) (e₂ .top δ₂) λ b → ret (a , b)
-    lemma .bot (a , δ₂) = (a , e₂ .bot δ₂)
-    lemma .square (a , δ₂) =
+    lemma : MultiSquare (B ∷ Δ₂) q₂ (A ⊗ B)
+    lemma .top (b , δ₂) = bind (F _) (e₂ .top δ₂) λ a → ret (a , b)
+    lemma .bot (b , δ₂) = (e₂ .bot δ₂ , b)
+    lemma .square (b , δ₂) =
       let helper a b c =
             let open SolverHelp in let open Vec in
             prove 3 ((v₁ ⊕ v₂) ⊕ v₃) ((v₃ ⊕ v₁) ⊕ v₂) (a ∷ b ∷ c ∷ [])
       in
       let open ≤⁻-Reasoning (F _) in
       begin
-        bind (F _) (e₂ .top δ₂) (λ b → Φ (A ⊗ B) (a , b))
-      ≡⟨ Eq.cong (bind (F _) (e₂ .top δ₂)) (funext λ _ → Eq.cong (λ c → step (F _) c (ret _)) (+-comm _ _)) ⟩
+        bind (F _) (e₂ .top δ₂) (λ a → Φ (A ⊗ B) (a , b))
+      ≡⟨⟩
         bind (F _)
-          (bind (F _) (e₂ .top δ₂) (Φ B))
-          (λ b → step (F _) (A .Φᶜ a) (ret (a , b)))
+          (bind (F _) (e₂ .top δ₂) (Φ A))
+          (λ a → step (F _) (B .Φᶜ b) (ret (a , b)))
       ≲⟨ bind-monoˡ-≤⁻ (λ b → step (F _) _ (ret _)) (e₂ .square δ₂) ⟩
         bind (F _)
-          (step (F (B .₀)) (Tensorfy Δ₂ .Φᶜ δ₂ + q₂) (ret (e₂ .bot δ₂)))
-          (λ b → step (F _) (A .Φᶜ a) (ret (a , b)))
+          (step (F (A .₀)) (Tensorfy Δ₂ .Φᶜ δ₂ + q₂) (ret (e₂ .bot δ₂)))
+          (λ a → step (F _) (B .Φᶜ b) (ret (a , b)))
       ≡⟨ Eq.cong (λ c → step (F _) c (ret _)) (helper _ _ _) ⟩
-        step (F _) (A .Φᶜ a + Tensorfy Δ₂ .Φᶜ δ₂ + q₂) (ret (a , e₂ .bot δ₂))
+        step (F _) (B .Φᶜ b + Tensorfy Δ₂ .Φᶜ δ₂ + q₂) (ret (e₂ .bot δ₂ , b))
       ∎
 giralf .splitᵍ {Δ₂ = Δ₂} {q₂ = q₂} {A} {B} {C} s e e' = s ⨾ e ⨾□ᵐ lemma
   where
@@ -405,21 +417,19 @@ giralf .splitᵍ {Δ₂ = Δ₂} {q₂ = q₂} {A} {B} {C} s e e' = s ⨾ e ⨾�
       ≤⁻-trans (e' .square (a , (b , δ₂))) (≤⁻-reflexive (Eq.cong (λ c → step (F _) c (ret _)) (Eq.cong (_+ q₂) (Eq.sym (+-assoc _ _ _)))))
 
 
-giralf .listᵍ A .₀ = list (A .₀)
-giralf .listᵍ A .Φᶜ [] = zero
-giralf .listᵍ A .Φᶜ (h ∷ t) = (A .Φᶜ h) + (giralf .listᵍ A .Φᶜ t)
+giralf .listᵍ = giralf-list
 giralf .nilᵍ .top triv = ret []
 giralf .nilᵍ .bot triv = []
 giralf .nilᵍ .square triv = ≤⁻-refl
-giralf .consᵍ {Δ = Δ} {A = A} s eₕ eₜ = Eq.subst (λ q → MultiSquare Δ q (giralf .listᵍ A)) (+-identityʳ _) ((giralf .tensorᵍ s eₕ eₜ) ⨾□ lemma)
+giralf .consᵍ {Δ = Δ} {A = A} s eₜ eₕ = Eq.subst (λ q → MultiSquare Δ q (giralf-list A)) (+-identityʳ _) ((giralf .tensorᵍ s eₜ eₕ) ⨾□ lemma)
   where
-    lemma : Square (A ⊗ giralf .listᵍ A) zero (giralf .listᵍ A)
+    lemma : Square (A ⊗ giralf-list A) zero (giralf-list A)
     lemma .top (h , t) = ret (h ∷ t)
     lemma .bot (h , t) = h ∷ t
     lemma .square (h , t) = ≤⁻-refl
 giralf .foldrᵍ {A = A} {B = B} e e[] e∷ = Eq.subst (λ q → Square _ q _) (+-identityʳ _) (e ⨾□ lemma)
   where
-    lemma : Square (giralf .listᵍ A) zero B
+    lemma : Square (giralf-list A) zero B
     lemma .top [] = e[] .top triv
     lemma .top (h ∷ t) = bind (F _) (lemma .top t) (λ b' → e∷ .top (b' , h , triv))
     lemma .bot [] = e[] .bot triv
