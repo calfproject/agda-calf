@@ -60,5 +60,5 @@ module ExamplesCompiled = Examples giralf
 -- hit C-u C-u C-c C-d (for proof type) or C-c C-n (for proof term) in hole
 norm-ex₁ = {! ExamplesCompiled.ex₁ .Square.square triv  !}
 norm-ex₂ = {! ExamplesCompiled.ex₂ .Square.square triv  !}
-norm-double = {! ExamplesCompiled.double 5 .Square.square (1 ∷ 2 ∷ 3 ∷ [])  !}
-norm-ex₃ = {! ExamplesCompiled.ex₃ .Square.square (inj₁ triv) !}
+norm-double = {! ExamplesCompiled.double 5 .Square.square (((ret 1) ∷ (ret 2) ∷ (ret 3) ∷ []) , triv) !}
+norm-ex₃ = {! ExamplesCompiled.ex₃ .Square.square ((inj₁ triv) , triv) !}
