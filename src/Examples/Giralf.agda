@@ -27,13 +27,13 @@ module Examples (impl : Giralf) where
   ex₁ = charge 87 refl (store 413 refl trivᵍ)
 
   ex₂ : [] ⨾ 2 ⊢ listᵍ (1 ⋊ᵍ ⊤ᵍ)
-  ex₂ = consᵍ all-right refl (store 1 refl trivᵍ) (consᵍ all-right refl (store 1 refl trivᵍ) nilᵍ)
+  ex₂ = consᵍ all-left refl (store 1 refl trivᵍ) (consᵍ all-left refl (store 1 refl trivᵍ) nilᵍ)
 
   double : (p : ℂ) → val (listᵍ ((p + p + 1) ⋊ᵍ (Fᵍ X)) ⊸ listᵍ (p ⋊ᵍ (Fᵍ X)))
   double p =
     let helper a =
           let open SolverHelp in
-          prove 1 (v₁ ⊕ v₁) ((id ⊕ (id ⊕ v₁)) ⊕ (id ⊕ v₁))
+          prove 1 (v₁ ⊕ v₁) ((id ⊕ v₁) ⊕ ((id ⊕ v₁) ⊕ id))
           Vec.[ a ]
     in
     foldrᵍ idᵍ nilᵍ (
@@ -41,9 +41,9 @@ module Examples (impl : Giralf) where
       idᵍ (
         bindᵍ (left _ all-right) (Eq.sym (+-identityˡ _)) idᵍ (λ x →
           charge 1 refl (
-            consᵍ all-left (helper p)
+            consᵍ all-right (helper p)
               (store p refl (retᵍ x))
-              (consᵍ all-left refl (store p refl (retᵍ x)) idᵍ)
+              (consᵍ all-right refl (store p refl (retᵍ x)) idᵍ)
           )
         )
       )
