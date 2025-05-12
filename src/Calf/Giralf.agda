@@ -1,8 +1,60 @@
 {-# OPTIONS --rewriting --allow-unsolved-metas #-}
 
 open import Algebra.Cost
+open import Relation.Binary using (IsPreorder)
+open import Relation.Binary.PropositionalEquality as Eq using (_≡_; refl; module ≡-Reasoning)
 
-module Calf.Giralf (costMonoid : CostMonoid) where
+module Calf.Giralf (ℂᶜ : Set) (zeroᶜ : ℂᶜ) (_+ᶜ_ : ℂᶜ → ℂᶜ → ℂᶜ) (isCommutativeMonoid : IsCommutativeMonoid ℂᶜ _+ᶜ_ zeroᶜ) where
+
+record _≤Temporal_ (c c' : ℂᶜ) : Set where
+  field
+    difference : ℂᶜ
+    proof : c +ᶜ difference ≡ c'
+
+isPreorder : IsPreorder _≡_ _≤Temporal_
+isPreorder .IsPreorder.isEquivalence = Eq.isEquivalence
+isPreorder .IsPreorder.reflexive refl ._≤Temporal_.difference = zeroᶜ
+isPreorder .IsPreorder.reflexive refl ._≤Temporal_.proof = IsCommutativeMonoid.identityʳ ℂᶜ isCommutativeMonoid _
+isPreorder .IsPreorder.trans x≤y y≤z ._≤Temporal_.difference = x≤y ._≤Temporal_.difference +ᶜ y≤z ._≤Temporal_.difference
+isPreorder .IsPreorder.trans {x} {y} {z} x≤y y≤z ._≤Temporal_.proof =
+  let open ≡-Reasoning in
+  begin
+    x +ᶜ (x≤y ._≤Temporal_.difference +ᶜ y≤z ._≤Temporal_.difference)
+  ≡⟨ IsCommutativeMonoid.assoc ℂᶜ isCommutativeMonoid _ _ _ ⟨
+    (x +ᶜ x≤y ._≤Temporal_.difference) +ᶜ y≤z ._≤Temporal_.difference
+  ≡⟨ Eq.cong (_+ᶜ _) (_≤Temporal_.proof x≤y) ⟩
+    y +ᶜ y≤z ._≤Temporal_.difference
+  ≡⟨ _≤Temporal_.proof y≤z ⟩
+    z
+  ∎
+
+open import Algebra.Bundles using (CommutativeSemigroup)
+
+commutativeSemigroup : CommutativeSemigroup _ _
+commutativeSemigroup .CommutativeSemigroup.Carrier = ℂᶜ
+commutativeSemigroup .CommutativeSemigroup._≈_ = _≡_
+commutativeSemigroup .CommutativeSemigroup._∙_ = _+ᶜ_
+commutativeSemigroup .CommutativeSemigroup.isCommutativeSemigroup = IsCommutativeMonoid.isCommutativeSemigroup ℂᶜ isCommutativeMonoid
+
+open import Algebra.Properties.CommutativeSemigroup commutativeSemigroup using (interchange)
+
+costMonoid : CostMonoid
+costMonoid .CostMonoid.ℂ = ℂᶜ
+costMonoid .CostMonoid.zero = zeroᶜ
+costMonoid .CostMonoid._+_ = _+ᶜ_
+costMonoid .CostMonoid._≤_ = _≤Temporal_
+costMonoid .CostMonoid.isCostMonoid .IsCostMonoid.isMonoid = IsCommutativeMonoid.isMonoid isCommutativeMonoid
+costMonoid .CostMonoid.isCostMonoid .IsCostMonoid.isPreorder = isPreorder
+costMonoid .CostMonoid.isCostMonoid .IsCostMonoid.isMonotone .IsMonotone.∙-mono-≤ x≤y u≤v ._≤Temporal_.difference = x≤y ._≤Temporal_.difference +ᶜ u≤v ._≤Temporal_.difference
+costMonoid .CostMonoid.isCostMonoid .IsCostMonoid.isMonotone .IsMonotone.∙-mono-≤ {x} {y} {u} {v} x≤y u≤v ._≤Temporal_.proof =
+  let open ≡-Reasoning in
+  begin
+    (x +ᶜ u) +ᶜ (x≤y ._≤Temporal_.difference +ᶜ u≤v ._≤Temporal_.difference)
+  ≡⟨ interchange x u (x≤y ._≤Temporal_.difference) (u≤v ._≤Temporal_.difference) ⟩
+    (x +ᶜ x≤y ._≤Temporal_.difference) +ᶜ (u +ᶜ u≤v ._≤Temporal_.difference)
+  ≡⟨ Eq.cong₂ _+ᶜ_ (x≤y ._≤Temporal_.proof) (u≤v ._≤Temporal_.proof) ⟩
+    y +ᶜ v
+  ∎
 
 open CostMonoid costMonoid
 
@@ -18,23 +70,21 @@ open import Calf.Data.List
 
 open import Function using (_∘_; const)
 
+zero/min : (c : ℂ) → zero ≤ c
+zero/min c ._≤Temporal_.difference = c
+zero/min c ._≤Temporal_.proof = +-identityˡ c
 
-open import Relation.Binary.PropositionalEquality as Eq using (_≡_; refl)
-postulate
-  zero/min : (c : ℂ) → zero ≤ c
-  +-comm : (a : ℂ) → (b : ℂ) → a + b ≡ b + a
++-comm : (a b : ℂ) → a + b ≡ b + a
++-comm = IsCommutativeMonoid.comm isCommutativeMonoid
 
 open import Algebra using (CommutativeMonoid)
-open import Level using (0ℓ)
 
-comm-monoid : CommutativeMonoid 0ℓ 0ℓ
-comm-monoid = record
-  { Carrier = ℂ
-  ; _≈_  = _≡_
-  ; _∙_ = _+_
-  ; ε = zero
-  ; isCommutativeMonoid = record { isMonoid = isMonoid ; comm = +-comm }
-  }
+comm-monoid : CommutativeMonoid _ _
+comm-monoid .CommutativeMonoid.Carrier = ℂ
+comm-monoid .CommutativeMonoid._≈_ = _≡_
+comm-monoid .CommutativeMonoid._∙_ = _+_
+comm-monoid .CommutativeMonoid.ε = zero
+comm-monoid .CommutativeMonoid.isCommutativeMonoid = isCommutativeMonoid
 
 import Data.Fin as Fin
 open import Algebra.Solver.CommutativeMonoid comm-monoid using (prove; Expr; var; _⊕_)

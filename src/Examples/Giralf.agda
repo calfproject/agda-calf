@@ -7,9 +7,14 @@ open import Algebra.Cost
 costMonoid = cm-rev ℕ-CostMonoid
 open CostMonoid costMonoid
 open import Data.Nat using (_*_)
+open import Data.Nat.Properties using (+-comm)
+
+isCommutativeMonoid : IsCommutativeMonoid ℂ _+_ zero
+isCommutativeMonoid .IsCommutativeMonoid.isMonoid = isMonoid
+isCommutativeMonoid .IsCommutativeMonoid.comm x y = +-comm y x
 
 open import Calf costMonoid
-open import Calf.Giralf costMonoid
+open import Calf.Giralf ℂ zero _+_ isCommutativeMonoid
 open import Calf.Data.Product
 open import Calf.Data.Sum
 open import Calf.Data.List
