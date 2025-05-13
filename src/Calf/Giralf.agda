@@ -241,6 +241,10 @@ record Square (A : PotentialFunction) (q : ℂ) (B : PotentialFunction) : Set wh
 open Square
 
 
+step-ret-congˡ : ∀ {X c d} → (v : val X) → (c ≡ d) → (step (F X) c (ret v) ≡ step (F X) d (ret v))
+step-ret-congˡ v = Eq.cong (λ c → step (F _) c (ret v))
+
+
 id□ : ∀ {A} → Square A zero A
 id□ .top = ret
 id□ .bot = Function.id
@@ -259,7 +263,7 @@ _⋎_⨾□_ : ∀ {A B C p q r} → r ≡ p + q → Square A p B → Square B q
     bind (F _) (bind (F _) (e .top a) (Φ B)) (step (F _) q ∘ ret ∘ f .bot)
   ≲⟨ bind-monoˡ-≤⁻ (step (F _) q ∘ ret ∘ f .bot) (e .square a) ⟩
     bind {B .₀} (F _) (bind (F _) (Φ A a) (step (F _) p ∘ ret ∘ e .bot)) (step (F _) q ∘ ret ∘ f .bot)
-  ≡⟨ Eq.cong (λ c → step (F _) c (ret _)) (Eq.trans (+-assoc _ _ _) (Eq.cong (_ +_) (Eq.sym s))) ⟩
+  ≡⟨ step-ret-congˡ _ (Eq.trans (+-assoc _ _ _) (Eq.cong (_ +_) (Eq.sym s))) ⟩
     step (F _) (A .Φᶜ a + r) (ret (f .bot (e .bot a)))
   ∎
 
@@ -340,7 +344,7 @@ _⨾_⋎_⨾□ᵐ_ : ∀ {Δ Δ₁ Δ₂ q q₁ q₂ A B} → _≡_⊔_ Δ Δ�
     bind (F _) (e .top δ₁) (λ a → bind (F _) (f .top (a , δ₂)) (Φ B))
   ≲⟨ bind-monoʳ-≤⁻ (e .top δ₁) (λ a → f .square (a , δ₂)) ⟩
     bind (F _) (e .top δ₁) (λ a → step (F _) (A .Φᶜ a + Tensorfy Δ₂ .Φᶜ δ₂ + q₂) (ret (f .bot (a , δ₂))))
-  ≡⟨ Eq.cong (bind (F _) (e .top δ₁)) (funext (λ a → Eq.cong (λ c → step (F _) c (ret (f .bot (a , δ₂)))) (+-assoc _ _ _))) ⟩
+  ≡⟨ Eq.cong (bind (F _) (e .top δ₁)) (funext (λ a → step-ret-congˡ _ (+-assoc _ _ _))) ⟩
     bind (F _) (bind (F _) (e .top δ₁) (Φ A)) (λ a → step (F _) (Tensorfy Δ₂ .Φᶜ δ₂ + q₂) (ret (f .bot (a , δ₂))))
   ≲⟨ bind-monoˡ-≤⁻ (λ a' → step (F _) _ (ret _)) (e .square δ₁) ⟩
     bind {A .₀} (F _)
@@ -350,11 +354,11 @@ _⨾_⋎_⨾□ᵐ_ : ∀ {Δ Δ₁ Δ₂ q q₁ q₂ A B} → _≡_⊔_ Δ Δ�
     step (F _)
       (Tensorfy Δ₁ .Φᶜ δ₁ + q₁ + (Tensorfy Δ₂ .Φᶜ δ₂ + q₂))
       (ret (f .bot (e .bot δ₁ , δ₂)))
-  ≡⟨ Eq.cong (λ c → step (F _) c (ret (f .bot (e .bot δ₁ , δ₂)))) (helper _ _ _ _) ⟩
+  ≡⟨ step-ret-congˡ _ (helper _ _ _ _) ⟩
     step (F _)
       ((Tensorfy Δ₁ .Φᶜ δ₁ + Tensorfy Δ₂ .Φᶜ δ₂) + (q₁ + q₂))
       (ret (f .bot (e .bot δ₁ , δ₂)))
-  ≡⟨ Eq.cong (λ c → step (F _) c (ret (f .bot (e .bot δ₁ , δ₂)))) (Eq.cong₂ _+_ (permute-Φ s δ) (Eq.sym t)) ⟩
+  ≡⟨ step-ret-congˡ _ (Eq.cong₂ _+_ (permute-Φ s δ) (Eq.sym t)) ⟩
     step (F _)
       (Tensorfy Δ .Φᶜ δ + q)
       (ret (f .bot (e .bot δ₁ , δ₂)))
@@ -376,7 +380,7 @@ giralf ._⨾_⊢_ = MultiSquare
 -- Can we use id□ somehow instead?
 giralf .idᵍ .top (a , _) = ret a
 giralf .idᵍ .bot (a , _) = a
-giralf .idᵍ .square _ = ≤⁻-reflexive (Eq.cong (λ c → step (F _) c (ret _)) (Eq.sym (+-identityʳ _)))
+giralf .idᵍ .square _ = ≤⁻-reflexive (step-ret-congˡ _ (Eq.sym (+-identityʳ _)))
 
 giralf .Fᵍ X .₀ = X
 giralf .Fᵍ X .Φᶜ _ = zero
@@ -388,14 +392,14 @@ giralf .bindᵍ {Δ₂ = Δ₂} {q₂ = q₂} {X} {A} s t e e' = s ⨾ t ⋎ e �
     lemma : MultiSquare ((giralf .Fᵍ X) ∷ Δ₂) q₂ A
     lemma .top (x , δ₂) = e' x .top δ₂
     lemma .bot (x , δ₂) = e' x .bot δ₂
-    lemma .square (x , δ₂) = ≤⁻-trans (e' x .square δ₂) (≤⁻-reflexive (Eq.cong (λ c → step (F _) c (ret _)) (Eq.cong (_+ q₂) (Eq.sym (+-identityˡ _)))))
+    lemma .square (x , δ₂) = ≤⁻-trans (e' x .square δ₂) (≤⁻-reflexive (step-ret-congˡ _ (Eq.cong (_+ q₂) (Eq.sym (+-identityˡ _)))))
 
 giralf .charge {A = A} p t e = t ⋎ e ⨾□ step-square
   where
     step-square : Square A p A
     step-square .top = step (F _) p ∘ ret
     step-square .bot = Function.id
-    step-square .square a = ≤⁻-reflexive (Eq.cong (λ c → step (F _) c (ret _)) (+-comm _ _))
+    step-square .square a = ≤⁻-reflexive (step-ret-congˡ _ (+-comm _ _))
 
 giralf .weaken {p = p} {A = A} t e = t ⋎ e ⨾□ weaken-square
   where
@@ -411,7 +415,7 @@ giralf .store {A = A} p t e = t ⋎ e ⨾□ store-square
     store-square : Square A p (giralf ._⋊ᵍ_ p A)
     store-square .top = ret
     store-square .bot = Function.id
-    store-square .square a = ≤⁻-reflexive (Eq.cong (λ c → step (F _) c (ret _)) (+-comm _ _))
+    store-square .square a = ≤⁻-reflexive (step-ret-congˡ _ (+-comm _ _))
 giralf .release {Δ₂ = Δ₂} {p} {q₂ = q₂} {A} {B} s t e e' = s ⨾ t ⋎ e ⨾□ᵐ lemma
   where
     lemma : MultiSquare ((giralf ._⋊ᵍ_ p A) ∷ Δ₂) q₂ B
@@ -428,7 +432,7 @@ giralf .release {Δ₂ = Δ₂} {p} {q₂ = q₂} {A} {B} s t e e' = s ⨾ t ⋎
         bind (F _) (e' .top (a , δ₂)) (Φ B)
       ≲⟨ e' .square (a , δ₂) ⟩
          step (F _) (A .Φᶜ a + Tensorfy Δ₂ .Φᶜ δ₂ + (p + q₂)) (ret (e' .bot (a , δ₂)))
-      ≡⟨ Eq.cong (λ c → step (F _) c (ret _)) (helper _ _ _ _) ⟩
+      ≡⟨ step-ret-congˡ _ (helper _ _ _ _) ⟩
         step (F _) (p + A .Φᶜ a + Tensorfy Δ₂ .Φᶜ δ₂ + q₂) (ret (e' .bot (a , δ₂)))
       ∎
 
@@ -476,7 +480,7 @@ giralf .tensorᵍ {Δ₁ = Δ₁} {q₁ = q₁} {A = A} {B} s t e₁ e₂ = (swi
         bind (F _)
           (step (F (A .₀)) (Tensorfy Δ₁ .Φᶜ δ₁ + q₁) (ret (e₁ .bot δ₁)))
           (λ a → step (F _) (B .Φᶜ b) (ret (a , b)))
-      ≡⟨ Eq.cong (λ c → step (F _) c (ret _)) (helper _ _ _) ⟩
+      ≡⟨ step-ret-congˡ _ (helper _ _ _) ⟩
         step (F _) (B .Φᶜ b + Tensorfy Δ₁ .Φᶜ δ₁ + q₁) (ret (e₁ .bot δ₁ , b))
       ∎
 giralf .splitᵍ {Δ₂ = Δ₂} {q₂ = q₂} {A} {B} {C} s t e e' = s ⨾ t ⋎ e ⨾□ᵐ lemma
@@ -485,7 +489,7 @@ giralf .splitᵍ {Δ₂ = Δ₂} {q₂ = q₂} {A} {B} {C} s t e e' = s ⨾ t �
     lemma .top ((a , b) , δ₂) = e' .top (a , (b , δ₂))
     lemma .bot ((a , b) , δ₂) = e' .bot (a , (b , δ₂))
     lemma .square ((a , b) , δ₂) =
-      ≤⁻-trans (e' .square (a , (b , δ₂))) (≤⁻-reflexive (Eq.cong (λ c → step (F _) c (ret _)) (Eq.cong (_+ q₂) (Eq.sym (+-assoc _ _ _)))))
+      ≤⁻-trans (e' .square (a , (b , δ₂))) (≤⁻-reflexive (step-ret-congˡ _ (Eq.cong (_+ q₂) (Eq.sym (+-assoc _ _ _)))))
 
 
 giralf .listᵍ = giralf-list
@@ -518,7 +522,7 @@ giralf .foldrᵍ {A = A} {B = B} e e[] e∷ = (Eq.sym (+-identityʳ _)) ⋎ e �
           bind (F _) (lemma .top t) λ b →
           bind (F _) (Φ (B ⊗ (A ⊗ ⊤)) (b , h , triv)) (ret ∘ e∷ .bot)
         )
-      ≡⟨ Eq.cong (bind (F _) (lemma .top t)) (funext λ b → Eq.cong (λ c → step (F _) c (ret _)) (Eq.cong (B .Φᶜ b +_) (+-identityʳ _))) ⟩
+      ≡⟨ Eq.cong (bind (F _) (lemma .top t)) (funext λ b → step-ret-congˡ _ (Eq.cong (B .Φᶜ b +_) (+-identityʳ _))) ⟩
         bind (F _)
           (bind (F _) (lemma .top t) (Φ B))
           (
@@ -534,7 +538,7 @@ giralf .foldrᵍ {A = A} {B = B} e e[] e∷ = (Eq.sym (+-identityʳ _)) ⋎ e �
             bind (F _) (Φ A h) λ h' →
             ret (e∷ .bot (b' , h' , triv))
           )
-      ≡⟨ Eq.cong (λ c → step (F _) c (ret (lemma .bot (h ∷ t)))) (+-comm _ _) ⟩
+      ≡⟨ step-ret-congˡ _ (+-comm _ _) ⟩
         bind (F _)
           (Φ (giralf .listᵍ A) (h ∷ t))
           (ret ∘ lemma .bot)
