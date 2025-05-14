@@ -32,32 +32,32 @@ module Examples (impl : Giralf) where
   ex₁ = charge 87 refl (store 413 refl trivᵍ)
 
   ex₂ : [] ⨾ 2 ⊢ listᵍ (1 ⋊ᵍ ⊤ᵍ)
-  ex₂ = consᵍ all-left refl (store 1 refl trivᵍ) (consᵍ all-left refl (store 1 refl trivᵍ) nilᵍ)
+  ex₂ = consᵍ all-left refl (store 1 refl (trivᵍ {0})) (consᵍ all-left refl (store 1 refl (trivᵍ {0})) (nilᵍ {0}))
 
-  double : (p : ℂ) → val (listᵍ ((p + p + 1) ⋊ᵍ (Fᵍ X)) ⊸ listᵍ (p ⋊ᵍ (Fᵍ X)))
+  double : (p : ℂ) → val (listᵍ ((p + p + 2) ⋊ᵍ (Fᵍ X)) ⊸ listᵍ (p ⋊ᵍ (Fᵍ X)))
   double p =
     let helper a =
-          let open SolverHelp in
-          prove 1 (v₁ ⊕ v₁) ((id ⊕ v₁) ⊕ ((id ⊕ v₁) ⊕ id))
-          Vec.[ a ]
+          let open SolverHelp in let open Vec in
+          prove 2 ((v₁ ⊕ v₁) ⊕ v₂) ((v₂ ⊕ v₁) ⊕ (id ⊕ v₁))
+          (a ∷ 1 ∷ [])
     in
-    foldrᵍ idᵍ nilᵍ (
+    foldrᵍ (idᵍ {0}) (nilᵍ {0}) (
       release (right _ all-left) refl
-      idᵍ (
-        bindᵍ (left _ all-right) (Eq.sym (+-identityˡ _)) idᵍ (λ x →
+      (idᵍ {0}) (
+        bindᵍ (left _ all-right) (Eq.sym (+-identityˡ _)) (idᵍ {0}) (λ x →
           charge 1 refl (
             consᵍ all-right (helper p)
-              (store p refl (retᵍ x))
-              (consᵍ all-right refl (store p refl (retᵍ x)) idᵍ)
+              (store p refl (retᵍ {1} x))
+              (consᵍ all-right refl (store p refl (retᵍ {0} x)) (idᵍ {0}))
           )
         )
       )
     )
 
   ex₃ : val (((413 ⋊ᵍ ⊤ᵍ) ⊎ᵍ (312 ⋊ᵍ ⊤ᵍ)) ⊸ ((150 ⋊ᵍ ⊤ᵍ) ⊎ᵍ (100 ⋊ᵍ ⊤ᵍ)))
-  ex₃ = caseᵍ all-left refl idᵍ
-          (release all-left refl idᵍ (charge 313 refl (inj₂ᵍ (store 100 refl idᵍ))))
-          (release all-left refl idᵍ (charge 162 refl (inj₁ᵍ (store 150 refl idᵍ))))
+  ex₃ = caseᵍ all-left refl (idᵍ {0})
+          (release all-left refl (idᵍ {0}) (charge 313 refl (inj₂ᵍ (store 100 refl (idᵍ)))))
+          (release all-left refl (idᵍ {0}) (charge 162 refl (inj₁ᵍ (store 150 refl (idᵍ)))))
 
 
 module ExamplesCompiled = Examples giralf
