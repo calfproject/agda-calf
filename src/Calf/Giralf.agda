@@ -77,6 +77,9 @@ zero/min c ._≤Temporal_.proof = +-identityˡ c
 +-comm : (a b : ℂ) → a + b ≡ b + a
 +-comm = IsCommutativeMonoid.comm isCommutativeMonoid
 
++-mono : ∀ {a a' b b'} → (a ≤ a') → (b ≤ b') → ((a + b) ≤ (a' + b'))
++-mono = isCostMonoid .IsCostMonoid.isMonotone .IsMonotone.∙-mono-≤
+
 open import Algebra using (CommutativeMonoid)
 
 comm-monoid : CommutativeMonoid _ _
@@ -99,26 +102,6 @@ module SolverHelp where
   v₃ {n} = var (Fin.suc (Fin.suc Fin.zero))
   v₄ : ∀ {n : ℕ} → Expr (ℕ.suc (ℕ.suc (ℕ.suc (ℕ.suc n))))
   v₄ {n} = var (Fin.suc (Fin.suc (Fin.suc Fin.zero)))
-
-
-open _≤Temporal_
-+-mono : ∀ {a a' b b'} → (a ≤ a') → (b ≤ b') → ((a + b) ≤ (a' + b'))
-+-mono {a} {a'} {b} {b'} m n = record { difference = m .difference + n .difference ; proof = proof' }
-  where
-    proof' : (a + b) + (m .difference + n .difference) ≡ a' + b'
-    proof' =
-      let helper a b c d =
-            let open SolverHelp in
-            prove 4 ((v₁ ⊕ v₂) ⊕ (v₃ ⊕ v₄)) ((v₁ ⊕ v₃) ⊕ (v₂ ⊕ v₄))
-            (a Vec.∷ b Vec.∷ c Vec.∷ d Vec.∷ Vec.[])
-      in
-      let open ≡-Reasoning in begin
-        (a + b) + (m .difference + n .difference)
-      ≡⟨ helper _ _ _ _ ⟩
-        (a + m .difference) + (b + n .difference)
-      ≡⟨ Eq.cong₂ _+_ (m .proof) (n .proof) ⟩
-        a' + b'
-      ∎
 
 
 open import Data.List.Base as List
