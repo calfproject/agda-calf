@@ -5,21 +5,16 @@ module Examples.Giralf where
 open import Algebra.Cost
 open import Relation.Binary using (IsPreorder)
 
-costMonoid = cm-rev ℕ-CostMonoid
-open CostMonoid costMonoid
+open CostMonoid ℕ-CostMonoid
 open import Data.Nat using (_*_)
 open import Data.Nat.Properties using (+-comm)
 
-isCommutativeMonoid : IsCommutativeMonoid ℂ _+_ zero
-isCommutativeMonoid .IsCommutativeMonoid.isMonoid = isMonoid
-isCommutativeMonoid .IsCommutativeMonoid.comm x y = +-comm y x
-
-open import Calf costMonoid
-open import Calf.Giralf ℂ zero _+_ isCommutativeMonoid as G
+open import Calf.Giralf ℂ zero _+_ (record { isMonoid = isMonoid ; comm = +-comm })
 open import Calf.Data.Product
 open import Calf.Data.Sum
 open import Calf.Data.List
 open import Data.List.Base as List
+open import Data.Product
 open import Relation.Binary.PropositionalEquality as Eq using (_≡_; refl)
 
 open import Algebra.Solver.CommutativeMonoid comm-monoid using (prove; Expr; var; id; _⊕_)
@@ -66,7 +61,7 @@ module Examples (impl : Giralf) where
   quadratic : [ listᵍ (0 , 1) ⊤ᵍ ] ⨾ 0 ⊢ ⊤ᵍ
   quadratic =
     foldrᵍ {Δ' = [ listᵍ (0 , 1) ⊤ᵍ ]} {q' = 0}
-      ({! to   !} , IsPreorder.refl G.isPreorder)
+      ({! to   !} , IsPreorder.refl (costMonoid .CostMonoid.isPreorder))
       (idᵍ {Δ = [ listᵍ (0 , 1) ⊤ᵍ ]} {q = 0} {!   !})
       (trivᵍ {Δ = []} {q = 0} {!   !})
       (checkᵍ {!   !} (idᵍ {!   !}) linear)
