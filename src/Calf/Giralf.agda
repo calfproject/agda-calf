@@ -6,57 +6,22 @@ open import Relation.Binary.PropositionalEquality as Eq using (_≡_; refl; modu
 
 module Calf.Giralf (ℂᶜ : Set) (zeroᶜ : ℂᶜ) (_+ᶜ_ : ℂᶜ → ℂᶜ → ℂᶜ) (isCommutativeMonoid : IsCommutativeMonoid ℂᶜ _+ᶜ_ zeroᶜ) where
 
-record _≤Temporal_ (c c' : ℂᶜ) : Set where
-  field
-    difference : ℂᶜ
-    proof : c +ᶜ difference ≡ c'
-
-isPreorder : IsPreorder _≡_ _≤Temporal_
-isPreorder .IsPreorder.isEquivalence = Eq.isEquivalence
-isPreorder .IsPreorder.reflexive refl ._≤Temporal_.difference = zeroᶜ
-isPreorder .IsPreorder.reflexive refl ._≤Temporal_.proof = IsCommutativeMonoid.identityʳ ℂᶜ isCommutativeMonoid _
-isPreorder .IsPreorder.trans x≤y y≤z ._≤Temporal_.difference = x≤y ._≤Temporal_.difference +ᶜ y≤z ._≤Temporal_.difference
-isPreorder .IsPreorder.trans {x} {y} {z} x≤y y≤z ._≤Temporal_.proof =
-  let open ≡-Reasoning in
-  begin
-    x +ᶜ (x≤y ._≤Temporal_.difference +ᶜ y≤z ._≤Temporal_.difference)
-  ≡⟨ IsCommutativeMonoid.assoc ℂᶜ isCommutativeMonoid _ _ _ ⟨
-    (x +ᶜ x≤y ._≤Temporal_.difference) +ᶜ y≤z ._≤Temporal_.difference
-  ≡⟨ Eq.cong (_+ᶜ _) (_≤Temporal_.proof x≤y) ⟩
-    y +ᶜ y≤z ._≤Temporal_.difference
-  ≡⟨ _≤Temporal_.proof y≤z ⟩
-    z
-  ∎
-
-open import Algebra.Bundles using (CommutativeSemigroup)
-
-commutativeSemigroup : CommutativeSemigroup _ _
-commutativeSemigroup .CommutativeSemigroup.Carrier = ℂᶜ
-commutativeSemigroup .CommutativeSemigroup._≈_ = _≡_
-commutativeSemigroup .CommutativeSemigroup._∙_ = _+ᶜ_
-commutativeSemigroup .CommutativeSemigroup.isCommutativeSemigroup = IsCommutativeMonoid.isCommutativeSemigroup ℂᶜ isCommutativeMonoid
-
-open import Algebra.Properties.CommutativeSemigroup commutativeSemigroup using (interchange)
+open IsCommutativeMonoid using (isMonoid; comm)
+open import Relation.Binary.Construct.MonoidNaturalOrder.Left _≡_ _+ᶜ_ zeroᶜ (isCommutativeMonoid .isMonoid)
+  using (∙-mono-≤; isPreorder) renaming (_≤_ to _≤ᵗ_; ≤-minimum to ≤ᵗ-minimum)
 
 costMonoid : CostMonoid
 costMonoid .CostMonoid.ℂ = ℂᶜ
 costMonoid .CostMonoid.zero = zeroᶜ
 costMonoid .CostMonoid._+_ = _+ᶜ_
-costMonoid .CostMonoid._≤_ = _≤Temporal_
-costMonoid .CostMonoid.isCostMonoid .IsCostMonoid.isMonoid = IsCommutativeMonoid.isMonoid isCommutativeMonoid
+costMonoid .CostMonoid._≤_ = _≤ᵗ_
+costMonoid .CostMonoid.isCostMonoid .IsCostMonoid.isMonoid = (isCommutativeMonoid .isMonoid)
 costMonoid .CostMonoid.isCostMonoid .IsCostMonoid.isPreorder = isPreorder
-costMonoid .CostMonoid.isCostMonoid .IsCostMonoid.isMonotone .IsMonotone.∙-mono-≤ x≤y u≤v ._≤Temporal_.difference = x≤y ._≤Temporal_.difference +ᶜ u≤v ._≤Temporal_.difference
-costMonoid .CostMonoid.isCostMonoid .IsCostMonoid.isMonotone .IsMonotone.∙-mono-≤ {x} {y} {u} {v} x≤y u≤v ._≤Temporal_.proof =
-  let open ≡-Reasoning in
-  begin
-    (x +ᶜ u) +ᶜ (x≤y ._≤Temporal_.difference +ᶜ u≤v ._≤Temporal_.difference)
-  ≡⟨ interchange x u (x≤y ._≤Temporal_.difference) (u≤v ._≤Temporal_.difference) ⟩
-    (x +ᶜ x≤y ._≤Temporal_.difference) +ᶜ (u +ᶜ u≤v ._≤Temporal_.difference)
-  ≡⟨ Eq.cong₂ _+ᶜ_ (x≤y ._≤Temporal_.proof) (u≤v ._≤Temporal_.proof) ⟩
-    y +ᶜ v
-  ∎
-
+costMonoid .CostMonoid.isCostMonoid .IsCostMonoid.isMonotone = record { ∙-mono-≤ = ∙-mono-≤ (isCommutativeMonoid .comm) }
 open CostMonoid costMonoid
+
++-comm : (a b : ℂ) → a + b ≡ b + a
++-comm = isCommutativeMonoid .comm
 
 
 open import Calf.Prelude
@@ -66,42 +31,32 @@ open import Calf.Step costMonoid
 open import Calf.Data.Product
 open import Calf.Data.Sum as Sum
 open import Calf.Data.List
-
-
+open import Data.Nat using (ℕ; z≤n; s≤s)
+open import Data.Vec as Vec using (Vec; replicate; toList)
 open import Function using (_∘_; const)
 
-zero/min : (c : ℂ) → zero ≤ c
-zero/min c ._≤Temporal_.difference = c
-zero/min c ._≤Temporal_.proof = +-identityˡ c
 
-+-comm : (a b : ℂ) → a + b ≡ b + a
-+-comm = IsCommutativeMonoid.comm isCommutativeMonoid
+module _ where
+  open import Algebra using (CommutativeMonoid)
+  comm-monoid : CommutativeMonoid _ _
+  comm-monoid .CommutativeMonoid.Carrier = ℂ
+  comm-monoid .CommutativeMonoid._≈_ = _≡_
+  comm-monoid .CommutativeMonoid._∙_ = _+_
+  comm-monoid .CommutativeMonoid.ε = zero
+  comm-monoid .CommutativeMonoid.isCommutativeMonoid = isCommutativeMonoid
 
-+-mono : ∀ {a a' b b'} → (a ≤ a') → (b ≤ b') → ((a + b) ≤ (a' + b'))
-+-mono = isCostMonoid .IsCostMonoid.isMonotone .IsMonotone.∙-mono-≤
-
-open import Algebra using (CommutativeMonoid)
-
-comm-monoid : CommutativeMonoid _ _
-comm-monoid .CommutativeMonoid.Carrier = ℂ
-comm-monoid .CommutativeMonoid._≈_ = _≡_
-comm-monoid .CommutativeMonoid._∙_ = _+_
-comm-monoid .CommutativeMonoid.ε = zero
-comm-monoid .CommutativeMonoid.isCommutativeMonoid = isCommutativeMonoid
-
-open import Data.Fin as Fin using (Fin)
-open import Algebra.Solver.CommutativeMonoid comm-monoid using (prove; Expr; var; id; _⊕_)
-open import Data.Nat.Base using (ℕ; z≤n; s≤s)
-open import Data.Vec.Base as Vec using (Vec; replicate; toList)
-module SolverHelp where
-  v₁ : ∀ {n : ℕ} → Expr (ℕ.suc n)
-  v₁ {n} = var (Fin.zero)
-  v₂ : ∀ {n : ℕ} → Expr (ℕ.suc (ℕ.suc n))
-  v₂ {n} = var (Fin.suc Fin.zero)
-  v₃ : ∀ {n : ℕ} → Expr (ℕ.suc (ℕ.suc (ℕ.suc n)))
-  v₃ {n} = var (Fin.suc (Fin.suc Fin.zero))
-  v₄ : ∀ {n : ℕ} → Expr (ℕ.suc (ℕ.suc (ℕ.suc (ℕ.suc n))))
-  v₄ {n} = var (Fin.suc (Fin.suc (Fin.suc Fin.zero)))
+  open import Data.Fin as Fin using (Fin)
+  open import Algebra.Solver.CommutativeMonoid comm-monoid using (Expr; var)
+  module SolverHelp where
+    v₁ : ∀ {n : ℕ} → Expr (ℕ.suc n)
+    v₁ {n} = var (Fin.zero)
+    v₂ : ∀ {n : ℕ} → Expr (ℕ.suc (ℕ.suc n))
+    v₂ {n} = var (Fin.suc Fin.zero)
+    v₃ : ∀ {n : ℕ} → Expr (ℕ.suc (ℕ.suc (ℕ.suc n)))
+    v₃ {n} = var (Fin.suc (Fin.suc Fin.zero))
+    v₄ : ∀ {n : ℕ} → Expr (ℕ.suc (ℕ.suc (ℕ.suc (ℕ.suc n))))
+    v₄ {n} = var (Fin.suc (Fin.suc (Fin.suc Fin.zero)))
+  open import Algebra.Solver.CommutativeMonoid comm-monoid using (prove; id; _⊕_) public
 
 
 open import Data.List.Base as List
@@ -272,7 +227,7 @@ open Square
 weaken-pot : ∀ {A} (q : ℂ) → Square A q A
 weaken-pot _ .top = ret
 weaken-pot _ .bot = Function.id
-weaken-pot {A} q .square a = bind-monoʳ-≤⁻ (Φ A a) (λ a → step-monoˡ-≤⁻ (ret a) (zero/min q))
+weaken-pot {A} q .square a = bind-monoʳ-≤⁻ (Φ A a) (λ a → step-monoˡ-≤⁻ (ret a) (≤ᵗ-minimum q))
 
 step-ret-congˡ : ∀ {X c d} → (v : val X) → (c ≡ d) → (step (F X) c (ret v) ≡ step (F X) d (ret v))
 step-ret-congˡ v = Eq.cong (λ c → step (F _) c (ret v))
@@ -389,7 +344,7 @@ module Perm-Split-Φ {n : ℕ} where
       foldr _+_ zero (All.reduce (λ {Aᵢ} ₀≡ᵢ → Aᵢ .Φᶜ (Eq.subst val ₀≡ᵢ a)) (s .₀≡))
       +
       Vec.foldr′ _+_ zero (VecAll.reduce (λ {Δᵢ} → Tensorfy Δᵢ .Φᶜ) (permute S δ))
-    ≲⟨ +-mono (s .shared a) (permute-Φ S δ) ⟩
+    ≲⟨ +-mono-≤ (s .shared a) (permute-Φ S δ) ⟩
       A .Φᶜ a + Tensorfy Δ .Φᶜ δ
     ≡⟨⟩
       Tensorfy (A ∷ Δ) .Φᶜ (a , δ)
@@ -524,7 +479,7 @@ _⋎_⨾□ᵐ_ : ∀ {Δ Δ₁ Δ₂ q q₁ q₂ A B}
     step (F _)
       ((Tensorfy Δ₁ .Φᶜ δ₁ + Tensorfy Δ₂ .Φᶜ δ₂) + (q₁ + q₂))
       (ret (f .bot (e .bot δ₁ , δ₂)))
-  ≲⟨ step-monoˡ-≤⁻ (ret _) (+-mono (split-Φ s δ) (≤-trans (≤-reflexive (Eq.cong (q₁ +_) (Eq.sym (+-identityʳ _)))) t)) ⟩
+  ≲⟨ step-monoˡ-≤⁻ (ret _) (+-mono-≤ (split-Φ s δ) (≤-trans (≤-reflexive (Eq.cong (q₁ +_) (Eq.sym (+-identityʳ _)))) t)) ⟩
     step (F _)
       (Tensorfy Δ .Φᶜ δ + q)
       (ret (f .bot (e .bot δ₁ , δ₂)))
@@ -538,7 +493,7 @@ _W_ : ∀ {Δ Δ' q q' A}
   → MultiSquare Δ q A
 ((s , _) W e) .top δ = e .top (weaken s δ)
 ((s , _) W e) .bot δ = e .bot  (weaken s δ)
-((s , t) W e) .square δ = ≤⁻-trans (e .square (weaken s δ)) (step-monoˡ-≤⁻ (ret _) (+-mono (weaken-Φ s δ) (≤-trans (≤-reflexive (Eq.sym (+-identityʳ _))) t)))
+((s , t) W e) .square δ = ≤⁻-trans (e .square (weaken s δ)) (step-monoˡ-≤⁻ (ret _) (+-mono-≤ (weaken-Φ s δ) (≤-trans (≤-reflexive (Eq.sym (+-identityʳ _))) t)))
 
 _Wₗ_ : ∀ {Δ q A}
   → Perm-Split._≡⋎ᵐ_ {n = 0} _≡⋎_ (Δ , q) Vec.[]
@@ -546,7 +501,7 @@ _Wₗ_ : ∀ {Δ q A}
   → MultiSquare Δ q A
 (_ Wₗ e) .top _ = e .top triv
 (_ Wₗ e) .bot _ = e .bot triv
-(_ Wₗ e) .square δ = ≤⁻-trans (e .square triv) (step-monoˡ-≤⁻ (ret _) (zero/min (_ + _)))
+(_ Wₗ e) .square δ = ≤⁻-trans (e .square triv) (step-monoˡ-≤⁻ (ret _) (≤ᵗ-minimum (_ + _)))
 
 
 giralf-list : ℂ × ℂ → PotentialFunction → PotentialFunction
