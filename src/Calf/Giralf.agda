@@ -74,6 +74,17 @@ module Perm-Split {E : Set} {n : ℕ} (_≡⋎_ : E → List E → Set) where
     let Δs , qs = Vec.unzip Δqs in
     (Δ ≡⊔ Δs) × (Vec.foldr′ _+_ zero qs ≤ q)
 
+module _ {E : Set} (_≡⋎_ : E → List E → Set) (h : ∀ x → x ≡⋎ (x ∷ [])) where
+  open Perm-Split {E} {1} _≡⋎_
+
+  id-perm-split : ∀ {Δq} → Δq ≡⋎ᵐ (Δq Vec.∷ Vec.[])
+  id-perm-split {Δq} .proj₁ = mylemma (Δq .proj₁)
+    where
+      mylemma : ∀ Δ → Δ ≡⊔ (Δ Vec.∷ Vec.[])
+      mylemma [] = base
+      mylemma (x ∷ Δ) = to (just x Vec.∷ Vec.[]) (h x) (mylemma Δ)
+  id-perm-split {Δq} .proj₂ = ≤-reflexive (+-identityʳ (Δq .proj₂))
+
 shift : ℂ × ℂ → ℂ × ℂ
 shift (p₁ , p₂) = (p₁ + p₂ , p₂)
 
@@ -89,9 +100,13 @@ record Giralf : Set₁ where
     _⨾_⊢_ : List 𝓒 → ℂ → 𝓒 → Set
 
     _≡ᶜ⋎_ : 𝓒 → List 𝓒 → Set
+    id-split : ∀ A → A ≡ᶜ⋎ [ A ]
 
   _≡⋎ᵐ_ : ∀ {n} → (List 𝓒 × ℂ) → Vec (List 𝓒 × ℂ) n → Set
   _≡⋎ᵐ_ = Perm-Split._≡⋎ᵐ_ _≡ᶜ⋎_
+
+  id-splits : ∀ {Δq} → Δq ≡⋎ᵐ (Δq Vec.∷ Vec.[])
+  id-splits = id-perm-split {𝓒} _≡ᶜ⋎_ id-split
 
   cmpᵍ : 𝓒 → Set
   cmpᵍ A = [] ⨾ zero ⊢ A
@@ -280,6 +295,9 @@ record _≡⋎_ (A : PotentialFunction) (As : List PotentialFunction) : Set wher
     shared : (a : val (A .₀)) → foldr _+_ zero (All.reduce (λ {Aᵢ} ₀≡ᵢ → Aᵢ .Φᶜ (Eq.subst val ₀≡ᵢ a)) ₀≡) ≤ A .Φᶜ a
 open _≡⋎_
 
+id-pot-split : ∀ x → x ≡⋎ (x ∷ [])
+id-pot-split x .₀≡ = refl All.∷ All.[]
+id-pot-split x .shared = ≤-reflexive ∘ +-identityʳ ∘ x .Φᶜ
 
 import Data.Vec.Relation.Unary.All as VecAll
 import Data.Maybe.Relation.Unary.All as MaybeAll
@@ -516,6 +534,7 @@ giralf : Giralf
 giralf .𝓒 = PotentialFunction
 giralf ._⨾_⊢_ = MultiSquare
 giralf ._≡ᶜ⋎_ = _≡⋎_
+giralf .id-split = id-pot-split
 
 giralf .idᵍ {Δ} {q} {A} s = s W lemma
   where
