@@ -32,6 +32,7 @@ open import Calf.Data.Product
 open import Calf.Data.Sum as Sum
 open import Calf.Data.List
 open import Data.Nat using (ℕ; z≤n; s≤s)
+open import Data.Fin as Fin using (Fin)
 open import Data.Vec as Vec using (Vec; replicate; toList)
 open import Function using (_∘_; const)
 
@@ -45,7 +46,6 @@ module _ where
   comm-monoid .CommutativeMonoid.ε = zero
   comm-monoid .CommutativeMonoid.isCommutativeMonoid = isCommutativeMonoid
 
-  open import Data.Fin as Fin using (Fin)
   open import Algebra.Solver.CommutativeMonoid comm-monoid using (Expr; var)
   module SolverHelp where
     v₁ : ∀ {n : ℕ} → Expr (ℕ.suc n)
@@ -64,18 +64,46 @@ open import Data.Maybe.Base as Maybe
 module Perm-Split {E : Set} {n : ℕ} (_≡⋎_ : E → List E → Set) where
   data _≡⊔_ : List E → Vec (List E) n → Set where
     base : [] ≡⊔ Vec.tabulate λ _ → []
-    to : ∀ {Δ Δs A} (As : Vec (Maybe E) n)
+    share : ∀ {Δ Δs A} (As : Vec (Maybe E) n)
       → A ≡⋎ catMaybes (toList As)
       → Δ ≡⊔ Δs
       → (A ∷ Δ) ≡⊔ Vec.zipWith (λ Δᵢ → maybe (_∷ Δᵢ) Δᵢ) Δs As
 
-  _≡⋎ᵐ_ : (List E × ℂ) → Vec (List E × ℂ) n → Set
-  (Δ , q) ≡⋎ᵐ Δqs =
+  to : ∀ {Δ Δs A A'} (m : Fin n)
+    → A ≡⋎ [ A' ]
+    → Δ ≡⊔ Δs
+    → (A ∷ Δ) ≡⊔ Vec.updateAt Δs m (A' ∷_)
+  to {Δ} {Δs} {A} {A'} m s S = Eq.subst ((A ∷ Δ) ≡⊔_) (lemma₁ {m = m} {Δs}) (share {A = A} (As m) (Eq.subst (A ≡⋎_) (lemma₂ {n} {m}) s) S)
+    where
+      As : ∀ {n} → Fin n → Vec (Maybe E) n
+      As m = Vec.updateAt (Vec.tabulate λ _ → nothing) m (λ _ → just A')
+
+      lemma₁' : ∀ {n} {Δs : Vec (List E) n} → Vec.zipWith (λ Δᵢ → maybe (_∷ Δᵢ) Δᵢ) Δs (Vec.tabulate {n} λ _ → nothing) ≡ Δs
+      lemma₁' {Δs = Vec.[]} = refl
+      lemma₁' {Δs = Δᵢ Vec.∷ Δs} = Eq.cong (Δᵢ Vec.∷_) (lemma₁' {Δs = Δs})
+
+      lemma₁ : ∀ {n m} {Δs : Vec (List E) n} → Vec.zipWith (λ Δᵢ → maybe (_∷ Δᵢ) Δᵢ) Δs (As {n} m) ≡ Vec.updateAt Δs m (A' ∷_)
+      lemma₁ {m = Fin.zero} {Δᵢ Vec.∷ Δs} = Eq.cong ((A' ∷ Δᵢ) Vec.∷_) (lemma₁' {Δs = Δs})
+      lemma₁ {m = Fin.suc m} {Δᵢ Vec.∷ Δs} = Eq.cong (Δᵢ Vec.∷_) (lemma₁ {m = m} {Δs})
+
+      lemma₂' : ∀ {n} → [] ≡ catMaybes (toList (Vec.tabulate {n} λ _ → nothing))
+      lemma₂' {ℕ.zero} = refl
+      lemma₂' {ℕ.suc n} = lemma₂' {n}
+
+      lemma₂ : ∀ {n m} → [ A' ] ≡ catMaybes (toList (As {n} m))
+      lemma₂ {ℕ.suc n} {Fin.zero} = Eq.cong (A' ∷_) (lemma₂' {n})
+      lemma₂ {ℕ.suc n} {Fin.suc m} = lemma₂ {n} {m}
+
+
+  _≡⊔ᵐ_ : (List E × ℂ) → Vec (List E × ℂ) n → Set
+  (Δ , q) ≡⊔ᵐ Δqs =
     let Δs , qs = Vec.unzip Δqs in
     (Δ ≡⊔ Δs) × (Vec.foldr′ _+_ zero qs ≤ q)
 
 shift : ℂ × ℂ → ℂ × ℂ
 shift (p₁ , p₂) = (p₁ + p₂ , p₂)
+
+import Data.Nat.GeneralisedArithmetic as GA
 
 record Giralf : Set₁ where
   𝓥 : Set
@@ -89,9 +117,10 @@ record Giralf : Set₁ where
     _⨾_⊢_ : List 𝓒 → ℂ → 𝓒 → Set
 
     _≡ᶜ⋎_ : 𝓒 → List 𝓒 → Set
+    greedy : ∀ {A} → A ≡ᶜ⋎ [ A ]
 
   _≡⋎ᵐ_ : ∀ {n} → (List 𝓒 × ℂ) → Vec (List 𝓒 × ℂ) n → Set
-  _≡⋎ᵐ_ = Perm-Split._≡⋎ᵐ_ _≡ᶜ⋎_
+  _≡⋎ᵐ_ = Perm-Split._≡⊔ᵐ_ _≡ᶜ⋎_
 
   cmpᵍ : 𝓒 → Set
   cmpᵍ A = [] ⨾ zero ⊢ A
@@ -187,12 +216,12 @@ record Giralf : Set₁ where
       → Δ₁ ⨾ q₁ ⊢ A
       → Δ₂ ⨾ q₂ ⊢ listᵍ (shift ps) A
       → Δ ⨾ q ⊢ listᵍ ps A
-    foldrᵍ : ∀ {Δ Δ' q q' A ps} {B : ℂ × ℂ → 𝓒}
+    foldrᵍ : ∀ {Δ Δ' q q' A ps} {B : ℕ → 𝓒}
       → (Δ , q) ≡⋎ᵐ Vec.[ (Δ' , q') ]
       → Δ' ⨾ q' ⊢ listᵍ ps A
-      → (∀ {rs} → cmpᵍ (B rs))
-      → (∀ {rs} → ((B (shift rs)) ∷ A ∷ []) ⨾ (rs .proj₁) ⊢ B rs)
-      → Δ ⨾ q ⊢ B ps
+      → (∀ {n} → cmpᵍ (B n))
+      → (∀ {n} → ((B (ℕ.suc n)) ∷ A ∷ []) ⨾ ((GA.fold ps shift n) .proj₁) ⊢ B n)
+      → Δ ⨾ q ⊢ B 0
 
   variable
     X Y Z : 𝓥
@@ -311,7 +340,7 @@ module Perm-Split-Φ {n : ℕ} where
 
   permute : ∀ {Δ Δs} → Δ ≡⊔ Δs → val (Tensorfy Δ .₀) → VecAll.All (λ Δᵢ → val (Tensorfy Δᵢ .₀)) Δs
   permute base triv = VAllP.tabulate⁺ λ _ → triv
-  permute (to {A = A} As s S) (a , δ) = VecAll.zipWith f (permute S δ) (as' A As (s .₀≡) a)
+  permute (share {A = A} As s S) (a , δ) = VecAll.zipWith f (permute S δ) (as' A As (s .₀≡) a)
 
   permute-Φ : ∀ {Δ Δs}
     → (S : Δ ≡⊔ Δs)
@@ -336,7 +365,7 @@ module Perm-Split-Φ {n : ℕ} where
       lemma₂ {ℕ.zero} = refl
       lemma₂ {ℕ.suc m} = Eq.trans (Eq.cong (zero +_) (lemma₂ {m})) (+-identityʳ _)
 
-  permute-Φ (to {Δ} {Δs} {A} As s S) (a , δ) =
+  permute-Φ (share {Δ} {Δs} {A} As s S) (a , δ) =
     let open ≤-Reasoning in
     begin
       Vec.foldr′ _+_ zero (VecAll.reduce (λ {Δᵢ} → Tensorfy Δᵢ .Φᶜ) (VecAll.zipWith f (permute S δ) (as' A As (s .₀≡) a)))
@@ -443,7 +472,7 @@ open Perm-Split-Φ₁
 
 -- cut
 _⋎_⨾□ᵐ_ : ∀ {Δ Δ₁ Δ₂ q q₁ q₂ A B}
-  → Perm-Split._≡⋎ᵐ_ {n = 2} _≡⋎_ (Δ , q) ((Δ₁ , q₁) Vec.∷ Vec.[ (Δ₂ , q₂) ])
+  → Perm-Split._≡⊔ᵐ_ {n = 2} _≡⋎_ (Δ , q) ((Δ₁ , q₁) Vec.∷ Vec.[ (Δ₂ , q₂) ])
   → MultiSquare Δ₁ q₁ A
   → MultiSquare (A ∷ Δ₂) q₂ B
   → MultiSquare Δ q B
@@ -488,7 +517,7 @@ _⋎_⨾□ᵐ_ : ∀ {Δ Δ₁ Δ₂ q q₁ q₂ A B}
 
 -- weaken
 _W_ : ∀ {Δ Δ' q q' A}
-  → Perm-Split._≡⋎ᵐ_ {n = 1} _≡⋎_ (Δ , q) Vec.[ (Δ' , q') ]
+  → Perm-Split._≡⊔ᵐ_ {n = 1} _≡⋎_ (Δ , q) Vec.[ (Δ' , q') ]
   → MultiSquare Δ' q' A
   → MultiSquare Δ q A
 ((s , _) W e) .top δ = e .top (weaken s δ)
@@ -496,7 +525,7 @@ _W_ : ∀ {Δ Δ' q q' A}
 ((s , t) W e) .square δ = ≤⁻-trans (e .square (weaken s δ)) (step-monoˡ-≤⁻ (ret _) (+-mono-≤ (weaken-Φ s δ) (≤-trans (≤-reflexive (Eq.sym (+-identityʳ _))) t)))
 
 _Wₗ_ : ∀ {Δ q A}
-  → Perm-Split._≡⋎ᵐ_ {n = 0} _≡⋎_ (Δ , q) Vec.[]
+  → Perm-Split._≡⊔ᵐ_ {n = 0} _≡⋎_ (Δ , q) Vec.[]
   → MultiSquare [] zero A
   → MultiSquare Δ q A
 (_ Wₗ e) .top _ = e .top triv
@@ -516,6 +545,9 @@ giralf : Giralf
 giralf .𝓒 = PotentialFunction
 giralf ._⨾_⊢_ = MultiSquare
 giralf ._≡ᶜ⋎_ = _≡⋎_
+giralf .greedy {A} .₀≡ = refl All.∷ All.[]
+giralf .greedy {A} .shared a = ≤-reflexive (+-identityʳ _)
+
 
 giralf .idᵍ {Δ} {q} {A} s = s W lemma
   where
@@ -670,54 +702,55 @@ giralf .consᵍ {Δ = Δ} {A = A} {ps} s eₕ eₜ = (Eq.sym (+-identityʳ _)) �
     lemma₂ .bot (h , t) = h ∷ t
     lemma₂ .square (h , t) = ≤⁻-refl
 
-giralf .foldrᵍ {A = A} {ps} {B} s e e[] e∷ = s W ((Eq.sym (+-identityʳ _)) ⋎ e ⨾□ lemma)
-  where
-    lemma : ∀ {rs} → Square (giralf-list rs A) zero (B rs)
-    lemma .top [] = e[] .top triv
-    lemma .top (h ∷ t) = bind (F _) (lemma .top t) (λ b' → e∷ .top ((b' , h , triv)))
-    lemma .bot [] = e[] .bot triv
-    lemma .bot (h ∷ t) = e∷ .bot (lemma .bot t , h , triv)
-    lemma .square [] = e[] .square triv
-    lemma {rs} .square (h ∷ t) =
-      let helper₁ a b c =
-            let open SolverHelp in
-            prove 3 ((v₁ ⊕ (v₂ ⊕ id)) ⊕ v₃) (v₁ ⊕ (v₂ ⊕ v₃))
-            (a Vec.∷ b Vec.∷ c Vec.∷ Vec.[])
-      in
-      let helper₂ a b c =
-            let open SolverHelp in
-            prove 3 (v₁ ⊕ (v₂ ⊕ v₃)) ((v₃ ⊕ v₂) ⊕ v₁)
-            (a Vec.∷ b Vec.∷ c Vec.∷ Vec.[])
-      in
-      let open ≤⁻-Reasoning (F _) in
-      begin
-        (
-          bind (F _) (lemma .top t) λ b →
-          bind (F _) (e∷ .top (b , h , triv)) (Φ (B rs))
-        )
-      ≲⟨ bind-monoʳ-≤⁻ (lemma .top t) (λ b → e∷ .square (b , h , triv)) ⟩
-        (
-          bind (F _) (lemma .top t) λ b →
-          bind (F _) (Φ ((B (shift rs)) ⊗ (A ⊗ ⊤)) (b , h , triv)) (step (F _) (rs .proj₁) ∘ ret ∘ e∷ .bot)
-        )
-      ≡⟨ Eq.cong (bind (F _) (lemma {shift rs} .top t)) (funext λ b → step-ret-congˡ _ (helper₁ _ _ _)) ⟩
-        bind (F _)
-          (bind (F _) (lemma .top t) (Φ (B (shift rs))))
-          (
-            λ b' →
-            bind (F _) (Φ A h) λ h' →
-            step (F _) (rs .proj₁) (ret (e∷ .bot (b' , h' , triv)))
-          )
-      ≲⟨ bind-monoˡ-≤⁻ (λ b' → bind (F _) (Φ A h) (λ h' → step (F _) (rs .proj₁) (ret (e∷ .bot (b' , h' , triv))))) (lemma {shift rs} .square t) ⟩
-        bind (F _)
-          (bind (F (B (shift rs) .₀)) (Φ (giralf-list (shift rs) A) t) (ret ∘ lemma .bot))
-          (
-            λ b' →
-            bind (F _) (Φ A h) λ h' →
-            step (F _) (rs .proj₁) (ret (e∷ .bot (b' , h' , triv)))
-          )
-      ≡⟨ step-ret-congˡ (lemma .bot (h ∷ t)) (helper₂ _ _ _) ⟩
-        bind (F _)
-          (Φ (giralf-list rs A) (h ∷ t))
-          (ret ∘ lemma .bot)
-      ∎
+giralf .foldrᵍ = {!   !}
+--  {A = A} {ps} {B} s e e[] e∷ = s W ((Eq.sym (+-identityʳ _)) ⋎ e ⨾□ lemma)
+--   where
+--     lemma : ∀ {rs} → Square (giralf-list rs A) zero (B rs)
+--     lemma .top [] = e[] .top triv
+--     lemma .top (h ∷ t) = bind (F _) (lemma .top t) (λ b' → e∷ .top ((b' , h , triv)))
+--     lemma .bot [] = e[] .bot triv
+--     lemma .bot (h ∷ t) = e∷ .bot (lemma .bot t , h , triv)
+--     lemma .square [] = e[] .square triv
+--     lemma {rs} .square (h ∷ t) =
+--       let helper₁ a b c =
+--             let open SolverHelp in
+--             prove 3 ((v₁ ⊕ (v₂ ⊕ id)) ⊕ v₃) (v₁ ⊕ (v₂ ⊕ v₃))
+--             (a Vec.∷ b Vec.∷ c Vec.∷ Vec.[])
+--       in
+--       let helper₂ a b c =
+--             let open SolverHelp in
+--             prove 3 (v₁ ⊕ (v₂ ⊕ v₃)) ((v₃ ⊕ v₂) ⊕ v₁)
+--             (a Vec.∷ b Vec.∷ c Vec.∷ Vec.[])
+--       in
+--       let open ≤⁻-Reasoning (F _) in
+--       begin
+--         (
+--           bind (F _) (lemma .top t) λ b →
+--           bind (F _) (e∷ .top (b , h , triv)) (Φ (B rs))
+--         )
+--       ≲⟨ bind-monoʳ-≤⁻ (lemma .top t) (λ b → e∷ .square (b , h , triv)) ⟩
+--         (
+--           bind (F _) (lemma .top t) λ b →
+--           bind (F _) (Φ ((B (shift rs)) ⊗ (A ⊗ ⊤)) (b , h , triv)) (step (F _) (rs .proj₁) ∘ ret ∘ e∷ .bot)
+--         )
+--       ≡⟨ Eq.cong (bind (F _) (lemma {shift rs} .top t)) (funext λ b → step-ret-congˡ _ (helper₁ _ _ _)) ⟩
+--         bind (F _)
+--           (bind (F _) (lemma .top t) (Φ (B (shift rs))))
+--           (
+--             λ b' →
+--             bind (F _) (Φ A h) λ h' →
+--             step (F _) (rs .proj₁) (ret (e∷ .bot (b' , h' , triv)))
+--           )
+--       ≲⟨ bind-monoˡ-≤⁻ (λ b' → bind (F _) (Φ A h) (λ h' → step (F _) (rs .proj₁) (ret (e∷ .bot (b' , h' , triv))))) (lemma {shift rs} .square t) ⟩
+--         bind (F _)
+--           (bind (F (B (shift rs) .₀)) (Φ (giralf-list (shift rs) A) t) (ret ∘ lemma .bot))
+--           (
+--             λ b' →
+--             bind (F _) (Φ A h) λ h' →
+--             step (F _) (rs .proj₁) (ret (e∷ .bot (b' , h' , triv)))
+--           )
+--       ≡⟨ step-ret-congˡ (lemma .bot (h ∷ t)) (helper₂ _ _ _) ⟩
+--         bind (F _)
+--           (Φ (giralf-list rs A) (h ∷ t))
+--           (ret ∘ lemma .bot)
+--       ∎
