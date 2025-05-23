@@ -115,6 +115,10 @@ module Perm-Split {E : Set} where
   all-left = switch all-right
 open Perm-Split
 
+shift : ℂ × ℂ → ℂ × ℂ
+shift (p₁ , p₂) = (p₁ + p₂ , p₂)
+
+import Data.Nat.GeneralisedArithmetic as GA
 
 record Giralf : Set₁ where
   𝓥 : Set
@@ -204,19 +208,20 @@ record Giralf : Set₁ where
       → (A ∷ B ∷ Δ₂) ⨾ q₂ ⊢ C
       → Δ ⨾ q ⊢ C
 
-    listᵍ : 𝓒 → 𝓒
-    nilᵍ : ∀ {q A} → cmpᵍ q (listᵍ A)
-    consᵍ : ∀ {Δ Δ₁ Δ₂ q q₁ q₂ A}
+    listᵍ : (ℂ × ℂ) → 𝓒 → 𝓒
+    nilᵍ : ∀ {q A ps} → cmpᵍ q (listᵍ ps A)
+    consᵍ : ∀ {Δ Δ₁ Δ₂ q q₁ q₂ A ps}
       → Δ ≡ Δ₁ ⊔ Δ₂
-      → q ≡ q₁ + q₂
+      → q ≡ q₁ + q₂ + ps .proj₁
       → Δ₁ ⨾ q₁ ⊢ A
-      → Δ₂ ⨾ q₂ ⊢ listᵍ A
-      → Δ ⨾ q ⊢ listᵍ A
-    foldrᵍ : ∀ {Δ q A B}
-      → Δ ⨾ q ⊢ listᵍ A
-      → cmpᵍ zero B
-      → (B ∷ A ∷ []) ⨾ zero ⊢ B
-      → Δ ⨾ q ⊢ B
+      → Δ₂ ⨾ q₂ ⊢ listᵍ (shift ps) A
+      → Δ ⨾ q ⊢ listᵍ ps A
+    foldrᵍ : ∀ {Δ q A ps}
+      → Δ ⨾ q ⊢ listᵍ ps A
+      → (B : ℕ → 𝓒)
+      → (∀ {n} → cmpᵍ zero (B n))
+      → (∀ {n} → ((B (ℕ.suc n)) ∷ A ∷ []) ⨾ ((GA.fold ps shift n) .proj₁) ⊢ B n)
+      → Δ ⨾ q ⊢ B 0
 
   variable
     X Y Z : 𝓥
@@ -359,9 +364,10 @@ _⨾_⋎_⨾□ᵐ_ : ∀ {Δ Δ₁ Δ₂ q q₁ q₂ A B} → _≡_⊔_ Δ Δ�
   ∎
 
 
-giralf-list : PotentialFunction → PotentialFunction
-giralf-list A .₀ = list (A .₀)
-giralf-list A .Φᶜ = foldr (λ h ih → (A .Φᶜ h) + ih) zero
+giralf-list : ℂ × ℂ → PotentialFunction → PotentialFunction
+giralf-list _ A .₀ = list (A .₀)
+giralf-list _ A .Φᶜ [] = zero
+giralf-list (p₁ , p₂) A .Φᶜ (h ∷ t) = p₁ + A .Φᶜ h + giralf-list (shift (p₁ , p₂)) A .Φᶜ t
 
 
 open Giralf
@@ -504,50 +510,52 @@ giralf .splitᵍ {Δ₂ = Δ₂} {q₂ = q₂} {A} {B} {C} s t e e' = s ⨾ t �
 -- Lists
 giralf .listᵍ = giralf-list
 giralf .nilᵍ {q} = Eq.sym (+-identityˡ _) ⋎ constᵍ [] ⨾□ weaken-pot q
-giralf .consᵍ {Δ = Δ} {A = A} s t eₕ eₜ = (Eq.sym (+-identityʳ _)) ⋎ (giralf .tensorᵍ s t eₕ eₜ) ⨾□ lemma
-  where
-    lemma : Square (A ⊗ giralf-list A) zero (giralf-list A)
-    lemma .top (h , t) = ret (h ∷ t)
-    lemma .bot (h , t) = h ∷ t
-    lemma .square (h , t) = ≤⁻-refl
-giralf .foldrᵍ {A = A} {B = B} e e[] e∷ = (Eq.sym (+-identityʳ _)) ⋎ e ⨾□ lemma
-  where
-    lemma : Square (giralf-list A) zero B
-    lemma .top [] = e[] .top triv
-    lemma .top (h ∷ t) = bind (F _) (lemma .top t) (λ b' → e∷ .top (b' , h , triv))
-    lemma .bot [] = e[] .bot triv
-    lemma .bot (h ∷ t) = e∷ .bot (lemma .bot t , h , triv)
-    lemma .square [] = e[] .square triv
-    lemma .square (h ∷ t) =
-      let open ≤⁻-Reasoning (F _) in
-      begin
-        (
-          bind (F _) (lemma .top t) λ b →
-          bind (F _) (e∷ .top (b , h , triv)) (Φ B)
-        )
-      ≲⟨ bind-monoʳ-≤⁻ (lemma .top t) (λ b → e∷ .square (b , h , triv)) ⟩
-        (
-          bind (F _) (lemma .top t) λ b →
-          bind (F _) (Φ (B ⊗ (A ⊗ ⊤)) (b , h , triv)) (ret ∘ e∷ .bot)
-        )
-      ≡⟨ Eq.cong (bind (F _) (lemma .top t)) (funext λ b → step-ret-congˡ _ (Eq.cong (B .Φᶜ b +_) (+-identityʳ _))) ⟩
-        bind (F _)
-          (bind (F _) (lemma .top t) (Φ B))
-          (
-            λ b' →
-            bind (F _) (Φ A h) λ h' →
-            ret (e∷ .bot (b' , h' , triv))
-          )
-      ≲⟨ bind-monoˡ-≤⁻ (λ b' → bind (F _) (Φ A h) (λ h' → ret (e∷ .bot (b' , h' , triv)))) (lemma .square t) ⟩
-        bind (F _)
-          (bind (F (B .₀)) (Φ (giralf .listᵍ A) t) (ret ∘ lemma .bot))
-          (
-            λ b' →
-            bind (F _) (Φ A h) λ h' →
-            ret (e∷ .bot (b' , h' , triv))
-          )
-      ≡⟨ step-ret-congˡ _ (+-comm _ _) ⟩
-        bind (F _)
-          (Φ (giralf .listᵍ A) (h ∷ t))
-          (ret ∘ lemma .bot)
-      ∎
+giralf .consᵍ = {!   !}
+-- {Δ = Δ} {A = A} s t eₕ eₜ = (Eq.sym (+-identityʳ _)) ⋎ (giralf .tensorᵍ s t eₕ eₜ) ⨾□ lemma
+--   where
+--     lemma : Square (A ⊗ giralf-list A) zero (giralf-list A)
+--     lemma .top (h , t) = ret (h ∷ t)
+--     lemma .bot (h , t) = h ∷ t
+--     lemma .square (h , t) = ≤⁻-refl
+giralf .foldrᵍ = {!   !}
+-- {A = A} {B = B} e e[] e∷ = (Eq.sym (+-identityʳ _)) ⋎ e ⨾□ lemma
+--   where
+--     lemma : Square (giralf-list A) zero B
+--     lemma .top [] = e[] .top triv
+--     lemma .top (h ∷ t) = bind (F _) (lemma .top t) (λ b' → e∷ .top (b' , h , triv))
+--     lemma .bot [] = e[] .bot triv
+--     lemma .bot (h ∷ t) = e∷ .bot (lemma .bot t , h , triv)
+--     lemma .square [] = e[] .square triv
+--     lemma .square (h ∷ t) =
+--       let open ≤⁻-Reasoning (F _) in
+--       begin
+--         (
+--           bind (F _) (lemma .top t) λ b →
+--           bind (F _) (e∷ .top (b , h , triv)) (Φ B)
+--         )
+--       ≲⟨ bind-monoʳ-≤⁻ (lemma .top t) (λ b → e∷ .square (b , h , triv)) ⟩
+--         (
+--           bind (F _) (lemma .top t) λ b →
+--           bind (F _) (Φ (B ⊗ (A ⊗ ⊤)) (b , h , triv)) (ret ∘ e∷ .bot)
+--         )
+--       ≡⟨ Eq.cong (bind (F _) (lemma .top t)) (funext λ b → step-ret-congˡ _ (Eq.cong (B .Φᶜ b +_) (+-identityʳ _))) ⟩
+--         bind (F _)
+--           (bind (F _) (lemma .top t) (Φ B))
+--           (
+--             λ b' →
+--             bind (F _) (Φ A h) λ h' →
+--             ret (e∷ .bot (b' , h' , triv))
+--           )
+--       ≲⟨ bind-monoˡ-≤⁻ (λ b' → bind (F _) (Φ A h) (λ h' → ret (e∷ .bot (b' , h' , triv)))) (lemma .square t) ⟩
+--         bind (F _)
+--           (bind (F (B .₀)) (Φ (giralf .listᵍ A) t) (ret ∘ lemma .bot))
+--           (
+--             λ b' →
+--             bind (F _) (Φ A h) λ h' →
+--             ret (e∷ .bot (b' , h' , triv))
+--           )
+--       ≡⟨ step-ret-congˡ _ (+-comm _ _) ⟩
+--         bind (F _)
+--           (Φ (giralf .listᵍ A) (h ∷ t))
+--           (ret ∘ lemma .bot)
+--       ∎
