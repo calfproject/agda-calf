@@ -21,6 +21,7 @@ open import Relation.Nullary using (Dec; yes; no)
 open import Relation.Binary 
 open import Relation.Binary.PropositionalEquality as Eq using (_≡_; refl; module ≡-Reasoning)
 
+open import Tactic.MonoidSolver using (solve; solve-macro)
 
 record BST : Set where
   field 
@@ -63,8 +64,6 @@ n+1≤m⇒n≤m n m p = let open Nat.≤-Reasoning in
     m
   ∎
 
-open import Tactic.MonoidSolver using (solve; solve-macro)
-
 splay : {n : ℕ} → Tree n → (i : val nat) → i < n → cmp (F (splayed n))
 splay (node {n₁} {n₂} l z r) i p with <-cmp i n₁ 
 ... | tri< i+1≤n₁ i≢n₁ b = 
@@ -74,16 +73,9 @@ splay (node {n₁} {n₂} l z r) i p with <-cmp i n₁
     ; (zig {n₁₁} {n₁₂} {n₁₃} a x b y c) → 
         let
           arithmetic : n₁₁ + 1 + (n₁₂ + 1 + (n₁₃ + 1 + n₂)) ≡ n₁₁ + 1 + n₁₂ + 1 + n₁₃ + 1 + n₂
-          arithmetic = let open Eq.≡-Reasoning in
-            begin
-              n₁₁ + 1 + (n₁₂ + 1 + (n₁₃ + 1 + n₂))
-            ≡⟨ {!  !} ⟩
-              (n₁₁ + 1) + (n₁₂ + 1 + (n₁₃ + 1 + n₂))
-            ≡⟨ {!   !} ⟩
-              {!   !}
-            ∎
+          arithmetic = {!   !}
         in
-          ret {!   !}
+          ret {!   !} 
     ; (zag a y b x c) → {!   !} } 
 ... | tri≈ _ i=n₁ _ = {!   !} 
 ... | tri> _ _ i>n₁ = {!   !}  
