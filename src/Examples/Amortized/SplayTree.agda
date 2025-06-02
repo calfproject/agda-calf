@@ -5,15 +5,15 @@ module Examples.Amortized.SplayTree where
 open import Algebra.Cost
 
 costMonoid = ℕ-CostMonoid
-open CostMonoid costMonoid
+open CostMonoid costMonoid renaming (_+_ to _⊕_)
 
 open import Calf costMonoid 
-open import Calf.Data.Nat renaming (_+_ to _⊕_)
+open import Calf.Data.Nat 
 open import Calf.Data.Product
 open import Calf.Data.List
 open import Calf.Data.IsBounded costMonoid
 
-open import Data.Nat using (ℕ; _<_; _≤?_; _<?_; zero)
+open import Data.Nat as Nat using (ℕ; _<_; _≤?_; _<?_; zero)
 open import Data.Nat.Properties as Nat using (module ≤-Reasoning)
 open import Data.Fin using (Fin; fromℕ<)
 open import Relation.Nullary using (Dec; yes; no)
@@ -53,11 +53,11 @@ data Splayed : ℕ → Set where
 splayed : val nat → tp⁺
 splayed n = meta⁺ (Splayed n)
 
-n+1≤m⇒n≤m : (n : val nat) (m : val nat) → suc n Data.Nat.≤ m → n Data.Nat.≤ m
+n+1≤m⇒n≤m : (n : val nat) (m : val nat) → suc n Nat.≤ m → n Nat.≤ m
 n+1≤m⇒n≤m n m p = let open Nat.≤-Reasoning in
   begin
     n
-  <⟨ s≤s (≤-reflexive refl) ⟩ 
+  <⟨ s≤s ≤-refl ⟩ 
     suc n
   ≤⟨ p ⟩
     m
