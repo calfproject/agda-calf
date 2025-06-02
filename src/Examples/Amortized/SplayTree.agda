@@ -14,6 +14,7 @@ open import Calf.Data.List
 open import Calf.Data.IsBounded costMonoid
 
 open import Data.Nat using (ℕ; _<_; _≤?_; _<?_; zero)
+open import Data.Nat.Properties as Nat using (module ≤-Reasoning)
 open import Data.Fin using (Fin; fromℕ<)
 open import Relation.Nullary using (Dec; yes; no)
 
@@ -51,6 +52,7 @@ splayed = Σ⁺ nat (λ n → meta⁺ (Splayed n))
 SplayTree : BST
 SplayTree .BST.T = tree
 SplayTree .BST.splay (n , leaf) i = ret (0 , (n , leaf))
-SplayTree .BST.splay (n , node {n₁} {n₂} l x r) i = {!   !}
+SplayTree .BST.splay (n , node {n₁} {n₂} l z r) i with Nat.<-cmp i n₁
+... | foo = {!   !}
 
 
