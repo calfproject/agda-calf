@@ -65,26 +65,65 @@ n+1≤m⇒n≤m n m p = let open Nat.≤-Reasoning in
   ∎
 
 splay : {n : ℕ} → Tree n → (i : val nat) → i < n → cmp (F (splayed n))
-splay (node {n₁} {n₂} l z r) i p with <-cmp i n₁ 
-... | tri< i+1≤n₁ i≢n₁ b = 
+splay (node {n₁} {n₂} l z r) i i<n with <-cmp i n₁ 
+... | tri< i+1≤n₁ i≢n₁ _ = 
   bind (F (splayed _)) 
   (splay l i (Nat.≤∧≢⇒< (n+1≤m⇒n≤m i n₁ i+1≤n₁) i≢n₁)) λ
     { (valid (node a x b)) → ret (zig a x b z r)
     ; (zig {n₁₁} {n₁₂} {n₁₃} a x b y c) → 
         let
           arithmetic : n₁₁ + 1 + (n₁₂ + 1 + (n₁₃ + 1 + n₂)) ≡ n₁₁ + 1 + n₁₂ + 1 + n₁₃ + 1 + n₂
-          arithmetic = {!   !}
+          arithmetic = solve Nat.+-0-monoid
         in
-          ret {!   !} 
-    ; (zag a y b x c) → {!   !} } 
-... | tri≈ _ i=n₁ _ = {!   !} 
-... | tri> _ _ i>n₁ = {!   !}  
--- real work goes here 
+          ret (Eq.subst Splayed arithmetic (valid (node a x (node b y (node c z r))))) 
+    ; (zag {n₁₁} {n₁₂} {n₁₃} a y b x c) → 
+        let
+          arithmetic : n₁₁ + 1 + n₁₂ + 1 + (n₁₃ + 1 + n₂) ≡ n₁₁ + 1 + (n₁₂ + 1 + n₁₃) + 1 + n₂
+          arithmetic = solve Nat.+-0-monoid
+        in
+          ret (valid (Eq.subst Tree arithmetic (node (node a y b) x (node c z r)))) 
+    } 
+... | tri≈ _ i=n₁ _ = ret (valid (node l z r)) 
+... | tri> _ _ i≥n₁+1 = 
+  let
+    arithmetic : i ∸ (n₁ + 1) Nat.< n₂
+    arithmetic = let open Nat.≤-Reasoning in 
+      Nat.+-cancelˡ-< (n₁ + 1) (i ∸ (n₁ + 1)) n₂ (
+        begin-strict
+          (n₁ + 1) + (i ∸ (n₁ + 1))
+        ≡⟨ Nat.m+[n∸m]≡n (Eq.subst (i Nat.≥_) (Nat.+-comm 1 n₁) i≥n₁+1) ⟩ 
+          i
+        <⟨ i<n ⟩
+          n₁ + 1 + n₂
+        ∎
+      )
+  in
+  bind ((F (splayed _))) (splay r (i ∸ (n₁ + 1)) arithmetic) λ 
+    { (valid leaf) → Relation.Nullary.contradiction arithmetic Nat.n≮0
+    ; (valid (node a x b)) → ret (zag l z a x b)
+    ; (zig {n₁₁} {n₁₂} {n₁₃} a x b y c) → 
+        let
+          arithmetic : n₁ + 1 + n₁₁ + 1 + (n₁₂ + 1 + n₁₃) ≡ n₁ + 1 + (n₁₁ + 1 + n₁₂ + 1 + n₁₃)
+          arithmetic = solve Nat.+-0-monoid
+        in
+        ret (valid (Eq.subst Tree arithmetic (node (node l z a) x (node b y c))))
+    ; (zag {n₁₁} {n₁₂} {n₁₃} a y b x c) → 
+      let
+        arithmetic : n₁ + 1 + n₁₁ + 1 + n₁₂ + 1 + n₁₃ ≡ n₁ + 1 + (n₁₁ + 1 + (n₁₂ + 1 + n₁₃))
+        arithmetic = solve Nat.+-0-monoid
+      in
+      ret (valid (Eq.subst Tree arithmetic (node (node (node l z a) y b) x c))) 
+    }
 
 SplayTree : BST
 SplayTree .BST.T = tree
-SplayTree .BST.splay (n , t) i = 
-  bind (F _) (splay t i {!   !}) 
-    λ { (valid t) → {!   !}
-     ;  (zig a x b y c) → ret (x , n , node (node a x b) y c)
-     ;  (zag a y b x c) → {!   !} }
+SplayTree .BST.splay (n , t) i with <-cmp i n
+... | tri< i+1≤n i≢n _ = 
+  bind (F _) 
+  (splay t i (Nat.≤∧≢⇒< (n+1≤m⇒n≤m i n i+1≤n) i≢n)) λ 
+    { (valid t') → ret (n , (n , t'))
+    ; (zig a x b y c) → ret (n , (n , node (node a x b) y c))
+    ; (zag a y b x c) → ret (n , (n , node a y (node b x c)))
+    }
+... | tri≈ _ _ _ = ret (0 , (0 , leaf))
+... | tri> _ _ _ = ret (0 , (0 , leaf))
