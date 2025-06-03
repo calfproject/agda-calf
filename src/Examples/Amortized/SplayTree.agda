@@ -54,21 +54,9 @@ data Splayed : ℕ → Set where
 splayed : val nat → tp⁺
 splayed n = meta⁺ (Splayed n)
 
-n+1≤m⇒n≤m : (n : val nat) (m : val nat) → suc n Nat.≤ m → n Nat.≤ m
-n+1≤m⇒n≤m n m p = let open Nat.≤-Reasoning in
-  begin
-    n
-  <⟨ s≤s ≤-refl ⟩ 
-    suc n
-  ≤⟨ p ⟩
-    m
-  ∎
-
 splay : {n : ℕ} → Tree n → (i : val nat) → i < n → cmp (F (splayed n))
 splay (node {n₁} {n₂} l z r) i i<n with <-cmp i n₁ 
-... | tri< i+1≤n₁ i≢n₁ _ = 
-  bind (F (splayed _)) 
-  (splay l i (Nat.≤∧≢⇒< (n+1≤m⇒n≤m i n₁ i+1≤n₁) i≢n₁)) λ
+... | tri< i<n₁ i≢n₁ _ = bind (F (splayed _)) (splay l i i<n₁) λ
     { (valid (node a x b)) → ret (zig a x b z r)
     ; (zig {n₁₁} {n₁₂} {n₁₃} a x b y c) → 
         let
@@ -118,12 +106,10 @@ splay (node {n₁} {n₂} l z r) i i<n with <-cmp i n₁
 SplayTree : BST
 SplayTree .BST.T = tree
 SplayTree .BST.splay (n , t) i with <-cmp i n
-... | tri< i+1≤n i≢n _ = 
-  bind (F _) 
-  (splay t i (Nat.≤∧≢⇒< (n+1≤m⇒n≤m i n i+1≤n) i≢n)) λ 
-    { (valid t') → ret (n , (n , t'))
-    ; (zig a x b y c) → ret (n , (n , node (node a x b) y c))
-    ; (zag a y b x c) → ret (n , (n , node a y (node b x c)))
+... | tri< i<n _ _ = bind (F _) (splay t i i<n) λ 
+    { (valid (node l z r)) → ret (z , (n , node l z r))
+    ; (zig a x b y c) → ret (y , (n , node (node a x b) y c))
+    ; (zag a y b x c) → ret (y , (n , node a y (node b x c)))
     }
 ... | tri≈ _ _ _ = ret (0 , (0 , leaf))
 ... | tri> _ _ _ = ret (0 , (0 , leaf))
