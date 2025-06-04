@@ -125,9 +125,9 @@ open BSTHom
 opaque
   unfolding SplayTree
 
+  inord : {n : ℕ} → Tree n → val (list nat)
+  inord leaf = []
+  inord (node l z r) = (inord l) ++ (z ∷ []) ++ (inord r)
+
   ST⇒LT : BSTHom SplayTree ListTree
-  ST⇒LT .ϕ (n , leaf) = ret []
-  ST⇒LT .ϕ (n , node {n₁} {n₂} l z r) = 
-    bind (F (ListTree .T)) (ST⇒LT .ϕ (n₁ , l)) λ l' → 
-      bind (F (ListTree .T)) (ST⇒LT .ϕ (n₂ , r)) λ r' →
-        ret (l' ++ (z ∷ []) ++ r') 
+  ST⇒LT .ϕ (n , t) = ret (inord t)
