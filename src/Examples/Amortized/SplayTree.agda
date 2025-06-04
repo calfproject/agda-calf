@@ -118,7 +118,11 @@ open BST
 record BSTHom (BST BST' : BST) : Set where
   field
     ϕ : cmp (Π (BST .T) λ _ → F (BST' .T))
-    -- ϕ/splay : TODO
+    ϕ/splay : (t : val (BST .T)) (i : val nat) → 
+      bind (F _) (BST .splay t i) (λ { (_ , t') → ϕ t'})
+    ≤⁻[ F (BST' .T) ]
+      bind (F _) (ϕ t) (λ t' → bind (F _) (BST' .splay t' i) (λ { (_ , t'') → ret t''}))
+      
 
 open BSTHom
 
@@ -131,3 +135,4 @@ opaque
 
   ST⇒LT : BSTHom SplayTree ListTree
   ST⇒LT .ϕ (n , t) = ret (inord t)
+  ST⇒LT .ϕ/splay = {!   !}
