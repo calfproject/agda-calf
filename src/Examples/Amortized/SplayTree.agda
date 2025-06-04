@@ -28,12 +28,10 @@ record BST : Set where
     T : tp⁺
     splay : cmp (Π T (λ _ → Π nat (λ _ → F (nat ×⁺ T))))
 
-ListBST : BST
-ListBST .BST.T = list nat
-ListBST .BST.splay l i with i <? length l 
-... | yes p = 
-  let finIdx = fromℕ< p in
-  ret (lookup l finIdx , l)
+ListTree : BST
+ListTree .BST.T = list nat
+ListTree .BST.splay l i with i <? length l 
+... | yes p = let finIdx = fromℕ< p in ret (lookup l finIdx , l)
 ... | no _ = ret (0 , l)
 
 variable
@@ -56,7 +54,7 @@ splayed n = meta⁺ (Splayed n)
 
 splay : {n : ℕ} → Tree n → (i : val nat) → i < n → cmp (F (splayed n))
 splay (node {n₁} {n₂} l z r) i i<n with <-cmp i n₁ 
-... | tri< i<n₁ i≢n₁ _ = bind (F (splayed _)) (splay l i i<n₁) λ
+... | tri< i<n₁ _ _ = bind (F (splayed _)) (splay l i i<n₁) λ
     { (valid (node a x b)) → ret (zig a x b z r)
     ; (zig {n₁₁} {n₁₂} {n₁₃} a x b y c) → 
         let
@@ -103,13 +101,33 @@ splay (node {n₁} {n₂} l z r) i i<n with <-cmp i n₁
       ret (valid (Eq.subst Tree arithmetic (node (node (node l z a) y b) x c))) 
     }
 
-SplayTree : BST
-SplayTree .BST.T = tree
-SplayTree .BST.splay (n , t) i with <-cmp i n
-... | tri< i<n _ _ = bind (F _) (splay t i i<n) λ 
-    { (valid (node l z r)) → ret (z , (n , node l z r))
-    ; (zig a x b y c) → ret (y , (n , node (node a x b) y c))
-    ; (zag a y b x c) → ret (y , (n , node a y (node b x c)))
-    }
-... | tri≈ _ _ _ = ret (0 , (0 , leaf))
-... | tri> _ _ _ = ret (0 , (0 , leaf))
+opaque
+  SplayTree : BST
+  SplayTree .BST.T = tree
+  SplayTree .BST.splay (n , t) i with <-cmp i n
+  ... | tri< i<n _ _ = bind (F _) (splay t i i<n) λ 
+      { (valid (node l z r)) → ret (z , (n , node l z r))
+      ; (zig a x b y c) → ret (y , (n , node (node a x b) y c))
+      ; (zag a y b x c) → ret (y , (n , node a y (node b x c)))
+      }
+  ... | tri≈ _ _ _ = ret (0 , (0 , leaf))
+  ... | tri> _ _ _ = ret (0 , (0 , leaf))
+
+open BST
+
+record BSTHom (BST BST' : BST) : Set where
+  field
+    ϕ : cmp (Π (BST .T) λ _ → F (BST' .T))
+    -- ϕ/splay : TODO
+
+open BSTHom
+
+opaque
+  unfolding SplayTree
+
+  ST⇒LT : BSTHom SplayTree ListTree
+  ST⇒LT .ϕ (n , leaf) = ret []
+  ST⇒LT .ϕ (n , node {n₁} {n₂} l z r) = 
+    bind (F (ListTree .T)) (ST⇒LT .ϕ (n₁ , l)) λ l' → 
+      bind (F (ListTree .T)) (ST⇒LT .ϕ (n₂ , r)) λ r' →
+        ret (l' ++ (z ∷ []) ++ r') 
