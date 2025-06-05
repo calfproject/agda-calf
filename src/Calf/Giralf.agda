@@ -104,15 +104,23 @@ import Data.Vec.Base as Vec
 open import Data.List.Base as List
 module Perm-Split {E : Set} where
   data _≡_⊔_ : List E → List E → List E → Set where
-    all-right : {Δ : List E} → Δ ≡ [] ⊔ Δ
-    left : {Δ Δ₁ Δ₂ : List E} (A : E) → Δ ≡ Δ₁ ⊔ Δ₂ → (A ∷ Δ) ≡ (A ∷ Δ₁) ⊔ Δ₂
-    switch : {Δ Δ₁ Δ₂ : List E} → Δ ≡ Δ₁ ⊔ Δ₂ → Δ ≡ Δ₂ ⊔ Δ₁
-
-  right : {Δ Δ₁ Δ₂ : List E} (A : E) → Δ ≡ Δ₁ ⊔ Δ₂ → (A ∷ Δ) ≡ Δ₁ ⊔ (A ∷ Δ₂)
-  right A s = switch (left A (switch s))
+    base : [] ≡ [] ⊔ []
+    left : {Δ Δ₁ Δ₂ : List E} {A : E} → Δ ≡ Δ₁ ⊔ Δ₂ → (A ∷ Δ) ≡ (A ∷ Δ₁) ⊔ Δ₂
+    right : {Δ Δ₁ Δ₂ : List E} {A : E} → Δ ≡ Δ₁ ⊔ Δ₂ → (A ∷ Δ) ≡ Δ₁ ⊔ (A ∷ Δ₂)
 
   all-left : {Δ : List E} → Δ ≡ Δ ⊔ []
-  all-left = switch all-right
+  all-left {[]} = base
+  all-left {A ∷ Δ} = left (all-left {Δ})
+
+  all-right : {Δ : List E} → Δ ≡ [] ⊔ Δ
+  all-right {[]} = base
+  all-right {A ∷ Δ} = right (all-right {Δ})
+
+  switch : {Δ Δ₁ Δ₂ : List E} → Δ ≡ Δ₁ ⊔ Δ₂ → Δ ≡ Δ₂ ⊔ Δ₁
+  switch base = base
+  switch (left S) = right (switch S)
+  switch (right S) = left (switch S)
+
 open Perm-Split
 
 
@@ -298,13 +306,13 @@ constᵍ _ .square triv = ≤⁻-refl
 
 
 permute : ∀ {Δ Δ₁ Δ₂} → Δ ≡ Δ₁ ⊔ Δ₂ → val (Tensorfy Δ .₀) → val (Tensorfy Δ₁ .₀) × val (Tensorfy Δ₂ .₀)
-permute all-right δ = triv , δ
-permute (left A s) (a , δ) =
+permute base triv = triv , triv
+permute (left s) (a , δ) =
   let δ₁ , δ₂ = permute s δ in
   (a , δ₁) , δ₂
-permute (switch s) δ =
+permute (right s) (a , δ) =
   let δ₁ , δ₂ = permute s δ in
-  δ₂ , δ₁
+  δ₁ , (a , δ₂)
 
 permute-Φ : ∀ {Δ Δ₁ Δ₂}
   → (s : Δ ≡ Δ₁ ⊔ Δ₂)
@@ -313,9 +321,15 @@ permute-Φ : ∀ {Δ Δ₁ Δ₂}
     let δ₁ , δ₂ = permute s δ in
     Tensorfy Δ₁ .Φᶜ δ₁ + Tensorfy Δ₂ .Φᶜ δ₂
   ) ≡ (Tensorfy Δ .Φᶜ δ)
-permute-Φ all-right δ = +-identityˡ _
-permute-Φ (left A s) (a , δ) = Eq.trans (+-assoc _ _ _) (Eq.cong (A .Φᶜ a +_) (permute-Φ s δ))
-permute-Φ (switch s) δ = Eq.trans (+-comm _ _) (permute-Φ s δ)
+permute-Φ base δ = +-identityˡ _
+permute-Φ (left {A = A} s) (a , δ) = Eq.trans (+-assoc _ _ _) (Eq.cong (A .Φᶜ a +_) (permute-Φ s δ))
+permute-Φ (right {A = A} s) (a , δ) =
+  let helper a b c =
+        let open SolverHelp in let open Vec in
+        prove 3 (v₂ ⊕ (v₁ ⊕ v₃)) (v₁ ⊕ (v₂ ⊕ v₃))
+        (a ∷ b ∷ c ∷ [])
+  in
+  Eq.trans (helper _ _ _) (Eq.cong (A .Φᶜ a +_) (permute-Φ s δ))
 
 
 -- cut
