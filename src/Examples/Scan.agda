@@ -9,7 +9,7 @@ open CostMonoid costMonoid
 
 open import Calf costMonoid
 open import Calf.Data.Nat
-open import Calf.Data.List using (list; []; _∷_; _∷ʳ_; [_]; length; _++_; reverse)
+open import Calf.Data.List using (list; []; _∷_; _∷ʳ_; [_]; length; _++_; reverse ; splitAt)
 open import Calf.Data.IsBounded costMonoid
 open import Calf.Data.BigO costMonoid
 open import Calf.Data.Product 
@@ -43,13 +43,21 @@ record ◯-Monoid (A : tp⁺) : Set where
     identity : val A 
     isMonoid : ◯-isMonoid f identity
 
-scanhelp : {A : tp⁺} → cmp (Π (U (Π (A ×⁺ A) (λ _ → F A))) (λ _ → Π A (λ _ → (Π (list A) (λ _ →  F (list A ×⁺ A))))))
-scanhelp f e [] = ret ([] , e)
-scanhelp f e (x ∷ L) = bind (F _) (f (e , x)) (λ y → bind (F _) (scanhelp f e L) λ { (ys , r) →  ret ( y ∷ ys , r )}) 
+scan/bruteforce/help : {A : tp⁺} → cmp (Π (U (Π (A ×⁺ A) (λ _ → F A))) (λ _ → Π A (λ _ → (Π (list A) (λ _ →  F (list A ×⁺ A))))))
+scan/bruteforce/help f e [] = ret ([] , e)
+scan/bruteforce/help f e (x ∷ L) = bind (F _) (f (e , x)) (λ y → bind (F _) (scan/bruteforce/help f e L) λ { (ys , r) →  ret ( y ∷ ys , r )}) 
 
 scan/bruteforce : {A : tp⁺} → ◯-Monoid A → (cmp  (Π (list A)  (λ _ → F (list A ×⁺ A))))
-scan/bruteforce M L = scanhelp (◯-Monoid.f M) (◯-Monoid.identity M) L
+scan/bruteforce M L = scan/bruteforce/help (◯-Monoid.f M) (◯-Monoid.identity M) L
+
+splitMid : {A : tp⁺} → cmp (Π (list A) (λ _ → F (list A ×⁺ list A)))
+splitMid L = ret (splitAt (length L / 2) L)
+
+scan/divconq/help : {A : tp⁺} → cmp (Π (U (Π (A ×⁺ A) (λ _ → F A))) (λ _ → Π A (λ _ → (Π (list A) (λ _ → Π nat  λ _ → F (list A ×⁺ A))))))
+scan/divconq/help f e L Nat.zero = ret (L , e)  
+-- not sure if this should be L or []
+-- in particular, we need to handle the |L| = 1 case somehow
+scan/divconq/help f e L (suc n) = bind (F _) (splitMid L) λ (b , c) → bind (F _) ((scan/divconq/help f e b n  )) {!   !}
 
 scan/divconq : {A : tp⁺} → ◯-Monoid A → (cmp  (Π (list A)  (λ _ → F (list A ×⁺ A))))
-scan/divconq M [] = {!   !}
-scan/divconq M (x ∷ L) = {!   !} 
+scan/divconq M L = {!   !}
