@@ -1,17 +1,23 @@
 {-# OPTIONS --rewriting #-}
 
-module Examples.Scan where 
+open import Examples.Sorting.Sequential.Comparable
+
+module Examples.Scan (M : Comparable) where 
+
+open Comparable M
+open import Examples.Sorting.Sequential.Core M
 
 open import Algebra.Cost
 
-costMonoid = ℕ-CostMonoid
-open CostMonoid costMonoid
+-- costMonoid = ℕ-CostMonoid
+-- open CostMonoid costMonoid
 
-open import Calf costMonoid
+open import Calf costMonoid hiding (A)
 open import Calf.Data.Nat
 open import Calf.Data.List using (list; []; _∷_; _∷ʳ_; [_]; length; _++_; reverse ; splitAt  ) renaming ( map to listmap )
 open import Calf.Data.IsBounded costMonoid
-open import Calf.Data.BigO costMonoid
+open import Calf.Data.IsBoundedG costMonoid
+-- open import Calf.Data.BigO costMonoid
 open import Calf.Data.Product 
 
 open import Relation.Binary.PropositionalEquality as Eq using (_≡_; refl; _≢_; module ≡-Reasoning)
@@ -49,28 +55,92 @@ scan/bruteforce/help f e (x ∷ L) = bind (F _) (f (e , x)) (λ y → bind (F _)
 scan/bruteforce : {A : tp⁺} → ◯-Monoid A → (cmp  (Π (list A)  (λ _ → F (list A ×⁺ A))))
 scan/bruteforce M L = scan/bruteforce/help (◯-Monoid.f M) (◯-Monoid.identity M) L
 
-splitMid : {A : tp⁺} → cmp (Π (list A) (λ _ → F (list A ×⁺ list A)))
-splitMid L = ret (splitAt (length L / 2) L)
+scan/bruteforce/cost :  
+      (m : ◯-Monoid A) → 
+      (c : ℂ) →
+      ((a b : val A) → IsBounded A (◯-Monoid.f m (a , b)) c) → 
+      (l : val (list A)) →
+      IsBounded (list A ×⁺ A) (scan/bruteforce m l) (length l * c)
+scan/bruteforce/cost m c h []      = ≤⁻-refl
+scan/bruteforce/cost m c h (x ∷ l) = 
+  let open ≤⁻-Reasoning cost in
+  begin
+   bind (F unit) (◯-Monoid.f m (◯-Monoid.identity m , x)) (λ _ →
+    bind (F unit) (scan/bruteforce/help (◯-Monoid.f m) (◯-Monoid.identity m) l) (λ _ → 
+      ret triv))
+  ≲⟨ bind-monoˡ-≤⁻ (λ _ →
+        bind (F unit) (scan/bruteforce/help (◯-Monoid.f m) (◯-Monoid.identity m) l) (λ _ → ret triv)) 
+        (h (◯-Monoid.identity m) x) ⟩
+   bind (F unit) (step⋆ c) (λ _ →
+    bind (F unit) (scan/bruteforce/help (◯-Monoid.f m) (◯-Monoid.identity m) l) (λ _ → 
+      ret triv))
+  ≲⟨ bind-monoʳ-≤⁻ (step⋆ c) (λ _ → scan/bruteforce/cost m c h l) ⟩
+    bind (F unit) (step⋆ c) (λ _ →
+      bind (F unit) (step⋆ (length l * c)) (λ _ → 
+        ret triv))
+  ≡⟨⟩
+    step⋆ (c + length l * c)  
+  ∎
 
-scan/divconq/help : {A : tp⁺} → cmp (Π (U (Π (A ×⁺ A) (λ _ → F A))) (λ _ → Π A (λ _ → (Π (list A) (λ _ → Π nat  λ _ → F (list A ×⁺ A))))))
-scan/divconq/help f e L Nat.zero = ret (L , e)  
--- not sure if this should be L or []
--- in particular, we need to handle the |L| = 1 case somehow
-scan/divconq/help f e L (suc n) = 
-  bind (F _) (splitMid L) 
-    (λ {(b , c) → 
-      bind (F _) ((scan/divconq/help f e b n  )) 
-        (λ {(l , b') →   
-          bind (F _) (scan/divconq/help f e c n) 
-            (λ {(r , c') →  
-              bind (F _) (ret (listmap ( λ x → f (e , x)) r)) {! 
-                (λ r' → ret ( l ++ r' , f (b' , c' ) ))  !}})})})
--- could change scan/divconq/help to take in the entire monoid instead - might be helpful to use properties?
+open import Examples.Sorting.Sequential.MergeSort.Split M
 
 
-scan/divconq : {A : tp⁺} → ◯-Monoid A → (cmp  (Π (list A)  (λ _ → F (list A ×⁺ A))))
-scan/divconq M L = scan/divconq/help (◯-Monoid.f M) (◯-Monoid.identity M) L (⌈log₂ length L ⌉)
+mapList : cmp (Π (U (Π A λ _ → F B)) (λ _ → Π (list A) (λ _ → F (list B))))
+mapList f [] = ret []
+mapList f (x ∷ l) = 
+  bind (F _) (mapList f l) λ l' → 
+    bind (F _) (f x) λ x' → 
+      ret (x' ∷ l')
+
+appendList : cmp (Π (list A) (λ _ → Π (list A) λ _ → F (list A)))
+appendList [] l = ret l
+appendList (x ∷ xs) l = 
+  step (F _) 1 (
+  bind (F _) (appendList xs l) λ l' → 
+    ret (x ∷ l'))
+
+scan/divconq/help : 
+  cmp (Π (U (Π (A ×⁺ A) (λ _ → F A))) (λ _ → 
+       Π A (λ _ → 
+       Π (list A) (λ l → 
+       Π nat λ k →
+       Π (meta⁺ (⌈log₂ length l ⌉ Nat.≤ k)) λ _ → 
+        F (list A ×⁺ A)))))
+scan/divconq/help f e l Nat.zero p = ret (l , e)
+scan/divconq/help f e [] (suc Nat.zero) p = ret ([] , e)
+scan/divconq/help f e (x ∷ l) (suc Nat.zero) p = ret (e ∷ [] , x)
+scan/divconq/help f e l (2+ k) p = 
+  bind (F _) (split l) λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+  let
+    h₁ , h₂ =
+      let open N.≤-Reasoning in
+      (begin
+        ⌈log₂ length l₁ ⌉
+      ≡⟨ Eq.cong ⌈log₂_⌉ length₁ ⟩
+        ⌈log₂ ⌊ length l /2⌋ ⌉
+      ≤⟨ log₂-mono (N.⌊n/2⌋≤⌈n/2⌉ (length l)) ⟩
+        ⌈log₂ ⌈ length l /2⌉ ⌉
+      ≤⟨ log₂-suc (length l) p ⟩
+        suc k
+      ∎) ,
+      (begin
+        ⌈log₂ length l₂ ⌉
+      ≡⟨ Eq.cong ⌈log₂_⌉ length₂ ⟩
+        ⌈log₂ ⌈ length l /2⌉ ⌉
+      ≤⟨ log₂-suc (length l) p ⟩
+        suc k
+      ∎)
+  in
+  bind (F _) (scan/divconq/help f e l₁ (suc k) h₁) λ (l₁' , b') → 
+  bind (F _) (scan/divconq/help f e l₂ (suc k) h₂) λ (l₂' , c') → 
+  bind (F _) (mapList (λ x → f (b' , x)) l₂') λ r' → 
+  bind (F _) (appendList l₁' r') λ resL →
+  bind (F _) (f (b' , c')) λ res → 
+  ret (resL , res)
+
+scan/divconq : ◯-Monoid A → (cmp  (Π (list A)  (λ _ → F (list A ×⁺ A))))
+scan/divconq M L = scan/divconq/help (◯-Monoid.f M) (◯-Monoid.identity M) L ⌈log₂ length L ⌉ {! Nat.≤-refl  !} 
 -- should probably make this log2 L 
 
-scan/divconq/correct : (M : ◯-Monoid A) → ◯ (scan/divconq M ≡ scan/bruteforce M)
-scan/divconq/correct M = {!  !}
+-- scan/divconq/correct : (M : ◯-Monoid A) → ◯ (scan/divconq M ≡ scan/bruteforce M)
+-- scan/divconq/correct M = {!  !}
