@@ -9,7 +9,7 @@ open CostMonoid costMonoid
 
 open import Calf costMonoid
 open import Calf.Data.Nat
-open import Calf.Data.List using (list; []; _∷_; _∷ʳ_; [_]; length; _++_; reverse ; splitAt)
+open import Calf.Data.List using (list; []; _∷_; _∷ʳ_; [_]; length; _++_; reverse ; splitAt  ) renaming ( map to listmap )
 open import Calf.Data.IsBounded costMonoid
 open import Calf.Data.BigO costMonoid
 open import Calf.Data.Product 
@@ -57,7 +57,9 @@ scan/divconq/help : {A : tp⁺} → cmp (Π (U (Π (A ×⁺ A) (λ _ → F A))) 
 scan/divconq/help f e L Nat.zero = ret (L , e)  
 -- not sure if this should be L or []
 -- in particular, we need to handle the |L| = 1 case somehow
-scan/divconq/help f e L (suc n) = bind (F _) (splitMid L) λ (b , c) → bind (F _) ((scan/divconq/help f e b n  )) {!   !}
+scan/divconq/help f e L (suc n) = bind (F _) (splitMid L) (λ {(b , c) → bind (F _) ((scan/divconq/help f e b n  )) (λ {(l , b') →   bind (F _) (scan/divconq/help f e c n) λ (r , c') →  bind (F _) (ret (listmap ( λ x → f (e , x)) r)) {! (λ r' → ret ( l ++ r' , f (b' , c' ) ))  !}})})
+-- could change scan/divconq/help to take in the entire monoid instead - might be helpful to use properties?
+
 
 scan/divconq : {A : tp⁺} → ◯-Monoid A → (cmp  (Π (list A)  (λ _ → F (list A ×⁺ A))))
-scan/divconq M L = {!   !}
+scan/divconq M L = scan/divconq/help (◯-Monoid.f M) (◯-Monoid.identity M) L (length L)
