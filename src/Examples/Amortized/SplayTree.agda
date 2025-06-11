@@ -53,9 +53,6 @@ data Splayed : ℕ → Set where
 splayed : val nat → tp⁺
 splayed n = meta⁺ (Splayed n)
 
-test : (x y z : ℕ) → ((x + y) + z) ≡ (x + (y + z))
-test x y z = Nat.+-assoc x y z
-
 zig-arithmetic1 : (n₁₁ n₁₂ n₁₃ n₂ : val nat) → n₁₁ + 1 + (n₁₂ + 1 + (n₁₃ + 1 + n₂)) ≡ n₁₁ + 1 + n₁₂ + 1 + n₁₃ + 1 + n₂
 zig-arithmetic1 n₁₁ n₁₂ n₁₃ n₂ = 
   let open ≡-Reasoning in
@@ -73,9 +70,9 @@ zig-arithmetic1 n₁₁ n₁₂ n₁₃ n₂ =
     n₁₁ + 1 + n₁₂ + 1 + n₁₃ + 1 + n₂
   ∎
 
-splayHelper : {n₁ n₂ i : val nat} {i<n₁ : i < n₁} (z : val nat) (r : Tree n₂) → Splayed n₁ → cmp (F (splayed (n₁ + 1 + n₂)))
-splayHelper z r (valid (node a x b)) = ret (zig a x b z r)
-splayHelper z r (zig {n₁₁} {n₁₂} {n₁₃} a x b y c) = 
+<-splayHelper : {n₁ n₂ i : val nat} {i<n₁ : i < n₁} (z : val nat) (r : Tree n₂) → Splayed n₁ → cmp (F (splayed (n₁ + 1 + n₂)))
+<-splayHelper z r (valid (node a x b)) = ret (zig a x b z r)
+<-splayHelper z r (zig {n₁₁} {n₁₂} {n₁₃} a x b y c) = 
   let
     arithmetic : n₁₁ + 1 + (n₁₂ + 1 + (n₁₃ + 1 + n₂)) ≡ n₁₁ + 1 + n₁₂ + 1 + n₁₃ + 1 + n₂
     arithmetic {n₂} = let open ≡-Reasoning in begin
@@ -93,7 +90,7 @@ splayHelper z r (zig {n₁₁} {n₁₂} {n₁₃} a x b y c) =
         ∎
   in
   ret (valid (Eq.subst Tree arithmetic (node a x (node b y (node c z r))))) 
-splayHelper z r (zag {n₁₁} {n₁₂} {n₁₃} a y b x c) = 
+<-splayHelper z r (zag {n₁₁} {n₁₂} {n₁₃} a y b x c) = 
   let
     arithmetic : n₁₁ + 1 + n₁₂ + 1 + (n₁₃ + 1 + n₂) ≡ n₁₁ + 1 + (n₁₂ + 1 + n₁₃) + 1 + n₂
     arithmetic = solve Nat.+-0-monoid
@@ -109,12 +106,29 @@ splayHelper z r (zag {n₁₁} {n₁₂} {n₁₃} a y b x c) =
     --       (n₁₁ + 1 + (n₁₂ + 1 + n₁₃) + 1) + n₂
     --     ∎
   in
-  ret (valid (Eq.subst Tree arithmetic (node (node a y b) x (node c z r)))) 
+  ret (valid (Eq.subst Tree arithmetic (node (node a y b) x (node c z r))))
+
+>-splayHelper : {n₁ n₂ i : val nat} {i<n₂ : i < n₂} (z : val nat) (l : Tree n₁) → Splayed n₂ → cmp (F (splayed (n₁ + 1 + n₂)))
+>-splayHelper {n₁} {n₂} {i} {i<n₂} z l (valid leaf) = Relation.Nullary.contradiction i<n₂ Nat.n≮0
+>-splayHelper z l (valid (node a x b)) = ret (zag l z a x b)
+>-splayHelper {n₁} z l (zig {n₁₁} {n₁₂} {n₁₃} a x b y c) = 
+  let
+    arithmetic : n₁ + 1 + n₁₁ + 1 + (n₁₂ + 1 + n₁₃) ≡ n₁ + 1 + (n₁₁ + 1 + n₁₂ + 1 + n₁₃)
+    arithmetic = solve Nat.+-0-monoid
+  in
+  ret (valid (Eq.subst Tree arithmetic (node (node l z a) x (node b y c))))
+>-splayHelper {n₁} z l (zag {n₁₁} {n₁₂} {n₁₃} a y b x c) = 
+  let
+    arithmetic : n₁ + 1 + n₁₁ + 1 + n₁₂ + 1 + n₁₃ ≡ n₁ + 1 + (n₁₁ + 1 + (n₁₂ + 1 + n₁₃))
+    arithmetic = solve Nat.+-0-monoid
+  in
+  ret (valid (Eq.subst Tree arithmetic (node (node (node l z a) y b) x c)))
+ 
 
 
 splay : {n : ℕ} → Tree n → (i : val nat) → i < n → cmp (F (splayed n))
 splay (node {n₁} {n₂} l z r) i i<n with <-cmp i n₁ 
-... | tri< i<n₁ _ _ = bind (F (splayed _)) (splay l i i<n₁) (splayHelper {i = i} {i<n₁ = i<n₁} z r)
+... | tri< i<n₁ _ _ = bind (F (splayed _)) (splay l i i<n₁) (<-splayHelper {i = i} {i<n₁ = i<n₁} z r)
 ... | tri≈ _ i=n₁ _ = ret (valid (node l z r)) 
 ... | tri> _ _ i≥n₁+1 = 
   let
@@ -129,35 +143,12 @@ splay (node {n₁} {n₂} l z r) i i<n with <-cmp i n₁
           n₁ + 1 + n₂
         ∎
       )
-  in
-  bind ((F (splayed _))) (splay r (i ∸ (n₁ + 1)) arithmetic) λ 
-    { (valid leaf) → Relation.Nullary.contradiction arithmetic Nat.n≮0
-    ; (valid (node a x b)) → ret (zag l z a x b)
-    ; (zig {n₁₁} {n₁₂} {n₁₃} a x b y c) → 
-        let
-          arithmetic : n₁ + 1 + n₁₁ + 1 + (n₁₂ + 1 + n₁₃) ≡ n₁ + 1 + (n₁₁ + 1 + n₁₂ + 1 + n₁₃)
-          arithmetic = solve Nat.+-0-monoid
-        in
-        ret (valid (Eq.subst Tree arithmetic (node (node l z a) x (node b y c))))
-    ; (zag {n₁₁} {n₁₂} {n₁₃} a y b x c) → 
-      let
-        arithmetic : n₁ + 1 + n₁₁ + 1 + n₁₂ + 1 + n₁₃ ≡ n₁ + 1 + (n₁₁ + 1 + (n₁₂ + 1 + n₁₃))
-        arithmetic = solve Nat.+-0-monoid
-      in
-      ret (valid (Eq.subst Tree arithmetic (node (node (node l z a) y b) x c))) 
-    }
+  in bind (F (splayed _)) (splay r (i ∸ (n₁ + 1)) arithmetic) (>-splayHelper {i = i ∸ (n₁ + 1)} {i<n₂ = arithmetic} z l)
 
 splayTopLevelHelper : {n i : val nat} {i<n : i < n} → Splayed n → cmp (F (meta⁺ (Σ ℕ (λ x → Σ ℕ Tree))))
 splayTopLevelHelper {n} (valid (node l z r)) = ret (z , (n , node l z r))
 splayTopLevelHelper {n} (zig a x b y c) = ret (y , (n , node (node a x b) y c))
 splayTopLevelHelper {n} (zag a y b x c) = ret (y , (n , node a y (node b x c)))
-
-
--- bind (F (meta⁺ (List ℕ))) (splay t i a)
---       (λ a₁ →
---          bind (F (meta⁺ (List ℕ))) (splayTopLevelHelper a₁)
---          (λ z →
---             -- inord/cmp (Agda.Builtin.Sigma.Σ.snd (Agda.Builtin.Sigma.Σ.snd z))))
 
 SplayTree : BST
 SplayTree .BST.T = tree
@@ -165,20 +156,6 @@ SplayTree .BST.splay (n , t) i with <-cmp i n
 ... | tri< i<n _ _ = bind (F _) (splay t i i<n) (splayTopLevelHelper {n} {i} {i<n})
 ... | tri≈ _ _ _ = ret (0 , (0 , leaf))
 ... | tri> _ _ _ = ret (0 , (0 , leaf))
-
-open BST renaming (splay to splay')
-
-record BSTHom (bst bst' : BST) : Set where
-  field
-    ϕ : cmp (Π (bst .T) λ _ → F (bst' .T))
-    ϕ/splay : (t : val (bst .T)) (i : val nat) → 
-       bind (F _) (bst .splay' t i) (λ { (_ , t') → ϕ t'})
-      -- ≤⁻[ F (bst' .T) ]
-      ≡
-        ϕ t
-      
-
-open BSTHom
 
 inord : {n : ℕ} → Tree n → val (list nat)
 inord leaf = []
@@ -277,11 +254,22 @@ inord/splayed/correct {n} {zag {n₁₁} {n₁₂} {n₁₃} a y b x c} = let op
     (a ++ y ∷ b ++ x ∷ c) ++ z ∷ r
   ∎
 
-splayHelper/correct : {n₁ n₂ i : val nat} {i<n₁ : i < n₁} (z : val nat) (r : Tree n₂) (l : Splayed n₁)→ 
-  bind (F (list nat)) (splayHelper {i = i} {i<n₁ = i<n₁} z r l) (inord/splayed/cmp {n = n₁ + 1 + n₂}) 
+++-assoc⁴ : (l a b c : List ℕ) (z x y : ℕ) → ((l ++ z ∷ a) ++ y ∷ b) ++ x ∷ c ≡ l ++ z ∷ a ++ y ∷ b ++ x ∷ c
+++-assoc⁴ l a b c z x y = 
+  let open ≡-Reasoning in
+  begin
+    ((l ++ z ∷ a) ++ (y ∷ b)) ++ (x ∷ c)
+  ≡⟨ ++-assoc (l ++ z ∷ a) (y ∷ b) (x ∷ c) ⟩
+    (l ++ (z ∷ a)) ++ (y ∷ b ++ x ∷ c)
+  ≡⟨ ++-assoc l (z ∷ a) (y ∷ b ++ x ∷ c) ⟩
+    l ++ (z ∷ a ++ (y ∷ b ++ x ∷ c))
+  ∎
+
+<-splayHelper/correct : {n₁ n₂ i : val nat} {i<n₁ : i < n₁} (z : val nat) (r : Tree n₂) (l : Splayed n₁)→ 
+  bind (F (list nat)) (<-splayHelper {i = i} {i<n₁ = i<n₁} z r l) (inord/splayed/cmp {n = n₁ + 1 + n₂}) 
   ≡
   bind (F (list nat)) (inord/splayed/cmp {n = n₁} l) λ l' → bind (F _) (inord/cmp r) (λ r' → ret (l' ++ z ∷ [] ++ r'))
-splayHelper/correct {n₁} {n₂} z r (valid (node a x b)) = 
+<-splayHelper/correct {n₁} {n₂} z r (valid (node a x b)) = 
   let open ≡-Reasoning in
   begin 
      bind (F _) (inord/cmp a) (λ a' → 
@@ -300,69 +288,111 @@ splayHelper/correct {n₁} {n₂} z r (valid (node a x b)) =
       (λ l' →
          bind (F (list nat)) (inord/cmp r) (λ r' → ret (l' ++ z ∷ r'))) 
   ∎
-splayHelper/correct {n₁} {n₂} {i} {i<n₁} z r (zig {n₁₁} {n₁₂} {n₁₃} a x b y c)      = 
+<-splayHelper/correct {n₁} {n₂} {i} {i<n₁} z r (zig {n₁₁} {n₁₂} {n₁₃} a x b y c)      = 
   let open ≡-Reasoning in
   begin
-    bind {A = splayed (n₁₁ + 1 + n₁₂ + 1 + n₁₃ + 1 + n₂)} (F (list nat)) (splayHelper {i = i} {i<n₁ = i<n₁} z r (zig a x b y c)) inord/splayed/cmp
+    bind {A = splayed (n₁₁ + 1 + n₁₂ + 1 + n₁₃ + 1 + n₂)} (F (list nat)) (<-splayHelper {i = i} {i<n₁ = i<n₁} z r (zig a x b y c)) inord/splayed/cmp
   -- ≡⟨ Eq.cong (λ e → bind {A = splayed (n₁₁ + 1 + n₁₂ + 1 + n₁₃ + 1 + n₂)} (F (list nat)) e inord/splayed/cmp) refl ⟨
   ≡⟨ {!  !} ⟩
     bind {A = splayed (n₁₁ + 1 + (n₁₂ + 1 + (n₁₃ + 1 + n₂)))} (F (list nat))
       (ret (valid (node a x (node b y (node c z r)))))
       inord/splayed/cmp
   ≡⟨⟩
-    bind (F _) (inord/cmp a)
-      (λ a' →
-         bind (F _) (inord/cmp b)
-         (λ b' →
-            bind (F _) (inord/cmp c)
-            (λ c' →
-               bind (F _) (inord/cmp r)
-               (λ r' → ret (a' ++ x ∷ b' ++ y ∷ c' ++ z ∷ r')))))
+    bind (F _) (inord/cmp a) (λ a' →
+      bind (F _) (inord/cmp b) (λ b' →
+        bind (F _) (inord/cmp c) (λ c' →
+          bind (F _) (inord/cmp r) (λ r' → 
+            ret (a' ++ x ∷ b' ++ y ∷ c' ++ z ∷ r')))))
   ≡⟨ Eq.cong (λ e → bind (F _) (inord/cmp a) e) (funext (λ a' →
           Eq.cong (λ e → bind (F _) (inord/cmp b) e) (funext (λ b' →
             Eq.cong (λ e → bind (F _) (inord/cmp c) e) (funext (λ c' → 
               Eq.cong (λ e → bind (F _) (inord/cmp r) e) (funext (λ r' →
                 Eq.cong ret (++-assoc² a' b' c' r' x y z))))))))) ⟩
-    bind (F _) (inord/cmp a)
-    (λ a' →
-        bind (F (meta⁺ (List ℕ))) (inord/cmp b)
-        (λ b' →
-          bind (F (meta⁺ (List ℕ))) (inord/cmp c)
-          (λ c' →
-              bind (F (meta⁺ (List ℕ))) (inord/cmp r)
-              (λ r' → ret ((a' ++ x ∷ b' ++ y ∷ c') ++ z ∷ r')))))
-    
+    bind (F _) (inord/cmp a) (λ a' →
+      bind (F _) (inord/cmp b) (λ b' →
+        bind (F _) (inord/cmp c) (λ c' →
+          bind (F _) (inord/cmp r) (λ r' → 
+            ret ((a' ++ x ∷ b' ++ y ∷ c') ++ z ∷ r'))))) 
   ∎
-splayHelper/correct {n₁} {n₂} {i} {i<n₁} z r (zag {n₁₁} {n₁₂} {n₁₃} a y b x c)      = 
+<-splayHelper/correct {n₁} {n₂} {i} {i<n₁} z r (zag {n₁₁} {n₁₂} {n₁₃} a y b x c)      = 
   let open ≡-Reasoning in
   begin
-    bind (F (list nat)) (splayHelper {i = i} {i<n₁ = i<n₁} z r (zag a y b x c)) inord/splayed/cmp
+    bind (F (list nat)) (<-splayHelper {i = i} {i<n₁ = i<n₁} z r (zag a y b x c)) inord/splayed/cmp
   -- ≡⟨ Eq.cong (λ e → bind (F (list nat)) e inord/splayed/cmp) refl ⟩ 
   ≡⟨ {!   !} ⟩
     bind {A = splayed ((n₁₁ + 1 + n₁₂) + 1 + (n₁₃ + 1 + n₂))} (F (list nat)) 
       (ret ((valid (node (node a y b) x (node c z r))))) inord/splayed/cmp
   ≡⟨⟩
-    bind (F _) (inord/cmp a)
-      (λ a' →
-         bind (F _) (inord/cmp b)
-         (λ b' →
-            bind (F _) (inord/cmp c)
-            (λ c' →
-               bind (F _) (inord/cmp r)
-               (λ r' → ret ((a' ++ y ∷ b') ++ x ∷ c' ++ z ∷ r')))))
+    bind (F _) (inord/cmp a) (λ a' →
+      bind (F _) (inord/cmp b) (λ b' →
+        bind (F _) (inord/cmp c) (λ c' →
+          bind (F _) (inord/cmp r) (λ r' → 
+            ret ((a' ++ y ∷ b') ++ x ∷ c' ++ z ∷ r')))))
   ≡⟨ Eq.cong (λ e → bind (F _) (inord/cmp a) e) (funext (λ a' →
           Eq.cong (λ e → bind (F _) (inord/cmp b) e) (funext (λ b' →
             Eq.cong (λ e → bind (F _) (inord/cmp c) e) (funext (λ c' → 
               Eq.cong (λ e → bind (F _) (inord/cmp r) e) (funext (λ r' →
                 Eq.cong ret (++-assoc³ a' b' c' r' x y z))))))))) ⟩
-    bind (F _) (inord/cmp a)
-      (λ a' →
-         bind (F _) (inord/cmp b)
-         (λ b' →
-            bind (F _) (inord/cmp c)
-            (λ c' →
-               bind (F _) (inord/cmp r)
-               (λ r' → ret ((a' ++ y ∷ b' ++ x ∷ c') ++ z ∷ r')))))
+    bind (F _) (inord/cmp a) (λ a' →
+      bind (F _) (inord/cmp b) (λ b' →
+        bind (F _) (inord/cmp c) (λ c' →
+          bind (F _) (inord/cmp r) (λ r' → 
+            ret ((a' ++ y ∷ b' ++ x ∷ c') ++ z ∷ r')))))
+  ∎
+>-splayHelper/correct : {n₁ n₂ i : val nat} {i<n₂ : i < n₂} (z : val nat) (l : Tree n₁) (r : Splayed n₂) → 
+  bind (F (list nat)) (>-splayHelper {i = i} {i<n₂ = i<n₂} z l r) (inord/splayed/cmp {n = n₁ + 1 + n₂}) 
+  ≡
+  bind (F (list nat)) (inord/cmp l) λ l' → bind (F _) (inord/splayed/cmp {n = n₂} r) (λ r' → ret (l' ++ z ∷ [] ++ r'))
+>-splayHelper/correct {n₁} {n₂} {i} {i<n₂} z l (valid (node a x b)) = refl
+>-splayHelper/correct {n₁} {n₂} {i} {i<n₂} z l (zig {n₁₁} {n₁₂} {n₁₃} a x b y c) = 
+  let open ≡-Reasoning in
+  begin
+    bind {A = splayed (n₁ + 1 + (n₁₁ + 1 + n₁₂ + 1 + n₁₃))}
+      (F (list nat)) (>-splayHelper {i = i} {i<n₂ = i<n₂} z l (zig {n₁₁} {n₁₂} {n₁₃} a x b y c)) inord/splayed/cmp
+  ≡⟨ {!   !} ⟩
+    bind {A = splayed (n₁ + 1 + n₁₁ + 1 + (n₁₂ + 1 + n₁₃))} (F _) 
+      (ret (valid (node (node l z a) x (node b y c)))) inord/splayed/cmp
+  ≡⟨⟩
+    bind (F _) (inord/cmp l) (λ l' →
+      bind (F _) (inord/cmp a) (λ a' →
+        bind (F _) (inord/cmp b) (λ b' →
+          bind (F _) (inord/cmp c) (λ c' → 
+            ret ((l' ++ z ∷ a') ++ x ∷ b' ++ y ∷ c')))))
+  ≡⟨ Eq.cong (λ e → bind (F _) (inord/cmp l) e) (funext (λ l' →
+          Eq.cong (λ e → bind (F _) (inord/cmp a) e) (funext (λ a' →
+            Eq.cong (λ e → bind (F _) (inord/cmp b) e) (funext (λ b' → 
+              Eq.cong (λ e → bind (F _) (inord/cmp c) e) (funext (λ c' →
+                Eq.cong ret (++-assoc l' (z ∷ a') (x ∷ b' ++ y ∷ c')))))))))) ⟩
+    bind (F _) (inord/cmp l) (λ l' →
+      bind (F _) (inord/cmp a) (λ a' →
+        bind (F _) (inord/cmp b) (λ b' →
+          bind (F _) (inord/cmp c) (λ c' → 
+            ret (l' ++ z ∷ a' ++ x ∷ b' ++ y ∷ c')))))
+  ∎
+>-splayHelper/correct {n₁} {n₂} {i} {i<n₂} z l (zag {n₁₁} {n₁₂} {n₁₃} a y b x c) = 
+  let open ≡-Reasoning in
+  begin
+    bind (F (list nat)) (>-splayHelper {i = i} {i<n₂ = i<n₂} z l (zag a y b x c)) inord/splayed/cmp
+  ≡⟨ {!   !} ⟩
+    bind {A = splayed (((n₁ + 1 + n₁₁) + 1 + n₁₂) + 1 + n₁₃)} (F _) 
+      (ret (valid ((node (node (node l z a) y b) x c)))) inord/splayed/cmp
+  ≡⟨⟩
+    bind (F (list nat)) (inord/cmp l) (λ l' →
+      bind (F (list nat)) (inord/cmp a) (λ a' →
+        bind (F (list nat)) (inord/cmp b) (λ b' →
+          bind (F (list nat)) (inord/cmp c) (λ c' → 
+            ret (((l' ++ z ∷ a') ++ y ∷ b') ++ x ∷ c')))))
+            -- ++-assoc⁴ l a b c z x y
+  ≡⟨ Eq.cong (λ e → bind (F _) (inord/cmp l) e) (funext (λ l' →
+          Eq.cong (λ e → bind (F _) (inord/cmp a) e) (funext (λ a' →
+            Eq.cong (λ e → bind (F _) (inord/cmp b) e) (funext (λ b' → 
+              Eq.cong (λ e → bind (F _) (inord/cmp c) e) (funext (λ c' →
+                Eq.cong ret (++-assoc⁴ l' a' b' c' z x y))))))))) ⟩
+    bind (F (list nat)) (inord/cmp l) (λ l' →
+      bind (F (list nat)) (inord/cmp a) (λ a' →
+        bind (F (list nat)) (inord/cmp b) (λ b' →
+          bind (F (list nat)) (inord/cmp c) (λ c' → 
+            ret (l' ++ z ∷ a' ++ y ∷ b' ++ x ∷ c')))))
   ∎
 
 splay/correct : {n : val nat} → (t : Tree n) (i : val nat) (i<n : i < n) → 
@@ -372,8 +402,8 @@ splay/correct {n} (node {n₁} {n₂} l z r) i i<n with <-cmp i n₁
   let open ≡-Reasoning in
   begin 
     bind (F _) (splay l i i<n₁) (λ l →
-         bind (F _) (splayHelper z r l) (inord/splayed/cmp))
-  ≡⟨ Eq.cong (bind (F _) (splay l i i<n₁)) (funext (λ l →  splayHelper/correct z r l)) ⟩ 
+         bind (F _) (<-splayHelper z r l) (inord/splayed/cmp))
+  ≡⟨ Eq.cong (bind (F _) (splay l i i<n₁)) (funext (λ l →  <-splayHelper/correct z r l)) ⟩ 
     bind (F _) (splay l i i<n₁) (λ l →
          bind (F (list nat)) (inord/splayed/cmp {n = n₁} l) λ l' → bind (F _) (inord/cmp r) (λ r' → ret (l' ++ z ∷ [] ++ r')))
   ≡⟨⟩ 
@@ -386,14 +416,46 @@ splay/correct {n} (node {n₁} {n₂} l z r) i i<n with <-cmp i n₁
     bind (F _) (inord/cmp r) (λ r' → 
       ret (l' ++ z ∷ [] ++ r')))
   ∎
-... | tri≈ ¬a b ¬c = {!   !}
+... | tri≈ ¬a b ¬c = refl
 ... | tri> ¬a ¬b c = {!   !}
 
 splayTopLevelHelper/correct : {n i : val nat} {i<n : i < n} {t : Splayed n} → 
-  bind (F _) (splayTopLevelHelper {n} {i} {i<n} t) (λ z → inord/cmp (proj₂ (proj₂ z)))
+  bind (F _) (splayTopLevelHelper {n} {i} {i<n} t) (λ e → inord/cmp (proj₂ (proj₂ e)))
   ≡ 
   inord/splayed/cmp t 
-splayTopLevelHelper/correct = {!   !}
+splayTopLevelHelper/correct {n} {i} {i<n} {t = valid (node {n₁} {n₂} l z r)} = refl
+splayTopLevelHelper/correct {t = zig {n₁₁} {n₁₂} {n₁₃} a x b y c} = 
+  let open ≡-Reasoning in
+  begin
+    inord/cmp (node (node a x b) y c)
+  ≡⟨⟩
+    bind (F _) (inord/cmp a) (λ a' →
+      bind (F _) (inord/cmp b) (λ b' →
+        bind (F _) (inord/cmp c) (λ c' → 
+          ret ((a' ++ x ∷ b') ++ y ∷ c'))))
+  ≡⟨ Eq.cong (λ e → bind (F _) (inord/cmp a) e) (funext (λ a' →
+          Eq.cong (λ e → bind (F _) (inord/cmp b) e) (funext (λ b' →
+            Eq.cong (λ e → bind (F _) (inord/cmp c) e) (funext (λ c' → 
+              Eq.cong ret (++-assoc a' (x ∷ b') (y ∷ c')))))))) ⟩
+    bind (F _) (inord/cmp a) (λ a' →
+      bind (F _) (inord/cmp b) (λ b' →
+        bind (F _) (inord/cmp c) (λ c' → 
+          ret (a' ++ x ∷ b' ++ y ∷ c'))))
+  ∎
+splayTopLevelHelper/correct {t = zag {n₁₁} {n₁₂} {n₁₃} a y b x c} = refl
+
+open BST renaming (splay to splay')
+
+record BSTHom (bst bst' : BST) : Set where
+  field
+    ϕ : cmp (Π (bst .T) λ _ → F (bst' .T))
+    ϕ/splay : (t : val (bst .T)) (i : val nat) → 
+       bind (F _) (bst .splay' t i) (λ { (_ , t') → ϕ t'})
+      -- ≤⁻[ F (bst' .T) ]
+      ≡
+        ϕ t
+        
+open BSTHom
 
 ST⇒LT : BSTHom SplayTree ListTree
 ST⇒LT .ϕ (n , t) = inord/cmp t
