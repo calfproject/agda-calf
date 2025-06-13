@@ -50,37 +50,79 @@ record ◯-Monoid (A : tp⁺) : Set where
 
 scan/bruteforce/help : {A : tp⁺} → cmp (Π (U (Π (A ×⁺ A) (λ _ → F A))) (λ _ → Π A (λ _ → (Π (list A) (λ _ →  F (list A ×⁺ A))))))
 scan/bruteforce/help f e [] = ret ([] , e)
-scan/bruteforce/help f e (x ∷ L) = bind (F _) (f (e , x)) (λ y → bind (F _) (scan/bruteforce/help f e L) λ { (ys , r) →  ret ( y ∷ ys , r )}) 
+scan/bruteforce/help f e (x ∷ L) = bind (F _) (f (e , x)) (λ y → bind (F _) (scan/bruteforce/help f y L) λ { (ys , r) →  ret ( y ∷ ys , r )}) 
 
 scan/bruteforce : {A : tp⁺} → ◯-Monoid A → (cmp  (Π (list A)  (λ _ → F (list A ×⁺ A))))
 scan/bruteforce M L = scan/bruteforce/help (◯-Monoid.f M) (◯-Monoid.identity M) L
+
+scan/accum-independent :  (c : ℂ) → 
+                          (a b : val A) →
+                          (l : val (list A)) → 
+                          (f :  cmp (Π (A ×⁺ A) (λ _ → F A))) → 
+                          ((IsBounded (list A ×⁺ A) (scan/bruteforce/help f a l) c) → (IsBounded (list A ×⁺ A) (scan/bruteforce/help f b l) c)) 
+
+scan/accum-independent c a b l f h = {!   !}
 
 scan/bruteforce/cost :  
       (m : ◯-Monoid A) → 
       (c : ℂ) →
       ((a b : val A) → IsBounded A (◯-Monoid.f m (a , b)) c) → 
+      (y : val A) → 
       (l : val (list A)) →
       IsBounded (list A ×⁺ A) (scan/bruteforce m l) (length l * c)
-scan/bruteforce/cost m c h []      = ≤⁻-refl
-scan/bruteforce/cost m c h (x ∷ l) = 
+scan/bruteforce/cost m c h y []      = ≤⁻-refl
+scan/bruteforce/cost m c h y (x ∷ l) = 
   let open ≤⁻-Reasoning cost in
   begin
-   bind (F unit) (◯-Monoid.f m (◯-Monoid.identity m , x)) (λ _ →
-    bind (F unit) (scan/bruteforce/help (◯-Monoid.f m) (◯-Monoid.identity m) l) (λ _ → 
+   bind (F _) (◯-Monoid.f m (◯-Monoid.identity m , x)) (λ res →
+    bind (F _) (scan/bruteforce/help (◯-Monoid.f m) res l) (λ _ → 
       ret triv))
-  ≲⟨ bind-monoˡ-≤⁻ (λ _ →
-        bind (F unit) (scan/bruteforce/help (◯-Monoid.f m) (◯-Monoid.identity m) l) (λ _ → ret triv)) 
-        (h (◯-Monoid.identity m) x) ⟩
-   bind (F unit) (step⋆ c) (λ _ →
-    bind (F unit) (scan/bruteforce/help (◯-Monoid.f m) (◯-Monoid.identity m) l) (λ _ → 
-      ret triv))
-  ≲⟨ bind-monoʳ-≤⁻ (step⋆ c) (λ _ → scan/bruteforce/cost m c h l) ⟩
-    bind (F unit) (step⋆ c) (λ _ →
-      bind (F unit) (step⋆ (length l * c)) (λ _ → 
-        ret triv))
-  ≡⟨⟩
+  ≲⟨ bind-monoʳ-≤⁻ {! ◯-Monoid.f m ( ◯-Monoid.identity m , x) !} (λ _ → scan/bruteforce/cost m c h y l) ⟩
+   bind (F _) (◯-Monoid.f m (◯-Monoid.identity m , x)) (λ _ →
+       bind (F _) (step⋆ (length l * c)) (λ _ → 
+         ret triv))
+  ≡⟨ {!   !} ⟩
     step⋆ (c + length l * c)  
   ∎
+
+  --   let open ≤⁻-Reasoning cost in
+  -- begin
+  --  bind (F _) (◯-Monoid.f m (y , x)) (λ res →
+  --   bind (F _) (scan/bruteforce/help (◯-Monoid.f m) res l) (λ _ → 
+  --     ret triv))
+  -- ≲⟨ bind-monoˡ-≤⁻ (λ _ →
+  --       bind (F _) (scan/bruteforce/help (◯-Monoid.f m) y l) (λ _ → ret triv)) 
+  --       (h y x) ⟩
+  --  bind (F _) (step⋆ c) (λ _ →
+  --   bind (F _) (scan/bruteforce/help (◯-Monoid.f m) y l) (λ _ → 
+  --     ret triv))
+  -- ≲⟨ bind-monoʳ-≤⁻ (step⋆ c) (λ _ → scan/bruteforce/cost m c h y l) ⟩
+  --   bind (F _) (step⋆ c) (λ _ →
+  --     bind (F _) (step⋆ (length l * c)) (λ _ → 
+  --       ret triv))
+  -- ≡⟨⟩
+  --   step⋆ (c + length l * c)  
+  -- ∎
+
+  -- let open ≤⁻-Reasoning cost in
+  -- begin
+  --  bind (F unit) (◯-Monoid.f m (◯-Monoid.identity m , x)) (λ _ →
+  --   bind (F unit) (scan/bruteforce/help (◯-Monoid.f m) (◯-Monoid.identity m) l) (λ _ → 
+  --     ret triv))
+  -- ≲⟨ bind-monoˡ-≤⁻ (λ _ →
+  --       bind (F unit) (scan/bruteforce/help (◯-Monoid.f m) (◯-Monoid.identity m) l) (λ _ → ret triv)) 
+  --       (h (◯-Monoid.identity m) x) ⟩
+  --  bind (F unit) (step⋆ c) (λ _ →
+  --   bind (F unit) (scan/bruteforce/help (◯-Monoid.f m) (◯-Monoid.identity m) l) (λ _ → 
+  --     ret triv))
+  -- ≲⟨ bind-monoʳ-≤⁻ (step⋆ c) (λ _ → scan/bruteforce/cost m c h l) ⟩
+  --   bind (F unit) (step⋆ c) (λ _ →
+  --     bind (F unit) (step⋆ (length l * c)) (λ _ → 
+  --       ret triv))
+  -- ≡⟨⟩
+  --   step⋆ (c + length l * c)  
+  -- ∎
+
 
 open import Examples.Sorting.Sequential.MergeSort.Split M
 
