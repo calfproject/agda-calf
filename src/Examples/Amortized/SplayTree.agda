@@ -72,15 +72,39 @@ splayed-size (zag a y b x c) = tree-size a + 1 + tree-size b + 1 + tree-size c
 >-splayHelper z l (zig a x b y c) = ret (valid (node (node l z a) x (node b y c)))
 >-splayHelper z l (zag a y b x c) = ret (valid (node (node (node l z a) y b) x c))
 
+<-splayResultType : Tree → Splayed → tp⁺
+<-splayResultType r l = Σ⁺ splayed λ l' → meta⁺ (splayed-size l' ≡ splayed-size l + 1 + tree-size r)
+
+<-splayHelper' : (z : val nat) (r : Tree) (l : Splayed) {i : val nat} {i<l : i < (splayed-size l)} → cmp (F (<-splayResultType r l))
+<-splayHelper' z r (valid (node a x b)) = ret (zig a x b z r , refl)
+<-splayHelper' z r (zig a x b y c) = 
+  ret (valid (node a x (node b y (node c z r))) , 
+    arithmetic (tree-size a) (tree-size b) (tree-size c) (tree-size r))
+    where 
+      arithmetic : (a b c d : val nat) → a + 1 + (b + 1 + (c + 1 + d)) ≡ a + 1 + b + 1 + c + 1 + d
+      arithmetic a b c d = solve Nat.+-0-monoid
+<-splayHelper' z r (zag a y b x c) = {!   !}
+
+splayResultType : Tree → tp⁺ 
+splayResultType t = Σ⁺ splayed λ l → meta⁺ (splayed-size l ≡ tree-size t)
+
+splay' : (t : Tree) → (i : val nat) → i < (tree-size t) → cmp (F (splayResultType t))
+splay' (node l z r) i i<t with <-cmp i (tree-size l)
+... | tri< i<l i≢l _ = 
+  bind (F (splayResultType (node l z r))) (splay' l i i<l) λ (l' , l'≡l) → 
+    bind (F _) (<-splayHelper' z r l' {i = i} {i<l = Eq.subst (λ n → i < n) (Eq.sym l'≡l) i<l}) λ (l'' , l''≡r+1+l') → 
+      ret (l'' , Eq.trans l''≡r+1+l' (Eq.cong (λ n → n + 1 + tree-size r) l'≡l)) 
+
 splay : (t : Tree) → (i : val nat) → i < (tree-size t) → cmp (F (splayed))
 splay (node l z r) i i<t with <-cmp i (tree-size l)
 ... | tri< i<l i≢l _ = 
-  bind (F (splayed)) (splay l i i<l) λ
-    { (valid leaf) → ret (valid leaf)
-    ; (valid (node a x b)) → ret (zig a x b z r) 
-    ; (zig a x b y c) → ret (valid (node a x (node b y (node c z r))))
-    ; (zag a y b x c) → ret (valid (node (node a y b) x (node c z r))) 
-    }
+  bind (F (splayed)) (splay l i i<l) λ l → <-splayHelper z r l {i = i} {i<l = {! i<l  !}}
+  -- λ
+    -- { (valid leaf) → ret (valid leaf)
+    -- ; (valid (node a x b)) → ret (zig a x b z r) 
+    -- ; (zig a x b y c) → ret (valid (node a x (node b y (node c z r))))
+    -- ; (zag a y b x c) → ret (valid (node (node a y b) x (node c z r))) 
+    -- }
 ... | tri≈ _ i=l _ = ret (valid (node l z r))
 ... | tri> _ _ i>l = 
   let
@@ -122,11 +146,12 @@ SplayTree .BST.size (node l z r) = ret (tree-size (node l z r))
 -- inord leaf = []
 -- inord (node l z r) = (inord l) ++ (z ∷ []) ++ (inord r)
 
--- inord/cmp : {n : val nat} → cmp (Π (meta⁺ (Tree n)) λ _ → F (list nat))
--- inord/cmp {n} leaf = ret []
--- inord/cmp {n} (node l z r) = 
---   bind (F _) (inord/cmp l) (λ l' → 
---   bind (F _) (inord/cmp r) (λ r' → ret (l' ++ z ∷ [] ++ r')))
+inord/cmp : cmp (Π tree λ _ → F (list nat))
+inord/cmp leaf = ret []
+inord/cmp (node l z r) = 
+  bind (F _) (inord/cmp l) (λ l' → 
+  bind (F _) (inord/cmp r) (λ r' → ret (l' ++ z ∷ [] ++ r')))
+
 
 -- inord/correct : {n : val nat} {t : Tree n} → length (inord t) ≡ n
 -- inord/correct {n} {leaf} = refl
@@ -149,18 +174,58 @@ SplayTree .BST.size (node l z r) = ret (tree-size (node l z r))
 -- inord/splayed (zig a x b y c) = inord a ++ x ∷ [] ++ inord b ++ y ∷ [] ++ inord c
 -- inord/splayed (zag a y b x c) = inord a ++ y ∷ [] ++ inord b ++ x ∷ [] ++ inord c
 
--- inord/splayed/cmp : {n : val nat} → cmp (Π (splayed n) λ _ → F (list nat))
--- inord/splayed/cmp {n} (valid t)       = inord/cmp t
--- inord/splayed/cmp {n} (zig a x b y c) = 
---   bind (F _) (inord/cmp a) (λ a' → 
---   bind (F _) (inord/cmp b) (λ b' → 
---   bind (F _) (inord/cmp c) λ c' → 
---     ret (a' ++ x ∷ [] ++ b' ++ y ∷ [] ++ c')))
--- inord/splayed/cmp {n} (zag a y b x c) = 
---   bind (F _) (inord/cmp a) (λ a' → 
---   bind (F _) (inord/cmp b) (λ b' → 
---   bind (F _) (inord/cmp c) λ c' → 
---     ret (a' ++ y ∷ [] ++ b' ++ x ∷ [] ++ c')))
+inord/splayed/cmp : cmp (Π splayed λ _ → F (list nat))
+inord/splayed/cmp (valid t)       = inord/cmp t
+inord/splayed/cmp (zig a x b y c) = 
+  bind (F _) (inord/cmp a) (λ a' → 
+  bind (F _) (inord/cmp b) (λ b' → 
+  bind (F _) (inord/cmp c) λ c' → 
+    ret (a' ++ x ∷ [] ++ b' ++ y ∷ [] ++ c')))
+inord/splayed/cmp (zag a y b x c) = 
+  bind (F _) (inord/cmp a) (λ a' → 
+  bind (F _) (inord/cmp b) (λ b' → 
+  bind (F _) (inord/cmp c) λ c' → 
+    ret (a' ++ y ∷ [] ++ b' ++ x ∷ [] ++ c')))
+
+<-splayHelper'/correct : 
+  (z : val nat) (r : Tree) (l : Splayed) {i : val nat} {i<l : i < splayed-size l}  → 
+  bind (F (list nat)) (<-splayHelper' z r l {i = i} {i<l = i<l}) (λ (l' , _) → inord/splayed/cmp l')
+  ≡
+  bind (F (list nat)) (inord/splayed/cmp l) λ l' → bind (F _) (inord/cmp r) (λ r' → ret (l' ++ z ∷ [] ++ r'))
+<-splayHelper'/correct z r (valid (node t x t₁)) {i} {i<l} = {!   !}
+<-splayHelper'/correct z r (zig a x b y c) {i} {i<l} = 
+  let open ≡-Reasoning in
+  begin 
+    bind (F _) (inord/cmp a) (λ l₁ →
+      bind (F _) (inord/cmp b) (λ l₂ →
+        bind (F _) (inord/cmp c) (λ l₃ →
+          bind (F _) (inord/cmp r) (λ l₄ → 
+            ret (l₁ ++ x ∷ l₂ ++ y ∷ l₃ ++ z ∷ l₄))))) 
+  ≡⟨ Eq.cong (bind (F _) (inord/cmp a)) (funext (λ l₁ → 
+      Eq.cong (bind (F _) (inord/cmp b)) (funext (λ l₂ → 
+        Eq.cong (bind (F _) (inord/cmp c)) (funext (λ l₃ → 
+          Eq.cong (bind (F _) (inord/cmp r)) (funext (λ l₄ → 
+            Eq.cong ret (arithmetic l₁ (x ∷ l₂) (y ∷ l₃) (z ∷ l₄)))))))))) ⟩
+    bind (F _) (inord/cmp a) (λ l₁ →
+      bind (F _) (inord/cmp b) (λ l₂ →
+        bind (F _) (inord/cmp c) (λ l₃ →
+          bind (F _) (inord/cmp r) (λ l₄ → 
+            ret ((l₁ ++ x ∷ l₂ ++ y ∷ l₃) ++ z ∷ l₄))))) 
+  ∎
+  where 
+    arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → l₁ ++ l₂ ++ l₃ ++ l₄ ≡ (l₁ ++ l₂ ++ l₃) ++ l₄
+    arithmetic l₁ l₂ l₃ l₄ = 
+      let open Eq.≡-Reasoning in 
+      begin 
+        l₁ ++ l₂ ++ l₃ ++ l₄
+      ≡⟨ ++-assoc l₁ l₂ (l₃ ++ l₄) ⟨ 
+        (l₁ ++ l₂) ++ l₃ ++ l₄
+      ≡⟨ ++-assoc (l₁ ++ l₂) l₃ l₄ ⟨ 
+        ((l₁ ++ l₂) ++ l₃) ++ l₄
+      ≡⟨ Eq.cong (λ l → l ++ l₄) (++-assoc l₁ l₂ l₃) ⟩ 
+        (l₁ ++ l₂ ++ l₃) ++ l₄
+      ∎
+<-splayHelper'/correct z r (zag a y b x c) {i} {i<l} = {!   !}
 
 -- inord/splayed/correct : {n : val nat} {t : val (splayed n)} → length (inord/splayed t) ≡ n
 -- inord/splayed/correct {n} {valid t} = inord/correct {t = t}
