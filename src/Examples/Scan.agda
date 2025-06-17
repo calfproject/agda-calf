@@ -169,17 +169,34 @@ appendList (x ∷ xs) l =
   bind (F _) (appendList xs l) λ l' → 
     ret (x ∷ l'))
 
-scan/divconq/help : 
+appendList/bound  : (c : ℂ) → 
+                    (l₁ l₂ : val (list A)) → 
+                    IsBounded (list A) (appendList l₁ l₂) (length l₁) 
+appendList/bound c [] l₂ = ≤⁻-refl
+appendList/bound c (x ∷ l₁) l₂ = let open ≤⁻-Reasoning cost in
+  begin 
+    step (F _) 1 (
+      bind (F _) (appendList l₁ l₂) λ l' → 
+        ret triv ) 
+  ≲⟨ step-monoʳ-≤⁻ 1 (appendList/bound c l₁ l₂) ⟩
+    step (F _) 1 (
+      bind (F _) (step⋆ (length l₁) ) λ _ → 
+        ret triv )
+  ≡⟨⟩
+    step⋆ (1 + length l₁)
+  ∎
+
+scan/divconq/clocked : 
   cmp (Π (U (Π (A ×⁺ A) (λ _ → F A))) (λ _ → 
        Π A (λ _ → 
        Π (list A) (λ l → 
        Π nat λ k →
        Π (meta⁺ (⌈log₂ length l ⌉ Nat.≤ k)) λ _ → 
         F (list A ×⁺ A)))))
-scan/divconq/help f e l Nat.zero p = ret (l , e)
-scan/divconq/help f e [] (suc Nat.zero) p = ret ([] , e)
-scan/divconq/help f e (x ∷ l) (suc Nat.zero) p = ret (e ∷ [] , x)
-scan/divconq/help f e l (2+ k) p = 
+scan/divconq/clocked f e l Nat.zero p = ret (l , e)
+scan/divconq/clocked f e [] (suc Nat.zero) p = ret ([] , e)
+scan/divconq/clocked f e (x ∷ l) (suc Nat.zero) p = ret (e ∷ [] , x)
+scan/divconq/clocked f e l (2+ k) p = 
   bind (F _) (split l) λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
   let
     h₁ , h₂ =
@@ -201,40 +218,48 @@ scan/divconq/help f e l (2+ k) p =
         suc k
       ∎)
   in
-  bind (F _) (scan/divconq/help f e l₁ (suc k) h₁) λ (l₁' , b') → 
-  bind (F _) (scan/divconq/help f e l₂ (suc k) h₂) λ (l₂' , c') → 
+  bind (F _) (scan/divconq/clocked f e l₁ (suc k) h₁) λ (l₁' , b') → 
+  bind (F _) (scan/divconq/clocked f e l₂ (suc k) h₂) λ (l₂' , c') → 
   bind (F _) (mapList (λ x → f (b' , x)) l₂') λ r' → 
   bind (F _) (appendList l₁' r') λ resL →
   bind (F _) (f (b' , c')) λ res → 
   ret (resL , res)
 
+scan/divconq/clocked/cost : 
+                          (f :  cmp (Π (A ×⁺ A) (λ _ → F A))) → 
+                          (c : ℂ) →
+                          ((a b : val A) → IsBounded A (◯-Monoid.f m (a , b)) c) → 
+                          (l : val (list A)) →
+                          (h : meta⁺ (⌈log₂ length l ⌉ Nat.≤ k)) → 
+                          (n : nat) → 
+                          IsBounded (list A ×⁺ A) (scan/divconq m l) (length l * c)
 
 
 scan/divconq : ◯-Monoid A → (cmp  (Π (list A)  (λ _ → F (list A ×⁺ A))))
-scan/divconq M L = scan/divconq/help (◯-Monoid.f M) (◯-Monoid.identity M) L ⌈log₂ length L ⌉ N.≤-refl 
+scan/divconq M L = scan/divconq/clocked (◯-Monoid.f M) (◯-Monoid.identity M) L ⌈log₂ length L ⌉ N.≤-refl 
 
 
-scan/divconq/cost : 
-      (m : ◯-Monoid A) → 
-      (c : ℂ) →
-      ((a b : val A) → IsBounded A (◯-Monoid.f m (a , b)) c) → 
-      (l : val (list A)) →
-      IsBounded (list A ×⁺ A) (scan/divconq m l) (length l * c)
-scan/divconq/cost m c h [] = ≤⁺-refl
--- this should definitely go by induction on log2 length L
-scan/divconq/cost m c h (x ∷ l) =
-  let open ≤⁻-Reasoning cost in 
-  begin
-    bind (F (meta⁺ Unit))
-      (scan/divconq/help (◯-Monoid.f m) (◯-Monoid.identity m) (x ∷ l)
-        ⌈log₂ length (x ∷ l) ⌉ N.≤-refl) (λ _ → ret triv)
-  ≲⟨ {!  !} ⟩
-    {!   !} 
-  ≲⟨ {!   !} ⟩
-    {!   !} 
-  ∎
+-- scan/divconq/cost : 
+--       (m : ◯-Monoid A) → 
+--       (c : ℂ) →
+--       ((a b : val A) → IsBounded A (◯-Monoid.f m (a , b)) c) → 
+--       (l : val (list A)) →
+--       IsBounded (list A ×⁺ A) (scan/divconq m l) (length l * c)
+-- scan/divconq/cost m c h [] = ≤⁺-refl
+-- -- this should definitely go by induction on log2 length L
+-- scan/divconq/cost m c h (x ∷ l) =
+--   let open ≤⁻-Reasoning cost in 
+--   begin
+--     bind (F (meta⁺ Unit))
+--       (scan/divconq/clocked (◯-Monoid.f m) (◯-Monoid.identity m) (x ∷ l)
+--         ⌈log₂ length (x ∷ l) ⌉ N.≤-refl) (λ _ → ret triv)
+--   ≲⟨ {!  !} ⟩
+--     {!   !} 
+--   ≲⟨ {!   !} ⟩
+--     {!   !} 
+--   ∎
 -- bind (F (meta⁺ Unit))
--- (scan/divconq/help (◯-Monoid.f m) (◯-Monoid.identity m) (x ∷ l)
+-- (scan/divconq/clocked (◯-Monoid.f m) (◯-Monoid.identity m) (x ∷ l)
 --  (Data.Nat.Logarithm.Core.⌈log2⌉
 --   (suc (Calf.Data.List.foldr (λ _ → suc) 0 l))
 --   (Induction.WellFounded.Acc.acc
