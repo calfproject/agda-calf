@@ -152,7 +152,7 @@ mapList/bound c (x ∷ l) f h a = let open ≤⁻-Reasoning cost in
     bind (F _) (step⋆ (length l * c)) (((λ a₁ → bind (F _) (step⋆ c) (λ a₂ → ret triv)))) 
   ≡⟨⟩ 
     step⋆ (length l * c + c) 
-  ≲⟨ step⋆-mono-≤⁻ {! !} ⟩ 
+  ≡⟨ Eq.cong step⋆ (N.+-comm (length l * c) c)  ⟩ 
     step⋆ (c + length l * c) 
   ∎
 
