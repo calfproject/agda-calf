@@ -36,6 +36,7 @@ open import Function
 import Data.Nat.Properties as N
 open import Data.Nat.Square
 open import Data.Nat.Log2
+import Data.Nat.Properties as N
 
 
 record ◯-isMonoid {A : tp⁺} (f : cmp (Π (A ×⁺ A) (λ _ → F A))) (ε : val A) : Set where 
@@ -147,8 +148,12 @@ mapList/bound c (x ∷ l) f h a = let open ≤⁻-Reasoning cost in
     bind (F _) ((mapList (λ x₁ → f (a , x₁)) l)) ((λ a₁ → bind (F _) (f (a , x)) (λ a₂ → ret triv)))
   ≲⟨ bind-monoˡ-≤⁻ (((λ a₁ → bind (F (meta⁺ Unit)) (f (a , x)) (λ a₂ → ret triv)))) (mapList/bound c l f h a) ⟩ 
     bind (F _) (step⋆ (length l * c)) (((λ a₁ → bind (F _) (f (a , x)) (λ a₂ → ret triv)))) 
-  ≲⟨ bind-monoʳ-≤⁻ ((step⋆ (length l * c))) (λ a₁ → {! h a x   !}) ⟩ 
-    {!   !} 
+  ≲⟨ bind-monoʳ-≤⁻ ((step⋆ (length l * c))) (λ a₁ → h a x) ⟩ 
+    bind (F _) (step⋆ (length l * c)) (((λ a₁ → bind (F _) (step⋆ c) (λ a₂ → ret triv)))) 
+  ≡⟨⟩ 
+    step⋆ (length l * c + c) 
+  ≲⟨ step⋆-mono-≤⁻ {! !} ⟩ 
+    step⋆ (c + length l * c) 
   ∎
 
 -- bind (F (meta⁺ Unit)) (mapList (λ x₁ → f (a , x₁)) l)
@@ -203,7 +208,7 @@ scan/divconq/help f e l (2+ k) p =
   bind (F _) (f (b' , c')) λ res → 
   ret (resL , res)
 
-import Data.Nat.Properties as N
+
 
 scan/divconq : ◯-Monoid A → (cmp  (Π (list A)  (λ _ → F (list A ×⁺ A))))
 scan/divconq M L = scan/divconq/help (◯-Monoid.f M) (◯-Monoid.identity M) L ⌈log₂ length L ⌉ N.≤-refl 
