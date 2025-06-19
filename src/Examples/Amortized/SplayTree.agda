@@ -82,9 +82,48 @@ size-tree-list t t' p = Eq.trans (Eq.sym (tree-list-length t)) (Eq.trans (Eq.con
 
 splay-list-length : (s : Splayed) → length (splay-list s) ≡ splayed-size s
 splay-list-length (valid t)       = tree-list-length t
-splay-list-length (zig a x b y c) = {!   !} -- doable
---Eq.trans (length-++ (tree-list a)) (Eq.trans (Eq.cong (λ n → length (tree-list a) + n) (length-++ (x ∷ tree-list b))) {!   !})
-splay-list-length (zag a y b x c) = {!   !}
+splay-list-length (zig a x b y c) = 
+  let open ≡-Reasoning in
+  begin
+    length (tree-list a ++ (x ∷ tree-list b ++ y ∷ tree-list c))
+  ≡⟨ length-++ (tree-list a) ⟩
+    length (tree-list a) + length (x ∷ tree-list b ++ y ∷ tree-list c)
+  ≡⟨ Eq.cong (_+ length (x ∷ tree-list b ++ y ∷ tree-list c)) (tree-list-length a) ⟩
+    tree-size a + length (x ∷ tree-list b ++ y ∷ tree-list c)
+  ≡⟨ Eq.cong (tree-size a +_) (length-++ (x ∷ tree-list b) {ys = y ∷ tree-list c})  ⟩
+    tree-size a + (length (x ∷ tree-list b) + length (y ∷ tree-list c))
+  ≡⟨ Eq.cong (tree-size a +_) (Eq.cong₂ _+_ {x = length (x ∷ tree-list b)} refl refl) ⟩
+    tree-size a + ((1 + length (tree-list b)) + (1 + length (tree-list c)))
+  ≡⟨ Eq.cong (tree-size a +_) (Eq.cong₂ _+_ (Eq.cong (1 +_) (tree-list-length b)) (Eq.cong (1 +_) (tree-list-length c))) ⟩
+    tree-size a + ((1 + tree-size b) + (1 + tree-size c))
+  ≡⟨ +-assoc (tree-size a) ((1 + tree-size b)) ((1 + tree-size c)) ⟨
+    (tree-size a + (1 + tree-size b)) + (1 + tree-size c)
+  ≡⟨ Eq.cong (_+ (1 + tree-size c)) (+-assoc (tree-size a) 1 (tree-size b)) ⟨
+    (tree-size a + 1 + tree-size b) + (1 + tree-size c)
+  ≡⟨ +-assoc (tree-size a + 1 + tree-size b) 1 (tree-size c) ⟨
+    tree-size a + 1 + tree-size b + 1 + tree-size c
+  ∎ 
+splay-list-length (zag a y b x c) = 
+  let open ≡-Reasoning in
+  begin
+    length (tree-list a ++ (y ∷ tree-list b ++ x ∷ tree-list c))
+  ≡⟨ length-++ (tree-list a) ⟩
+    length (tree-list a) + length (y ∷ tree-list b ++ x ∷ tree-list c)
+  ≡⟨ Eq.cong (_+ length (y ∷ tree-list b ++ x ∷ tree-list c)) (tree-list-length a) ⟩
+    tree-size a + length (y ∷ tree-list b ++ x ∷ tree-list c)
+  ≡⟨ Eq.cong (tree-size a +_) (length-++ (y ∷ tree-list b) {ys = x ∷ tree-list c})  ⟩
+    tree-size a + (length (y ∷ tree-list b) + length (x ∷ tree-list c))
+  ≡⟨ Eq.cong (tree-size a +_) (Eq.cong₂ _+_ {x = length (y ∷ tree-list b)} refl refl) ⟩
+    tree-size a + ((1 + length (tree-list b)) + (1 + length (tree-list c)))
+  ≡⟨ Eq.cong (tree-size a +_) (Eq.cong₂ _+_ (Eq.cong (1 +_) (tree-list-length b)) (Eq.cong (1 +_) (tree-list-length c))) ⟩
+    tree-size a + ((1 + tree-size b) + (1 + tree-size c))
+  ≡⟨ +-assoc (tree-size a) ((1 + tree-size b)) ((1 + tree-size c)) ⟨
+    (tree-size a + (1 + tree-size b)) + (1 + tree-size c)
+  ≡⟨ Eq.cong (_+ (1 + tree-size c)) (+-assoc (tree-size a) 1 (tree-size b)) ⟨
+    (tree-size a + 1 + tree-size b) + (1 + tree-size c)
+  ≡⟨ +-assoc (tree-size a + 1 + tree-size b) 1 (tree-size c) ⟨
+    tree-size a + 1 + tree-size b + 1 + tree-size c
+  ∎
 
 size-splayed-list : (s : Splayed) (t : Tree) → splay-list s ≡ tree-list t → splayed-size s ≡ tree-size t
 size-splayed-list s t p = Eq.trans (Eq.sym (splay-list-length s)) (Eq.trans (Eq.cong length p) (tree-list-length t))
@@ -98,13 +137,30 @@ size-splayed-list s t p = Eq.trans (Eq.sym (splay-list-length s)) (Eq.trans (Eq.
   ret (valid (node a x (node b y (node c z r))) , arithmetic (tree-list a) (x ∷ tree-list b) (y ∷ tree-list c) (z ∷ tree-list r))
     where 
       arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → l₁ ++ l₂ ++ l₃ ++ l₄ ≡ (l₁ ++ l₂ ++ l₃) ++ l₄
-      arithmetic = {!   !}
+      arithmetic l₁ l₂ l₃ l₄ = 
+        let open Eq.≡-Reasoning in 
+        begin 
+          l₁ ++ l₂ ++ l₃ ++ l₄
+        ≡⟨ ++-assoc l₁ l₂ (l₃ ++ l₄) ⟨ 
+          (l₁ ++ l₂) ++ l₃ ++ l₄
+        ≡⟨ ++-assoc (l₁ ++ l₂) l₃ l₄ ⟨ 
+          ((l₁ ++ l₂) ++ l₃) ++ l₄
+        ≡⟨ Eq.cong (λ l → l ++ l₄) (++-assoc l₁ l₂ l₃) ⟩ 
+          (l₁ ++ l₂ ++ l₃) ++ l₄
+        ∎
 <-splayHelper z r (zag a y b x c) = 
-  ret (valid (node (node a y b) x (node c z r)) , 
-    arithmetic (tree-list a) (y ∷ tree-list b) (x ∷ tree-list c) (z ∷ tree-list r))
-  where 
-    arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → (l₁ ++ l₂) ++ l₃ ++ l₄ ≡ (l₁ ++ l₂ ++ l₃) ++ l₄
-    arithmetic = {!   !}
+  ret (valid (node (node a y b) x (node c z r)) , arithmetic (tree-list a) (y ∷ tree-list b) (x ∷ tree-list c) (z ∷ tree-list r))
+    where 
+      arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → (l₁ ++ l₂) ++ l₃ ++ l₄ ≡ (l₁ ++ l₂ ++ l₃) ++ l₄
+      arithmetic l₁ l₂ l₃ l₄ = 
+        let open ≡-Reasoning in
+        begin
+          (l₁ ++ l₂) ++ l₃ ++ l₄
+        ≡⟨ ++-assoc (l₁ ++ l₂) l₃ l₄ ⟨
+          ((l₁ ++ l₂) ++ l₃) ++ l₄
+        ≡⟨ Eq.cong (_++ l₄) (++-assoc l₁ l₂ l₃) ⟩
+          (l₁ ++ l₂ ++ l₃) ++ l₄
+        ∎
 
 >-splayResultType : Tree → val nat → Splayed → tp⁺
 >-splayResultType l z r = Σ⁺ splayed λ t' → meta⁺ (splay-list t' ≡ tree-list l ++ z ∷ [] ++ splay-list r)
@@ -113,17 +169,28 @@ size-splayed-list s t p = Eq.trans (Eq.sym (splay-list-length s)) (Eq.trans (Eq.
 >-splayHelper z l (valid (node a x b)) = 
   ret (zag l z a x b , refl)
 >-splayHelper z l (zig a x b y c) = 
-  ret (valid (node (node l z a) x (node b y c)) , 
-    arithmetic (tree-list l) (z ∷ tree-list a) (x ∷ tree-list b) (y ∷ tree-list c))
-  where 
-    arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → (l₁ ++ l₂) ++ l₃ ++ l₄ ≡ l₁ ++ l₂ ++ l₃ ++ l₄
-    arithmetic = {!   !}
+  ret (valid (node (node l z a) x (node b y c)) , arithmetic (tree-list l) (z ∷ tree-list a) (x ∷ tree-list b) (y ∷ tree-list c))
+    where 
+      arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → (l₁ ++ l₂) ++ l₃ ++ l₄ ≡ l₁ ++ l₂ ++ l₃ ++ l₄
+      arithmetic l₁ l₂ l₃ l₄ = 
+        let open ≡-Reasoning in
+          (l₁ ++ l₂) ++ (l₃ ++ l₄)
+        ≡⟨ ++-assoc l₁ l₂ (l₃ ++ l₄) ⟩
+          l₁ ++ l₂ ++ l₃ ++ l₄
+        ∎
 >-splayHelper z l (zag a y b x c) = 
-  ret (valid (node (node (node l z a) y b) x c) , 
-    arithmetic (tree-list l) (z ∷ tree-list a) (y ∷ tree-list b) (x ∷ tree-list c))
+  ret (valid (node (node (node l z a) y b) x c) , arithmetic (tree-list l) (z ∷ tree-list a) (y ∷ tree-list b) (x ∷ tree-list c))
     where
       arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → ((l₁ ++ l₂) ++ l₃) ++ l₄ ≡ l₁ ++ l₂ ++ l₃ ++ l₄
-      arithmetic = {!   !}
+      arithmetic l₁ l₂ l₃ l₄ = 
+        let open ≡-Reasoning in 
+        begin
+          ((l₁ ++ l₂) ++ l₃) ++ l₄
+        ≡⟨ ++-assoc (l₁ ++ l₂) l₃ l₄ ⟩
+          (l₁ ++ l₂) ++ (l₃ ++ l₄)
+        ≡⟨ ++-assoc l₁ l₂ (l₃ ++ l₄) ⟩
+          l₁ ++ (l₂ ++ (l₃ ++ l₄))
+        ∎
 
 splayResultType : Tree → tp⁺ 
 splayResultType t = Σ⁺ splayed λ l → meta⁺ (splay-list l ≡ tree-list t)
@@ -150,7 +217,7 @@ splay (node l z r) i i<t with <-cmp i (tree-size l)
       )
   in 
     bind (F (splayResultType (node l z r))) (splay r (i ∸ ((tree-size l) + 1)) arithmetic) λ (r' , r'≡r) → 
-      bind (F _) (>-splayHelper z l r' {i = i ∸ (tree-size l + 1)} {i<r = {! true fact, need to prove this  !}}) λ (r'' , r''≡l+1+r') → 
+      bind (F _) (>-splayHelper z l r' {i = i ∸ (tree-size l + 1)} {i<r = Eq.subst (λ n → i ∸ (tree-size l + 1) < n) (Eq.sym (size-splayed-list r' r r'≡r)) arithmetic}) λ (r'' , r''≡l+1+r') → 
         ret (r'' , Eq.trans r''≡l+1+r' (Eq.cong (λ l' → tree-list l ++ z ∷ l') r'≡r))
 
 splayTopLevelHelper : (t : Splayed) {i : val nat} {i<t : i < splayed-size t} → cmp (F (nat ×⁺ (meta⁺ (Tree))))
