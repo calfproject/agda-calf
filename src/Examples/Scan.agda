@@ -58,18 +58,19 @@ scan/bruteforce/help f e [] = ret ([] , e)
 scan/bruteforce/help f e (x ∷ L) = 
   bind (F _) (f (e , x)) (λ y → 
     bind (F _) (scan/bruteforce/help f y L) λ { (ys , r) →  
-      ret ( y ∷ ys , r )}) 
+      ret ( e ∷ ys , r )}) 
 
 scan/bruteforce : {A : tp⁺} → ◯-Monoid A → cmp (Π (list A)  (λ _ → F (list A ×⁺ A)))
 scan/bruteforce M L = scan/bruteforce/help (◯-Monoid.f M) (◯-Monoid.identity M) L
 
 +-0-Monoid : ◯-Monoid nat 
 +-0-Monoid .◯-Monoid.f (m , n) = step (F _) (1 , 1) (ret (m + n))
-+-0-Monoid .◯-Monoid.identity = {!   !}
++-0-Monoid .◯-Monoid.identity = 0
 +-0-Monoid .◯-Monoid.isMonoid = {!   !} 
 
 
-
+scan/bruteforce/example : val (U (F (meta⁺ (Σ (Calf.Data.List.List ℕ) (λ x → ℕ)))))
+scan/bruteforce/example = scan/bruteforce +-0-Monoid ( 1 ∷ 2 ∷ [] )
 
 
 scan/accum-independent :  (w : ℕ) (s : ℕ) → 
