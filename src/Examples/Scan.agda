@@ -66,7 +66,21 @@ scan/bruteforce M L = scan/bruteforce/help (◯-Monoid.f M) (◯-Monoid.identity
 +-0-Monoid : ◯-Monoid nat 
 +-0-Monoid .◯-Monoid.f (m , n) = step (F _) (1 , 1) (ret (m + n))
 +-0-Monoid .◯-Monoid.identity = 0
-+-0-Monoid .◯-Monoid.isMonoid = {!   !} 
++-0-Monoid .◯-Monoid.isMonoid .◯-isMonoid.identityˡ {a} u = 
+  let open ≡-Reasoning 
+  in
+  begin
+    +-0-Monoid .◯-Monoid.f (+-0-Monoid .◯-Monoid.identity , a)
+  ≡⟨ {!   !} ⟩
+    step (F nat) ((1 , 1)) (ret (0 + a))
+  ≡⟨ step/ext (F _) (ret (0 + a)) ((1 , 1)) u ⟩ 
+    ret (0 + a) 
+  ≡⟨⟩
+    ret a  
+  ∎
+  -- this doesn't prove:  step/ext (F _) (ret a) ((1 , 1)) u
++-0-Monoid .◯-Monoid.isMonoid .◯-isMonoid.identityʳ u = {!   !}
++-0-Monoid .◯-Monoid.isMonoid .◯-isMonoid.assoc = {!   !}  
 
 
 scan/bruteforce/example : val (U (F (meta⁺ (Σ (Calf.Data.List.List ℕ) (λ x → ℕ)))))
@@ -97,34 +111,34 @@ scan/accum-independent w s (x ∷ l) f a h =
     step⋆ (w + length l * w , s + length l * s)  
   ∎
 
--- scan/bruteforce/cost :  
---       (m : ◯-Monoid A) → 
---       (c : ℂ) →
---       ((a b : val A) → IsBounded A (◯-Monoid.f m (a , b)) c) → 
---       (l : val (list A)) →
---       IsBounded (list A ×⁺ A) (scan/bruteforce m l) (length l * ? , ?)
--- scan/bruteforce/cost m c h []      = ≤⁻-refl
--- scan/bruteforce/cost m (w , s) h (x ∷ l) = 
---   let open ≤⁻-Reasoning cost in
---   begin
---    bind (F _) (◯-Monoid.f m (◯-Monoid.identity m , x)) (λ res →
---     bind (F _) (scan/bruteforce/help (◯-Monoid.f m) res l) (λ _ → 
---       ret triv))
---   ≲⟨ bind-monoʳ-≤⁻ (◯-Monoid.f m ( ◯-Monoid.identity m , x)) (λ res → scan/accum-independent c l (◯-Monoid.f m) res h) ⟩
---    bind (F _) (◯-Monoid.f m (◯-Monoid.identity m , x)) (λ _ →
---        bind (F _) (step⋆ (length l * )) (λ _ → 
---          ret triv))
---   ≲⟨ bind-monoˡ-≤⁻ 
---     ((λ _ →
---        bind (F _) (step⋆ (length l * c)) (
---         λ _ → 
---          ret triv))) (h (◯-Monoid.identity m) x) ⟩
---     bind (F _) (step⋆ c) (λ _ →
---        bind (F _) (step⋆ (length l * c)) (λ _ → 
---          ret triv))
---   ≡⟨⟩
---     step⋆ (c + length l * c)  
---   ∎
+scan/bruteforce/cost :  
+      (m : ◯-Monoid A) → 
+      ((w , s) : ℂ) →
+      ((a b : val A) → IsBounded A (◯-Monoid.f m (a , b)) (w , s)) → 
+      (l : val (list A)) →
+      IsBounded (list A ×⁺ A) (scan/bruteforce m l) (length l * w , length l * s)
+scan/bruteforce/cost m c h []      = ≤⁻-refl
+scan/bruteforce/cost m (w , s) h (x ∷ l) = 
+  let open ≤⁻-Reasoning cost in
+  begin
+   bind (F _) (◯-Monoid.f m (◯-Monoid.identity m , x)) (λ res →
+    bind (F _) (scan/bruteforce/help (◯-Monoid.f m) res l) (λ _ → 
+      ret triv))
+  ≲⟨ bind-monoʳ-≤⁻ (◯-Monoid.f m ( ◯-Monoid.identity m , x)) (λ res → scan/accum-independent c l (◯-Monoid.f m) res h) ⟩
+   bind (F _) (◯-Monoid.f m (◯-Monoid.identity m , x)) (λ _ →
+       bind (F _) (step⋆ (length l * )) (λ _ → 
+         ret triv))
+  ≲⟨ bind-monoˡ-≤⁻ 
+    ((λ _ →
+       bind (F _) (step⋆ (length l * c)) (
+        λ _ → 
+         ret triv))) (h (◯-Monoid.identity m) x) ⟩
+    bind (F _) (step⋆ c) (λ _ →
+       bind (F _) (step⋆ (length l * c)) (λ _ → 
+         ret triv))
+  ≡⟨⟩
+    step⋆ (c + length l * c)  
+  ∎
 
 -- -- reimplemented split from Split.agda in mergesort example
 
