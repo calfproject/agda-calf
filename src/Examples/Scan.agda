@@ -154,10 +154,17 @@ mapList/bound {A} (x ∷ l) f h a =
     step (F _) (1 , 0) 
       (bind (F _) ((mapList {A} (λ x₁ → f (a , x₁)) l)) ((λ a₁ → 
         bind (F _) (f (a , x)) (λ a₂ → ret triv))))
-  ≲⟨ step-monoʳ-≤⁻ ((1 , 0)) (bind-monoˡ-≤⁻ (((λ a₁ → bind (F (meta⁺ Unit)) (f (a , x)) (λ a₂ → ret triv)))) (mapList/bound l f h a)) ⟩ 
-    step (F _) ((1 , 0)) (bind (F _) (step⋆ (length l , 0)) (((λ a₁ → bind (F _) (f (a , x)) (λ a₂ → ret triv)))))
-  ≲⟨ step-monoʳ-≤⁻ (1 , 0) (bind-monoʳ-≤⁻ ((step⋆ (length l , 0))) (λ a₁ → h a x)) ⟩ 
-    step (F _) (1 , 0) (bind (F _) (step⋆ (length l , 0)) (((λ a₁ → bind (F _) (step⋆ (0 , 0)) (λ a₂ → ret triv)))))
+  ≲⟨ step-monoʳ-≤⁻ ((1 , 0)) 
+    (bind-monoˡ-≤⁻ (((λ a₁ → bind (F (meta⁺ Unit)) (f (a , x)) (λ a₂ → ret triv)))) 
+      (mapList/bound l f h a)) ⟩ 
+    step (F _) ((1 , 0)) 
+      (bind (F _) (step⋆ (length l , 0)) (((λ a₁ → 
+        bind (F _) (f (a , x)) (λ a₂ → ret triv)))))
+  ≲⟨ step-monoʳ-≤⁻ (1 , 0) 
+    (bind-monoʳ-≤⁻ ((step⋆ (length l , 0))) (λ a₁ → h a x)) ⟩ 
+    step (F _) (1 , 0) 
+      (bind (F _) (step⋆ (length l , 0)) (((λ a₁ → 
+        bind (F _) (step⋆ (0 , 0)) (λ a₂ → ret triv)))))
   ≡⟨⟩ 
     step⋆ (1 + length l , 0)
   ∎
@@ -228,15 +235,23 @@ scan/divconq/clocked {A} f e l (2+ k) p =
   ret (resL , res)
   
 
--- scan/divconq/clocked/cost : 
---                           (f :  cmp (Π (A ×⁺ A) (λ _ → F A))) → 
---                           (c : ℂ) →
---                           ((a b : val A) → IsBounded A (f (a , b)) c) → 
---                           (l : val (list A)) →
---                           (h : meta⁺ (⌈log₂ length l ⌉ Nat.≤ ?)) → 
---                           (n : nat) → 
---                           IsBounded (list A ×⁺ A) (scan/divconq m l) (length l * c)
-
+scan/divconq/clocked/cost : 
+                          (f :  cmp (Π (A ×⁺ A) (λ _ → F A))) → 
+                          ((a b : val A) → IsBounded A (f (a , b)) (0 , 0)) → 
+                          (m : ◯-Monoid A) → 
+                          (l : val (list A)) →
+                          (k : val nat) → 
+                          (h : val (meta⁺ (⌈log₂ length l ⌉ Nat.≤ k))) →  -- not sure about making this one a val chief 
+                          IsBounded (list A ×⁺ A) (scan/divconq/clocked (◯-Monoid.f m) (◯-Monoid.identity m) l k h) (length l + ⌈log₂ length l ⌉ , ⌈log₂ length l ⌉)
+scan/divconq/clocked/cost f p m l zero h = let open ≤⁻-Reasoning cost in 
+  begin
+    ret triv 
+  ≲⟨ bound/ret triv ⟩ 
+    step⋆ ((0 , 0))
+  ≡⟨ {!   !} ⟩ 
+    {!   !}  
+  ∎
+scan/divconq/clocked/cost f p m l (suc k) h = {!   !}
 
 scan/divconq : ◯-Monoid A → (cmp  (Π (list A)  (λ _ → F (list A ×⁺ A))))
 scan/divconq M L = scan/divconq/clocked (◯-Monoid.f M) (◯-Monoid.identity M) L ⌈log₂ length L ⌉ N.≤-refl 
