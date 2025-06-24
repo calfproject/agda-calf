@@ -118,27 +118,27 @@ scan/bruteforce/cost :
       (l : val (list A)) →
       IsBounded (list A ×⁺ A) (scan/bruteforce m l) (length l * w , length l * s)
 scan/bruteforce/cost m c h []      = ≤⁻-refl
-scan/bruteforce/cost m (w , s) h (x ∷ l) = 
-  let open ≤⁻-Reasoning cost in
-  begin
-   bind (F _) (◯-Monoid.f m (◯-Monoid.identity m , x)) (λ res →
-    bind (F _) (scan/bruteforce/help (◯-Monoid.f m) res l) (λ _ → 
-      ret triv))
-  ≲⟨ bind-monoʳ-≤⁻ (◯-Monoid.f m ( ◯-Monoid.identity m , x)) (λ res → scan/accum-independent c l (◯-Monoid.f m) res h) ⟩
-   bind (F _) (◯-Monoid.f m (◯-Monoid.identity m , x)) (λ _ →
-       bind (F _) (step⋆ (length l * )) (λ _ → 
-         ret triv))
-  ≲⟨ bind-monoˡ-≤⁻ 
-    ((λ _ →
-       bind (F _) (step⋆ (length l * c)) (
-        λ _ → 
-         ret triv))) (h (◯-Monoid.identity m) x) ⟩
-    bind (F _) (step⋆ c) (λ _ →
-       bind (F _) (step⋆ (length l * c)) (λ _ → 
-         ret triv))
-  ≡⟨⟩
-    step⋆ (c + length l * c)  
-  ∎
+-- scan/bruteforce/cost m (w , s) h (x ∷ l) = 
+--   let open ≤⁻-Reasoning cost in
+--   begin
+--    bind (F _) (◯-Monoid.f m (◯-Monoid.identity m , x)) (λ res →
+--     bind (F _) (scan/bruteforce/help (◯-Monoid.f m) res l) (λ _ → 
+--       ret triv))
+--   ≲⟨ bind-monoʳ-≤⁻ (◯-Monoid.f m ( ◯-Monoid.identity m , x)) (λ res → scan/accum-independent c l (◯-Monoid.f m) res h) ⟩
+--    bind (F _) (◯-Monoid.f m (◯-Monoid.identity m , x)) (λ _ →
+--        bind (F _) (step⋆ (length l * )) (λ _ → 
+--          ret triv))
+--   ≲⟨ bind-monoˡ-≤⁻ 
+--     ((λ _ →
+--        bind (F _) (step⋆ (length l * c)) (
+--         λ _ → 
+--          ret triv))) (h (◯-Monoid.identity m) x) ⟩
+--     bind (F _) (step⋆ c) (λ _ →
+--        bind (F _) (step⋆ (length l * c)) (λ _ → 
+--          ret triv))
+--   ≡⟨⟩
+--     step⋆ (c + length l * c)  
+--   ∎
 
 -- -- reimplemented split from Split.agda in mergesort example
 
