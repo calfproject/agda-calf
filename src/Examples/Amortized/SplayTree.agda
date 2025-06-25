@@ -134,9 +134,15 @@ size-splayed-list s t p = Eq.trans (Eq.sym (splay-list-length s)) (Eq.trans (Eq.
 <-splayResultType r z l = Σ⁺ splayed λ t' → meta⁺ (splay-list t' ≡ splay-list l ++ z ∷ [] ++ tree-list r)
 
 <-splayHelper : (z : val nat) (r : Tree) (l : Splayed) {i : val nat} {i<l : i < (splayed-size l)} → cmp (F (<-splayResultType r z l))
-<-splayHelper z r (valid (node a x b)) = ret (zig a x b z r , Eq.sym (++-assoc (tree-list a) _ _))
-<-splayHelper z r (zig a x b y c) = 
-  ret (valid (node a x (node b y (node c z r))) , arithmetic (tree-list a) (x ∷ tree-list b) (y ∷ tree-list c) (z ∷ tree-list r))
+<-splayHelper z r (valid (node a x b)) = step (F _) 1 (ret (zag a x b z r , Eq.sym (++-assoc (tree-list a) _ _))) -- zig 
+<-splayHelper z r (zig a x b y c) = -- zig-zig 
+  step (F _) 1 (
+    ret (
+      valid (node (node a x b) y (node c z r))
+      , 
+      {!   !}
+      -- arithmetic (tree-list a) (x ∷ tree-list b) (y ∷ tree-list c) (z ∷ tree-list r)
+      ))
     where 
       arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → l₁ ++ l₂ ++ l₃ ++ l₄ ≡ (l₁ ++ l₂ ++ l₃) ++ l₄
       arithmetic l₁ l₂ l₃ l₄ = 
@@ -150,8 +156,12 @@ size-splayed-list s t p = Eq.trans (Eq.sym (splay-list-length s)) (Eq.trans (Eq.
         ≡⟨ Eq.cong (λ l → l ++ l₄) (++-assoc l₁ l₂ l₃) ⟩ 
           (l₁ ++ l₂ ++ l₃) ++ l₄
         ∎
-<-splayHelper z r (zag a y b x c) = 
-  ret (valid (node (node a y b) x (node c z r)) , arithmetic (tree-list a) (y ∷ tree-list b) (x ∷ tree-list c) (z ∷ tree-list r))
+<-splayHelper z r (zag a y b x c) = -- zig-zag
+  step (F _) 1 (
+    ret (valid (node (node a x b) y (node c z r)) , --zig a y b x (node c z r) 
+      {!   !}
+      -- arithmetic (tree-list a) (y ∷ tree-list b) (x ∷ tree-list c) (z ∷ tree-list r)
+      ))
     where 
       arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → (l₁ ++ l₂) ++ l₃ ++ l₄ ≡ (l₁ ++ l₂ ++ l₃) ++ l₄
       arithmetic l₁ l₂ l₃ l₄ = 
@@ -169,7 +179,7 @@ size-splayed-list s t p = Eq.trans (Eq.sym (splay-list-length s)) (Eq.trans (Eq.
 
 >-splayHelper : (z : val nat) (l : Tree) (r : Splayed) {i : val nat} {i<r : i < splayed-size r} → cmp (F (>-splayResultType l z r))
 >-splayHelper z l (valid (node a x b)) = 
-  ret (zag l z a x b , refl)
+  ret (zig l z a x b , refl)
 >-splayHelper z l (zig a x b y c) = 
   ret (valid (node (node l z a) x (node b y c)) , arithmetic (tree-list l) (z ∷ tree-list a) (x ∷ tree-list b) (y ∷ tree-list c))
     where 
@@ -225,7 +235,7 @@ splay (node l z r) i i<t with <-cmp i (tree-size l)
 splayTopLevelHelper : (t : Splayed) {i : val nat} {i<t : i < splayed-size t} → cmp (F (nat ×⁺ (meta⁺ (Tree))))
 splayTopLevelHelper (valid (node l z r)) = ret (z , node l z r)
 splayTopLevelHelper (zig a x b y c) = ret (y , node (node a x b) y c)
-splayTopLevelHelper (zag a y b x c) = ret (y , node a x (node b y c)) 
+splayTopLevelHelper (zag a y b x c) = ret (y , node a y (node b x c)) 
 
 SplayTree : BST
 SplayTree .BST.T = tree
@@ -245,15 +255,47 @@ record BSTHom (bst bst' : BST) : Set where
         bind (F _) (bst .splay' t i) (λ { (_ , t') → ϕ t'})
       ≤⁻[ F (bst' .T) ]
         bind (F _) (ϕ t) (λ t' → bind (F _) (bst' .splay' t' i) (λ { (_ , t'') → ret t''}))
+
+
         
 open BSTHom
 
 rank : (T : Tree) → val nat
 rank t = ⌊log₂ (tree-size t)⌋
 
+rank' : (s : Splayed) → val nat
+rank' s = ⌊log₂ splayed-size s ⌋
+
 sum-of-ranks : (T : Tree) → val nat
 sum-of-ranks leaf = 0
 sum-of-ranks (node l z r) = sum-of-ranks l + rank (node l z r) + sum-of-ranks r
+
+sum-of-ranks' : (s : Splayed) → val nat
+sum-of-ranks' (valid t) = sum-of-ranks t
+sum-of-ranks' (zig a x b y c) = sum-of-ranks a + sum-of-ranks b + sum-of-ranks c + rank (node a x b) + rank' (zig a x b y c)
+sum-of-ranks' (zag a y b x c) = sum-of-ranks a + sum-of-ranks b + sum-of-ranks c + rank (node b x c) + rank' (zag a y b x c)
+
+φ : cmp (Π (SplayTree .T) λ _ → F (list nat))
+φ t = step (F _) (sum-of-ranks t) (ret (tree-list t))
+
+φ' : cmp (Π splayed λ _ → F (list nat))
+φ' t = step (F _) (sum-of-ranks' t) (ret (splay-list t))
+
+splay/φ : (t : val (SplayTree .T)) (i : val nat) → 
+        bind (F _) (SplayTree .splay' t i) (λ { (_ , t') → φ t'})
+      ≤⁻[ F _ ]
+        step (F _) {!   !} (φ t)
+splay/φ t i with <-cmp i (tree-size t) 
+... | tri< a ¬b ¬c = {!   !}
+... | tri≈ ¬a b ¬c = 
+  let open ≤⁻-Reasoning (F _) in 
+  begin
+    step (F (list nat)) (sum-of-ranks t) (ret (tree-list t))
+  ≲⟨ {!   !} ⟩
+    {!   !}
+  ∎
+... | tri> ¬a ¬b c = {!   !}
+
 
 log-rule : (x : val nat) → 2 ^ ⌊log₂ (suc x)⌋ Nat.≤ suc x
 log-rule Nat.zero = 
@@ -291,18 +333,30 @@ rank-rule l z r p =
         tree-size t
       ∎
 
+-- <-splayHelper/cost : 
+--   (z : val nat) (r : Tree) (l : Splayed) {i : val nat} {i<l : i < (splayed-size l)} → 
+--   bind (F _) (<-splayHelper r z l {i} {i<l}) λ (s , s≡l+1+r) → φ' s
+--   ≤⁻[ F _ ] 
+--   step (F _) (sum-of-ranks' ?) (φ ?)
 
-ST⇒LT : BSTHom SplayTree ListTree
-ST⇒LT .ϕ t = step (F _) (sum-of-ranks t) (ret (tree-list t))
-ST⇒LT .ϕ/splay t i with <-cmp i (tree-size t)
-... | tri< a ¬b ¬c = {!   !}
-... | tri≈ ¬a b ¬c = 
-  let open ≤⁻-Reasoning (F (meta⁺ (List ℕ))) in begin
-    {!   !}
-  ≡⟨ {!   !} ⟩
-    {!   !}
-  ∎
-... | tri> _ _ _ = {!   !}
+
+ex = node (node (node (node (node (node (node leaf 0 leaf) 1 leaf) 2 leaf) 3 leaf) 4 leaf) 5 leaf) 6 leaf
+
+_ = {! splay' SplayTree ex 0    !}
+--   cmp (F (<-splayResultType r z l))
+
+-- ST⇒LT : BSTHom SplayTree ListTree
+-- ST⇒LT .ϕ t = step (F _) (sum-of-ranks t) (ret (tree-list t))
+-- ST⇒LT .ϕ/splay t i with <-cmp i (tree-size t)
+-- ... | tri< a ¬b ¬c = {!   !}
+-- ... | tri≈ ¬a b ¬c = 
+--   let open ≤⁻-Reasoning (F (meta⁺ (List ℕ))) in 
+--   begin
+--     ST⇒LT .ϕ t
+--   ≲⟨ {!   !} ⟩
+--     {!   !}
+--   ∎
+-- ... | tri> _ _ _ = {!   !}
 
 
 
