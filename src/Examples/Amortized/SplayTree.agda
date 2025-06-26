@@ -278,9 +278,6 @@ SplayTree .BST.splay t i with <-cmp i (tree-size t)
 -- rank : (T : Tree) → val nat
 -- rank t = ⌊log₂ (tree-size t)⌋
 
-rank' : (s : Splayed) → val nat
-rank' s = ⌊log₂ splayed-size s ⌋
-
 -- sum-of-ranks : (T : Tree) → val nat
 -- sum-of-ranks leaf = 0
 -- sum-of-ranks (node l z r) = sum-of-ranks l + rank (node l z r) + sum-of-ranks r
@@ -361,3 +358,7 @@ rank' s = ⌊log₂ splayed-size s ⌋
 -- For access lemma, proof weaker bound of 3log₂n + 1 (harder to quantify r(i)) for splay t i
 -- Prove amortized portion of balance theorem (i.e. mlogn amortized instead of mlogn + nlogn for actual)
 -- -}
+
+ex = node (node (node (node (node (node (node leaf 0 leaf) 1 leaf) 2 leaf) 3 leaf) 4 leaf) 5 leaf) 6 leaf
+
+_ = {! splay' SplayTree ex 0    !}
