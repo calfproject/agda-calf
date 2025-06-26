@@ -37,7 +37,7 @@ record BST : Set where
 ListTree : BST
 ListTree .BST.T = list nat
 ListTree .BST.splay l i with i <? length l 
-... | yes p = let i' = fromℕ< p in step (F _) ((3 * ⌊log₂ (length l)⌋) ⊕ 1) (ret (lookup l i' , l))
+... | yes p = let i' = fromℕ< p in step (F _) ((3 * ⌊log₂ (length l)⌋) + 1) (ret (lookup l i' , l))
 ... | no _ = ret (0 , l)
 
 data Tree : Set where
@@ -52,39 +52,48 @@ tree-size leaf = 0
 tree-size (node l z r) = (tree-size l) + 1 + (tree-size r)
 
 data Context : Set where
-  Left : (t : Tree) (k : val nat) → Context
-  Right : (k : val nat) (t : Tree) → Context
+  Left : (k : val nat) (t : Tree) → Context
+  Right : (t : Tree) (k : val nat) → Context
 
 context : tp⁺
 context = meta⁺ (Context)
 
-
-
--- data Splayed : Set where
---   valid : (t : Tree) → Splayed 
---   zig :   (a : Tree) (x : val nat) (b : Tree) (y : val nat) (c : Tree) → Splayed 
---   zag :   (a : Tree) (y : val nat) (b : Tree) (x : val nat) (c : Tree) → Splayed
-
--- splayed : tp⁺
--- splayed = meta⁺ (Splayed)
 pathType : tp⁺
 pathType = tree ×⁺ (list context)
 
-path : (i : val nat) (t : Tree) (anc : List Context) → cmp (F (pathType))
-path i leaf anc = ret (leaf , anc)
-path i (node l x r) anc with <-cmp i (tree-size l) 
-... | tri< _ _ _ = bind (F _) (path i l {!   !}) {!   !}
-... | tri≈ _ _ _ = {!   !}
-... | tri> _ _ _ = {!   !}
+path : (k : val nat) (t : Tree) (anc : List Context) → cmp (F (pathType))
+path k leaf anc = ret (leaf , anc)
+path k (node l x r) anc with <-cmp k x 
+... | tri< _ _ _ = path k l (Left x r ∷ anc)
+... | tri≈ _ _ _ = ret (node l x r , anc)
+... | tri> _ _ _ = path k r (Right l x ∷ anc)
 
--- with <-cmp i (tree-size l)
+splay'' : (a : Tree) (b : Tree) (anc : List Context) → cmp (F (tree ×⁺ tree))
+splay'' a b [] = ret (a , b)
+splay'' a b (Left p c ∷ []) = ret (a , node b p c) -- zig
+splay'' b c (Right a p ∷ []) = ret (node a p b , c) -- zag
+splay'' a b (Left p c ∷ Left g d ∷ anc) = splay'' a (node b p (node c g d)) anc -- zig-zig
+splay'' b c (Left p d ∷ Right a g ∷ anc) = splay'' (node a g b) (node c p d) anc -- zag-zig
+splay'' b c (Right a p ∷ Left g d ∷ anc) = splay'' (node a p b) (node c g d) anc -- zig-zag
+splay'' c d (Right b p ∷ Right a g ∷ anc) = splay'' (node (node a g b) p c) d anc -- zag-zag
+
+splay' : (l : Tree) (x : val nat) (r : Tree) (anc : List Context) → cmp (F (nat ×⁺ tree))
+splay' l x r anc = bind (F _) (splay'' l r anc) λ (l' , r') → ret (x , node l' x r') 
+
+splay : (t : Tree) (t' : Tree) (anc : List Context) → cmp (F (nat ×⁺ tree))
+splay t leaf anc = ret (0 , t)
+splay t (node l x r) anc = splay' l x r anc
 
 SplayTree : BST
 SplayTree .BST.T = tree
-SplayTree .BST.splay t i with <-cmp i (tree-size t)
-... | tri< i<t _ _ = {!   !}
-... | tri≈ _ _ _ = ret (0 , t)
-... | tri> _ _ _ = ret (0 , t)
+SplayTree .BST.splay t k =
+  bind (F _) (path k t []) (λ (t' , anc) → splay t t' anc)
+
+  -- bind (F _) (path k t []) (λ (t' , anc) → splay k t t' anc)
+-- <-cmp i (tree-size t)
+-- ... | tri< i<t _ _ = {!   !}
+-- ... | tri≈ _ _ _ = ret (0 , t)
+-- ... | tri> _ _ _ = ret (0 , t)
 
 -- splayed-size : Splayed → val nat
 -- splayed-size (valid t) = tree-size t
@@ -359,6 +368,16 @@ SplayTree .BST.splay t i with <-cmp i (tree-size t)
 -- Prove amortized portion of balance theorem (i.e. mlogn amortized instead of mlogn + nlogn for actual)
 -- -}
 
-ex = node (node (node (node (node (node (node leaf 0 leaf) 1 leaf) 2 leaf) 3 leaf) 4 leaf) 5 leaf) 6 leaf
+-- open BST renaming (splay to splay/)
 
-_ = {! splay' SplayTree ex 0    !}
+-- ex : Tree
+-- ex = node (node (node (node (node (node (node leaf 0 leaf) 1 leaf) 2 leaf) 3 leaf) 4 leaf) 5 leaf) 6 leaf
+
+-- _ = {! splay/ SplayTree ex 0    !}
+
+-- ex2 : Tree
+-- ex2 = node leaf 0
+--  (node (node (node leaf 1 (node leaf 2 leaf)) 3 (node leaf 4 leaf))
+--   5 (node leaf 6 leaf))
+
+-- _ = {! splay/ SplayTree ex2 3  !}
