@@ -27,18 +27,19 @@ open import Tactic.MonoidSolver using (solve; solve-macro)
 
 open import Data.Nat.Logarithm
 open import Data.Nat.PredExp2
+open import Data.Empty using (⊥; ⊥-elim)
+
 
 record BST : Set where
   field 
     T : tp⁺
     splay : cmp (Π T (λ _ → Π nat (λ _ → F (nat ×⁺ T))))
 
-
 ListTree : BST
 ListTree .BST.T = list nat
 ListTree .BST.splay l i with i <? length l 
 ... | yes p = let i' = fromℕ< p in step (F _) ((3 * ⌊log₂ (length l)⌋) + 1) (ret (lookup l i' , l))
-... | no _ = ret (0 , l)
+... | no _ = ret (i , l)
 
 data Tree : Set where
   leaf : Tree
@@ -51,6 +52,16 @@ tree-size : Tree → val nat
 tree-size leaf = 0
 tree-size (node l z r) = (tree-size l) + 1 + (tree-size r)
 
+inord : Tree → val (list nat)
+inord leaf = []
+inord (node l z r) = inord l ++ z ∷ [] ++ inord r
+
+inord/cmp : cmp (Π tree λ _ → F (list nat))
+inord/cmp leaf = ret []
+inord/cmp (node l z r) = 
+  bind (F _) (inord/cmp l) (λ l' → 
+  bind (F _) (inord/cmp r) (λ r' → ret (l' ++ z ∷ [] ++ r'))) 
+
 data Context : Set where
   Left : (k : val nat) (t : Tree) → Context
   Right : (t : Tree) (k : val nat) → Context
@@ -61,312 +72,241 @@ context = meta⁺ (Context)
 pathType : tp⁺
 pathType = tree ×⁺ (list context)
 
-path : (k : val nat) (t : Tree) (anc : List Context) → cmp (F (pathType))
-path k leaf anc = ret (leaf , anc)
+reconstruct : (t : Tree) (anc : List Context) → Tree
+reconstruct t [] = t
+reconstruct t (Left x r ∷ anc') = reconstruct (node t x r) anc'
+reconstruct t (Right l x ∷ anc') = reconstruct (node l x t) anc'
+
+inord/reconstruct : (t₁ t₂ : Tree) (anc : List Context) → inord t₁ ≡ inord t₂ →
+  inord (reconstruct t₁ anc) ≡ inord (reconstruct t₂ anc)
+inord/reconstruct t₁ t₂ [] t₁≡t₂ = t₁≡t₂
+inord/reconstruct t₁ t₂ (Left k t ∷ anc) t₁≡t₂ = 
+  inord/reconstruct (node t₁ k t) (node t₂ k t) anc 
+    (Eq.cong (λ e → e ++ (k ∷ inord t)) t₁≡t₂)
+inord/reconstruct t₁ t₂ (Right t k ∷ anc) t₁≡t₂ = 
+  inord/reconstruct (node t k t₁) (node t k t₂) anc 
+    (Eq.cong (λ e → inord t ++ e) (Eq.cong (λ e → k ∷ e) t₁≡t₂))
+
+root : (t : Tree) (k : val nat) → val nat
+root leaf k = k
+root (node l x r) k = x
+
+pathInordType : val nat → Tree → List Context → tp⁺
+pathInordType k t anc = Σ⁺ pathType (λ (t' , anc') → 
+  (meta⁺ (reconstruct t anc ≡ reconstruct t' anc')) ×⁺ meta⁺ (root t' k ≡ k)) 
+
+path : (k : val nat) (t : Tree) (anc : List Context) → cmp (F (pathInordType k t anc))
+path k leaf anc = ret ((leaf , anc) , refl , refl)
 path k (node l x r) anc with <-cmp k x 
 ... | tri< _ _ _ = path k l (Left x r ∷ anc)
-... | tri≈ _ _ _ = ret (node l x r , anc)
+... | tri≈ _ k≡x _ = ret ((node l x r , anc) , refl , Eq.sym k≡x)
 ... | tri> _ _ _ = path k r (Right l x ∷ anc)
 
-splay'' : (a : Tree) (b : Tree) (anc : List Context) → cmp (F (tree ×⁺ tree))
-splay'' a b [] = ret (a , b)
-splay'' a b (Left p c ∷ []) = ret (a , node b p c) -- zig
-splay'' b c (Right a p ∷ []) = ret (node a p b , c) -- zag
-splay'' a b (Left p c ∷ Left g d ∷ anc) = splay'' a (node b p (node c g d)) anc -- zig-zig
-splay'' b c (Left p d ∷ Right a g ∷ anc) = splay'' (node a g b) (node c p d) anc -- zag-zig
-splay'' b c (Right a p ∷ Left g d ∷ anc) = splay'' (node a p b) (node c g d) anc -- zig-zag
-splay'' c d (Right b p ∷ Right a g ∷ anc) = splay'' (node (node a g b) p c) d anc -- zag-zag
+splay'ResultType : val nat → Tree → Tree → List Context → tp⁺
+splay'ResultType k a b anc = Σ⁺ (tree ×⁺ tree) (λ (a' , b') → 
+  meta⁺ (inord (reconstruct (node a k b) anc) ≡ inord (node a' k b')))
 
-splay' : (l : Tree) (x : val nat) (r : Tree) (anc : List Context) → cmp (F (nat ×⁺ tree))
-splay' l x r anc = bind (F _) (splay'' l r anc) λ (l' , r') → ret (x , node l' x r') 
+splay' : (a : Tree) (b : Tree) (anc : List Context) (k : val nat) → cmp (F (splay'ResultType k a b anc))
+splay' a b [] k = ret ((a , b) , refl)
+-- done
+splay' a b (Left p c ∷ []) k = ret ((a , node b p c) , arithmetic (inord a) (k ∷ inord b) (p ∷ inord c))
+  where
+    arithmetic : (l₁ l₂ l₃ : val (list nat)) → (l₁ ++ l₂) ++ l₃ ≡ l₁ ++ l₂ ++ l₃
+    arithmetic l₁ l₂ l₃ = ++-assoc l₁ l₂ l₃
+-- zig
+splay' b c (Right a p ∷ []) k = ret ((node a p b , c) , arithmetic (inord a) (p ∷ inord b) (k ∷ inord c))
+  where
+    arithmetic : (l₁ l₂ l₃ : val (list nat)) → l₁ ++ l₂ ++ l₃ ≡ (l₁ ++ l₂) ++ l₃
+    arithmetic l₁ l₂ l₃ = Eq.sym (++-assoc l₁ l₂ l₃)
+-- zag
+splay' a b (Left p c ∷ Left g d ∷ anc) k = 
+  bind (F _) (splay' a (node b p (node c g d)) anc k) (λ ((l' , r') , recon≡inord) → 
+    ret ((l' , r') , Eq.trans (inord/reconstruct 
+       (node (node (node a k b) p c) g d) 
+       (node a k (node b p (node c g d))) 
+       anc 
+       (inord/arith a b c d k p g)) recon≡inord))
+  where
+    arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → ((l₁ ++ l₂) ++ l₃) ++ l₄ ≡ l₁ ++ l₂ ++ l₃ ++ l₄
+    arithmetic l₁ l₂ l₃ l₄ = 
+      let open ≡-Reasoning in 
+      begin
+        ((l₁ ++ l₂) ++ l₃) ++ l₄
+      ≡⟨ ++-assoc (l₁ ++ l₂) l₃ l₄ ⟩
+        (l₁ ++ l₂) ++ (l₃ ++ l₄)
+      ≡⟨ ++-assoc l₁ l₂ (l₃ ++ l₄) ⟩
+        l₁ ++ (l₂ ++ (l₃ ++ l₄))
+      ∎
+    inord/arith : (a b c d : Tree) (k p g : val nat) →  
+      inord (node (node (node a k b) p c) g d) ≡ inord (node a k (node b p (node c g d)))
+    inord/arith a b c d k p g = arithmetic (inord a) (k ∷ inord b) (p ∷ inord c) (g ∷ inord d)
+-- zig-zig
+splay' b c (Left p d ∷ Right a g ∷ anc) k = 
+  bind (F _) (splay' (node a g b) (node c p d) anc k) (λ ((l' , r') , recon≡inord) → 
+    ret ((l' , r') , Eq.trans (inord/reconstruct 
+       (node a g (node (node b k c) p d))
+       (node (node a g b) k (node c p d))
+       anc 
+       (inord/arith a b c d k p g)) recon≡inord))
+  where
+    arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → l₁ ++ (l₂ ++ l₃) ++ l₄ ≡ (l₁ ++ l₂) ++ l₃ ++ l₄
+    arithmetic l₁ l₂ l₃ l₄ = 
+      let open ≡-Reasoning in
+      begin
+        l₁ ++ (l₂ ++ l₃) ++ l₄
+      ≡⟨ ++-assoc l₁ (l₂ ++ l₃) l₄ ⟨
+        (l₁ ++ (l₂ ++ l₃)) ++ l₄
+      ≡⟨ Eq.cong (λ e → e ++ l₄) (++-assoc l₁ l₂ l₃) ⟨
+        ((l₁ ++ l₂) ++ l₃) ++ l₄
+      ≡⟨ ++-assoc (l₁ ++ l₂) l₃ l₄ ⟩
+        (l₁ ++ l₂) ++ l₃ ++ l₄
+      ∎
+    inord/arith : (a b c d : Tree) (k p g : val nat) →  
+      inord (node a g (node (node b k c) p d)) ≡ inord (node (node a g b) k (node c p d))
+    inord/arith a b c d k p g = arithmetic (inord a) (g ∷ inord b) (k ∷ inord c) (p ∷ inord d)
+-- zag-zig
+splay' b c (Right a p ∷ Left g d ∷ anc) k = 
+  bind (F _) (splay' (node a p b) (node c g d) anc k) (λ ((l' , r') , recon≡inord) → 
+    ret ((l' , r') , Eq.trans (inord/reconstruct 
+       (node (node a p (node b k c)) g d)
+       (node (node a p b) k (node c g d))
+       anc 
+       (inord/arith a b c d k p g)) recon≡inord))
+  where
+    arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → (l₁ ++ l₂ ++ l₃) ++ l₄ ≡ (l₁ ++ l₂) ++ l₃ ++ l₄
+    arithmetic l₁ l₂ l₃ l₄ = 
+      let open ≡-Reasoning in
+      begin
+        (l₁ ++ (l₂ ++ l₃)) ++ l₄
+      ≡⟨ Eq.cong (λ e → e ++ l₄) (++-assoc l₁ l₂ l₃) ⟨
+        ((l₁ ++ l₂) ++ l₃) ++ l₄
+      ≡⟨ ++-assoc (l₁ ++ l₂) l₃ l₄ ⟩
+        (l₁ ++ l₂) ++ l₃ ++ l₄
+      ∎
+    inord/arith : (a b c d : Tree) (k p g : val nat) → 
+      inord (node (node a p (node b k c)) g d) ≡ inord (node (node a p b) k (node c g d))
+    inord/arith a b c d k p g = arithmetic (inord a) (p ∷ inord b) (k ∷ inord c) (g ∷ inord d)
+-- zig-zag
+splay' c d (Right b p ∷ Right a g ∷ anc) k = 
+  bind (F _) (splay' (node (node a g b) p c) d anc k) (λ ((l' , r') , recon≡inord) →
+    ret ((l' , r') , Eq.trans (inord/reconstruct 
+       (node a g (node b p (node c k d)))
+       (node (node (node a g b) p c) k d)
+       anc 
+       (inord/arith a b c d k p g)) recon≡inord))
+  where
+    arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → l₁ ++ l₂ ++ l₃ ++ l₄ ≡ ((l₁ ++ l₂) ++ l₃) ++ l₄
+    arithmetic l₁ l₂ l₃ l₄ = 
+      let open ≡-Reasoning in
+      begin
+        l₁ ++ (l₂ ++ (l₃ ++ l₄))
+      ≡⟨ ++-assoc l₁ l₂ (l₃ ++ l₄) ⟨
+        (l₁ ++ l₂) ++ (l₃ ++ l₄)
+      ≡⟨ ++-assoc (l₁ ++ l₂) l₃ l₄ ⟨
+        ((l₁ ++ l₂) ++ l₃) ++ l₄
+      ∎
+    inord/arith : (a b c d : Tree) (k p g : val nat) → 
+      inord (node a g (node b p (node c k d))) ≡ inord (node (node (node a g b) p c) k d)
+    inord/arith a b c d k p g = arithmetic (inord a) (g ∷ inord b) (p ∷ inord c) (k ∷ inord d)
+-- zag-zag
 
-splay : (t : Tree) (t' : Tree) (anc : List Context) → cmp (F (nat ×⁺ tree))
-splay t leaf anc = ret (0 , t)
-splay t (node l x r) anc = splay' l x r anc
+splayResultType : (t' : Tree) → (k : val nat) → List Context → k ≡ root t' k → tp⁺
+splayResultType t' k anc k≡root = Σ⁺ (nat ×⁺ tree) (λ (k' , t'') → 
+  (meta⁺ (inord (reconstruct t' anc) ≡ inord t'')) ×⁺ (meta⁺ (0 < tree-size t' → k ≡ root t'' k)) ×⁺ (meta⁺ (k' ≡ k)))
+
+splay : (t' : Tree) (k : val nat) (anc : List Context) (k≡root : k ≡ root t' k) → cmp (F (splayResultType t' k anc k≡root))
+splay leaf k anc k≡root = ret ((k , reconstruct leaf anc) , refl , (λ x → ⊥-elim (Nat.<-irrefl refl x)) , refl)
+splay (node l x r) k anc k≡root = bind (F _) (splay' l r anc k) (λ ((l' , r') , t''≡recon) → 
+  ret ((x , node l' x r') , 
+      Eq.trans 
+        (inord/reconstruct (node l x r) (node l k r) anc (inord/arith l r x k≡root)) 
+        (Eq.trans t''≡recon (Eq.sym (inord/arith l' r' x k≡root))) , 
+      (λ _ → k≡root) , 
+      Eq.sym k≡root))
+  where
+    inord/arith : (l r : Tree) (x : val nat) (k≡x : k ≡ x) → inord (node l x r) ≡ inord (node l k r)
+    inord/arith l r x k≡x = Eq.cong (λ e → inord l ++ e) (Eq.cong (λ e → e ∷ inord r) (Eq.sym k≡x))
 
 SplayTree : BST
 SplayTree .BST.T = tree
 SplayTree .BST.splay t k =
-  bind (F _) (path k t []) (λ (t' , anc) → splay t t' anc)
+  bind (F _) (path k t []) (λ ((t' , anc) , _ , k≡root) → 
+    bind (F _) (splay t' k anc (Eq.sym k≡root)) (λ ((k' , t'') , _ , _ , _) → ret (k' , t''))) 
 
-  -- bind (F _) (path k t []) (λ (t' , anc) → splay k t t' anc)
--- <-cmp i (tree-size t)
--- ... | tri< i<t _ _ = {!   !}
--- ... | tri≈ _ _ _ = ret (0 , t)
--- ... | tri> _ _ _ = ret (0 , t)
+open BST renaming (splay to splay/)
 
--- splayed-size : Splayed → val nat
--- splayed-size (valid t) = tree-size t
--- splayed-size (zig a x b y c) = tree-size a + 1 + tree-size b + 1 + tree-size c
--- splayed-size (zag a y b x c) = tree-size a + 1 + tree-size b + 1 + tree-size c
+record BSTHom (bst bst' : BST) : Set where
+  field
+    ϕ : cmp (Π (bst .T) λ _ → F (bst' .T))
+    ϕ/splay : (t : val (bst .T)) (k : val nat) → 
+        bind (F _) (bst .splay/ t k) (λ (k' , t') → ϕ t')
+      -- ≤⁻[ F (bst' .T) ]
+      ≡
+        ϕ t
 
--- tree-list : Tree → val (list nat)
--- tree-list leaf = []
--- tree-list (node l z r) = tree-list l ++ z ∷ [] ++ tree-list r
+open BSTHom
 
--- splay-list : Splayed → val (list nat)
--- splay-list (valid t) = tree-list t
--- splay-list (zig a x b y c) = 
---   tree-list a ++ x ∷ [] ++ tree-list b ++ y ∷ [] ++ tree-list c
--- splay-list (zag a y b x c) =
---   tree-list a ++ y ∷ [] ++ tree-list b ++ x ∷ [] ++ tree-list c
+ST⇒LT : BSTHom SplayTree ListTree
+ST⇒LT .ϕ t = ret (inord t)
+ST⇒LT .ϕ/splay t k = 
+  let open ≡-Reasoning in begin
+    bind (F _) (path k t []) (λ ((t' , anc) , _ , k≡root) →
+      bind (F _) (splay t' k anc (Eq.sym k≡root)) (λ ((k' , t'') , _ , _ , _) → ret (inord t'')))
+  ≡⟨ Eq.cong (bind (F _) (path k t [])) (funext (λ ((t' , anc) , t≡recon/t' , k≡root) → 
+      Eq.cong (bind (F _) (splay t' k anc (Eq.sym k≡root))) (funext (λ ((k' , t'') , inord/recon/t'≡inord/t'' , _ , _) → 
+        Eq.cong ret (Eq.sym (Eq.trans (Eq.cong inord t≡recon/t') inord/recon/t'≡inord/t'')))))) ⟩
+    bind (F _) (path k t []) (λ ((t' , anc) , _ , k≡root) →
+      bind (F _) (splay t' k anc (Eq.sym k≡root)) (λ ((k' , t'') , _ , _ , _) → ret (inord t)))
+  ≡⟨ {!   !} ⟩
+    ret (inord t)
+  ∎
 
--- tree-list-length : (t : Tree) → length (tree-list t) ≡ tree-size t
--- tree-list-length leaf          = refl
--- tree-list-length (node t x t₁) = Eq.trans (length-++ (tree-list t)) (Eq.trans ((Eq.sym (+-assoc (length (tree-list t)) 1 (length (tree-list t₁))))) (Eq.cong₂ (λ a b → a + 1 + b) (tree-list-length t) (tree-list-length t₁)))
+rank : (T : Tree) → val nat
+rank t = ⌊log₂ (tree-size t)⌋
 
--- size-tree-list : (t t' : Tree) → tree-list t ≡ tree-list t' → tree-size t ≡ tree-size t'
--- size-tree-list t t' p = Eq.trans (Eq.sym (tree-list-length t)) (Eq.trans (Eq.cong length p) (tree-list-length t'))
+sum-of-ranks : (T : Tree) → val nat
+sum-of-ranks leaf = 0
+sum-of-ranks (node l z r) = sum-of-ranks l + rank (node l z r) + sum-of-ranks r
 
--- splay-list-length : (s : Splayed) → length (splay-list s) ≡ splayed-size s
--- splay-list-length (valid t)       = tree-list-length t
--- splay-list-length (zig a x b y c) = 
---   let open ≡-Reasoning in
---   begin
---     length (tree-list a ++ (x ∷ tree-list b ++ y ∷ tree-list c))
---   ≡⟨ length-++ (tree-list a) ⟩
---     length (tree-list a) + length (x ∷ tree-list b ++ y ∷ tree-list c)
---   ≡⟨ Eq.cong (_+ length (x ∷ tree-list b ++ y ∷ tree-list c)) (tree-list-length a) ⟩
---     tree-size a + length (x ∷ tree-list b ++ y ∷ tree-list c)
---   ≡⟨ Eq.cong (tree-size a +_) (length-++ (x ∷ tree-list b) {ys = y ∷ tree-list c})  ⟩
---     tree-size a + (length (x ∷ tree-list b) + length (y ∷ tree-list c))
---   ≡⟨ Eq.cong (tree-size a +_) (Eq.cong₂ _+_ {x = length (x ∷ tree-list b)} refl refl) ⟩
---     tree-size a + ((1 + length (tree-list b)) + (1 + length (tree-list c)))
---   ≡⟨ Eq.cong (tree-size a +_) (Eq.cong₂ _+_ (Eq.cong (1 +_) (tree-list-length b)) (Eq.cong (1 +_) (tree-list-length c))) ⟩
---     tree-size a + ((1 + tree-size b) + (1 + tree-size c))
---   ≡⟨ +-assoc (tree-size a) ((1 + tree-size b)) ((1 + tree-size c)) ⟨
---     (tree-size a + (1 + tree-size b)) + (1 + tree-size c)
---   ≡⟨ Eq.cong (_+ (1 + tree-size c)) (+-assoc (tree-size a) 1 (tree-size b)) ⟨
---     (tree-size a + 1 + tree-size b) + (1 + tree-size c)
---   ≡⟨ +-assoc (tree-size a + 1 + tree-size b) 1 (tree-size c) ⟨
---     tree-size a + 1 + tree-size b + 1 + tree-size c
---   ∎ 
--- splay-list-length (zag a y b x c) = 
---   let open ≡-Reasoning in
---   begin
---     length (tree-list a ++ (y ∷ tree-list b ++ x ∷ tree-list c))
---   ≡⟨ length-++ (tree-list a) ⟩
---     length (tree-list a) + length (y ∷ tree-list b ++ x ∷ tree-list c)
---   ≡⟨ Eq.cong (_+ length (y ∷ tree-list b ++ x ∷ tree-list c)) (tree-list-length a) ⟩
---     tree-size a + length (y ∷ tree-list b ++ x ∷ tree-list c)
---   ≡⟨ Eq.cong (tree-size a +_) (length-++ (y ∷ tree-list b) {ys = x ∷ tree-list c})  ⟩
---     tree-size a + (length (y ∷ tree-list b) + length (x ∷ tree-list c))
---   ≡⟨ Eq.cong (tree-size a +_) (Eq.cong₂ _+_ {x = length (y ∷ tree-list b)} refl refl) ⟩
---     tree-size a + ((1 + length (tree-list b)) + (1 + length (tree-list c)))
---   ≡⟨ Eq.cong (tree-size a +_) (Eq.cong₂ _+_ (Eq.cong (1 +_) (tree-list-length b)) (Eq.cong (1 +_) (tree-list-length c))) ⟩
---     tree-size a + ((1 + tree-size b) + (1 + tree-size c))
---   ≡⟨ +-assoc (tree-size a) ((1 + tree-size b)) ((1 + tree-size c)) ⟨
---     (tree-size a + (1 + tree-size b)) + (1 + tree-size c)
---   ≡⟨ Eq.cong (_+ (1 + tree-size c)) (+-assoc (tree-size a) 1 (tree-size b)) ⟨
---     (tree-size a + 1 + tree-size b) + (1 + tree-size c)
---   ≡⟨ +-assoc (tree-size a + 1 + tree-size b) 1 (tree-size c) ⟨
---     tree-size a + 1 + tree-size b + 1 + tree-size c
---   ∎
+log-rule : (x : val nat) → 2 ^ ⌊log₂ (suc x)⌋ Nat.≤ suc x
+log-rule Nat.zero = 
+  let open Nat.≤-Reasoning in
+  begin
+    2 ^ ⌊log₂ 1 ⌋
+  ≡⟨⟩
+    1
+  ∎
+log-rule (suc x) = 
+  let open Nat.≤-Reasoning in
+  begin
+    2 ^ ⌊log₂ suc (suc x) ⌋
+  ≡⟨ Eq.cong (2 ^_) {x = ⌊log₂ suc (suc x) ⌋} {y = 1 + ⌊log₂ (suc ⌊ x /2⌋)⌋} {!   !} ⟩
+    2 ^ (1 + ⌊log₂ (suc ⌊ x /2⌋)⌋)
+  ≡⟨ {!   !} ⟩
+    suc (suc x)
+  ∎
 
--- size-splayed-list : (s : Splayed) (t : Tree) → splay-list s ≡ tree-list t → splayed-size s ≡ tree-size t
--- size-splayed-list s t p = Eq.trans (Eq.sym (splay-list-length s)) (Eq.trans (Eq.cong length p) (tree-list-length t))
-
--- <-splayResultType : Tree → val nat → Splayed → tp⁺
--- <-splayResultType r z l = Σ⁺ splayed λ t' → meta⁺ (splay-list t' ≡ splay-list l ++ z ∷ [] ++ tree-list r)
-
--- <-splayHelper : (z : val nat) (r : Tree) (l : Splayed) {i : val nat} {i<l : i < (splayed-size l)} → cmp (F (<-splayResultType r z l))
--- <-splayHelper z r (valid (node a x b)) = ret (zig a x b z r , Eq.sym (++-assoc (tree-list a) _ _))
--- <-splayHelper z r (zig a x b y c) = 
---   ret (valid (node a x (node b y (node c z r))) , arithmetic (tree-list a) (x ∷ tree-list b) (y ∷ tree-list c) (z ∷ tree-list r))
---     where 
---       arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → l₁ ++ l₂ ++ l₃ ++ l₄ ≡ (l₁ ++ l₂ ++ l₃) ++ l₄
---       arithmetic l₁ l₂ l₃ l₄ = 
---         let open Eq.≡-Reasoning in 
---         begin 
---           l₁ ++ l₂ ++ l₃ ++ l₄
---         ≡⟨ ++-assoc l₁ l₂ (l₃ ++ l₄) ⟨ 
---           (l₁ ++ l₂) ++ l₃ ++ l₄
---         ≡⟨ ++-assoc (l₁ ++ l₂) l₃ l₄ ⟨ 
---           ((l₁ ++ l₂) ++ l₃) ++ l₄
---         ≡⟨ Eq.cong (λ l → l ++ l₄) (++-assoc l₁ l₂ l₃) ⟩ 
---           (l₁ ++ l₂ ++ l₃) ++ l₄
---         ∎
--- <-splayHelper z r (zag a y b x c) = 
---   ret (valid (node (node a y b) x (node c z r)) , arithmetic (tree-list a) (y ∷ tree-list b) (x ∷ tree-list c) (z ∷ tree-list r))
---     where 
---       arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → (l₁ ++ l₂) ++ l₃ ++ l₄ ≡ (l₁ ++ l₂ ++ l₃) ++ l₄
---       arithmetic l₁ l₂ l₃ l₄ = 
---         let open ≡-Reasoning in
---         begin
---           (l₁ ++ l₂) ++ l₃ ++ l₄
---         ≡⟨ ++-assoc (l₁ ++ l₂) l₃ l₄ ⟨
---           ((l₁ ++ l₂) ++ l₃) ++ l₄
---         ≡⟨ Eq.cong (_++ l₄) (++-assoc l₁ l₂ l₃) ⟩
---           (l₁ ++ l₂ ++ l₃) ++ l₄
---         ∎
-
--- >-splayResultType : Tree → val nat → Splayed → tp⁺
--- >-splayResultType l z r = Σ⁺ splayed λ t' → meta⁺ (splay-list t' ≡ tree-list l ++ z ∷ [] ++ splay-list r)
-
--- >-splayHelper : (z : val nat) (l : Tree) (r : Splayed) {i : val nat} {i<r : i < splayed-size r} → cmp (F (>-splayResultType l z r))
--- >-splayHelper z l (valid (node a x b)) = 
---   ret (zag l z a x b , refl)
--- >-splayHelper z l (zig a x b y c) = 
---   ret (valid (node (node l z a) x (node b y c)) , arithmetic (tree-list l) (z ∷ tree-list a) (x ∷ tree-list b) (y ∷ tree-list c))
---     where 
---       arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → (l₁ ++ l₂) ++ l₃ ++ l₄ ≡ l₁ ++ l₂ ++ l₃ ++ l₄
---       arithmetic l₁ l₂ l₃ l₄ = 
---         let open ≡-Reasoning in
---           (l₁ ++ l₂) ++ (l₃ ++ l₄)
---         ≡⟨ ++-assoc l₁ l₂ (l₃ ++ l₄) ⟩
---           l₁ ++ l₂ ++ l₃ ++ l₄
---         ∎
--- >-splayHelper z l (zag a y b x c) = 
---   ret (valid (node (node (node l z a) y b) x c) , arithmetic (tree-list l) (z ∷ tree-list a) (y ∷ tree-list b) (x ∷ tree-list c))
---     where
---       arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → ((l₁ ++ l₂) ++ l₃) ++ l₄ ≡ l₁ ++ l₂ ++ l₃ ++ l₄
---       arithmetic l₁ l₂ l₃ l₄ = 
---         let open ≡-Reasoning in 
---         begin
---           ((l₁ ++ l₂) ++ l₃) ++ l₄
---         ≡⟨ ++-assoc (l₁ ++ l₂) l₃ l₄ ⟩
---           (l₁ ++ l₂) ++ (l₃ ++ l₄)
---         ≡⟨ ++-assoc l₁ l₂ (l₃ ++ l₄) ⟩
---           l₁ ++ (l₂ ++ (l₃ ++ l₄))
---         ∎
-
--- splayResultType : Tree → tp⁺ 
--- splayResultType t = Σ⁺ splayed λ l → meta⁺ (splay-list l ≡ tree-list t)
-
--- splay : (t : Tree) → (i : val nat) → i < (tree-size t) → cmp (F (splayResultType t))
--- splay (node l z r) i i<t with <-cmp i (tree-size l)
--- ... | tri< i<l i≢l _ = 
---   bind (F (splayResultType (node l z r))) (splay l i i<l) λ (l' , l'≡l) → 
---     bind (F _) (<-splayHelper z r l' {i = i} {i<l = Eq.subst (λ n → i < n) (Eq.sym (size-splayed-list l' l l'≡l)) i<l}) λ (l'' , l''≡r+1+l') → 
---       ret (l'' , Eq.trans l''≡r+1+l' (Eq.cong (λ l → l ++ z ∷ tree-list r) l'≡l)) 
--- ... | tri≈ _ _ _ = ret (valid (node l z r) , refl)
--- ... | tri> _ _ i>l = 
---   let
---     arithmetic : i ∸ ((tree-size l) + 1) Nat.< (tree-size r)
---     arithmetic = let open Nat.≤-Reasoning in 
---       Nat.+-cancelˡ-< ((tree-size l) + 1) (i ∸ ((tree-size l) + 1)) (tree-size r) (
---         begin-strict
---           ((tree-size l) + 1) + (i ∸ ((tree-size l) + 1))
---         ≡⟨ Nat.m+[n∸m]≡n (Eq.subst (i Nat.≥_) (Nat.+-comm 1 (tree-size l)) i>l) ⟩ 
---           i
---         <⟨ i<t ⟩
---           (tree-size l) + 1 + (tree-size r)
---         ∎
---       )
---   in 
---     bind (F (splayResultType (node l z r))) (splay r (i ∸ ((tree-size l) + 1)) arithmetic) λ (r' , r'≡r) → 
---       bind (F _) (>-splayHelper z l r' {i = i ∸ (tree-size l + 1)} {i<r = Eq.subst (λ n → i ∸ (tree-size l + 1) < n) (Eq.sym (size-splayed-list r' r r'≡r)) arithmetic}) λ (r'' , r''≡l+1+r') → 
---         ret (r'' , Eq.trans r''≡l+1+r' (Eq.cong (λ l' → tree-list l ++ z ∷ l') r'≡r))
-
--- splayTopLevelHelper : (t : Splayed) {i : val nat} {i<t : i < splayed-size t} → cmp (F (nat ×⁺ (meta⁺ (Tree))))
--- splayTopLevelHelper (valid (node l z r)) = ret (z , node l z r)
--- splayTopLevelHelper (zig a x b y c) = ret (y , node (node a x b) y c)
--- splayTopLevelHelper (zag a y b x c) = ret (y , node a x (node b y c)) 
-
--- SplayTree : BST
--- SplayTree .BST.T = tree
--- SplayTree .BST.splay t i with <-cmp i (tree-size t)
--- ... | tri< i<t _ _ = 
---   bind (F _) (splay t i i<t) 
---     (λ (t' , t'≡t) → splayTopLevelHelper t' {i = i} {i<t = Eq.subst (λ n → i < n) (Eq.sym (size-splayed-list t' t t'≡t)) i<t})
--- ... | tri≈ _ _ _ = ret (0 , t)
--- ... | tri> _ _ _ = ret (0 , t)
-
--- open BST renaming (splay to splay')
-
--- record BSTHom (bst bst' : BST) : Set where
---   field
---     ϕ : cmp (Π (bst .T) λ _ → F (bst' .T))
---     ϕ/splay : (t : val (bst .T)) (i : val nat) → 
---         bind (F _) (bst .splay' t i) (λ { (_ , t') → ϕ t'})
---       ≤⁻[ F (bst' .T) ]
---         bind (F _) (ϕ t) (λ t' → bind (F _) (bst' .splay' t' i) (λ { (_ , t'') → ret t''}))
-        
--- open BSTHom
-
--- rank : (T : Tree) → val nat
--- rank t = ⌊log₂ (tree-size t)⌋
-
--- sum-of-ranks : (T : Tree) → val nat
--- sum-of-ranks leaf = 0
--- sum-of-ranks (node l z r) = sum-of-ranks l + rank (node l z r) + sum-of-ranks r
-
--- log-rule : (x : val nat) → 2 ^ ⌊log₂ (suc x)⌋ Nat.≤ suc x
--- log-rule Nat.zero = 
---   let open Nat.≤-Reasoning in
---   begin
---     2 ^ ⌊log₂ 1 ⌋
---   ≡⟨⟩
---     1
---   ∎
--- log-rule (suc x) = 
---   let open Nat.≤-Reasoning in
---   begin
---     2 ^ ⌊log₂ suc (suc x) ⌋
---   ≡⟨ Eq.cong (2 ^_) {x = ⌊log₂ suc (suc x) ⌋} {y = 1 + ⌊log₂ (suc ⌊ x /2⌋)⌋} {!   !} ⟩
---     2 ^ (1 + ⌊log₂ (suc ⌊ x /2⌋)⌋)
---   ≡⟨ {!   !} ⟩
---     suc (suc x)
---   ∎
-
--- rank-rule : (l : Tree) (z : val nat) (r : Tree) → rank l ≡ rank r → (rank l) + 1 Nat.≤ rank (node l z r)
--- rank-rule l z r p = 
---   let open Nat.≤-Reasoning in 
---   begin
---     rank l + 1
---   ≡⟨⟩
---     ⌊log₂ (tree-size l)⌋ + 1
---   ≡⟨ {!   !} ⟩
---     ⌊log₂ (2 * tree-size l)⌋
---   ≡⟨ {!   !} ⟩
---     rank (node l z r)
---   ∎
---   where
---     tree-size-lemma : (t : Tree) → 2 ^ (rank t) Nat.≤ tree-size t
---     tree-size-lemma t = 
---       let open Nat.≤-Reasoning in
---       begin
---         2 ^ rank t
---       ≡⟨ {!   !} ⟩
---         tree-size t
---       ∎
-
-
--- ST⇒LT : BSTHom SplayTree ListTree
--- ST⇒LT .ϕ t = step (F _) (sum-of-ranks t) (ret (tree-list t))
--- ST⇒LT .ϕ/splay t i with <-cmp i (tree-size t)
--- ... | tri< a ¬b ¬c = {!   !}
--- ... | tri≈ ¬a b ¬c = 
---   let open ≤⁻-Reasoning (F (meta⁺ (List ℕ))) in 
---   begin
---     {!   !}
---   ≡⟨ {!   !} ⟩
---     {!   !}
---   ∎
--- ... | tri> _ _ _ = {!   !}
-
-
-
--- {-
---   - define s(x) = Σ w(y) ∀ y ∈ T(x)
---   - define w(y) = 1 ∀ y ∈ T
--- 2) define and prove rank rule: Suppose that two siblings have the same rank, r. Then the parent has rank at least r+1.
--- 3) define and prove splay step cost
--- 4) define and prove access lemma
--- 5) define and prove balance theorem (overall amortized cost)
-
--- Actually proving in Agda:
-
--- Rank rule is its own lemma seperately
--- splay step is <-splayHelper and >-splayHelper
--- access lemma is cost of whole splay (no need to account for BST .splay or splayTopLevelHelper
--- modified balance theorem is thm (like in queue-again)
-
--- Modifications from original proof:
-
--- For access lemma, proof weaker bound of 3log₂n + 1 (harder to quantify r(i)) for splay t i
--- Prove amortized portion of balance theorem (i.e. mlogn amortized instead of mlogn + nlogn for actual)
--- -}
+rank-rule : (l : Tree) (z : val nat) (r : Tree) → rank l ≡ rank r → (rank l) + 1 Nat.≤ rank (node l z r)
+rank-rule l z r p = 
+  let open Nat.≤-Reasoning in 
+  begin
+    rank l + 1
+  ≡⟨⟩
+    ⌊log₂ (tree-size l)⌋ + 1
+  ≡⟨ {!   !} ⟩
+    ⌊log₂ (2 * tree-size l)⌋
+  ≡⟨ {!   !} ⟩
+    rank (node l z r)
+  ∎
+  where
+    tree-size-lemma : (t : Tree) → 2 ^ (rank t) Nat.≤ tree-size t
+    tree-size-lemma t = 
+      let open Nat.≤-Reasoning in
+      begin
+        2 ^ rank t
+      ≡⟨ {!   !} ⟩
+        tree-size t
+      ∎
 
 -- open BST renaming (splay to splay/)
 
@@ -374,10 +314,3 @@ SplayTree .BST.splay t k =
 -- ex = node (node (node (node (node (node (node leaf 0 leaf) 1 leaf) 2 leaf) 3 leaf) 4 leaf) 5 leaf) 6 leaf
 
 -- _ = {! splay/ SplayTree ex 0    !}
-
--- ex2 : Tree
--- ex2 = node leaf 0
---  (node (node (node leaf 1 (node leaf 2 leaf)) 3 (node leaf 4 leaf))
---   5 (node leaf 6 leaf))
-
--- _ = {! splay/ SplayTree ex2 3  !}
