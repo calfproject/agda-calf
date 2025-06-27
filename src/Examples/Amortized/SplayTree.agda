@@ -268,45 +268,20 @@ sum-of-ranks : (T : Tree) → val nat
 sum-of-ranks leaf = 0
 sum-of-ranks (node l z r) = sum-of-ranks l + rank (node l z r) + sum-of-ranks r
 
-log-rule : (x : val nat) → 2 ^ ⌊log₂ (suc x)⌋ Nat.≤ suc x
-log-rule Nat.zero = 
-  let open Nat.≤-Reasoning in
-  begin
-    2 ^ ⌊log₂ 1 ⌋
-  ≡⟨⟩
-    1
-  ∎
-log-rule (suc x) = 
-  let open Nat.≤-Reasoning in
-  begin
-    2 ^ ⌊log₂ suc (suc x) ⌋
-  ≡⟨ Eq.cong (2 ^_) {x = ⌊log₂ suc (suc x) ⌋} {y = 1 + ⌊log₂ (suc ⌊ x /2⌋)⌋} {!   !} ⟩
-    2 ^ (1 + ⌊log₂ (suc ⌊ x /2⌋)⌋)
-  ≡⟨ {!   !} ⟩
-    suc (suc x)
-  ∎
-
 rank-rule : (l : Tree) (z : val nat) (r : Tree) → rank l ≡ rank r → (rank l) + 1 Nat.≤ rank (node l z r)
 rank-rule l z r p = 
   let open Nat.≤-Reasoning in 
   begin
     rank l + 1
   ≡⟨⟩
-    ⌊log₂ (tree-size l)⌋ + 1
-  ≡⟨ {!   !} ⟩
-    ⌊log₂ (2 * tree-size l)⌋
+    ⌊log₂ (tree-size l) ⌋ + 1
+  ≡⟨ Nat.+-comm ⌊log₂ (tree-size l)⌋ 1 ⟩
+    1 + ⌊log₂ (tree-size l) ⌋
+  ≡⟨ {!   !} ⟨
+    ⌊log₂ (2 * tree-size l) ⌋
   ≡⟨ {!   !} ⟩
     rank (node l z r)
   ∎
-  where
-    tree-size-lemma : (t : Tree) → 2 ^ (rank t) Nat.≤ tree-size t
-    tree-size-lemma t = 
-      let open Nat.≤-Reasoning in
-      begin
-        2 ^ rank t
-      ≡⟨ {!   !} ⟩
-        tree-size t
-      ∎
 
 -- open BST renaming (splay to splay/)
 
