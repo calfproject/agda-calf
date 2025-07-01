@@ -20,16 +20,13 @@ open import Calf.Data.Nat
 open import Calf.Data.List using (list; []; _∷_; _∷ʳ_; [_]; length; _++_; reverse ; splitAt  ) renaming ( map to listmap )
 open import Calf.Data.IsBounded costMonoid
 open import Calf.Data.IsBoundedG costMonoid
--- open import Calf.Data.BigO costMonoid
 open import Calf.Data.Product 
 
 open import Relation.Binary.PropositionalEquality as Eq using (_≡_; refl; _≢_; module ≡-Reasoning)
 open import Data.Nat as Nat using (_+_; _⊔_)
--- open import Data.Nat.Properties as N using ()
 open import Data.List.Properties using (length-++)
-open import Data.List.Relation.Binary.Permutation.Propositional
+open import Data.List.Relation.Binary.Permutation.Propositional using (_↭_; prep; refl)
 open import Data.List.Relation.Binary.Permutation.Propositional.Properties using (↭-length)
-
 
 
 open import Relation.Nullary
@@ -73,8 +70,8 @@ scan/bruteforce M L = scan/bruteforce/help (◯-Monoid.f M) (◯-Monoid.identity
 +-0-Monoid .◯-Monoid.isMonoid .◯-isMonoid.assoc {a} {b} {c} u = Eq.cong ret (N.+-assoc a b c)
 
 
-scan/bruteforce/example : val (U (F (meta⁺ (Σ (Calf.Data.List.List ℕ) (λ x → ℕ)))))
-scan/bruteforce/example = scan/bruteforce +-0-Monoid ( 1 ∷ 2 ∷ [] )
+-- scan/bruteforce/example : val (U (F (meta⁺ (Σ (Calf.Data.List.List ℕ) (λ x → ℕ)))))
+-- scan/bruteforce/example = scan/bruteforce +-0-Monoid ( 1 ∷ 2 ∷ [] )
 
 
 scan/accum-independent :  (l : val (list A)) → 
@@ -126,11 +123,12 @@ split/clocked {A} (suc k) k' (x ∷ xs) h    =
   ret ((x ∷ l₁ , l₂) , Eq.cong suc h₁ , h₂ , prep x xs↭l₁++l₂)
 
 
-split : {A : tp⁺} → cmp (Π (list A) λ l → F (split/type {A} ⌊ length l /2⌋ ⌈ length l /2⌉ l))
-split {A} l = split/clocked {A} ⌊ length l /2⌋ ⌈ length l /2⌉ l (N.⌊n/2⌋+⌈n/2⌉≡n (length l))
+split : (A : tp⁺) → cmp (Π (list A) λ l → F (split/type {A} ⌊ length l /2⌋ ⌈ length l /2⌉ l))
+split A l = split/clocked {A} ⌊ length l /2⌋ ⌈ length l /2⌉ l (N.⌊n/2⌋+⌈n/2⌉≡n (length l))
 
 
-split/cost : (l : val (list A)) → IsBounded (split/type {A} ⌊ length l /2⌋ ⌈ length l /2⌉ l) (split l) (0 , 0)
+split/cost : (l : val (list A)) → IsBounded (split/type {A} ⌊ length l /2⌋ ⌈ length l /2⌉ l) (split A l) (0 , 0)
+split/cost = {!   !}
 -- yay for sequences and just taking a smaller slice of the array 
 
 mapList : {A B : tp⁺} → 
@@ -150,7 +148,6 @@ mapList/bound : {A : tp⁺} →
                 ((a b : val A) → IsBounded A (f (a , b)) (0 , 0)) → 
                 (a : val A) → 
                 IsBounded  (Σ⁺ (list A) λ l' → meta⁺ (length l ≡ length l')) (mapList {A} (λ x → f (a , x)) l) (0 , 0) 
--- mapList/bound = {!   !}
 mapList/bound [] f h a = ≤⁻-refl
 mapList/bound {A} (x ∷ l) f h a = 
   let open ≤⁻-Reasoning cost in
@@ -166,185 +163,229 @@ mapList/bound {A} (x ∷ l) f h a =
     (((bind (F _) (step⋆ (0 , 0) ) λ _ → 
     bind (F _) (step⋆ (0 , 0) ) λ x' → 
       ret triv))) 
-  ≲⟨ bound/ret triv ⟩ 
+  ≡⟨⟩ 
     step⋆ (0 , 0) 
   ∎
 
 -- we def need to express that this is parallelizable
-
-
-scan/divconq/clocked : 
-  {A : tp⁺} → 
-  cmp (Π (U (Π (A ×⁺ A) (λ _ → F A))) (λ _ → 
-       Π A (λ _ → 
-       Π (list A) (λ l → 
-       Π nat λ k →
-       Π (meta⁺ (⌈log₂ length l ⌉ Nat.≤ k)) λ _ → 
-       F (Σ⁺ (list A ×⁺ A) λ (l' , _) → meta⁺ (length l ≡ length l'))))))
-scan/divconq/clocked f e [] Nat.zero p = ret (([] , e) , refl)
-scan/divconq/clocked f e (x ∷ []) Nat.zero p = ret ((e ∷ [] , x) , refl)
-scan/divconq/clocked {A} f e l (suc k) p = 
-  bind (F _) (split {A} l) λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-  let
-    h₁ , h₂ =
-      let open N.≤-Reasoning in
-      (begin
-        ⌈log₂ length l₁ ⌉
-      ≡⟨ Eq.cong ⌈log₂_⌉ length₁ ⟩
-        ⌈log₂ ⌊ length l /2⌋ ⌉
-      ≤⟨ log₂-mono (N.⌊n/2⌋≤⌈n/2⌉ (length l)) ⟩
-        ⌈log₂ ⌈ length l /2⌉ ⌉
-      ≤⟨ log₂-suc (length l) p ⟩
-        k
-      ∎) ,
-      (begin
-        ⌈log₂ length l₂ ⌉
-      ≡⟨ Eq.cong ⌈log₂_⌉ length₂ ⟩
-        ⌈log₂ ⌈ length l /2⌉ ⌉
-      ≤⟨ log₂-suc (length l) p ⟩
-        k
-      ∎)
-  in
-    bind (F _)
-      (scan/divconq/clocked f e l₁ k h₁ ∥
-       scan/divconq/clocked f e l₂ k h₂) λ (((l₁' , b') , ∣l₁∣≡∣l₁'∣) , ((l₂' , c'), ∣l₂∣≡∣l₂'∣)) → 
-      step (F _) (length l₂' , 1) ( -- cost of map
-        bind (F _) (mapList {A} (λ x → f (b' , x)) l₂') λ (r' , ∣l₂'∣≡∣r'∣) → 
-          bind (F _) (f (b' , c')) λ res → 
-            step (F _) (length l₁' , 1) ( -- cost of append
-              ret ((l₁' ++ r' , res) , lem l l₁ l₂ l₁' l₂' r' l↭l₁++l₂ ∣l₁∣≡∣l₁'∣ ∣l₂∣≡∣l₂'∣ ∣l₂'∣≡∣r'∣)))
-    where 
-      lem : (l l₁ l₂ l₁' l₂' r' : val (list A)) → 
+lem : {A : tp⁺} → (l l₁ l₂ l₁' l₂' r' : val (list A)) → 
             l ↭ l₁ ++ l₂ →
             length l₁ ≡ length l₁' →
             length l₂ ≡ length l₂' →
             length l₂' ≡ length r' →
             length l ≡ length (l₁' ++ r')
-      lem l l₁ l₂ l₁' l₂' r' l↭l₁++l₂ ∣l₁∣≡∣l₁'∣ ∣l₂∣≡∣l₂'∣ ∣l₂'∣≡∣r'∣ = 
-        let open ≡-Reasoning in 
-        begin 
-          length l 
-        ≡⟨ ↭-length l↭l₁++l₂ ⟩
-          length (l₁ ++ l₂)
-        ≡⟨ length-++ l₁ ⟩
-          length l₁ + length l₂
-        ≡⟨ Eq.cong₂ _+_ ∣l₁∣≡∣l₁'∣ ∣l₂∣≡∣l₂'∣ ⟩
-          length l₁' + length l₂'
-        ≡⟨ Eq.cong (_ +_) ∣l₂'∣≡∣r'∣ ⟩
-          length l₁' + length r'
-        ≡⟨ length-++ l₁' ⟨ 
-          length (l₁' ++ r')
-        ∎
+lem l l₁ l₂ l₁' l₂' r' l↭l₁++l₂ ∣l₁∣≡∣l₁'∣ ∣l₂∣≡∣l₂'∣ ∣l₂'∣≡∣r'∣ = 
+  let open ≡-Reasoning in 
+  begin 
+    length l 
+  ≡⟨ ↭-length l↭l₁++l₂ ⟩
+    length (l₁ ++ l₂)
+  ≡⟨ length-++ l₁ ⟩
+    length l₁ + length l₂
+  ≡⟨ Eq.cong₂ _+_ ∣l₁∣≡∣l₁'∣ ∣l₂∣≡∣l₂'∣ ⟩
+    length l₁' + length l₂'
+  ≡⟨ Eq.cong (_ +_) ∣l₂'∣≡∣r'∣ ⟩
+    length l₁' + length r'
+  ≡⟨ length-++ l₁' ⟨ 
+    length (l₁' ++ r')
+  ∎
 
-scan/divconq : ◯-Monoid A → (cmp  (Π (list A)  (λ _ → F (list A ×⁺ A))))
-scan/divconq M L = bind (F _) (scan/divconq/clocked (◯-Monoid.f M) (◯-Monoid.identity M) L ⌈log₂ length L ⌉ N.≤-refl) (λ (L , p) → ret L)
+scan/divconq/clocked : 
+  (A : tp⁺) → 
+  cmp (Π (U (Π (A ×⁺ A) (λ _ → F A))) (λ _ → 
+       Π A (λ _ → 
+      Π nat λ k →
+       Π (list A) (λ l → 
+       Π (meta⁺ (⌈log₂ length l ⌉ Nat.≤ k)) λ _ → 
+       F (Σ⁺ (list A ×⁺ A) λ (l' , _) → meta⁺ (length l ≡ length l'))))))
+scan/divconq/clocked A f e zero []  p = ret (([] , e) , refl)
+scan/divconq/clocked A f e zero (x ∷ []) p = ret ((e ∷ [] , x) , refl)
+scan/divconq/clocked A f e (suc k) l  p = 
+  bind (F _) (split A l) λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+    bind (F _)
+      (scan/divconq/clocked A f e k l₁ (h₁ l₁ length₁) ∥
+       scan/divconq/clocked A f e k l₂ (h₂ l₂ length₂)) λ (((l₁' , b') , ∣l₁∣≡∣l₁'∣) , ((l₂' , c'), ∣l₂∣≡∣l₂'∣)) → 
+      step (F _) (length l₂' , 1) ( -- cost of map
+        bind (F _) (mapList {A} (λ x → f (b' , x)) l₂') λ (r' , ∣l₂'∣≡∣r'∣) → 
+          bind (F _) (f (b' , c')) λ res → 
+            step (F _) (length l₁' , 1) ( -- cost of append
+              ret ((l₁' ++ r' , res) , 
+              lem {A} l l₁ l₂ l₁' l₂' r' l↭l₁++l₂ ∣l₁∣≡∣l₁'∣ ∣l₂∣≡∣l₂'∣ ∣l₂'∣≡∣r'∣
+              ))
+              )
+    where 
+      h₁ : (l₁ : val (list A)) (length₁ : length l₁ ≡ ⌊ length l /2⌋) → ⌈log₂ length l₁ ⌉ Nat.≤ k
+      h₁ l₁ length₁ =
+        let open N.≤-Reasoning in
+        (begin
+          ⌈log₂ length l₁ ⌉
+        ≡⟨ Eq.cong ⌈log₂_⌉ length₁ ⟩
+          ⌈log₂ ⌊ length l /2⌋ ⌉
+        ≤⟨ log₂-mono (N.⌊n/2⌋≤⌈n/2⌉ (length l)) ⟩
+          ⌈log₂ ⌈ length l /2⌉ ⌉
+        ≤⟨ log₂-suc (length l) p ⟩
+          k
+        ∎) 
 
+      h₂ : (l₂ : val (list A)) (length₂ : length l₂ ≡ ⌈ length l /2⌉) → ⌈log₂ length l₂ ⌉ Nat.≤ k
+      h₂ l₂ length₂ = 
+        let open N.≤-Reasoning in
+        (begin
+          ⌈log₂ length l₂ ⌉
+        ≡⟨ Eq.cong ⌈log₂_⌉ length₂ ⟩
+          ⌈log₂ ⌈ length l /2⌉ ⌉
+        ≤⟨ log₂-suc (length l) p ⟩
+          k
+        ∎)
+
+-- scan/divconq : ◯-Monoid A → (cmp  (Π (list A)  (λ _ → F (list A ×⁺ A))))
+-- scan/divconq {A} M L = bind (F _) (scan/divconq/clocked A (◯-Monoid.f M) (◯-Monoid.identity M) ⌈log₂ length L ⌉ N.≤-refl) L (λ (L , p) → ret L)
 
 scan/divconq/clocked/cost : 
   {A : tp⁺} →
   (f :  cmp (Π (A ×⁺ A) (λ _ → F A))) → 
   ((a b : val A) → IsBounded A (f (a , b)) (0 , 0)) → 
-  (m : ◯-Monoid A) → 
+  (e : val A) → 
   (l : val (list A)) →
   (k : val nat) → 
   (h : val (meta⁺ (⌈log₂ length l ⌉ Nat.≤ k))) →  
-  IsBounded _ 
-    (scan/divconq/clocked (◯-Monoid.f m) (◯-Monoid.identity m) l k h) 
+  IsBounded (Σ⁺ (list A ×⁺ A) λ (l' , _) → meta⁺ (length l ≡ length l')) 
+    (scan/divconq/clocked A f e k l h) 
     ((k + 1) * length l , k)
-scan/divconq/clocked/cost f p m [] Nat.zero h = ≤⁺-refl
-scan/divconq/clocked/cost f p m (x ∷ []) Nat.zero h = let open ≤⁻-Reasoning cost in 
-  begin 
-    ret triv 
-  ≲⟨ bound/ret triv ⟩
-    step⋆ (0 , 0) 
-  ≲⟨ step⋆-mono-≤⁻ (z≤n , z≤n) ⟩
-    step⋆ ((1 , 0)) 
-  ∎
-scan/divconq/clocked/cost f p m l (suc k) h = 
+scan/divconq/clocked/cost f p e [] zero h = ≤⁻-refl
+scan/divconq/clocked/cost f p e (x ∷ []) zero h = step⋆-mono-≤⁻ {c' = (1 , 0)} (z≤n , z≤n)
+scan/divconq/clocked/cost {A} f p e l (suc k) h = 
   let open ≤⁻-Reasoning cost in 
-  begin 
-    bind (F _)
-    (bind (F _) (split  l) λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-        bind (F _)
-          (scan/divconq/clocked f (◯-Monoid.identity m) l₁ k _ ∥
-          scan/divconq/clocked f (◯-Monoid.identity m) l₂ k _) λ (((l₁' , b') , ∣l₁∣≡∣l₁'∣) , ((l₂' , c'), ∣l₂∣≡∣l₂'∣)) → 
-          step (F _) (length l₂' , 1) ( 
-            bind (F _) (mapList (λ x → f (b' , x)) l₂') λ (r' , ∣l₂'∣≡∣r'∣) → 
-              bind (F _) (f (b' , c')) λ res → 
-                step (F _) (length l₁' , 1) ( 
-                  ret triv)))
-    (λ _ → ret triv)
-  ≲⟨ bind-monoˡ-≤⁻ (λ _ → ret triv)  
-      (bind-monoʳ-≤⁻ (split l) 
-        λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-          bind-monoʳ-≤⁻ ((scan/divconq/clocked f (◯-Monoid.identity m) l₁ k _ ∥
-            scan/divconq/clocked f (◯-Monoid.identity m) l₂ k _)) 
-              λ (((l₁' , b') , _) , ((l₂' , c'), _)) → 
-                step-monoʳ-≤⁻ ((length l₂' , 1)) 
-                  (bind-monoʳ-≤⁻ ((mapList (λ x → f (b' , x)) l₂')) 
-                    (λ (r' , _) → bind-monoˡ-≤⁻ (λ _ → 
-                step (F _) (length l₁' , 1) ( 
-                  ret triv)) (p b' c')))) ⟩
-    bind (F _)
-    (bind (F _) (split  l) λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-        bind (F _)
-          (scan/divconq/clocked f (◯-Monoid.identity m) l₁ k _ ∥
-          scan/divconq/clocked f (◯-Monoid.identity m) l₂ k _) λ (((l₁' , b') , ∣l₁∣≡∣l₁'∣) , ((l₂' , c'), ∣l₂∣≡∣l₂'∣)) → 
-          step (F _) (length l₂' , 1) ( 
-            bind (F _) (mapList (λ x → f (b' , x)) l₂') λ (r' , ∣l₂'∣≡∣r'∣) → 
-              step⋆ (length l₁' , 1)) )
-    (λ _ → ret triv) 
-  ≲⟨ bind-monoˡ-≤⁻ (λ _ → ret triv) 
-      (bind-monoʳ-≤⁻ (split l) 
-        (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-          bind-monoʳ-≤⁻ (scan/divconq/clocked f (◯-Monoid.identity m) l₁ k _ ∥
-            scan/divconq/clocked f (◯-Monoid.identity m) l₂ k _) 
-            λ (((l₁' , b') , _) , ((l₂' , c'), _)) → 
-              step-monoʳ-≤⁻ (length l₂' , 1) 
-                (bind-monoˡ-≤⁻ (λ x → step⋆ (length l₁' , 1)) (mapList/bound l₂' (λ x → f  x) p b')))) ⟩
-    bind (F _)
-    (bind (F _) (split  l) λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-        bind (F _)
-          (scan/divconq/clocked f (◯-Monoid.identity m) l₁ k _ ∥
-          scan/divconq/clocked f (◯-Monoid.identity m) l₂ k _) λ (((l₁' , b') , ∣l₁∣≡∣l₁'∣) , ((l₂' , c'), ∣l₂∣≡∣l₂'∣)) → 
-          step⋆ (length l₁ + length l₂ , 1)
-                  )
-    (λ _ → ret triv)
-  ≲⟨ bind-monoˡ-≤⁻ (λ _ → ret triv) 
-      (bind-monoʳ-≤⁻ (split l) 
-        (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-          bind-monoˡ-≤⁻ 
-          (λ _ → step⋆ (length l₁ + length l₂ , 1)) 
-          (bound/par (scan/divconq/clocked/cost f p m l₁ k _) (scan/divconq/clocked/cost f p m l₂ k _)))) ⟩
-    bind (F _)
-    (bind (F _) (split  l) 
-      λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-          (step⋆ ((k + 1) * (length l) + length l , k ⊔ 1)) 
-          )
-    (λ _ → ret triv)
-  ≲⟨ bind-monoˡ-≤⁻ (λ _ → ret triv) (bind-monoˡ-≤⁻ 
-      (λ x → (step⋆ ((k + 1) * (length l) + length l  , k ⊔ 1))) (split/cost l)) ⟩
-    step⋆ ((k + 1) * (length l) + length l  , k ⊔ 1)
-  ≲⟨ {!   !} ⟩
-    {!   !}
-  ≲⟨ {!   !} ⟩
-    step⋆ ((length l + (k + 1) * (length l)  , suc k)) 
-  ∎ 
+    begin 
+      bind {A = Σ⁺ (list A ×⁺ A) λ (l' , _) → meta⁺ (length l ≡ length l')} cost
+     (bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+         bind (F _)
+           (scan/divconq/clocked A f e k l₁ _ ∥
+           scan/divconq/clocked A f e k l₂  _) λ (((l₁' , b') , ∣l₁∣≡∣l₁'∣) , ((l₂' , c'), ∣l₂∣≡∣l₂'∣)) → 
+           step (F _) (length l₂' , 1) ( 
+             bind (F _) (mapList {A} (λ x → f (b' , x)) l₂') λ (r' , ∣l₂'∣≡∣r'∣) → 
+               bind (F _) (f (b' , c')) λ res → 
+                 step (F _) (length l₁' , 1) ( 
+                   ret ((l₁' ++ r' , res) , lem {A} l l₁ l₂ l₁' l₂' r' l↭l₁++l₂ ∣l₁∣≡∣l₁'∣ ∣l₂∣≡∣l₂'∣ ∣l₂'∣≡∣r'∣)))))
+     (λ _ → ret triv)
+  ≲⟨ {!   !} ⟩ 
+    {!   !} 
+  ∎
+-- scan/divconq/clocked/cost {A} f p e (x ∷ l) (suc k) h = {! λ a t k' → scan/divconq/clocked A f e (a ∷ t) (suc k')  !}
+-- scan/divconq/clocked/cost f p m e [] Nat.zero h = ≤⁺-refl
+-- scan/divconq/clocked/cost f p m e (x ∷ []) Nat.zero h = 
+--   let open ≤⁻-Reasoning cost in 
+--   begin 
+--     step⋆ (0 , 0) 
+--   ≲⟨ step⋆-mono-≤⁻ {c' = (1 , 0)} (z≤n , z≤n) ⟩
+--     step⋆ (1 , 0) 
+--   ∎
+-- scan/divconq/clocked/cost {A} f p m e l (suc k) h = 
+--   let open ≤⁻-Reasoning cost in 
+--     begin 
+--       {! bind {A = Σ⁺ (list A ×⁺ A) λ (l' , _) → meta⁺ (length l ≡ length l')} cost
+--      (bind (F _) (split {!  A !} l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+--          bind (F _)
+--            (scan/divconq/clocked f (◯-Monoid.identity m) l₁ k _ ∥
+--            scan/divconq/clocked f (◯-Monoid.identity m) l₂ k _) λ (((l₁' , b') , ∣l₁∣≡∣l₁'∣) , ((l₂' , c'), ∣l₂∣≡∣l₂'∣)) → 
+--            step (F _) (length l₂' , 1) ( 
+--              bind (F _) (mapList {A} (λ x → f (b' , x)) l₂') λ (r' , ∣l₂'∣≡∣r'∣) → 
+--                bind (F _) (f (b' , c')) λ res → 
+--                  step (F _) (length l₁' , 1) ( 
+--                    ret ((l₁' ++ r' , res) , _)))))
+--      (λ _ → ret triv) !}
+--     ≲⟨ {! scan/divconq/clocked f e l (suc k) h
+--  !} ⟩ 
+--       {!   !} 
+--     ∎
+  -- begin 
+  --   bind (F _)
+  --   (bind (F _) (split  l) λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+  --       bind (F _)
+  --         (scan/divconq/clocked f (◯-Monoid.identity m) l₁ k _ ∥
+  --         scan/divconq/clocked f (◯-Monoid.identity m) l₂ k _) λ (((l₁' , b') , ∣l₁∣≡∣l₁'∣) , ((l₂' , c'), ∣l₂∣≡∣l₂'∣)) → 
+  --         step (F _) (length l₂' , 1) ( 
+  --           bind (F _) (mapList (λ x → f (b' , x)) l₂') λ (r' , ∣l₂'∣≡∣r'∣) → 
+  --             bind (F _) (f (b' , c')) λ res → 
+  --               step (F _) (length l₁' , 1) ( 
+  --                 ret triv)))
+  --   (λ _ → ret triv)
+  -- ≲⟨ bind-monoˡ-≤⁻ (λ _ → ret triv)  
+  --     (bind-monoʳ-≤⁻ (split l) 
+  --       λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+  --         bind-monoʳ-≤⁻ ((scan/divconq/clocked f (◯-Monoid.identity m) l₁ k _ ∥
+  --           scan/divconq/clocked f (◯-Monoid.identity m) l₂ k _)) 
+  --             λ (((l₁' , b') , _) , ((l₂' , c'), _)) → 
+  --               step-monoʳ-≤⁻ ((length l₂' , 1)) 
+  --                 (bind-monoʳ-≤⁻ ((mapList (λ x → f (b' , x)) l₂')) 
+  --                   (λ (r' , _) → bind-monoˡ-≤⁻ (λ _ → 
+  --               step (F _) (length l₁' , 1) ( 
+  --                 ret triv)) (p b' c')))) ⟩
+  --   bind (F _)
+  --   (bind (F _) (split  l) λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+  --       bind (F _)
+  --         (scan/divconq/clocked f (◯-Monoid.identity m) l₁ k _ ∥
+  --         scan/divconq/clocked f (◯-Monoid.identity m) l₂ k _) λ (((l₁' , b') , ∣l₁∣≡∣l₁'∣) , ((l₂' , c'), ∣l₂∣≡∣l₂'∣)) → 
+  --         step (F _) (length l₂' , 1) ( 
+  --           bind (F _) (mapList (λ x → f (b' , x)) l₂') λ (r' , ∣l₂'∣≡∣r'∣) → 
+  --             step⋆ (length l₁' , 1)) )
+  --   (λ _ → ret triv) 
+  -- ≲⟨ bind-monoˡ-≤⁻ (λ _ → ret triv) 
+  --     (bind-monoʳ-≤⁻ (split l) 
+  --       (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+  --         bind-monoʳ-≤⁻ (scan/divconq/clocked f (◯-Monoid.identity m) l₁ k _ ∥
+  --           scan/divconq/clocked f (◯-Monoid.identity m) l₂ k _) 
+  --           λ (((l₁' , b') , _) , ((l₂' , c'), _)) → 
+  --             step-monoʳ-≤⁻ (length l₂' , 1) 
+  --               (bind-monoˡ-≤⁻ (λ x → step⋆ (length l₁' , 1)) (mapList/bound l₂' (λ x → f  x) p b')))) ⟩
+  --   bind (F _)
+  --   (bind (F _) (split  l) λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+  --       bind (F _)
+  --         (scan/divconq/clocked f (◯-Monoid.identity m) l₁ k _ ∥
+  --         scan/divconq/clocked f (◯-Monoid.identity m) l₂ k _) λ (((l₁' , b') , ∣l₁∣≡∣l₁'∣) , ((l₂' , c'), ∣l₂∣≡∣l₂'∣)) → 
+  --         step⋆ (length l₁ + length l₂ , 1)
+  --                 )
+  --   (λ _ → ret triv)
+  -- ≲⟨ bind-monoˡ-≤⁻ (λ _ → ret triv) 
+  --     (bind-monoʳ-≤⁻ (split l) 
+  --       (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+  --         bind-monoˡ-≤⁻ 
+  --         (λ _ → step⋆ (length l₁ + length l₂ , 1)) 
+  --         (bound/par (scan/divconq/clocked/cost f p m l₁ k _) (scan/divconq/clocked/cost f p m l₂ k _)))) ⟩
+  --   bind (F _)
+  --   (bind (F _) (split  l) 
+  --     λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+  --         (step⋆ ((k + 1) * (length l) + length l , k ⊔ 1)) 
+  --         )
+  --   (λ _ → ret triv)
+  -- ≲⟨ bind-monoˡ-≤⁻ (λ _ → ret triv) (bind-monoˡ-≤⁻ 
+  --     (λ x → (step⋆ ((k + 1) * (length l) + length l  , k ⊔ 1))) (split/cost l)) ⟩
+  --   step⋆ ((k + 1) * (length l) + length l  , k ⊔ 1)
+  -- ≲⟨ {!   !} ⟩
+  --   {!   !}
+  -- ≲⟨ {!   !} ⟩
+  --   step⋆ ((length l + (k + 1) * (length l)  , suc k)) 
+  -- ∎ 
+  --   where 
+  --     
+
+arithmetic : (k : val nat) → k ⊔ 1 Nat.≤ suc k 
+arithmetic zero    = s≤s z≤n
+arithmetic (suc k) = {!   !}
+
+
+-- scan/divconq/cost : 
+--   (m : ◯-Monoid A) → 
+--   (l : val (list A)) →
+--   IsBounded (list A ×⁺ A) (scan/divconq m l) ((⌈log₂ length l ⌉ + 1) * length l , ⌈log₂ length l ⌉)
 
 
 
-scan/divconq/cost : 
-  (m : ◯-Monoid A) → 
-  (l : val (list A)) →
-  IsBounded (list A ×⁺ A) (scan/divconq m l) ((⌈log₂ length l ⌉ + 1) * length l , ⌈log₂ length l ⌉)
+-- scan/example : cmp (Π (list nat)  (λ _ → F (list nat ×⁺ nat)))
+-- scan/example l = scan/bruteforce +-0-Monoid l 
 
-
-
-scan/example : cmp (Π (list nat)  (λ _ → F (list nat ×⁺ nat)))
-scan/example l = scan/bruteforce +-0-Monoid l 
-
-scan/example' : cmp (Π (list nat)  (λ _ → F (list nat ×⁺ nat)))
-scan/example' l = scan/divconq +-0-Monoid l 
+-- scan/example' : cmp (Π (list nat)  (λ _ → F (list nat ×⁺ nat)))
+-- scan/example' l = scan/divconq +-0-Monoid l 
 
 
 -- ex = {! scan/example' (1 ∷ 2 ∷ 5 ∷ []) !} 
