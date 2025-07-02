@@ -63,7 +63,7 @@ inord/cmp (node l z r) =
   bind (F _) (inord/cmp r) (λ r' → ret (l' ++ z ∷ [] ++ r'))) 
 
 data Context : Set where
-  Left : (k : val nat) (t : Tree) → Context
+  Left  : (k : val nat) (t : Tree) → Context
   Right : (t : Tree) (k : val nat) → Context
 
 context : tp⁺
@@ -98,9 +98,9 @@ pathInordType k t anc = Σ⁺ pathType (λ (t' , anc') →
 path : (k : val nat) (t : Tree) (anc : List Context) → cmp (F (pathInordType k t anc))
 path k leaf anc = ret ((leaf , anc) , refl , refl)
 path k (node l x r) anc with <-cmp k x 
-... | tri< _ _ _ = path k l (Left x r ∷ anc)
+... | tri< _ _ _   = path k l (Left x r ∷ anc)
 ... | tri≈ _ k≡x _ = ret ((node l x r , anc) , refl , Eq.sym k≡x)
-... | tri> _ _ _ = path k r (Right l x ∷ anc)
+... | tri> _ _ _   = path k r (Right l x ∷ anc)
 
 splay'ResultType : val nat → Tree → Tree → List Context → tp⁺
 splay'ResultType k a b anc = Σ⁺ (tree ×⁺ tree) (λ (a' , b') → 
@@ -109,23 +109,28 @@ splay'ResultType k a b anc = Σ⁺ (tree ×⁺ tree) (λ (a' , b') →
 splay' : (a : Tree) (b : Tree) (anc : List Context) (k : val nat) → cmp (F (splay'ResultType k a b anc))
 splay' a b [] k = ret ((a , b) , refl)
 -- done
-splay' a b (Left p c ∷ []) k = ret ((a , node b p c) , arithmetic (inord a) (k ∷ inord b) (p ∷ inord c))
+splay' a b (Left p c ∷ []) k = 
+  step (F _) 1 (
+    ret ((a , node b p c) , arithmetic (inord a) (k ∷ inord b) (p ∷ inord c)))
   where
     arithmetic : (l₁ l₂ l₃ : val (list nat)) → (l₁ ++ l₂) ++ l₃ ≡ l₁ ++ l₂ ++ l₃
     arithmetic l₁ l₂ l₃ = ++-assoc l₁ l₂ l₃
 -- zig
-splay' b c (Right a p ∷ []) k = ret ((node a p b , c) , arithmetic (inord a) (p ∷ inord b) (k ∷ inord c))
+splay' b c (Right a p ∷ []) k = 
+  step (F _) 1 (
+    ret ((node a p b , c) , arithmetic (inord a) (p ∷ inord b) (k ∷ inord c)))
   where
     arithmetic : (l₁ l₂ l₃ : val (list nat)) → l₁ ++ l₂ ++ l₃ ≡ (l₁ ++ l₂) ++ l₃
     arithmetic l₁ l₂ l₃ = Eq.sym (++-assoc l₁ l₂ l₃)
 -- zag
 splay' a b (Left p c ∷ Left g d ∷ anc) k = 
   bind (F _) (splay' a (node b p (node c g d)) anc k) (λ ((l' , r') , recon≡inord) → 
-    ret ((l' , r') , Eq.trans (inord/reconstruct 
+    step (F _) 1 (
+      ret ((l' , r') , Eq.trans (inord/reconstruct 
        (node (node (node a k b) p c) g d) 
        (node a k (node b p (node c g d))) 
        anc 
-       (inord/arith a b c d k p g)) recon≡inord))
+       (inord/arith a b c d k p g)) recon≡inord)))
   where
     arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → ((l₁ ++ l₂) ++ l₃) ++ l₄ ≡ l₁ ++ l₂ ++ l₃ ++ l₄
     arithmetic l₁ l₂ l₃ l₄ = 
@@ -137,17 +142,19 @@ splay' a b (Left p c ∷ Left g d ∷ anc) k =
       ≡⟨ ++-assoc l₁ l₂ (l₃ ++ l₄) ⟩
         l₁ ++ (l₂ ++ (l₃ ++ l₄))
       ∎
+
     inord/arith : (a b c d : Tree) (k p g : val nat) →  
       inord (node (node (node a k b) p c) g d) ≡ inord (node a k (node b p (node c g d)))
     inord/arith a b c d k p g = arithmetic (inord a) (k ∷ inord b) (p ∷ inord c) (g ∷ inord d)
 -- zig-zig
 splay' b c (Left p d ∷ Right a g ∷ anc) k = 
   bind (F _) (splay' (node a g b) (node c p d) anc k) (λ ((l' , r') , recon≡inord) → 
-    ret ((l' , r') , Eq.trans (inord/reconstruct 
+    step (F _) 1 (
+      ret ((l' , r') , Eq.trans (inord/reconstruct 
        (node a g (node (node b k c) p d))
        (node (node a g b) k (node c p d))
        anc 
-       (inord/arith a b c d k p g)) recon≡inord))
+       (inord/arith a b c d k p g)) recon≡inord)))
   where
     arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → l₁ ++ (l₂ ++ l₃) ++ l₄ ≡ (l₁ ++ l₂) ++ l₃ ++ l₄
     arithmetic l₁ l₂ l₃ l₄ = 
@@ -167,11 +174,12 @@ splay' b c (Left p d ∷ Right a g ∷ anc) k =
 -- zag-zig
 splay' b c (Right a p ∷ Left g d ∷ anc) k = 
   bind (F _) (splay' (node a p b) (node c g d) anc k) (λ ((l' , r') , recon≡inord) → 
-    ret ((l' , r') , Eq.trans (inord/reconstruct 
+    step (F _) 1 (
+      ret ((l' , r') , Eq.trans (inord/reconstruct 
        (node (node a p (node b k c)) g d)
        (node (node a p b) k (node c g d))
        anc 
-       (inord/arith a b c d k p g)) recon≡inord))
+       (inord/arith a b c d k p g)) recon≡inord)))
   where
     arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → (l₁ ++ l₂ ++ l₃) ++ l₄ ≡ (l₁ ++ l₂) ++ l₃ ++ l₄
     arithmetic l₁ l₂ l₃ l₄ = 
@@ -189,11 +197,12 @@ splay' b c (Right a p ∷ Left g d ∷ anc) k =
 -- zig-zag
 splay' c d (Right b p ∷ Right a g ∷ anc) k = 
   bind (F _) (splay' (node (node a g b) p c) d anc k) (λ ((l' , r') , recon≡inord) →
-    ret ((l' , r') , Eq.trans (inord/reconstruct 
+    step (F _) 1 (
+      ret ((l' , r') , Eq.trans (inord/reconstruct 
        (node a g (node b p (node c k d)))
        (node (node (node a g b) p c) k d)
        anc 
-       (inord/arith a b c d k p g)) recon≡inord))
+       (inord/arith a b c d k p g)) recon≡inord)))
   where
     arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → l₁ ++ l₂ ++ l₃ ++ l₄ ≡ ((l₁ ++ l₂) ++ l₃) ++ l₄
     arithmetic l₁ l₂ l₃ l₄ = 
@@ -354,6 +363,17 @@ ST⇒LT .ϕ/splay t k =
 -- open BST renaming (splay to splay/)
 
 -- ex : Tree
--- ex = node (node (node (node (node (node (node leaf 0 leaf) 1 leaf) 2 leaf) 3 leaf) 4 leaf) 5 leaf) 6 leaf
+-- ex = node (node (node (node (node (node (node leaf 3 leaf) 5 leaf) 6 leaf) 8 leaf) 10 leaf) 11 leaf) 12 leaf
 
--- _ = {! splay/ SplayTree ex 0    !}
+-- _ = {! bind (F _) (splay/ SplayTree ex 0) (λ (_ , t) → splay/ SplayTree t 14)   !}
+
+
+φ : cmp (Π tree λ _ → F (list nat))
+φ t = step (F _) (sum-of-ranks t) (ret (inord t))
+
+splay'/amortized : (a : Tree) (b : Tree) (anc : List Context) (k : val nat) → 
+   bind (F _) (splay' a b anc k) (λ ((a' , b') , _) → φ (node a' k b')) 
+  ≤⁻[ F _ ] 
+   step (F _) (3 * (rank (reconstruct (node a k b) anc) ∸ rank (node a k b))) (φ (reconstruct (node a k b) anc))
+splay'/amortized a b [] k = step-monoˡ-≤⁻ {c' = 3 * (rank (reconstruct (node a k b) []) ∸ rank (node a k b))} (φ (node a k b)) z≤n 
+splay'/amortized a b (x ∷ anc) k = {!   !}
