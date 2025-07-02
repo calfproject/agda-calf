@@ -233,6 +233,96 @@ SplayTree .BST.splay t k =
   bind (F _) (path k t []) (λ ((t' , anc) , _ , k≡root) → 
     bind (F _) (splay t' k anc (Eq.sym k≡root)) (λ ((k' , t'') , _ , _ , _) → ret (k' , t''))) 
 
+rank : (T : Tree) → val nat
+rank t = ⌊log₂ (tree-size t)⌋
+
+sum-of-ranks : (T : Tree) → val nat
+sum-of-ranks leaf = 0
+sum-of-ranks (node l z r) = sum-of-ranks l + rank (node l z r) + sum-of-ranks r
+
+rank-rule : ∀ l {{_ : NonZero (tree-size l)}} → (z : val nat) → ∀ r {{_ : NonZero (tree-size r)}} → 
+            rank l ≡ rank r → rank l + 1 Nat.≤ rank (node l z r)
+rank-rule l z r p = 
+  let open Nat.≤-Reasoning in 
+  begin
+    rank l + 1
+  ≡⟨ ⌊log₂[2^n]⌋≡n (rank l + 1) ⟨
+    ⌊log₂ (2 ^ (rank l + 1)) ⌋
+  ≡⟨ Eq.cong (λ e → ⌊log₂ (2 ^ e) ⌋) (Nat.+-comm (rank l) 1) ⟩
+    ⌊log₂ (2 ^ suc (rank l)) ⌋
+  ≡⟨ Eq.cong (λ e → ⌊log₂ e ⌋) (lemma/2^suc (rank l)) ⟨
+    ⌊log₂ (2 ^ rank l + 2 ^ rank l) ⌋
+  ≡⟨ Eq.cong (λ e → ⌊log₂ (2 ^ rank l + 2 ^ e) ⌋) p ⟩
+    ⌊log₂ (2 ^ rank l + 2 ^ rank r) ⌋
+  ≤⟨ ⌊log₂⌋-mono-≤ (Nat.n≤1+n (2 ^ rank l + 2 ^ rank r)) ⟩
+    ⌊log₂ (1 + 2 ^ rank l + 2 ^ rank r) ⌋
+  ≡⟨ Eq.cong (λ e → ⌊log₂ e ⌋) (Nat.+-assoc 1 (2 ^ rank l) (2 ^ rank r)) ⟨
+    ⌊log₂ (1 + 2 ^ rank l + 2 ^ rank r) ⌋
+  ≡⟨ Eq.cong (λ e → ⌊log₂ (e + 2 ^ rank r) ⌋) (Nat.+-comm 1 (2 ^ rank l)) ⟩
+    ⌊log₂ (2 ^ rank l + 1 + 2 ^ rank r) ⌋
+  ≤⟨ ⌊log₂⌋-mono-≤ (Nat.+-mono-≤ (Nat.+-monoˡ-≤ 1 (rank-to-size l (rank l) refl)) (rank-to-size r (rank r) refl)) ⟩
+    ⌊log₂ (tree-size l + 1 + tree-size r) ⌋
+  ≡⟨⟩
+    rank (node l z r)
+  ∎
+  where
+    rank-to-size : ∀ t {{_ : NonZero (tree-size t)}} → (x : val nat) → x ≡ rank t → 2 ^ x Nat.≤ tree-size t
+    rank-to-size t x p = 
+      let open Nat.≤-Reasoning in
+      begin
+        2 ^ x
+      ≡⟨ Eq.cong (λ e → 2 ^ e) p ⟩
+        2 ^ (rank t)
+      ≡⟨⟩
+        2 ^ ⌊log₂ (tree-size t)⌋
+      ≤⟨ log-rule (tree-size t) ⟩
+        tree-size t
+      ∎
+      where
+        log-rule : ∀ n {{p : NonZero n}} → 2 ^ ⌊log₂ n ⌋ Nat.≤ n
+        log-rule n = lemma
+          where
+            open import Data.Nat.Logarithm.Core
+            open import Induction.WellFounded using (Acc; acc)
+
+            lemma : ∀ {n acc} {{p : NonZero n}} → 2 ^ (⌊log2⌋ n acc) Nat.≤ n
+            lemma {suc Nat.zero} {acc _} = s≤s z≤n
+            lemma {2+ n} {acc rs} = 
+              let open Nat.≤-Reasoning in
+              begin
+                2 ^ ⌊log2⌋ (suc ⌊ n /2⌋) (rs (s≤s (s≤s (Nat.⌊n/2⌋≤n n)))) +
+                  (2 ^ ⌊log2⌋ (suc ⌊ n /2⌋) (rs (s≤s (s≤s (Nat.⌊n/2⌋≤n n)))) + Nat.zero)
+              ≡⟨ Eq.cong (λ e → 2 ^ ⌊log2⌋ (suc ⌊ n /2⌋) (rs (s≤s (s≤s (Nat.⌊n/2⌋≤n n)))) + e) 
+                  (Nat.+-comm (2 ^ ⌊log2⌋ (suc ⌊ n /2⌋) (rs (s≤s (s≤s (Nat.⌊n/2⌋≤n n))))) Nat.zero) ⟩
+                2 ^ ⌊log2⌋ (suc ⌊ n /2⌋) (rs (s≤s (s≤s (Nat.⌊n/2⌋≤n n)))) +
+                  2 ^ ⌊log2⌋ (suc ⌊ n /2⌋) (rs (s≤s (s≤s (Nat.⌊n/2⌋≤n n))))
+              ≤⟨ Nat.+-mono-≤ lemma lemma ⟩
+                (suc ⌊ n /2⌋) + (suc ⌊ n /2⌋)
+              ≡⟨ arithmetic 1 ⌊ n /2⌋ 1 ⌊ n /2⌋ ⟩
+                (1 + 1) + (⌊ n /2⌋ + ⌊ n /2⌋)
+              ≤⟨ s≤s (s≤s (Nat.+-monoʳ-≤ ⌊ n /2⌋ (Nat.⌊n/2⌋-mono (Nat.n≤1+n n)))) ⟩
+                (1 + 1) + (⌊ n /2⌋ + ⌈ n /2⌉)
+              ≡⟨ Eq.cong (λ e → (1 + 1) + e) (Nat.⌊n/2⌋+⌈n/2⌉≡n n) ⟩
+                2+ n
+              ∎
+              where
+                arithmetic : (a b c d : ℕ) → (a + b) + (c + d) ≡ (a + c) + (b + d)
+                arithmetic a b c d = 
+                  let open ≡-Reasoning in
+                  begin
+                    (a + b) + (c + d)
+                  ≡⟨ Nat.+-assoc a b (c + d) ⟩
+                    a + (b + (c + d))
+                  ≡⟨ Eq.cong (λ e → a + e) (Nat.+-assoc b c d) ⟨
+                    a + ((b + c) + d)
+                  ≡⟨ Eq.cong (λ e → a + (e + d)) (Nat.+-comm b c) ⟩
+                    a + ((c + b) + d)
+                  ≡⟨ Eq.cong (λ e → a + e) (Nat.+-assoc c b d) ⟩
+                    a + (c + (b + d))
+                  ≡⟨ Nat.+-assoc a c (b + d) ⟨
+                    (a + c) + (b + d)
+                  ∎
+
 open BST renaming (splay to splay/)
 
 record BSTHom (bst bst' : BST) : Set where
@@ -240,7 +330,6 @@ record BSTHom (bst bst' : BST) : Set where
     ϕ : cmp (Π (bst .T) λ _ → F (bst' .T))
     ϕ/splay : (t : val (bst .T)) (k : val nat) → 
         bind (F _) (bst .splay/ t k) (λ (k' , t') → ϕ t')
-      -- ≤⁻[ F (bst' .T) ]
       ≡
         ϕ t
 
@@ -249,7 +338,8 @@ open BSTHom
 ST⇒LT : BSTHom SplayTree ListTree
 ST⇒LT .ϕ t = ret (inord t)
 ST⇒LT .ϕ/splay t k = 
-  let open ≡-Reasoning in begin
+  let open ≡-Reasoning in 
+  begin
     bind (F _) (path k t []) (λ ((t' , anc) , _ , k≡root) →
       bind (F _) (splay t' k anc (Eq.sym k≡root)) (λ ((k' , t'') , _ , _ , _) → ret (inord t'')))
   ≡⟨ Eq.cong (bind (F _) (path k t [])) (funext (λ ((t' , anc) , t≡recon/t' , k≡root) → 
@@ -259,28 +349,6 @@ ST⇒LT .ϕ/splay t k =
       bind (F _) (splay t' k anc (Eq.sym k≡root)) (λ ((k' , t'') , _ , _ , _) → ret (inord t)))
   ≡⟨ {!   !} ⟩
     ret (inord t)
-  ∎
-
-rank : (T : Tree) → val nat
-rank t = ⌊log₂ (tree-size t)⌋
-
-sum-of-ranks : (T : Tree) → val nat
-sum-of-ranks leaf = 0
-sum-of-ranks (node l z r) = sum-of-ranks l + rank (node l z r) + sum-of-ranks r
-
-rank-rule : (l : Tree) (z : val nat) (r : Tree) → rank l ≡ rank r → (rank l) + 1 Nat.≤ rank (node l z r)
-rank-rule l z r p = 
-  let open Nat.≤-Reasoning in 
-  begin
-    rank l + 1
-  ≡⟨⟩
-    ⌊log₂ (tree-size l) ⌋ + 1
-  ≡⟨ Nat.+-comm ⌊log₂ (tree-size l)⌋ 1 ⟩
-    1 + ⌊log₂ (tree-size l) ⌋
-  ≡⟨ {!   !} ⟨
-    ⌊log₂ (2 * tree-size l) ⌋
-  ≡⟨ {!   !} ⟩
-    rank (node l z r)
   ∎
 
 -- open BST renaming (splay to splay/)
