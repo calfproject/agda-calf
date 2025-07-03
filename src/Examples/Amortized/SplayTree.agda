@@ -111,7 +111,7 @@ splay' a b [] k = ret ((a , b) , refl)
 -- done
 splay' a b (Left p c ∷ []) k = 
   step (F _) 1 (
-    ret ((a , node b p c) , arithmetic (inord a) (k ∷ inord b) (p ∷ inord c)))
+    ret ((a , node b p c) , ++-assoc (inord a) (k ∷ inord b) (p ∷ inord c)))
   where
     arithmetic : (l₁ l₂ l₃ : val (list nat)) → (l₁ ++ l₂) ++ l₃ ≡ l₁ ++ l₂ ++ l₃
     arithmetic l₁ l₂ l₃ = ++-assoc l₁ l₂ l₃
@@ -332,6 +332,69 @@ rank-rule l z r p =
                     (a + c) + (b + d)
                   ∎
 
+φ : cmp (Π tree λ _ → F (list nat))
+φ t = step (F _) (sum-of-ranks t) (ret (inord t))
+
+splay'/amortized : (l : Tree) (r : Tree) (anc : List Context) (k : val nat) → 
+   bind (F _) (splay' l r anc k) (λ ((l' , r') , _) → φ (node l' k r')) 
+  ≤⁻[ F _ ] 
+   step (F _) (1 + 3 * (rank (reconstruct (node l k r) anc) ∸ rank (node l k r))) (φ (reconstruct (node l k r) anc))
+splay'/amortized a b [] k = step-monoˡ-≤⁻ {c' = 1 + 3 * (rank (reconstruct (node a k b) []) ∸ rank (node a k b))} (φ (node a k b)) z≤n 
+-- done
+splay'/amortized a b (Left p c ∷ []) k = 
+  let open ≤⁻-Reasoning (F (list nat)) in 
+  begin
+    bind (F _) (splay' a b (Left p c ∷ []) k) (λ ((l' , r') , t≡t') → φ (node l' k r'))
+  ≡⟨⟩ 
+    bind (F _) (splay' a b (Left p c ∷ []) k) (λ ((l' , r') , t≡t') → (step (F _) (sum-of-ranks (node l' k r'))) (ret (inord (node l' k r'))))
+  ≡⟨ Eq.cong (λ e → bind (F _) (splay' a b (Left p c ∷ []) k) e) (funext (λ ((l' , r') , t≡t') → 
+      Eq.cong (step (F _) (sum-of-ranks (node l' k r'))) (Eq.cong (λ e → ret e) t≡t'))) ⟨
+    bind (F _) (splay' a b (Left p c ∷ []) k) (λ ((l' , r') , t≡t') → (step (F _) (sum-of-ranks (node l' k r'))) (ret (inord (node (node a k b) p c))))
+  ≡⟨⟩
+    step (F _) 1 (step (F _) (sum-of-ranks (node a k (node b p c))) (ret (inord (node (node a k b) p c))))
+  ≡⟨⟩ 
+    step (F _) (1 + sum-of-ranks (node a k (node b p c))) (ret (inord (node (node a k b) p c)))
+  ≡⟨⟩  
+    step (F _) (1 + sum-of-ranks a + rank (node a k (node b p c)) + (sum-of-ranks b + rank (node b p c) + sum-of-ranks c))
+      (ret (inord (node (node a k b) p c)))
+  ≡⟨ {!   !} ⟩
+    step (F _) ((1 + sum-of-ranks a + sum-of-ranks b + sum-of-ranks c) + rank (node a k (node b p c)) + rank (node b p c))
+      (ret (inord (node (node a k b) p c)))
+  ≲⟨ step-monoˡ-≤⁻ (ret (inord (node (node a k b) p c))) (+-monoʳ-≤ {!  !} {!   !}) ⟩
+    step (F _) ((1 + sum-of-ranks a + sum-of-ranks b + sum-of-ranks c) + rank (node (node a k b) p c) + rank (node (node a k b) p c))
+      (ret (inord (node (node a k b) p c)))
+  ≲⟨ {!   !} ⟩
+    step (F _) ((1 + sum-of-ranks a + sum-of-ranks b + sum-of-ranks c) + 
+      rank (node (node a k b) p c) + rank (node a k b) + 3 * (rank (node (node a k b) p c) ∸ rank (node a k b)))
+        (ret (inord (node (node a k b) p c)))
+  ≡⟨ {!   !} ⟩
+    step (F _) (1 + 3 * (rank (node (node a k b) p c) ∸ rank (node a k b)) + 
+      ((sum-of-ranks a + rank (node a k b) + sum-of-ranks b) + rank (node (node a k b) p c) + sum-of-ranks c))
+        (ret (inord (node (node a k b) p c))) 
+  ≡⟨⟩
+    step (F _) (1 + 3 * (rank (node (node a k b) p c) ∸ rank (node a k b)) + sum-of-ranks (node (node a k b) p c)) (ret (inord (node (node a k b) p c)))
+  ≡⟨⟩
+    step (F _) (1 + 3 * (rank (node (node a k b) p c) ∸ rank (node a k b))) (step (F _) (sum-of-ranks (node (node a k b) p c)) (ret (inord (node (node a k b) p c))))
+  ≡⟨⟩
+    step (F _) (1 + 3 * (rank (node (node a k b) p c) ∸ rank (node a k b))) (φ (node (node a k b) p c))
+  ∎
+  where
+    rank/ordering : (a b c : Tree) (k p : val nat) → rank (node a k (node b p c)) ≡ rank (node (node a k b) p c)
+    rank/ordering a b c k p = {!   !}
+    rank/containment : (a b c : Tree) (k p : val nat) → rank (node b p c) Nat.≤ rank (node (node a k b) p c)
+    rank/containment a b c k p = {!   !}
+-- zig
+splay'/amortized b c (Right a p ∷ []) k = {!   !}
+-- zag
+splay'/amortized a b (Left p c ∷ Left g d ∷ anc) k = {!   !}
+-- zig-zig
+splay'/amortized b c (Left p d ∷ Right a g ∷ anc) k = {!   !}
+-- zag-zig
+splay'/amortized b c (Right a p ∷ Left g d ∷ anc) k = {!   !}
+-- zig-zag
+splay'/amortized c d (Right b p ∷ Right a g ∷ anc) k = {!   !}
+-- zag-zag
+
 open BST renaming (splay to splay/)
 
 record BSTHom (bst bst' : BST) : Set where
@@ -344,21 +407,21 @@ record BSTHom (bst bst' : BST) : Set where
 
 open BSTHom
 
-ST⇒LT : BSTHom SplayTree ListTree
-ST⇒LT .ϕ t = ret (inord t)
-ST⇒LT .ϕ/splay t k = 
-  let open ≡-Reasoning in 
-  begin
-    bind (F _) (path k t []) (λ ((t' , anc) , _ , k≡root) →
-      bind (F _) (splay t' k anc (Eq.sym k≡root)) (λ ((k' , t'') , _ , _ , _) → ret (inord t'')))
-  ≡⟨ Eq.cong (bind (F _) (path k t [])) (funext (λ ((t' , anc) , t≡recon/t' , k≡root) → 
-      Eq.cong (bind (F _) (splay t' k anc (Eq.sym k≡root))) (funext (λ ((k' , t'') , inord/recon/t'≡inord/t'' , _ , _) → 
-        Eq.cong ret (Eq.sym (Eq.trans (Eq.cong inord t≡recon/t') inord/recon/t'≡inord/t'')))))) ⟩
-    bind (F _) (path k t []) (λ ((t' , anc) , _ , k≡root) →
-      bind (F _) (splay t' k anc (Eq.sym k≡root)) (λ ((k' , t'') , _ , _ , _) → ret (inord t)))
-  ≡⟨ {!   !} ⟩
-    ret (inord t)
-  ∎
+-- ST⇒LT : BSTHom SplayTree ListTree
+-- ST⇒LT .ϕ t = ret (inord t)
+-- ST⇒LT .ϕ/splay t k = 
+--   let open ≡-Reasoning in 
+--   begin
+--     bind (F _) (path k t []) (λ ((t' , anc) , _ , k≡root) →
+--       bind (F _) (splay t' k anc (Eq.sym k≡root)) (λ ((k' , t'') , _ , _ , _) → ret (inord t'')))
+--   ≡⟨ Eq.cong (bind (F _) (path k t [])) (funext (λ ((t' , anc) , t≡recon/t' , k≡root) → 
+--       Eq.cong (bind (F _) (splay t' k anc (Eq.sym k≡root))) (funext (λ ((k' , t'') , inord/recon/t'≡inord/t'' , _ , _) → 
+--         Eq.cong ret (Eq.sym (Eq.trans (Eq.cong inord t≡recon/t') inord/recon/t'≡inord/t'')))))) ⟩
+--     bind (F _) (path k t []) (λ ((t' , anc) , _ , k≡root) →
+--       bind (F _) (splay t' k anc (Eq.sym k≡root)) (λ ((k' , t'') , _ , _ , _) → ret (inord t)))
+--   ≡⟨ {!   !} ⟩
+--     ret (inord t)
+--   ∎
 
 -- open BST renaming (splay to splay/)
 
@@ -366,14 +429,3 @@ ST⇒LT .ϕ/splay t k =
 -- ex = node (node (node (node (node (node (node leaf 3 leaf) 5 leaf) 6 leaf) 8 leaf) 10 leaf) 11 leaf) 12 leaf
 
 -- _ = {! bind (F _) (splay/ SplayTree ex 0) (λ (_ , t) → splay/ SplayTree t 14)   !}
-
-
-φ : cmp (Π tree λ _ → F (list nat))
-φ t = step (F _) (sum-of-ranks t) (ret (inord t))
-
-splay'/amortized : (a : Tree) (b : Tree) (anc : List Context) (k : val nat) → 
-   bind (F _) (splay' a b anc k) (λ ((a' , b') , _) → φ (node a' k b')) 
-  ≤⁻[ F _ ] 
-   step (F _) (3 * (rank (reconstruct (node a k b) anc) ∸ rank (node a k b))) (φ (reconstruct (node a k b) anc))
-splay'/amortized a b [] k = step-monoˡ-≤⁻ {c' = 3 * (rank (reconstruct (node a k b) []) ∸ rank (node a k b))} (φ (node a k b)) z≤n 
-splay'/amortized a b (x ∷ anc) k = {!   !}
