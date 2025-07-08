@@ -427,10 +427,23 @@ arithmetic (suc k) = s≤s (N.≤-trans (N.≤-reflexive (N.⊔-identityʳ k)) (
 contract :  {A : tp⁺} → 
             cmp (Π (U (Π (A ×⁺ A) (λ _ → F A))) λ _ → 
                  Π (list A) (λ l → 
-                 F (Σ⁺ (list A) λ l' → meta⁺ (  length l / 2 ≡ length l' ) ))) 
+                 F (Σ⁺ (list A) λ l' → meta⁺ (  length l / 2  ≡ length l' ) )))
+                 -- should be ⌈ length l / 2 ⌉, but this doesnt work for some reason  
+contract f [] = ret ([] , Eq.refl)
+contract f (x ∷ []) = ret (x ∷ [] , {!    !}) -- impossible to do the proofs without ceil 
+contract f (x ∷ y ∷ l) = bind (F _) (f (x , y)) (λ x₁ → bind (F _) (contract f l) (λ (l' , p) → ret (x₁ ∷ l' , {!   !})) ) 
                  
 -- contract should include a proof that this is half the length? 
 
+
+-- expand needs to take in a proof that length l₁ ≡ ⌈ length l₂ / 2 ⌉ 
+
+expand : {A : tp⁺} → 
+         cmp (Π (U (Π (A ×⁺ A) (λ _ → F A))) λ _ → 
+              Π (list A) (λ l₁ → 
+              Π (list A) (λ l₂ → 
+              F (Σ⁺ (list A) λ l' → meta⁺ (  length l₁ * 2  ≡ length l' ) )) )) -- not sure if this is the correct proof 
+expand f l₁ l₂ = {!   !} 
 
 -- scan/divconq/clocked : 
 --   {A : tp⁺} → 
@@ -452,6 +465,11 @@ contract :  {A : tp⁺} →
 --             | contract [x] = [x]
 --             | contract (x::y::z) = f (x, y)::contract z
 --           val (rs, result) = scan f b (contract s)
+-- whats the work of expand? is it length of the final list, or how many times we compute f 
+-- based on the book impl it should be final length, since its structured as a tabulate 
+-- scan preserves length 
+-- contract l gives l' where ceil (|l| / 2) = |l'| 
+-- |rs| = ceil (|l| / 2)
 --           fun expand ([], []) = []
 --             | expand ([r], [_]) = [r]
 --             | expand (r::rs, x::_::xs) = r::f (r, x)::expand (rs, xs)
