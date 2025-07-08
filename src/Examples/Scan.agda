@@ -128,7 +128,7 @@ split/clocked/cost :  (A : tp⁺) →
                       (l : val (list A)) → 
                       (p : val (meta⁺ (k + k' ≡ length l))) → 
                       IsBounded (split/type {A} k k' l) (split/clocked {A} k k' l p) (0 , 0)
-split/clocked/cost A zero k' l h =  {!   !}
+split/clocked/cost A zero k' l refl = ≤⁻-refl
 split/clocked/cost A (suc k) k' (x ∷ xs) h = bind-monoˡ-≤⁻ (λ x₁ → ret triv) (split/clocked/cost A k k' xs (N.suc-injective h))
 
 
@@ -329,12 +329,14 @@ scan/divconq/clocked/cost {A} f p e (suc k) l h =
     bind (F _) (step⋆ ( (k + 1) * (length l₁) + (k + 1) * (length l₂) , 2 * k ⊔ 2 * k  ) ) 
             λ _ → 
               step⋆ ((length l₂ + length l₁ , 2)))
-  ≲⟨ bind-monoʳ-≤⁻ (split A l) {!   !} ⟩ 
-      -- bind-monoʳ-≤⁻ (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-      -- step⋆-mono-≤⁻ 
-      -- {c = ( (k + 1) * (length l₁) + (k + 1) * (length l₂) , 2 * k ⊔ 2 * k  )}
-      -- {c' = ( (k + 1) * (length l₁) + (k + 1) * (length l₂) , 2 * k  )}
-      -- (N.≤-refl , N.≤-reflexive (N.⊔-idem (2 * k))))
+  ≡⟨⟩ 
+   bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+      step⋆ ( (k + 1) * (length l₁) + (k + 1) * (length l₂) + (length l₂ + length l₁) , (2 * k ⊔ 2 * k) + 2 ))
+  ≡⟨ Eq.cong (bind (F _) (split A l)) (funext (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+      Eq.cong step⋆ 
+        (Eq.cong₂ _,_ (Eq.sym (N.+-assoc ((k + 1) * (length l₁) + (k + 1) * (length l₂)) (length l₂) (length l₁))) 
+        (Eq.cong (_+ 2) (N.⊔-idem (2 * k)))))) 
+      ⟩ 
      bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
       step⋆ ( (k + 1) * (length l₁) + (k + 1) * (length l₂) + length l₂ + length l₁ , 2 * k + 2 ))
   ≲⟨ bind-monoʳ-≤⁻ (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
@@ -388,11 +390,28 @@ scan/divconq/clocked/cost {A} f p e (suc k) l h =
         (N.≤-reflexive (↭-length (↭-sym l↭l₁++l₂))) , N.≤-refl))  ⟩ 
   bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
     step⋆ ( (k + 1) * (length l) + (length l) , 2 * k + 2 )) 
-  ≲⟨ bind-monoˡ-≤⁻ (λ x → step⋆ ( (k + 1) * (length l) + (length l) , 2 * k + 2 )) (split/cost l)  ⟩ 
-  step⋆ ( (k + 1) * (length l) + (length l) , 2 * k + 2 ) 
-  ≲⟨ step⋆-mono-≤⁻ (N.≤-reflexive (N.+-comm ((k + 1) * (length l)) (length l)) , N.≤-reflexive (N.+-comm {! 2 * k  !} {!   !})) ⟩ 
-    {!   !} 
+  ≲⟨ bind-monoˡ-≤⁻ (λ x → step⋆ ( (k + 1) * (length l) + (length l) , 2 * k + 2 )) (split/cost {A} l)  ⟩ 
+    step⋆ ( (k + 1) * (length l) + (length l) , 2 * k + 2 ) 
+  ≲⟨ step⋆-mono-≤⁻ (N.≤-reflexive (N.+-comm ((k + 1) * length l) (length l)) , N.≤-reflexive (arithmetic k)) ⟩ 
+    step⋆ (length l + (k + 1) * length l , suc (k + suc (k + zero))) 
   ∎
+  where 
+    arithmetic : (k : val nat) → (k + (k + 0)) + 2 ≡ 1 + (k + (1 + (k + 0)))
+    arithmetic k = 
+      let open ≡-Reasoning in 
+      begin 
+        (k + (k + 0)) + 2 
+      ≡⟨ N.+-comm (k + (k + 0)) 2 ⟩
+        (1 + 1) + (k + (k + 0))
+      ≡⟨ N.+-assoc 1 1 (k + (k + 0)) ⟩ 
+        1 + (1 + (k + (k + 0)))
+      ≡⟨ Eq.cong (1 +_) (N.+-assoc 1 k (k + 0)) ⟩
+        1 + ((1 + k) + (k + 0))
+      ≡⟨ Eq.cong (λ c → 1 + (c + (k + 0))) (N.+-comm 1 k) ⟩ 
+        1 + ((k + 1) + (k + 0))
+      ≡⟨ Eq.cong (1 +_) (N.+-assoc k 1 (k + 0)) ⟩ 
+        1 + (k + (1 + (k + 0)))
+      ∎
 
 
 
@@ -427,10 +446,10 @@ arithmetic (suc k) = s≤s (N.≤-trans (N.≤-reflexive (N.⊔-identityʳ k)) (
 contract :  {A : tp⁺} → 
             cmp (Π (U (Π (A ×⁺ A) (λ _ → F A))) λ _ → 
                  Π (list A) (λ l → 
-                 F (Σ⁺ (list A) λ l' → meta⁺ (  length l / 2  ≡ length l' ) )))
+                 F (Σ⁺ (list A) λ l' → meta⁺ ( ⌈ length l /2⌉ ≡ length l' ) )))
                  -- should be ⌈ length l / 2 ⌉, but this doesnt work for some reason  
 contract f [] = ret ([] , Eq.refl)
-contract f (x ∷ []) = ret (x ∷ [] , {!    !}) -- impossible to do the proofs without ceil 
+contract f (x ∷ []) = ret (x ∷ [] , refl) -- impossible to do the proofs without ceil 
 contract f (x ∷ y ∷ l) = bind (F _) (f (x , y)) (λ x₁ → bind (F _) (contract f l) (λ (l' , p) → ret (x₁ ∷ l' , {!   !})) ) 
                  
 -- contract should include a proof that this is half the length? 
