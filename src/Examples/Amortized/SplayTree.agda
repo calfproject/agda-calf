@@ -189,13 +189,13 @@ splay' b c (Left p d ∷ Right a g ∷ anc) k =
     inord/arith a b c d k p g = arithmetic (inord a) (g ∷ inord b) (k ∷ inord c) (p ∷ inord d)
 -- zag-zig
 splay' b c (Right a p ∷ Left g d ∷ anc) k = 
-  bind (F _) (splay' (node a p b) (node c g d) anc k) (λ ((l' , r') , recon≡inord) → 
-    step (F _) 1 (
-      ret ((l' , r') , Eq.trans (inord/reconstruct 
-       (node (node a p (node b k c)) g d)
-       (node (node a p b) k (node c g d))
-       anc 
-       (zig/zag/inord/arith a b c d k p g)) recon≡inord)))
+  step (F _) 1 (
+    bind (F _) (splay' (node a p b) (node c g d) anc k) (λ ((l' , r') , recon≡inord) →
+      ret ((l' , r') , Eq.trans (inord/reconstruct
+        (node (node a p (node b k c)) g d)
+        (node (node a p b) k (node c g d))
+        anc
+        (zig/zag/inord/arith a b c d k p g)) recon≡inord)))
   where
     arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → (l₁ ++ l₂ ++ l₃) ++ l₄ ≡ (l₁ ++ l₂) ++ l₃ ++ l₄
     arithmetic l₁ l₂ l₃ l₄ = 
@@ -348,6 +348,13 @@ rank-rule l z r p =
                     (a + c) + (b + d)
                   ∎
 
+rank/recon : (t₁ t₂ : Tree) (anc : List Context) → tree-size t₁ ≡ tree-size t₂ → rank (reconstruct t₁ anc) ≡ rank (reconstruct t₂ anc)
+rank/recon t₁ t₂ [] st₁≡st₂ = Eq.cong (λ e → ⌊log₂ e ⌋) st₁≡st₂
+rank/recon t₁ t₂ (Left k t ∷ anc) st₁≡st₂ = rank/recon (node t₁ k t) (node t₂ k t) anc 
+  (Eq.cong (λ e → e + 1 + tree-size t) st₁≡st₂)
+rank/recon t₁ t₂ (Right t k ∷ anc) st₁≡st₂ = rank/recon (node t k t₁) (node t k t₂) anc 
+  (Eq.cong (λ e → tree-size t + 1 + e) st₁≡st₂)
+
 φ : cmp (Π tree λ _ → F (list nat))
 φ t = step (F _) (sum-of-ranks t) (ret (inord t))
 
@@ -497,9 +504,9 @@ splay'/amortized a b (Left p c ∷ Left g d ∷ anc) k = {!   !}
 -- zig-zig
 splay'/amortized b c (Left p d ∷ Right a g ∷ anc) k = {!   !}
 -- zag-zig
-splay'/amortized b c (Right a p ∷ Left g d ∷ anc) k with <-cmp (rank (node b k c)) (rank (node (node a p (node b k c)) g d))
+splay'/amortized b c (Right a p ∷ Left g d ∷ anc) k with <-cmp (rank (node b k c)) (rank (node (node a p b) k (node c g d)))
 ... | tri< a₁ ¬b ¬c = {!   !}
-... | tri≈ ¬a b₁ ¬c = 
+... | tri≈ ¬a rank-x≡rank-x' ¬c = 
   let
     rank-x  : val nat
     rank-x  = rank (node b k c)
@@ -516,50 +523,83 @@ splay'/amortized b c (Right a p ∷ Left g d ∷ anc) k with <-cmp (rank (node b
   in
   let open ≤⁻-Reasoning (F (list nat)) in 
   begin
-    bind (F (list nat)) 
-      (bind (F (splay'ResultType k (node a p b) (node c g d) anc)) 
-        (splay' (node a p b) (node c g d) anc k) (λ ((l' , r') , _) → step (F _) 1 (ret ((l' , r') , _)))) (λ ((l'' , r'') , _) → 
-          φ (node l'' k r''))
+    bind (F (list nat)) (step (F _) 1 (
+      bind (F (splay'ResultType k (node a p b) (node c g d) anc)) (splay' (node a p b) (node c g d) anc k) (λ ((l' , r') , _) →
+        ret ((l' , r') , _)))) (λ ((l' , r') , _) → φ (node l' k r'))
   ≡⟨⟩
-    bind (F (list nat)) (splay' (node a p b) (node c g d) anc k) (λ ((l' , r') , _) → 
-      step (F (list nat)) 1 (φ (node l' k r')))
+    step (F _) 1 (bind (F _) (
+      bind (F (splay'ResultType k (node a p b) (node c g d) anc)) (splay' (node a p b) (node c g d) anc k) (λ ((l' , r') , _) →
+        ret ((l' , r') , _))) (λ ((l' , r') , _) → φ (node l' k r')))
   ≡⟨⟩
-    bind (F (list nat)) (splay' (node a p b) (node c g d) anc k) (λ ((l' , r') , _) → 
-      bind (F (list nat)) (step (F (splay'ResultType k (node a p b) (node c g d) anc)) 1 (ret ((l' , r') , _))) (λ ((l'' , r'') , _) → 
-        step (F _) (sum-of-ranks (node l' k r')) (ret (inord l' ++ k ∷ inord r'))))
-  ≡⟨ Eq.cong (λ e → bind (F _) (splay' (node a p b) (node c g d) anc k) e) (funext (λ ((l' , r') , _) → 
-      Eq.cong (λ e → bind (F _) (step (F (splay'ResultType k (node a p b) (node c g d) anc)) 1 (ret ((l' , r') , _))) e) (funext (λ ((l'' , r'') , t≡t') → 
-        Eq.cong (λ e → step (F _) (sum-of-ranks (node l'' k r'')) e) 
-          (Eq.cong (λ e → ret e) (Eq.trans (Eq.sym t≡t') (Eq.sym (inord/reconstruct 
-            (node (node a p (node b k c)) g d)
-            (node (node a p b) k (node c g d))
-            anc
-            (zig/zag/inord/arith a b c d k p g))))))))) ⟩
-    bind (F (list nat)) (splay' (node a p b) (node c g d) anc k) (λ ((l' , r') , _) → 
-      bind (F (list nat)) (step (F (splay'ResultType k (node a p b) (node c g d) anc)) 1 (ret ((l' , r') , _))) (λ ((l'' , r'') , _) → 
-        step (F _) (sum-of-ranks (node l'' k r'')) (ret (inord (reconstruct (node (node a p (node b k c)) g d) anc)))))
+    step (F _) 1 (
+      bind (F _) (splay' (node a p b) (node c g d) anc k) (λ ((l' , r') , _) → 
+        φ (node l' k r')))
+  ≲⟨ step-monoʳ-≤⁻ 1 (splay'/amortized (node a p b) (node c g d) anc k) ⟩
+    step (F _) 1 (
+      step (F _) (1 + 3 * (rank (reconstruct (node (node a p b) k (node c g d)) anc) ∸ rank-x'))
+        (φ (reconstruct (node (node a p b) k (node c g d)) anc)))
   ≡⟨⟩
-    bind (F (list nat)) (splay' (node a p b) (node c g d) anc k) (λ ((l' , r') , _) → 
-      step (F (list nat)) (1 + sum-of-ranks (node l' k r')) (ret (inord (reconstruct (node (node a p (node b k c)) g d) anc))))
-    -- bind (F (list nat)) (splay' (node a p b) (node c g d) anc k)
-    --   (bind (F (splay'ResultType k (node a p b) (node c g d) anc)) 
-    --     (splay' (node a p b) (node c g d) anc k) (λ ((l' , r') , _) → step (F _) 1 (ret ((l' , r') , _)))) (λ ((l' , r') , _) → 
-    --       φ (reconstruct (node b k c) (Right a p ∷ Left g d ∷ anc)))
---  bind X (bind (F B) e f) g ≡ bind X e (λ a → bind X (f a) g)
-  -- ≡⟨⟩
-  -- ≡⟨ {!   !} ⟩
-  --   {! bind (F (list nat)) (splay' (node a p b) (node c g d) anc k) (λ ((l' , r') , _) → 
-  --     step (F (list nat)) (1 + sum-of-ranks (node l' k r')) (ret (inord l' ++ k ∷ inord r')))  !}
-  ≲⟨ {!   !} ⟩
-    step (F _) (1 + 3 * (rank (reconstruct (node (node a p (node b k c)) g d) anc) ∸ rank-x)) (φ (reconstruct (node (node a p (node b k c)) g d) anc))
+    step (F _) (1 + 1 + 3 * (rank (reconstruct (node (node a p b) k (node c g d)) anc) ∸ rank-x'))
+      (φ (reconstruct (node (node a p b) k (node c g d)) anc)) 
+  ≡⟨ Eq.cong (λ e → step (F _) e (φ (reconstruct (node (node a p b) k (node c g d)) anc))) 
+      (Eq.cong (λ e → 1 + 1 + 3 * (e ∸ rank-x')) 
+        (rank/recon (node (node a p b) k (node c g d)) (node (node a p (node b k c)) g d) anc size/lemma)) ⟩
+    step (F _) (1 + 1 + 3 * (rank (reconstruct (node (node a p (node b k c)) g d) anc) ∸ rank-x'))
+      (φ (reconstruct (node (node a p b) k (node c g d)) anc)) 
+  ≡⟨ Eq.cong (λ e → step (F _) e (φ (reconstruct (node (node a p b) k (node c g d)) anc))) 
+      (Eq.cong (λ e → 1 + 1 + 3 * (rank (reconstruct (node (node a p (node b k c)) g d) anc) ∸ e)) rank-x≡rank-x') ⟨
+    step (F _) (1 + 1 + 3 * (rank (reconstruct (node (node a p (node b k c)) g d) anc) ∸ rank-x))
+      (φ (reconstruct (node (node a p b) k (node c g d)) anc)) 
+  ≡⟨⟩
+    step (F _) (1 + 1 + 3 * (rank (reconstruct (node (node a p (node b k c)) g d) anc) ∸ rank-x))
+      (step (F _) (sum-of-ranks (reconstruct (node (node a p b) k (node c g d)) anc)) 
+        (ret (inord (reconstruct (node (node a p b) k (node c g d)) anc))))
+  ≡⟨⟩
+    step (F _) (1 + 1 + 3 * (rank (reconstruct (node (node a p (node b k c)) g d) anc) ∸ rank-x) + 
+      sum-of-ranks (reconstruct (node (node a p b) k (node c g d)) anc))
+        (ret (inord (reconstruct (node (node a p b) k (node c g d)) anc)))
+  ≡⟨ Eq.cong (λ e → step (F _) e (ret (inord (reconstruct (node (node a p b) k (node c g d)) anc)))) 
+      (arithmetic2 1 1 
+        (3 * (rank (reconstruct (node (node a p (node b k c)) g d) anc) ∸ rank-x)) 
+        (sum-of-ranks (reconstruct (node (node a p b) k (node c g d)) anc))) ⟩
+    step (F _) (1 + 3 * (rank (reconstruct (node (node a p (node b k c)) g d) anc) ∸ rank-x) + 
+      (sum-of-ranks (reconstruct (node (node a p b) k (node c g d)) anc) + 1))
+        (ret (inord (reconstruct (node (node a p b) k (node c g d)) anc)))
+  ≲⟨ step-monoˡ-≤⁻ (ret (inord (reconstruct (node (node a p b) k (node c g d)) anc))) 
+      (+-monoʳ-≤ (1 + 3 * (rank (reconstruct (node (node a p (node b k c)) g d) anc) ∸ rank-x)) phi/lemma) ⟩
+    step (F _) (1 + 3 * (rank (reconstruct (node (node a p (node b k c)) g d) anc) ∸ rank-x) + 
+      sum-of-ranks (reconstruct (node (node a p (node b k c)) g d) anc))
+        (ret (inord (reconstruct (node (node a p b) k (node c g d)) anc)))
+  ≡⟨⟩
+    step (F _) (1 + 3 * (rank (reconstruct (node (node a p (node b k c)) g d) anc) ∸ rank-x))
+      (step (F _) (sum-of-ranks (reconstruct (node (node a p (node b k c)) g d) anc))
+        (ret (inord (reconstruct (node (node a p b) k (node c g d)) anc))))
+  ≡⟨ Eq.cong (λ e → step (F _) (1 + 3 * (rank (reconstruct (node (node a p (node b k c)) g d) anc) ∸ rank-x)) e) 
+      (Eq.cong (λ e → step (F _) (sum-of-ranks (reconstruct (node (node a p (node b k c)) g d) anc)) e) 
+        (Eq.cong ret (inord/reconstruct 
+          (node (node a p (node b k c)) g d)
+          (node (node a p b) k (node c g d))
+          anc 
+          (zig/zag/inord/arith a b c d k p g)))) ⟨
+    step (F _) (1 + 3 * (rank (reconstruct (node (node a p (node b k c)) g d) anc) ∸ rank-x))
+      (step (F _) (sum-of-ranks (reconstruct (node (node a p (node b k c)) g d) anc))
+        (ret (inord (reconstruct (node (node a p (node b k c)) g d) anc))))
+  ≡⟨⟩
+    step (F _) (1 + 3 * (rank (reconstruct (node (node a p (node b k c)) g d) anc) ∸ rank-x)) 
+      (φ (reconstruct (node (node a p (node b k c)) g d) anc))
   ∎
   where
-    step/lemma : (a b c d l' r' : Tree) (k p g : val nat) (anc : List Context) → 
-        bind (F (list nat)) (step (F (splay'ResultType k (node a p b) (node c g d) anc)) 1 (ret ((l' , r') , _))) (λ ((l'' , r'') , _) → 
-          φ (node l' k r'))
-      ≤⁻[ F _ ]
-        step (F _) (3 * (rank (node (node a p (node b k c)) g d) ∸ rank (node b k c))) (φ (node l' k r'))
-    step/lemma = {!   !}
+    arithmetic1 : (a b c d e f g : val nat) → a + b + c + d + (e + f + g) ≡ a + b + (c + d + e) + f + g
+    arithmetic1 = solve-∀
+    size/lemma : tree-size (node (node a p b) k (node c g d)) ≡ tree-size (node (node a p (node b k c)) g d)
+    size/lemma = arithmetic1 (tree-size a) 1 (tree-size b) 1 (tree-size c) 1 (tree-size d)
+    arithmetic2 : (a b c d : val nat) → a + b + c + d ≡ (a + c) + (d + b)
+    arithmetic2 = solve-∀
+    phi/lemma : 
+        sum-of-ranks (reconstruct (node (node a p b) k (node c g d)) anc) + 1 
+      Nat.≤
+        sum-of-ranks (reconstruct (node (node a p (node b k c)) g d) anc)
+    phi/lemma = {!   !}
 ... | tri> ¬a ¬b c₁ = {!   !}
 -- zig-zag
 splay'/amortized c d (Right b p ∷ Right a g ∷ anc) k = {!   !}
