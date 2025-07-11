@@ -136,8 +136,8 @@ split : (A : tp⁺) → cmp (Π (list A) λ l → F (split/type {A} ⌊ length l
 split A l = split/clocked {A} ⌊ length l /2⌋ ⌈ length l /2⌉ l (N.⌊n/2⌋+⌈n/2⌉≡n (length l))
 
 
-split/cost : (l : val (list A)) → IsBounded (split/type {A} ⌊ length l /2⌋ ⌈ length l /2⌉ l) (split A l) (0 , 0)
-split/cost = {!   !}
+split/cost : (A : tp⁺) → (l : val (list A)) → IsBounded (split/type {A} ⌊ length l /2⌋ ⌈ length l /2⌉ l) (split A l) (0 , 0)
+split/cost A l = split/clocked/cost A ⌊ length l /2⌋ ⌈ length l /2⌉ l (N.⌊n/2⌋+⌈n/2⌉≡n (length l))
 -- yay for sequences and just taking a smaller slice of the array 
 
 mapList : {A B : tp⁺} → 
@@ -203,7 +203,7 @@ scan/divconq/clocked :
   (A : tp⁺) → 
   cmp (Π (U (Π (A ×⁺ A) (λ _ → F A))) (λ _ → 
        Π A (λ _ → 
-      Π nat λ k →
+       Π nat λ k →
        Π (list A) (λ l → 
        Π (meta⁺ (⌈log₂ length l ⌉ Nat.≤ k)) λ _ → 
        F (Σ⁺ (list A ×⁺ A) λ (l' , _) → meta⁺ (length l ≡ length l'))))))
@@ -247,8 +247,11 @@ scan/divconq/clocked A f e (suc k) l  p =
           k
         ∎)
 
--- scan/divconq : ◯-Monoid A → (cmp  (Π (list A)  (λ _ → F (list A ×⁺ A))))
--- scan/divconq {A} M L = bind (F _) (scan/divconq/clocked A (◯-Monoid.f M) (◯-Monoid.identity M) ⌈log₂ length L ⌉ N.≤-refl) L (λ (L , p) → ret L)
+scan/divconq : ◯-Monoid A → (cmp  (Π (list A)  (λ _ → F (list A ×⁺ A))))
+scan/divconq {A} M L = 
+    bind (F _) 
+      (scan/divconq/clocked A (◯-Monoid.f M) (◯-Monoid.identity M) ⌈log₂ length L ⌉ L N.≤-refl) 
+        (λ (L , p) → ret L)
 
 scan/divconq/clocked/cost : 
   {A : tp⁺} →
@@ -311,7 +314,8 @@ scan/divconq/clocked/cost {A} f p e (suc k) l h =
             λ (((l₁' , b') , ∣l₁∣≡∣l₁'∣) , ((l₂' , c'), ∣l₂∣≡∣l₂'∣)) → 
               step⋆-mono-≤⁻ {c = (length l₂' + length l₁' , 2)} 
                 {c' = (length l₂ + length l₁ , 2)} 
-                ( N.+-mono-≤ (N.≤-reflexive (Eq.sym  ∣l₂∣≡∣l₂'∣)) (N.≤-reflexive (Eq.sym ∣l₁∣≡∣l₁'∣)) , N.≤-refl)) ⟩
+                ( N.+-mono-≤ (N.≤-reflexive (Eq.sym  ∣l₂∣≡∣l₂'∣)) 
+                  (N.≤-reflexive (Eq.sym ∣l₁∣≡∣l₁'∣)) , N.≤-refl)) ⟩
     bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
     bind (F _) (scan/divconq/clocked A f e k l₁ _ ∥
            scan/divconq/clocked A f e k l₂  _) 
@@ -334,7 +338,8 @@ scan/divconq/clocked/cost {A} f p e (suc k) l h =
       step⋆ ( (k + 1) * (length l₁) + (k + 1) * (length l₂) + (length l₂ + length l₁) , (2 * k ⊔ 2 * k) + 2 ))
   ≡⟨ Eq.cong (bind (F _) (split A l)) (funext (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
       Eq.cong step⋆ 
-        (Eq.cong₂ _,_ (Eq.sym (N.+-assoc ((k + 1) * (length l₁) + (k + 1) * (length l₂)) (length l₂) (length l₁))) 
+        (Eq.cong₂ _,_ (Eq.sym 
+        (N.+-assoc ((k + 1) * (length l₁) + (k + 1) * (length l₂)) (length l₂) (length l₁))) 
         (Eq.cong (_+ 2) (N.⊔-idem (2 * k)))))) 
       ⟩ 
      bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
@@ -390,7 +395,7 @@ scan/divconq/clocked/cost {A} f p e (suc k) l h =
         (N.≤-reflexive (↭-length (↭-sym l↭l₁++l₂))) , N.≤-refl))  ⟩ 
   bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
     step⋆ ( (k + 1) * (length l) + (length l) , 2 * k + 2 )) 
-  ≲⟨ bind-monoˡ-≤⁻ (λ x → step⋆ ( (k + 1) * (length l) + (length l) , 2 * k + 2 )) (split/cost {A} l)  ⟩ 
+  ≲⟨ bind-monoˡ-≤⁻ (λ x → step⋆ ( (k + 1) * (length l) + (length l) , 2 * k + 2 )) (split/cost A l)  ⟩ 
     step⋆ ( (k + 1) * (length l) + (length l) , 2 * k + 2 ) 
   ≲⟨ step⋆-mono-≤⁻ (N.≤-reflexive (N.+-comm ((k + 1) * length l) (length l)) , N.≤-reflexive (arithmetic k)) ⟩ 
     step⋆ (length l + (k + 1) * length l , suc (k + suc (k + zero))) 
@@ -416,15 +421,13 @@ scan/divconq/clocked/cost {A} f p e (suc k) l h =
 
 
 
-arithmetic : (k : val nat) → k ⊔ 1 Nat.≤ suc k 
-arithmetic zero    = s≤s z≤n
-arithmetic (suc k) = s≤s (N.≤-trans (N.≤-reflexive (N.⊔-identityʳ k)) (N.n≤1+n k))
 
-
--- scan/divconq/cost : 
---   (m : ◯-Monoid A) → 
---   (l : val (list A)) →
---   IsBounded (list A ×⁺ A) (scan/divconq m l) ((⌈log₂ length l ⌉ + 1) * length l , ⌈log₂ length l ⌉)
+scan/divconq/cost : 
+  (m : ◯-Monoid A) → 
+  (l : val (list A)) →
+  ((a b : val A) → IsBounded A ( (◯-Monoid.f) m (a , b)) (0 , 0)) → 
+  IsBounded (list A ×⁺ A) (scan/divconq m l) ((⌈log₂ length l ⌉ + 1) * length l , 2 * ⌈log₂ length l ⌉)
+scan/divconq/cost m l p = scan/divconq/clocked/cost (◯-Monoid.f m) p (◯-Monoid.identity m) ⌈log₂ length l ⌉ l N.≤-refl
 
 
 
@@ -443,36 +446,64 @@ arithmetic (suc k) = s≤s (N.≤-trans (N.≤-reflexive (N.⊔-identityʳ k)) (
 -- -- scan/divconq/correct M = {!  !}
 
 
-contract :  {A : tp⁺} → 
+contract :  (A : tp⁺) → 
             cmp (Π (U (Π (A ×⁺ A) (λ _ → F A))) λ _ → 
                  Π (list A) (λ l → 
                  F (Σ⁺ (list A) λ l' → meta⁺ ( ⌈ length l /2⌉ ≡ length l' ) )))
                  -- should be ⌈ length l / 2 ⌉, but this doesnt work for some reason  
-contract f [] = ret ([] , Eq.refl)
-contract f (x ∷ []) = ret (x ∷ [] , refl) -- impossible to do the proofs without ceil 
-contract f (x ∷ y ∷ l) = bind (F _) (f (x , y)) (λ x₁ → bind (F _) (contract f l) (λ (l' , p) → ret (x₁ ∷ l' , {!   !})) ) 
+contract A f [] = ret ([] , Eq.refl)
+contract A f (x ∷ []) = ret (x ∷ [] , refl) -- impossible to do the proofs without ceil 
+contract A f (x ∷ y ∷ l) = 
+  bind (F _) (f (x , y)) (λ x₁ → 
+    bind (F _) (contract A f l) (λ (l' , p) → 
+      ret (x₁ ∷ l' , Eq.cong suc p)) ) 
+
                  
 -- contract should include a proof that this is half the length? 
 
 
 -- expand needs to take in a proof that length l₁ ≡ ⌈ length l₂ / 2 ⌉ 
 
-expand : {A : tp⁺} → 
+expand : (A : tp⁺) → 
          cmp (Π (U (Π (A ×⁺ A) (λ _ → F A))) λ _ → 
               Π (list A) (λ l₁ → 
               Π (list A) (λ l₂ → 
-              F (Σ⁺ (list A) λ l' → meta⁺ (  length l₁ * 2  ≡ length l' ) )) )) -- not sure if this is the correct proof 
-expand f l₁ l₂ = {!   !} 
+              Π (meta⁺ ( length l₁ ≡ ⌈ length l₂ /2⌉ )) (λ p → 
+              F (Σ⁺ (list A) λ l' → meta⁺ (  length l₂  ≡ length l' ) ))) )) -- not sure if this is the correct proof 
+expand A f [] [] p = ret ( [] , refl)
+expand A f (x ∷ []) (_ ∷ []) p = ret ( x ∷ [] , refl )
+expand A f (r ∷ l₁) (x ∷ x₁ ∷ l₂) p = 
+  bind (F _) (f (r , x)) 
+    (λ fst → bind (F _) (expand A f l₁ l₂ 
+      (N.+-cancelˡ-≡ 1 (length l₁) ⌈ length l₂ /2⌉ p)) λ (res , p') → ret ( r ∷ fst ∷ res , Eq.cong (2 +_) p' ))
 
--- scan/divconq/clocked : 
---   {A : tp⁺} → 
---   cmp (Π (U (Π (A ×⁺ A) (λ _ → F A))) (λ _ → 
---        Π A (λ _ → 
---        Π (list A) (λ l → 
---        Π nat λ k →
---        Π (meta⁺ (⌈log₂ length l ⌉ Nat.≤ k)) λ _ → 
---        F (Σ⁺ (list A ×⁺ A) λ (l' , _) → meta⁺ (length l ≡ length l'))))))
-
+scan/contract/clocked :  (A : tp⁺) → 
+                     cmp (Π (U (Π (A ×⁺ A) (λ _ → F A))) λ f → 
+                          Π A (λ e → 
+                          Π nat (λ k → 
+                          Π (list A) (λ l → 
+                          Π (meta⁺ (⌈log₂ length l ⌉ Nat.≤ k)) (λ p → 
+                          F (Σ⁺ (list A ×⁺ A) λ (l' , _) → meta⁺ (length l ≡ length l')))))))
+scan/contract/clocked A f e zero [] p = ret ( ([] , e) , refl)
+scan/contract/clocked A f e zero (x ∷ []) p = bind (F _) (f (e , x)) (λ x₁ → ret ((e ∷ [] , x₁ ) , refl)) 
+scan/contract/clocked A f e (suc k) l p = 
+  step (F _) (length l , 1) 
+    (bind (F _) (contract A f l) λ (cs , p₁) → 
+      bind (F _) (scan/contract/clocked A f e k cs (h cs (Eq.sym p₁))) λ ((rs , res), p₂) → 
+      step (F _) (length l , 1) 
+      (bind (F _) (expand A f rs l (Eq.sym (Eq.trans p₁ p₂))) λ (es , p₃) → 
+        ret ((es , res) , p₃)))
+  where 
+    h : (l₂ : val (list A)) (length₂ : length l₂ ≡ ⌈ length l /2⌉) → ⌈log₂ length l₂ ⌉ Nat.≤ k
+    h l₂ length₂ = 
+      let open N.≤-Reasoning in
+        (begin
+          ⌈log₂ length l₂ ⌉
+        ≡⟨ Eq.cong ⌈log₂_⌉ length₂ ⟩
+          ⌈log₂ ⌈ length l /2⌉ ⌉
+        ≤⟨ log₂-suc (length l) p ⟩
+          k
+        ∎)
 
 -- SML code for scan 
 -- fun scan _ b [] = ([], b)
@@ -489,6 +520,7 @@ expand f l₁ l₂ = {!   !}
 -- scan preserves length 
 -- contract l gives l' where ceil (|l| / 2) = |l'| 
 -- |rs| = ceil (|l| / 2)
+-- work of expand = length of left list 
 --           fun expand ([], []) = []
 --             | expand ([r], [_]) = [r]
 --             | expand (r::rs, x::_::xs) = r::f (r, x)::expand (rs, xs)
