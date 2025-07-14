@@ -446,52 +446,92 @@ scan/divconq/cost m l p = scan/divconq/clocked/cost (◯-Monoid.f m) p (◯-Mono
 -- -- scan/divconq/correct M = {!  !}
 
 
-contract :  (A : tp⁺) → 
+contract :  {A : tp⁺} → 
             cmp (Π (U (Π (A ×⁺ A) (λ _ → F A))) λ _ → 
                  Π (list A) (λ l → 
                  F (Σ⁺ (list A) λ l' → meta⁺ ( ⌈ length l /2⌉ ≡ length l' ) )))
                  -- should be ⌈ length l / 2 ⌉, but this doesnt work for some reason  
-contract A f [] = ret ([] , Eq.refl)
-contract A f (x ∷ []) = ret (x ∷ [] , refl) -- impossible to do the proofs without ceil 
-contract A f (x ∷ y ∷ l) = 
+contract f [] = ret ([] , Eq.refl)
+contract f (x ∷ []) = ret (x ∷ [] , refl) -- impossible to do the proofs without ceil 
+contract f (x ∷ y ∷ l) = 
   bind (F _) (f (x , y)) (λ x₁ → 
-    bind (F _) (contract A f l) (λ (l' , p) → 
+    bind (F _) (contract f l) (λ (l' , p) → 
       ret (x₁ ∷ l' , Eq.cong suc p)) ) 
 
                  
 -- contract should include a proof that this is half the length? 
 
+contract/bound : {A : tp⁺} → 
+                (l : val (list A)) → 
+                (f :  cmp (Π (A ×⁺ A) (λ _ → F A))) → 
+                ((a b : val A) → IsBounded A (f (a , b)) (0 , 0)) → 
+                IsBounded  (Σ⁺ (list A) λ l' → meta⁺ (⌈ length l /2⌉ ≡ length l')) (contract f l) (0 , 0) 
+contract/bound [] f p = ≤⁻-refl
+contract/bound (x ∷ []) f p = ≤⁻-refl
+contract/bound (x ∷ x₁ ∷ l) f p = 
+  let open ≤⁻-Reasoning cost in 
+    begin 
+      bind (F _) (f (x , x₁)) (λ x₁ → 
+    bind (F _) (contract f l) (λ (l' , p) → 
+      ret triv) ) 
+    ≲⟨ bind-monoʳ-≤⁻ (f (x , x₁)) (λ a → bind-monoˡ-≤⁻ (λ x₂ → ret triv) (contract/bound l f p)) ⟩ 
+      bind (F _) (f (x , x₁)) (λ x₁ → ret triv) 
+    ≲⟨ bind-monoˡ-≤⁻ (λ x₂ → ret triv) (p x x₁) ⟩ 
+      step⋆ (0 , 0) 
+    ∎ 
 
 -- expand needs to take in a proof that length l₁ ≡ ⌈ length l₂ / 2 ⌉ 
 
-expand : (A : tp⁺) → 
+expand : {A : tp⁺} → 
          cmp (Π (U (Π (A ×⁺ A) (λ _ → F A))) λ _ → 
               Π (list A) (λ l₁ → 
               Π (list A) (λ l₂ → 
               Π (meta⁺ ( length l₁ ≡ ⌈ length l₂ /2⌉ )) (λ p → 
               F (Σ⁺ (list A) λ l' → meta⁺ (  length l₂  ≡ length l' ) ))) )) -- not sure if this is the correct proof 
-expand A f [] [] p = ret ( [] , refl)
-expand A f (x ∷ []) (_ ∷ []) p = ret ( x ∷ [] , refl )
-expand A f (r ∷ l₁) (x ∷ x₁ ∷ l₂) p = 
+expand f [] [] p = ret ( [] , refl)
+expand f (x ∷ []) (_ ∷ []) p = ret ( x ∷ [] , refl )
+expand f (r ∷ l₁) (x ∷ x₁ ∷ l₂) p = 
   bind (F _) (f (r , x)) 
-    (λ fst → bind (F _) (expand A f l₁ l₂ 
-      (N.+-cancelˡ-≡ 1 (length l₁) ⌈ length l₂ /2⌉ p)) λ (res , p') → ret ( r ∷ fst ∷ res , Eq.cong (2 +_) p' ))
+    (λ fst → bind (F _) (expand f l₁ l₂ (N.+-cancelˡ-≡ 1 (length l₁) ⌈ length l₂ /2⌉ p)) 
+      λ (res , p') → ret ( r ∷ fst ∷ res , Eq.cong (2 +_) p' ))
 
-scan/contract/clocked :  (A : tp⁺) → 
+expand/bound : {A : tp⁺} → 
+                (l₁ l₂ : val (list A)) → 
+                (f :  cmp (Π (A ×⁺ A) (λ _ → F A))) → 
+                (p : val (meta⁺ ( length l₁ ≡ ⌈ length l₂ /2⌉ ))) → 
+                ((a b : val A) → IsBounded A (f (a , b)) (0 , 0)) → 
+                IsBounded  {!   !} (expand f l₁ l₂ p) (0 , 0) 
+expand/bound [] [] f p h = ≤⁻-refl
+expand/bound (x ∷ []) (x₁ ∷ []) f p h = ≤⁻-refl
+expand/bound (r ∷ l₁) (x ∷ x₁ ∷ l₂) f p h = 
+  let open ≤⁻-Reasoning cost in 
+      begin 
+        bind (F _) {! f (r , x)  !} 
+    (λ fst → bind (F _) (expand f l₁ l₂ (N.+-cancelˡ-≡ 1 (length l₁) ⌈ length l₂ /2⌉ p)) 
+      λ (res , p') → ret triv) 
+      ≲⟨ bind-monoʳ-≤⁻ (f (r , x)) 
+        (λ a → bind-monoˡ-≤⁻ (λ x₂ → ret triv) 
+        (expand/bound l₁ l₂ f (N.+-cancelˡ-≡ 1 (length l₁) ⌈ length l₂ /2⌉ p) h)) ⟩ 
+        bind (F _) (f (r , x)) (λ x₁ → ret triv)  
+      ≲⟨ bind-monoˡ-≤⁻ (λ x₂ → ret triv) (h r x) ⟩ 
+        step⋆ (0 , 0) 
+      ∎
+
+scan/contract/clocked :  {A : tp⁺} → 
                      cmp (Π (U (Π (A ×⁺ A) (λ _ → F A))) λ f → 
                           Π A (λ e → 
                           Π nat (λ k → 
                           Π (list A) (λ l → 
                           Π (meta⁺ (⌈log₂ length l ⌉ Nat.≤ k)) (λ p → 
                           F (Σ⁺ (list A ×⁺ A) λ (l' , _) → meta⁺ (length l ≡ length l')))))))
-scan/contract/clocked A f e zero [] p = ret ( ([] , e) , refl)
-scan/contract/clocked A f e zero (x ∷ []) p = bind (F _) (f (e , x)) (λ x₁ → ret ((e ∷ [] , x₁ ) , refl)) 
-scan/contract/clocked A f e (suc k) l p = 
+scan/contract/clocked f e zero [] p = ret ( ([] , e) , refl)
+scan/contract/clocked f e zero (x ∷ []) p = bind (F _) (f (e , x)) (λ x₁ → ret ((e ∷ [] , x₁ ) , refl)) 
+scan/contract/clocked f e (suc k) l p = 
   step (F _) (length l , 1) 
-    (bind (F _) (contract A f l) λ (cs , p₁) → 
-      bind (F _) (scan/contract/clocked A f e k cs (h cs (Eq.sym p₁))) λ ((rs , res), p₂) → 
+    (bind (F _) (contract f l) λ (cs , p₁) → 
+      bind (F _) (scan/contract/clocked f e k cs (h cs (Eq.sym p₁))) λ ((rs , res), p₂) → 
       step (F _) (length l , 1) 
-      (bind (F _) (expand A f rs l (Eq.sym (Eq.trans p₁ p₂))) λ (es , p₃) → 
+      (bind (F _) (expand f rs l (Eq.sym (Eq.trans p₁ p₂))) λ (es , p₃) → 
         ret ((es , res) , p₃)))
   where 
     h : (l₂ : val (list A)) (length₂ : length l₂ ≡ ⌈ length l /2⌉) → ⌈log₂ length l₂ ⌉ Nat.≤ k
@@ -504,6 +544,62 @@ scan/contract/clocked A f e (suc k) l p =
         ≤⟨ log₂-suc (length l) p ⟩
           k
         ∎)
+
+scan/contract : ◯-Monoid A → (cmp  (Π (list A)  (λ _ → F (list A ×⁺ A))))
+scan/contract {A} M L = 
+    bind (F _) 
+      (scan/contract/clocked (◯-Monoid.f M) (◯-Monoid.identity M) ⌈log₂ length L ⌉ L N.≤-refl) 
+        (λ (L , p) → ret L)
+
+scan/contract/clocked/cost : 
+  {A : tp⁺} →
+  (f :  cmp (Π (A ×⁺ A) (λ _ → F A))) → 
+  ((a b : val A) → IsBounded A (f (a , b)) (0 , 0)) → 
+  (e : val A) → 
+  (k : val nat) → 
+  (l : val (list A)) →
+  (h : val (meta⁺ (⌈log₂ length l ⌉ Nat.≤ k))) →  
+  IsBounded (Σ⁺ (list A ×⁺ A) λ (l' , _) → meta⁺ (length l ≡ length l')) 
+    (scan/contract/clocked f e k l h) 
+    (4 * length l , 2 * k)
+-- idea behind proof: root-dominated
+-- initially 2 * length l, recursive call is length l / 2
+scan/contract/clocked/cost f p e zero [] h = ≤⁻-refl
+scan/contract/clocked/cost f p e zero (x ∷ []) h = 
+  let open ≤⁻-Reasoning cost in 
+    begin 
+      bind (F _) (f (e , x)) (λ x₁ → ret triv) 
+    ≲⟨ bind-monoˡ-≤⁻ (λ x₁ → ret triv) (p e x) ⟩ 
+      step⋆ (0 , 0) 
+    ≲⟨ step⋆-mono-≤⁻ {c = (0 , 0)} {c' = (4 , 0)} (z≤n , z≤n) ⟩ 
+      step⋆ (4 , 0)   
+    ∎
+scan/contract/clocked/cost f p e (suc k) l h = 
+  let open ≤⁻-Reasoning cost in 
+      begin 
+        step (F _) (length l , 1) 
+          (bind (F _) (contract f l) λ (cs , p₁) → 
+            bind (F _) (scan/contract/clocked f e k cs _) λ ((rs , res), p₂) → 
+            step (F _) (length l , 1) 
+            (bind (F _) (expand f rs l (Eq.sym (Eq.trans p₁ p₂))) λ (es , p₃) → 
+              ret triv)) 
+      ≲⟨ {!   !} ⟩ 
+        {!   !} 
+      ≲⟨ {!   !} ⟩ 
+        {!   !} 
+      ≲⟨ {!   !} ⟩ 
+        {!   !} 
+      ≲⟨ {!   !} ⟩ 
+        {!   !} 
+      ≲⟨ {!   !} ⟩ 
+        {!   !} 
+      ≲⟨ {!   !} ⟩ 
+        {!   !} 
+      ≲⟨ {!   !} ⟩ 
+        {!   !} 
+      ≲⟨ {!   !} ⟩ 
+        {!   !} 
+      ∎ 
 
 -- SML code for scan 
 -- fun scan _ b [] = ([], b)
