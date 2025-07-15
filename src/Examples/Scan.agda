@@ -551,6 +551,19 @@ scan/contract {A} M L =
       (scan/contract/clocked (◯-Monoid.f M) (◯-Monoid.identity M) ⌈log₂ length L ⌉ L N.≤-refl) 
         (λ (L , p) → ret L)
 
+n≤2*⌈n/2⌉ : ∀ n → n Nat.≤ 2 * ⌈ n /2⌉ 
+n≤2*⌈n/2⌉ n = 
+  let open N.≤-Reasoning in 
+    begin 
+      n 
+    ≡⟨ Eq.sym (N.⌊n/2⌋+⌈n/2⌉≡n n) ⟩ 
+      ⌊ n /2⌋ + ⌈ n /2⌉ 
+    ≤⟨ N.+-monoˡ-≤ ⌈ n /2⌉ (N.⌊n/2⌋≤⌈n/2⌉ n) ⟩ 
+      ⌈ n /2⌉  + ⌈ n /2⌉ 
+    ≡⟨ Eq.cong  (⌈ n /2⌉ +_) (Eq.sym (N.+-identityʳ ⌊ suc n /2⌋)) ⟩ 
+      2 * ⌈ n /2⌉ 
+    ∎ 
+-- ⌊ suc n /2⌋ + ⌊ suc n /2⌋ ≡ ⌊ suc n /2⌋ + (⌊ suc n /2⌋ + 0)
 scan/contract/clocked/cost : 
   {A : tp⁺} →
   (f :  cmp (Π (A ×⁺ A) (λ _ → F A))) → 
@@ -612,10 +625,10 @@ scan/contract/clocked/cost f p e (suc k) l h =
         step (F _) (length l , 1) 
           (bind (F _) (contract f l) λ (cs , p₁) → 
             step⋆ ((4 * ⌈ length l /2⌉) + length l , 2 * k + 1)) 
-      ≡⟨ {!   !} ⟩ 
+      ≲⟨ {!   !} ⟩ 
         step (F _) (length l , 1) 
           (bind (F _) (contract f l) λ (cs , p₁) → 
-            step⋆ ((2 * ⌈ 2 * length l /2⌉) + length l , 2 * k + 1)) 
+            step⋆ ((2 * length l) + length l , 2 * k + 1)) 
       ≲⟨ {!   !} ⟩ 
         {!   !} 
       ≲⟨ {!   !} ⟩ 
