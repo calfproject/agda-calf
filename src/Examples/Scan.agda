@@ -583,16 +583,39 @@ scan/contract/clocked/cost f p e (suc k) l h =
             step (F _) (length l , 1) 
             (bind (F _) (expand f rs l (Eq.sym (Eq.trans p₁ p₂))) λ (es , p₃) → 
               ret triv)) 
-      ≲⟨ {!   !} ⟩ 
-        {!   !} 
-      ≲⟨ {!   !} ⟩ 
-        {!   !} 
-      ≲⟨ {!   !} ⟩ 
-        {!   !} 
-      ≲⟨ {!   !} ⟩ 
-        {!   !} 
-      ≲⟨ {!   !} ⟩ 
-        {!   !} 
+      ≲⟨ step-monoʳ-≤⁻ ((length l , 1)) 
+          (bind-monoʳ-≤⁻ (contract f l) (λ (cs , p₁) → 
+            bind-monoʳ-≤⁻ (scan/contract/clocked f e k cs _) 
+              λ ((rs , res), p₂) → step-monoʳ-≤⁻ ((length l , 1)) 
+                (bind-monoˡ-≤⁻ (λ x → ret triv) (expand/bound rs l f (Eq.sym (Eq.trans p₁ p₂)) p)))) ⟩ 
+        step (F _) (length l , 1) 
+          (bind (F _) (contract f l) λ (cs , p₁) → 
+            bind (F _) (scan/contract/clocked f e k cs _) λ ((rs , res), p₂) → 
+            step⋆ (length l , 1)) 
+      ≲⟨ step-monoʳ-≤⁻ (length l , 1) 
+          (bind-monoʳ-≤⁻ (contract f l) 
+            (λ (cs , p₁) → bind-monoˡ-≤⁻ (λ x → step⋆ (length l , 1)) 
+              (scan/contract/clocked/cost f p e k cs _))) ⟩ 
+        step (F _) (length l , 1) 
+          (bind (F _) (contract f l) λ (cs , p₁) → 
+            bind (F _) (step⋆ (4 * length cs , 2 * k)) λ _ → 
+            step⋆ (length l , 1)) 
+      ≡⟨⟩ 
+        step (F _) (length l , 1) 
+          (bind (F _) (contract f l) λ (cs , p₁) → 
+            step⋆ ((4 * length cs) + length l , 2 * k + 1)) 
+      -- we have p₂ which states that ⌈ length l /2⌉ ≡ length cs
+      -- want to use p₂ to say that 4 * length cs <= 2 * length l 
+      ≡⟨ Eq.cong (step (F _) (length l , 1)) 
+          (Eq.cong (bind (F _) (contract f l)) 
+            (funext (λ (cs , p₁) → Eq.cong step⋆ (Eq.cong₂ _,_ (Eq.cong (_ *_) p₁) refl)))) ⟩ 
+        step (F _) (length l , 1) 
+          (bind (F _) (contract f l) λ (cs , p₁) → 
+            step⋆ ((4 * ⌈ length l /2⌉) + length l , 2 * k + 1)) 
+      ≡⟨ {!   !} ⟩ 
+        step (F _) (length l , 1) 
+          (bind (F _) (contract f l) λ (cs , p₁) → 
+            step⋆ ((2 * ⌈ 2 * length l /2⌉) + length l , 2 * k + 1)) 
       ≲⟨ {!   !} ⟩ 
         {!   !} 
       ≲⟨ {!   !} ⟩ 
