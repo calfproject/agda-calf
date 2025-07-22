@@ -219,7 +219,7 @@ scan/divconq/clocked A f e (suc k) l  p =
       step (F _) (length l₂' , 1) ( -- cost of map
         bind (F _) (mapList {A} (λ x → f (b' , x)) l₂') λ (r' , ∣l₂'∣≡∣r'∣) → 
           bind (F _) (f (b' , c')) λ res → 
-            step (F _) (length l₁' , 1) ( -- cost of append
+            step (F _) (length l₁' + length r' , 1) ( -- cost of append
               ret ((l₁' ++ r' , res) , 
               lem {A} l l₁ l₂ l₁' l₂' r' l↭l₁++l₂ ∣l₁∣≡∣l₁'∣ ∣l₂∣≡∣l₂'∣ ∣l₂'∣≡∣r'∣
               ))
@@ -331,9 +331,9 @@ scan/divconq/clocked/cost :
   (h : val (meta⁺ (⌈log₂ length l ⌉ Nat.≤ k))) →  
   IsBounded (Σ⁺ (list A ×⁺ A) λ (l' , _) → meta⁺ (length l ≡ length l')) 
     (scan/divconq/clocked A f e k l h) 
-    ((k + 1) * length l , 2 * k)
+    ((2 * k + 2) * length l , 2 * k)
 scan/divconq/clocked/cost f p e zero [] h = ≤⁻-refl
-scan/divconq/clocked/cost f p e zero (x ∷ []) h = step⋆-mono-≤⁻ {c' = (1 , 0)} (z≤n , z≤n)
+scan/divconq/clocked/cost f p e zero (x ∷ []) h = step⋆-mono-≤⁻ {c' = (2 , 0)} (z≤n , z≤n)
 scan/divconq/clocked/cost {A} f p e (suc k) l h = 
   let open ≤⁻-Reasoning cost in 
     begin 
@@ -344,7 +344,7 @@ scan/divconq/clocked/cost {A} f p e (suc k) l h =
            step (F _) (length l₂' , 1) ( 
              bind (F _) (mapList {A} (λ x → f (b' , x)) l₂') λ (r' , ∣l₂'∣≡∣r'∣) → 
                bind (F _) (f (b' , c')) λ res → 
-                 step (F _) (length l₁' , 1) ( 
+                 step (F _) (length l₁' + length r' , 1) ( 
                    ret _))))
   ≲⟨  (bind-monoʳ-≤⁻ (split A l) 
        λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
@@ -354,7 +354,7 @@ scan/divconq/clocked/cost {A} f p e (suc k) l h =
                 step-monoʳ-≤⁻ ((length l₂' , 1)) 
                  (bind-monoʳ-≤⁻ ((mapList {A} (λ x → f (b' , x)) l₂')) 
                    (λ (r' , ∣l₂'∣≡∣r'∣) → bind-monoˡ-≤⁻ (λ res → 
-                step (F _) (length l₁' , 1) ( 
+                step (F _) (length l₁' + length r' , 1) ( 
                  ret triv)) (p b' c')))) ⟩ 
     (bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
          bind (F _)
@@ -362,111 +362,145 @@ scan/divconq/clocked/cost {A} f p e (suc k) l h =
            scan/divconq/clocked A f e k l₂  _) λ (((l₁' , b') , ∣l₁∣≡∣l₁'∣) , ((l₂' , c'), ∣l₂∣≡∣l₂'∣)) → 
            step (F _) (length l₂' , 1) ( 
              bind (F _) (mapList {A} (λ x → f (b' , x)) l₂') λ (r' , ∣l₂'∣≡∣r'∣) → 
-                 step (F _) (length l₁' , 1) ( 
+                 step (F _) (length l₁' + length r' , 1) ( 
                    ret _))))
+  ≲⟨ bind-monoʳ-≤⁻ (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+      bind-monoʳ-≤⁻ ((scan/divconq/clocked A f e k l₁ _ ∥ scan/divconq/clocked A f e k l₂  _)) 
+      λ (((l₁' , b') , ∣l₁∣≡∣l₁'∣) , ((l₂' , c'), ∣l₂∣≡∣l₂'∣)) → 
+      step-monoʳ-≤⁻ (length l₂' , 1) 
+      (bind-monoʳ-≤⁻ (mapList {A} (λ x → f (b' , x)) l₂') (λ (r' , ∣l₂'∣≡∣r'∣) → 
+      step-monoˡ-≤⁻ (ret _) 
+      (N.≤-reflexive (Eq.cong (length l₁' +_) (Eq.sym (Eq.trans ∣l₂∣≡∣l₂'∣ ∣l₂'∣≡∣r'∣))) , N.≤-refl)))) ⟩ 
+    (bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+         bind (F _)
+           (scan/divconq/clocked A f e k l₁ _ ∥
+           scan/divconq/clocked A f e k l₂  _) λ (((l₁' , b') , ∣l₁∣≡∣l₁'∣) , ((l₂' , c'), ∣l₂∣≡∣l₂'∣)) → 
+           step (F _) (length l₂' , 1) ( 
+             bind (F _) (mapList {A} (λ x → f (b' , x)) l₂') λ (r' , ∣l₂'∣≡∣r'∣) → 
+                 step (F _) (length l₁' + length l₂ , 1) ( 
+                   ret _)))) 
   ≲⟨ bind-monoʳ-≤⁻ (split A l) 
       (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
         bind-monoʳ-≤⁻ (scan/divconq/clocked A f e k l₁ _ ∥
            scan/divconq/clocked A f e k l₂ _) 
             λ (((l₁' , b') , ∣l₁∣≡∣l₁'∣) , ((l₂' , c'), ∣l₂∣≡∣l₂'∣)) → 
               step-monoʳ-≤⁻ ((length l₂' , 1)) 
-                (bind-monoˡ-≤⁻ (λ x → step (F _) (length l₁' , 1) (ret _)) (mapList/bound l₂' f p b')))  ⟩ 
+                (bind-monoˡ-≤⁻ (λ x → step (F _) (length l₁' + length l₂ , 1) (ret _)) (mapList/bound l₂' f p b')))  ⟩ 
    bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
     bind (F _) (scan/divconq/clocked A f e k l₁ _ ∥
            scan/divconq/clocked A f e k l₂  _) 
             λ (((l₁' , b') , ∣l₁∣≡∣l₁'∣) , ((l₂' , c'), ∣l₂∣≡∣l₂'∣)) → 
-              step⋆ ((length l₂' + length l₁' , 2)))
+              step⋆ ((length l₂' + (length l₁'  + length l₂) , 2)))
   ≲⟨ bind-monoʳ-≤⁻ (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
         bind-monoʳ-≤⁻ (scan/divconq/clocked A f e k l₁ _ ∥
            scan/divconq/clocked A f e k l₂  _) 
             λ (((l₁' , b') , ∣l₁∣≡∣l₁'∣) , ((l₂' , c'), ∣l₂∣≡∣l₂'∣)) → 
-              step⋆-mono-≤⁻ {c = (length l₂' + length l₁' , 2)} 
-                {c' = (length l₂ + length l₁ , 2)} 
-                ( N.+-mono-≤ (N.≤-reflexive (Eq.sym  ∣l₂∣≡∣l₂'∣)) 
-                  (N.≤-reflexive (Eq.sym ∣l₁∣≡∣l₁'∣)) , N.≤-refl)) ⟩
+              step⋆-mono-≤⁻ {c = (length l₂' + (length l₁' + length l₂) , 2)} 
+                {c' = (length l₂ + (length l₁ + length l₂) , 2)} 
+                ( N.≤-reflexive (Eq.cong₂ _+_ (Eq.sym ∣l₂∣≡∣l₂'∣) 
+                (Eq.cong (_+ _) (Eq.sym ∣l₁∣≡∣l₁'∣))) , N.≤-refl)) ⟩
     bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
     bind (F _) (scan/divconq/clocked A f e k l₁ _ ∥
            scan/divconq/clocked A f e k l₂  _) 
             λ (((l₁' , b') , ∣l₁∣≡∣l₁'∣) , ((l₂' , c'), ∣l₂∣≡∣l₂'∣)) → 
-              step⋆ ((length l₂ + length l₁ , 2))) 
+              step⋆ ((length l₂ + (length l₁ + length l₂), 2))) 
   ≲⟨ bind-monoʳ-≤⁻ (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-      bind-monoˡ-≤⁻ (λ x → step⋆ ((length l₂ + length l₁ , 2))) 
+      bind-monoˡ-≤⁻ (λ x → step⋆ ((length l₂ + (length l₁ + length l₂) , 2))) 
         (bound/par {e₁ = scan/divconq/clocked A f e k l₁ _} 
           {e₂ = scan/divconq/clocked A f e k l₂  _} 
-          {c₁ = ((k + 1) * (length l₁)  , 2 * k)} 
-          {c₂ = ((k + 1) * (length l₂)  , 2 * k)} 
+          {c₁ = ((2 * k + 2) * (length l₁)  , 2 * k)} 
+          {c₂ = ((2 * k + 2) * (length l₂)  , 2 * k)} 
           (scan/divconq/clocked/cost {A} f p e k l₁ _) 
           (scan/divconq/clocked/cost {A} f p e k l₂ _)))  ⟩ 
       bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-    bind (F _) (step⋆ ( (k + 1) * (length l₁) + (k + 1) * (length l₂) , 2 * k ⊔ 2 * k  ) ) 
+    bind (F _) (step⋆ ( (2 * k + 2) * (length l₁) + (2 * k + 2) * (length l₂) , 2 * k ⊔ 2 * k  ) ) 
             λ _ → 
-              step⋆ ((length l₂ + length l₁ , 2)))
+              step⋆ ((length l₂ + (length l₁ + length l₂) , 2)))
   ≡⟨⟩ 
    bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-      step⋆ ( (k + 1) * (length l₁) + (k + 1) * (length l₂) + (length l₂ + length l₁) , (2 * k ⊔ 2 * k) + 2 ))
+      step⋆ ( (2 * k + 2) * (length l₁) + (2 * k + 2) * (length l₂) + (length l₂ + (length l₁ + length l₂)) , (2 * k ⊔ 2 * k) + 2 ))
   ≡⟨ Eq.cong (bind (F _) (split A l)) (funext (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
       Eq.cong step⋆ 
         (Eq.cong₂ _,_ (Eq.sym 
-        (N.+-assoc ((k + 1) * (length l₁) + (k + 1) * (length l₂)) (length l₂) (length l₁))) 
+        (N.+-assoc ((2 * k + 2) * (length l₁) + (2 * k + 2) * (length l₂)) (length l₂) (length l₁ + length l₂))) 
         (Eq.cong (_+ 2) (N.⊔-idem (2 * k)))))) 
       ⟩ 
      bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-      step⋆ ( (k + 1) * (length l₁) + (k + 1) * (length l₂) + length l₂ + length l₁ , 2 * k + 2 ))
+      step⋆ ( (2 * k + 2) * (length l₁) + (2 * k + 2) * (length l₂) + length l₂ + (length l₁ + length l₂) , 2 * k + 2 ))
   ≲⟨ bind-monoʳ-≤⁻ (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
     step⋆-mono-≤⁻ 
-    {c = ( (k + 1) * (length l₁) + (k + 1) * (length l₂) + length l₂ + length l₁ , 2 * k + 2 )} 
-      {c' = ( (k + 1) * (length l₁ + length l₂) + length l₂ + length l₁ , 2 * k + 2 )}
-      ( N.+-monoˡ-≤ (length l₁) (N.+-monoˡ-≤ (length l₂) 
-        (N.≤-reflexive (Eq.sym (N.*-distribˡ-+ (k + 1) (length l₁) (length l₂))))) 
-          , N.≤-refl))  ⟩ 
+    {c = ( (2 * k + 2) * (length l₁) + (2 * k + 2) * (length l₂) + length l₂ + (length l₁ + length l₂) , 2 * k + 2 )} 
+      {c' = ( (2 * k + 2) * (length l₁ + length l₂) + length l₂ + (length l₁ + length l₂) , 2 * k + 2 )}
+      (N.≤-reflexive (Eq.cong (λ c → c + length l₂ + (length l₁ + length l₂)) 
+      (Eq.sym (N.*-distribˡ-+ (2 * k + 2) (length l₁) (length l₂)))) , N.≤-refl))  ⟩ 
     bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-      step⋆ ( (k + 1) * (length l₁ + length l₂) + length l₂ + length l₁ , 2 * k + 2 ))
+      step⋆ ( (2 * k + 2) * (length l₁ + length l₂) + length l₂ + (length l₁ + length l₂) , 2 * k + 2 ))
   ≲⟨ bind-monoʳ-≤⁻ (split A l) 
     (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-      step⋆-mono-≤⁻ {c = ( (k + 1) * (length l₁ + length l₂) + length l₂ + length l₁ , 2 * k + 2 )}
-      {c' = ( (k + 1) * (length (l₁ ++ l₂)) + length l₂ + length l₁ , 2 * k + 2 )}
-      ( N.+-monoˡ-≤ (length l₁) (N.+-monoˡ-≤ (length l₂) 
-        (N.*-monoʳ-≤ (k + 1) (N.≤-reflexive (Eq.sym (length-++ l₁))))) , N.≤-refl))  ⟩ 
+      step⋆-mono-≤⁻ {c = ( (2 * k + 2) * (length l₁ + length l₂) + length l₂ + (length l₁ + length l₂) , 2 * k + 2 )}
+      {c' = ( (2 * k + 2) * (length (l₁ ++ l₂)) + length l₂ + length (l₁ ++ l₂) , 2 * k + 2 )}
+      ( N.≤-reflexive (Eq.cong₂ (λ c₁ → λ c₂ → (2 * k + 2) * c₁ + length l₂ + c₂) 
+      (Eq.sym (length-++ l₁)) (Eq.sym (length-++ l₁))) , N.≤-refl))  ⟩ 
    bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-    step⋆ ( (k + 1) * (length (l₁ ++ l₂)) + length l₂ + length l₁ , 2 * k + 2 ))
-  ≲⟨ bind-monoʳ-≤⁻ (split A l) 
-    (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-      step⋆-mono-≤⁻ 
-        {c = ( (k + 1) * (length (l₁ ++ l₂)) + length l₂ + length l₁ , 2 * k + 2 )}
-        {c' = ( (k + 1) * (length l) + length l₂ + length l₁ , 2 * k + 2 )} 
-          (N.+-monoˡ-≤ (length l₁) (N.+-monoˡ-≤ (length l₂) 
-            (N.*-monoʳ-≤ (k + 1) (N.≤-reflexive (↭-length (↭-sym l↭l₁++l₂))))) , N.≤-refl))  ⟩ 
+    step⋆ ( (2 * k + 2) * (length (l₁ ++ l₂)) + length l₂ + length (l₁ ++ l₂)  , 2 * k + 2 ))
+  ≲⟨ bind-monoʳ-≤⁻ (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+      step⋆-mono-≤⁻ (N.≤-reflexive (Eq.cong (λ c → (2 * k + 2) * (length (l₁ ++ l₂)) + c + length (l₁ ++ l₂)) 
+      (Eq.sym (N.+-identityˡ (length l₂)))) , N.≤-refl)) ⟩ 
     bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-    step⋆ ( (k + 1) * (length l) + length l₂ + length l₁ , 2 * k + 2 )) 
+    step⋆ ( (2 * k + 2) * (length (l₁ ++ l₂)) + (0 + length l₂) + length (l₁ ++ l₂)  , 2 * k + 2 )) 
+  ≲⟨ bind-monoʳ-≤⁻ (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+    step⋆-mono-≤⁻ {c = ((2 * k + 2) * (length (l₁ ++ l₂)) + (0 + length l₂) + length (l₁ ++ l₂) , 2 * k + 2)}
+    {c' = ((2 * k + 2) * (length (l₁ ++ l₂)) + (length l₁ + length l₂) + length (l₁ ++ l₂) , 2 * k + 2)} 
+    (N.+-monoˡ-≤ (length (l₁ ++ l₂)) (N.+-monoʳ-≤ ((2 * k + 2) * (length (l₁ ++ l₂))) (N.+-mono-≤ z≤n N.≤-refl))  , N.≤-refl)) ⟩ 
+    bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+    step⋆ ( (2 * k + 2) * (length (l₁ ++ l₂)) + (length l₁ + length l₂) + length (l₁ ++ l₂)  , 2 * k + 2 )) 
+  ≲⟨ bind-monoʳ-≤⁻ (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+      step⋆-mono-≤⁻ (N.≤-reflexive (Eq.cong (λ c → (2 * k + 2) * (length (l₁ ++ l₂)) + c + length (l₁ ++ l₂)) (Eq.sym (length-++ l₁))) , N.≤-refl)) ⟩ 
+    bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+    step⋆ ( (2 * k + 2) * (length (l₁ ++ l₂)) + length (l₁ ++ l₂) + length (l₁ ++ l₂)  , 2 * k + 2 )) 
   ≲⟨ bind-monoʳ-≤⁻ (split A l) 
     (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
       step⋆-mono-≤⁻ 
-        (N.≤-reflexive (N.+-assoc ((k + 1) * (length l)) (length l₂) (length l₁)) 
-          , N.≤-refl))  ⟩ 
-  bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-    step⋆ ( (k + 1) * (length l) + (length l₂ + length l₁) , 2 * k + 2 )) 
-  ≲⟨ bind-monoʳ-≤⁻ (split A l) 
-    (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-      step⋆-mono-≤⁻ (N.+-monoʳ-≤ ((k + 1) * (length l)) 
-        (N.≤-reflexive (N.+-comm (length l₂) (length l₁)) ) , N.≤-refl))  ⟩ 
-  bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-    step⋆ ( (k + 1) * (length l) + (length l₁ + length l₂) , 2 * k + 2 )) 
-  ≲⟨ bind-monoʳ-≤⁻ (split A l) 
-      (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-        step⋆-mono-≤⁻ (N.+-monoʳ-≤ ((k + 1) * (length l)) 
-          (N.≤-reflexive (Eq.sym (length-++ l₁))) , N.≤-refl))  ⟩ 
-  bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-    step⋆ ( (k + 1) * (length l) + (length (l₁ ++ l₂)) , 2 * k + 2 )) 
-  ≲⟨ bind-monoʳ-≤⁻ (split A l) 
-    (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-      step⋆-mono-≤⁻ (N.+-monoʳ-≤ ((k + 1) * (length l)) 
-        (N.≤-reflexive (↭-length (↭-sym l↭l₁++l₂))) , N.≤-refl))  ⟩ 
-  bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-    step⋆ ( (k + 1) * (length l) + (length l) , 2 * k + 2 )) 
-  ≲⟨ bind-monoˡ-≤⁻ (λ x → step⋆ ( (k + 1) * (length l) + (length l) , 2 * k + 2 )) (split/cost A l)  ⟩ 
-    step⋆ ( (k + 1) * (length l) + (length l) , 2 * k + 2 ) 
-  ≲⟨ step⋆-mono-≤⁻ (N.≤-reflexive (N.+-comm ((k + 1) * length l) (length l)) , N.≤-reflexive (arithmetic k)) ⟩ 
-    step⋆ (length l + (k + 1) * length l , suc (k + suc (k + zero))) 
+        {c = ( (2 * k + 2) * (length (l₁ ++ l₂)) + length (l₁ ++ l₂) + length (l₁ ++ l₂) , 2 * k + 2 )}
+        {c' = ( (2 * k + 2) * (length l) + length (l₁ ++ l₂) + length (l₁ ++ l₂) , 2 * k + 2 )} 
+          ( N.≤-reflexive (Eq.cong (λ c →  ((2 * k + 2) * c) + length (l₁ ++ l₂) + length (l₁ ++ l₂)) (↭-length (↭-sym l↭l₁++l₂)))  , N.≤-refl))  ⟩ 
+            -- N.+-monoˡ-≤ (length l₁) (N.+-monoˡ-≤ (length l₂) 
+            -- (N.*-monoʳ-≤ (k + 1) (N.≤-reflexive (↭-length (↭-sym l↭l₁++l₂)))))
+    bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+    step⋆ ( (2 * k + 2) * (length l) + length (l₁ ++ l₂) + length (l₁ ++ l₂) , 2 * k + 2 )) 
+  ≲⟨ bind-monoʳ-≤⁻ (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+      step⋆-mono-≤⁻ (N.≤-reflexive (Eq.cong₂ (λ c₁ → λ c₂ →  (2 * k + 2) * (length l) + c₁ + c₂) 
+      ((↭-length (↭-sym l↭l₁++l₂))) ((↭-length (↭-sym l↭l₁++l₂)))) , N.≤-refl)) ⟩ 
+    bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+    step⋆ ( (2 * k + 2) * (length l) + length l + length l , 2 * k + 2 )) 
+  ≲⟨ bind-monoʳ-≤⁻ (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+      step⋆-mono-≤⁻ (N.≤-reflexive (Eq.cong ((λ c₁ →  (2 * k + 2) * (length l) + c₁ + length l)) 
+      (Eq.sym (N.*-identityˡ (length l))) ) , N.≤-refl)) ⟩ 
+    bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+    step⋆ ( ((2 * k + 2) * (length l)) + (1 * length l) + length l , 2 * k + 2 )) 
+  ≲⟨ bind-monoʳ-≤⁻ (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+      step⋆-mono-≤⁻ 
+       (N.≤-reflexive (Eq.cong (λ c → c + length l) 
+        (Eq.sym (N.*-distribʳ-+ (length l) (2 * k + 2) 1))) , N.≤-refl)) ⟩ 
+    bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
+    step⋆ ( ((2 * k + 2) + 1) * (length l) + length l , 2 * k + 2 )) 
+  ≲⟨ bind-monoˡ-≤⁻ (λ x → 
+    step⋆ ( ((2 * k + 2) + 1) * (length l) + length l , 2 * k + 2 )) 
+    (split/cost A l) ⟩ 
+    step⋆ ( ((2 * k + 2) + 1) * (length l) + length l , 2 * k + 2 ) 
+  ≲⟨ step⋆-mono-≤⁻ (N.≤-reflexive (N.+-comm (((2 * k + 2) + 1) * (length l)) (length l)) , N.≤-refl) ⟩ 
+    step⋆ ( length l +  ((2 * k + 2) + 1) * (length l) , 2 * k + 2 ) 
+  ≲⟨ step⋆-mono-≤⁻ (N.≤-reflexive (Eq.cong (λ c → length l + (c + 1) * length l) (arithmetic k)) , N.≤-reflexive (arithmetic k)) ⟩ 
+    step⋆ (length l + ((1 + (k + suc (k + zero))) + 1) * length l , suc (k + suc (k + zero))) 
+  ≡⟨ Eq.cong (λ c → step⋆ (length l + c * length l , suc (k + suc (k + zero)))) 
+    (N.+-comm (1 + (k + suc (k + zero))) 1) ⟩ 
+    step⋆ (length l + (1 + (1 + (k + suc (k + zero)))) * length l , suc (k + suc (k + zero))) 
+  ≡⟨ Eq.cong (λ c → step⋆ (length l + c * length l , suc (k + suc (k + zero))))
+    (N.+-assoc 1 1 (k + suc (k + zero))) ⟩ 
+    step⋆ (length l + (2 + (k + suc (k + zero))) * length l , suc (k + suc (k + zero))) 
+  ≡⟨ Eq.cong (λ c → step⋆ (length l + c * length l , suc (k + suc (k + zero)))) 
+    (N.+-comm 2 ((k + suc (k + zero)))) ⟩ 
+    step⋆ (length l  + (k + (suc (k + 0)) + 2) * length l , suc (k + suc (k + zero))) 
   ∎
   where 
     arithmetic : (k : val nat) → (k + (k + 0)) + 2 ≡ 1 + (k + (1 + (k + 0)))
@@ -494,7 +528,7 @@ scan/divconq/cost :
   (m : ◯-Monoid A) → 
   (l : val (list A)) →
   ((a b : val A) → IsBounded A ( (◯-Monoid.f) m (a , b)) (0 , 0)) → 
-  IsBounded (list A ×⁺ A) (scan/divconq m l) ((⌈log₂ length l ⌉ + 1) * length l , 2 * ⌈log₂ length l ⌉)
+  IsBounded (list A ×⁺ A) (scan/divconq m l) ((2 * ⌈log₂ length l ⌉ + 2) * length l , 2 * ⌈log₂ length l ⌉)
 scan/divconq/cost m l p = scan/divconq/clocked/cost (◯-Monoid.f m) p (◯-Monoid.identity m) ⌈log₂ length l ⌉ l N.≤-refl
 
 
