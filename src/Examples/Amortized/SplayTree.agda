@@ -142,9 +142,6 @@ splay' a b [] k = ret ((a , b) , refl)
 splay' a b (Left p c ∷ []) k = 
   step (F _) 1 (
     ret ((a , node b p c) , ++-assoc (inord a) (k ∷ inord b) (p ∷ inord c)))
-  where
-    arithmetic : (l₁ l₂ l₃ : val (list nat)) → (l₁ ++ l₂) ++ l₃ ≡ l₁ ++ l₂ ++ l₃
-    arithmetic l₁ l₂ l₃ = ++-assoc l₁ l₂ l₃
 -- zig
 splay' b c (Right a p ∷ []) k = 
   step (F _) 1 (
@@ -397,6 +394,41 @@ sum-ranks+1/lemma t₁ t₂ (Right t k ∷ anc) size ranks = sum-ranks+1/lemma (
     arithmetic : (a b c d : val nat) → a + b + c + d ≡ a + b + (c + d)
     arithmetic = solve-∀
 
+sum-ranks+x/lemma : (t₁ t₂ : Tree) (anc : List Context) (x : val nat) → tree-size t₁ ≡ tree-size t₂ → sum-of-ranks t₁ Nat.≤ x + sum-of-ranks t₂ →
+    sum-of-ranks (reconstruct t₁ anc)
+  Nat.≤ 
+    x + sum-of-ranks (reconstruct t₂ anc)
+sum-ranks+x/lemma t₁ t₂ [] x sizet₁≡sizet₂ rank+t₁≤xrank+t₂ = rank+t₁≤xrank+t₂
+sum-ranks+x/lemma t₁ t₂ (Left k t ∷ anc) x sizet₁≡sizet₂ rank+t₁≤xrank+t₂ = sum-ranks+x/lemma (node t₁ k t) (node t₂ k t) anc x 
+  (Eq.cong (λ e → e + 1 + tree-size t) (sizet₁≡sizet₂)) 
+  (let open Nat.≤-Reasoning in
+  begin
+    sum-of-ranks t₁ + rank (node t₁ k t) + sum-of-ranks t
+  ≡⟨ Eq.cong (λ e → sum-of-ranks t₁ + (⌊log₂ (e + 1 + tree-size t) ⌋) + sum-of-ranks t) sizet₁≡sizet₂ ⟩
+    sum-of-ranks t₁ + rank (node t₂ k t) + sum-of-ranks t
+  ≤⟨ +-monoˡ-≤ (sum-of-ranks t) (+-monoˡ-≤ (rank (node t₂ k t)) rank+t₁≤xrank+t₂) ⟩
+    (x + sum-of-ranks t₂) + rank (node t₂ k t) + sum-of-ranks t
+  ≡⟨ Eq.cong (λ e → e + sum-of-ranks t) (Nat.+-assoc x (sum-of-ranks t₂) (rank (node t₂ k t))) ⟩
+    x + (sum-of-ranks t₂ + rank (node t₂ k t)) + sum-of-ranks t
+  ≡⟨ Nat.+-assoc x (sum-of-ranks t₂ + rank (node t₂ k t)) (sum-of-ranks t) ⟩
+    x + (sum-of-ranks t₂ + rank (node t₂ k t) + sum-of-ranks t)
+  ∎)
+sum-ranks+x/lemma t₁ t₂ (Right t k ∷ anc) x sizet₁≡sizet₂ rank+t₁≤xrank+t₂ = sum-ranks+x/lemma (node t k t₁) (node t k t₂) anc x 
+  (Eq.cong (λ e → tree-size t + 1 + e) (sizet₁≡sizet₂)) 
+  (let open Nat.≤-Reasoning in
+  begin
+    sum-of-ranks t + rank (node t k t₁) + sum-of-ranks t₁
+  ≡⟨ Eq.cong (λ e → sum-of-ranks t + ⌊log₂ (tree-size t + 1 + e) ⌋ + sum-of-ranks t₁) sizet₁≡sizet₂ ⟩
+    sum-of-ranks t + rank (node t k t₂) + sum-of-ranks t₁
+  ≤⟨ +-monoʳ-≤ (sum-of-ranks t + rank (node t k t₂)) rank+t₁≤xrank+t₂ ⟩
+    sum-of-ranks t + rank (node t k t₂) + (x + sum-of-ranks t₂)
+  ≡⟨ arithmetic (sum-of-ranks t) (rank (node t k t₂)) x (sum-of-ranks t₂) ⟩
+    x + (sum-of-ranks t + rank (node t k t₂) + sum-of-ranks t₂)
+  ∎)
+  where
+    arithmetic : (a b c d : val nat) → a + b + (c + d) ≡ c + (a + b + d)
+    arithmetic = solve-∀
+
 splay'/amortized : (l : Tree) (r : Tree) (anc : List Context) (k : val nat) → 
    bind (F _) (splay' l r anc k) (λ ((l' , r') , _) → φ (node l' k r')) 
   ≤⁻[ F _ ] 
@@ -541,20 +573,367 @@ splay'/amortized b c (Right a p ∷ []) k = {!   !}
 -- zag
 splay'/amortized a b (Left p c ∷ Left g d ∷ anc) k with <-cmp (rank (node a k b)) (rank (node a k (node b p (node c g d))))
 ... | tri< rank-x<rank-x' ¬b ¬c  = let
-    rank-x   : val nat
-    rank-x   = rank (node a k b)
-    rank-y   : val nat
-    rank-y   = rank (node (node a k b) p c)
-    rank-z   : val nat
-    rank-z   = rank (node (node (node a k b) p c) g d)
-    rank-x'' : val nat
-    rank-x'' = rank (node a k (node b p (node c g d)))
-    rank-y'' : val nat
-    rank-y'' = rank (node b p (node c g d))
-    rank-z'' : val nat
-    rank-z'' = rank (node c g d)
+    rank-x  : val nat
+    rank-x  = rank (node a k b)
+    rank-y  : val nat
+    rank-y  = rank (node (node a k b) p c)
+    rank-z  : val nat
+    rank-z  = rank (node (node (node a k b) p c) g d)
+    rank-x' : val nat
+    rank-x' = rank (node a k (node b p (node c g d)))
+    rank-y' : val nat
+    rank-y' = rank (node b p (node c g d))
+    rank-z' : val nat
+    rank-z' = rank (node c g d)
   in 
-  {!   !}
+  let open ≤⁻-Reasoning (F (list nat)) in 
+  begin
+    step (F _) 1 (
+      bind (F _) (splay' a (node b p (node c g d)) anc k) (λ ((l' , r') , _) → 
+        φ (node l' k r')))
+  ≲⟨ step-monoʳ-≤⁻ 1 (splay'/amortized a (node b p (node c g d)) anc k) ⟩
+    step (F _) 1 (
+      step (F _) (1 + 3 * (rank (reconstruct (node a k (node b p (node c g d))) anc) ∸ rank-x'))
+        (φ (reconstruct (node a k (node b p (node c g d))) anc)))
+  ≡⟨⟩
+    step (F _) (1 + 1 + 3 * (rank (reconstruct (node a k (node b p (node c g d))) anc) ∸ rank-x'))
+      (φ (reconstruct (node a k (node b p (node c g d))) anc)) 
+  ≡⟨ Eq.cong (λ e → step (F _) e (φ (reconstruct (node a k (node b p (node c g d))) anc))) 
+      (Eq.cong (λ e → 1 + 1 + 3 * (e ∸ rank-x')) 
+        (rank/recon (node a k (node b p (node c g d))) (node (node (node a k b) p c) g d) anc size/lemma)) ⟩
+    step (F _) (1 + 1 + 3 * (rank (reconstruct (node (node (node a k b) p c) g d) anc) ∸ rank-x'))
+      (φ (reconstruct (node a k (node b p (node c g d))) anc)) 
+  ≡⟨⟩
+    step (F _) (1 + 1 + 3 * (rank (reconstruct (node (node (node a k b) p c) g d) anc) ∸ rank-x'))
+      (step (F _) (sum-of-ranks (reconstruct (node a k (node b p (node c g d))) anc)) 
+        (ret (inord (reconstruct (node a k (node b p (node c g d))) anc))))
+  ≡⟨⟩
+    step (F _) (1 + 1 + 3 * (rank (reconstruct (node (node (node a k b) p c) g d) anc) ∸ rank-x') + 
+      sum-of-ranks (reconstruct (node a k (node b p (node c g d))) anc))
+        (ret (inord (reconstruct (node a k (node b p (node c g d))) anc)))
+  ≲⟨ step-monoˡ-≤⁻ (ret (inord (reconstruct (node a k (node b p (node c g d))) anc))) 
+      (+-monoʳ-≤ (1 + 1 + 3 * (rank (reconstruct (node (node (node a k b) p c) g d) anc) ∸ rank-x')) 
+        phi/lemma) ⟩
+    step (F _) (1 + 1 + 3 * (rank (reconstruct (node (node (node a k b) p c) g d) anc) ∸ rank-x') +
+      (((3 * (rank-x' ∸ rank-x)) ∸ 1) + sum-of-ranks (reconstruct (node (node (node a k b) p c) g d) anc)))
+        (ret (inord (reconstruct (node a k (node b p (node c g d))) anc)))
+  ≡⟨ Eq.cong (λ e → step (F _) e (ret (inord (reconstruct (node a k (node b p (node c g d))) anc)))) 
+      (arithmetic2 1 (3 * (rank (reconstruct (node (node (node a k b) p c) g d) anc) ∸ rank-x')) 
+        ((3 * (rank-x' ∸ rank-x))) (sum-of-ranks (reconstruct (node (node (node a k b) p c) g d) anc)) 
+          size-arith1) ⟩
+    step (F _) ((1 ∸ 1) + 1 + ((3 * (rank (reconstruct (node (node (node a k b) p c) g d) anc) ∸ rank-x')) +
+      (3 * (rank-x' ∸ rank-x))) + sum-of-ranks (reconstruct (node (node (node a k b) p c) g d) anc))
+        (ret (inord (reconstruct (node a k (node b p (node c g d))) anc)))
+  ≡⟨ Eq.cong (λ e → step (F _) (e + 1 + ((3 * (rank (reconstruct (node (node (node a k b) p c) g d) anc) ∸ rank-x')) +
+      (3 * (rank-x' ∸ rank-x))) + sum-of-ranks (reconstruct (node (node (node a k b) p c) g d) anc))
+        (ret (inord (reconstruct (node a k (node b p (node c g d))) anc)))) (Nat.n∸n≡0 1) ⟩
+     step (F _) (1 + ((3 * (rank (reconstruct (node (node (node a k b) p c) g d) anc) ∸ rank-x')) +
+      (3 * (rank-x' ∸ rank-x))) + sum-of-ranks (reconstruct (node (node (node a k b) p c) g d) anc))
+        (ret (inord (reconstruct (node a k (node b p (node c g d))) anc)))
+  ≡⟨ Eq.cong (λ e → step (F _) (1 + e + sum-of-ranks (reconstruct (node (node (node a k b) p c) g d) anc))
+      (ret (inord (reconstruct (node a k (node b p (node c g d))) anc)))) 
+        (arithmetic3 (rank (reconstruct (node (node (node a k b) p c) g d) anc)) rank-x' rank-x
+          (size-arith2 (node a k (node b p (node c g d))) (node (node (node a k b) p c) g d) anc size/lemma) 
+            (Nat.<⇒≤ rank-x<rank-x')) ⟩
+    step (F _) (1 + (3 * (rank (reconstruct (node (node (node a k b) p c) g d) anc) ∸ rank-x)) +  
+      sum-of-ranks (reconstruct (node (node (node a k b) p c) g d) anc))
+        (ret (inord (reconstruct (node a k (node b p (node c g d))) anc)))
+  ≡⟨⟩
+    step (F _) (1 + 3 * (rank (reconstruct (node (node (node a k b) p c) g d) anc) ∸ rank-x))
+      (step (F _) (sum-of-ranks (reconstruct (node (node (node a k b) p c) g d) anc))
+        (ret (inord (reconstruct (node a k (node b p (node c g d))) anc))))
+  ≡⟨ Eq.cong (λ e → step (F _) (1 + 3 * (rank (reconstruct (node (node (node a k b) p c) g d) anc) ∸ rank-x)) e) 
+      (Eq.cong (λ e → step (F _) (sum-of-ranks (reconstruct (node (node (node a k b) p c) g d) anc)) e) 
+        (Eq.cong ret (inord/reconstruct 
+          (node (node (node a k b) p c) g d)
+          (node a k (node b p (node c g d)))
+          anc 
+          (zig/zig/inord/arith a b c d k p g)))) ⟨
+    step (F _) (1 + 3 * (rank (reconstruct (node (node (node a k b) p c) g d) anc) ∸ rank-x))
+      (step (F _) (sum-of-ranks (reconstruct (node (node (node a k b) p c) g d) anc))
+        (ret (inord (reconstruct (node (node (node a k b) p c) g d) anc))))
+  ≡⟨⟩
+    step (F _) (1 + 3 * (rank (reconstruct (node (node (node a k b) p c) g d) anc) ∸ rank-x)) 
+      (φ (reconstruct (node (node (node a k b) p c) g d) anc))
+  ∎
+  where
+    size/lemma : tree-size (node a k (node b p (node c g d))) ≡ tree-size (node (node (node a k b) p c) g d)
+    size/lemma = 
+      let open ≡-Reasoning in
+      begin
+        tree-size a + 1 + (tree-size b + 1 + (tree-size c + 1 + tree-size d))
+      ≡⟨ Eq.cong (λ e → tree-size a + 1 + e) (Nat.+-assoc (tree-size b) 1 (tree-size c + 1 + tree-size d)) ⟩
+        tree-size a + 1 + (tree-size b + (1 + (tree-size c + 1 + tree-size d)))
+      ≡⟨ Nat.+-assoc (tree-size a + 1) (tree-size b) (1 + (tree-size c + 1 + tree-size d)) ⟨
+        tree-size a + 1 + tree-size b + (1 + (tree-size c + 1 + tree-size d))
+      ≡⟨ Nat.+-assoc (tree-size a + 1 + tree-size b) 1 (tree-size c + 1 + tree-size d) ⟨
+        tree-size a + 1 + tree-size b + 1 + (tree-size c + 1 + tree-size d)
+      ≡⟨ Eq.cong (λ e → tree-size a + 1 + tree-size b + 1 + e) (Nat.+-assoc (tree-size c) 1 (tree-size d)) ⟩
+        tree-size a + 1 + tree-size b + 1 + (tree-size c + (1 + tree-size d))
+      ≡⟨ Nat.+-assoc (tree-size a + 1 + tree-size b + 1) (tree-size c) (1 + tree-size d) ⟨
+        tree-size a + 1 + tree-size b + 1 + tree-size c + (1 + tree-size d)
+      ≡⟨ Nat.+-assoc (tree-size a + 1 + tree-size b + 1 + tree-size c) 1 (tree-size d) ⟨
+        tree-size a + 1 + tree-size b + 1 + tree-size c + 1 + tree-size d
+      ∎
+    size-arith1 : 1 Nat.≤ 3 * (rank (node a k (node b p (node c g d))) ∸ rank (node a k b))
+    size-arith1 = 
+      let open Nat.≤-Reasoning in
+      begin
+        1
+      ≤⟨ s≤s z≤n ⟩
+        3
+      ≤⟨ Nat.m≤m*n 3 (rank (node a k (node b p (node c g d))) ∸ rank (node a k b)) 
+          {{ >-nonZero (Nat.m<n⇒0<n∸m rank-x<rank-x') }}  ⟩
+        3 * (rank (node a k (node b p (node c g d))) ∸ rank (node a k b))
+      ∎
+    size-arith2 : (t₁ t₂ : Tree) (anc : List Context) → tree-size t₁ ≡ tree-size t₂ → 
+      rank t₁ Nat.≤ rank (reconstruct t₂ anc)
+    size-arith2 t₁ t₂ [] t₁≡t₂ = ≤-reflexive (Eq.cong (λ e → ⌊log₂ e ⌋) t₁≡t₂)
+    size-arith2 t₁ t₂ (Left k t ∷ anc) t₁≡t₂ = 
+      let open Nat.≤-Reasoning in
+      begin
+        rank t₁
+      ≡⟨⟩
+        ⌊log₂ (tree-size t₁) ⌋
+      ≤⟨ ⌊log₂⌋-mono-≤ (Nat.m≤m+n (tree-size t₁) (1 + tree-size t)) ⟩
+        ⌊log₂ ((tree-size t₁) + (1 + tree-size t)) ⌋
+      ≡⟨ Eq.cong (λ e → ⌊log₂ (e + (1 + tree-size t)) ⌋) t₁≡t₂ ⟩
+        ⌊log₂ ((tree-size t₂) + (1 + tree-size t)) ⌋
+      ≡⟨ Eq.cong (λ e → ⌊log₂ e ⌋) (Nat.+-assoc (tree-size t₂) 1 (tree-size t)) ⟨
+        ⌊log₂ (tree-size t₂ + 1 + tree-size t) ⌋
+      ≡⟨⟩
+        rank (node t₂ k t)
+      ≤⟨ size-arith2 (node t₂ k t) (node t₂ k t) anc refl ⟩
+        rank (reconstruct (node t₂ k t) anc)
+      ∎
+    size-arith2 t₁ t₂ (Right t k ∷ anc) t₁≡t₂ = 
+      let open Nat.≤-Reasoning in
+      begin
+        rank t₁
+      ≡⟨⟩
+        ⌊log₂ (tree-size t₁) ⌋
+      ≤⟨ ⌊log₂⌋-mono-≤ (Nat.m≤n+m (tree-size t₁) (tree-size t + 1)) ⟩
+        ⌊log₂ (tree-size t + 1 + tree-size t₁) ⌋
+      ≡⟨ Eq.cong (λ e → ⌊log₂ ((tree-size t + 1) + e) ⌋) t₁≡t₂ ⟩
+        ⌊log₂ (tree-size t + 1 + tree-size t₂) ⌋
+      ≡⟨⟩
+        rank (node t k t₂)
+      ≤⟨ size-arith2 (node t k t₂) (node t k t₂) anc refl ⟩
+        rank (reconstruct (node t k t₂) anc)
+      ∎
+    arithmetic2 : (a b c d : val nat) → a Nat.≤ c → a + a + b + ((c ∸ a) + d) ≡ (a ∸ a) + a + (b + c) + d
+    arithmetic2 a b c d a≤c =  
+      let open ≡-Reasoning in
+      begin
+        a + a + b + ((c ∸ a) + d)
+      ≡⟨ Eq.cong (λ e → a + a + b + e) (Nat.+-∸-comm d a≤c) ⟨ 
+        (((a + a) + b) + ((c + d) ∸ a))
+      ≡⟨ Nat.+-assoc (a + a) b ((c + d) ∸ a) ⟩
+        a + a + (b + ((c + d) ∸ a))
+      ≡⟨ Eq.cong (λ e → a + a + e) (Nat.+-∸-assoc b (≤-trans a≤c (Nat.m≤m+n c d))) ⟨
+        a + a + ((b + (c + d)) ∸ a)
+      ≡⟨ Eq.cong (λ e → a + a + (e ∸ a)) (Nat.+-assoc b c d) ⟨ 
+        a + a + (((b + c) + d) ∸ a)
+      ≡⟨ Nat.+-assoc a a (((b + c) + d) ∸ a) ⟩
+        a + (a + (((b + c) + d) ∸ a))
+      ≡⟨ Eq.cong (λ e → a + e) (Nat.+-∸-assoc a 
+          (≤-trans a≤c (≤-trans (Nat.m≤n+m c b) (Nat.m≤m+n (b + c) d)))) ⟨ 
+        a + ((a + ((b + c) + d)) ∸ a)
+      ≡⟨ Eq.cong (λ e → a + (e ∸ a)) (Nat.+-comm a ((b + c) + d)) ⟩
+        a + ((((b + c) + d) + a) ∸ a)
+      ≡⟨ Eq.cong (λ e → a + e) (Nat.+-∸-assoc ((b + c) + d) {a} {a} ≤-refl) ⟩
+        a + (((b + c) + d) + (a ∸ a))
+      ≡⟨ Eq.cong (λ e → a + e) (Nat.+-comm ((b + c) + d) (a ∸ a)) ⟩
+        a + ((a ∸ a) + ((b + c) + d))
+      ≡⟨ Nat.+-assoc a (a ∸ a) ((b + c) + d) ⟨
+        a + (a ∸ a) + ((b + c) + d)
+      ≡⟨ Eq.cong (λ e → e + ((b + c) + d)) (Nat.+-comm a (a ∸ a)) ⟩
+        (a ∸ a) + a + ((b + c) + d)
+      ≡⟨ Nat.+-assoc ((a ∸ a) + a) (b + c) d ⟨
+        (a ∸ a) + a + (b + c) + d
+      ∎
+    arithmetic3 : (a b c : val nat) → b Nat.≤ a → c Nat.≤ b → (3 * (a ∸ b)) + (3 * (b ∸ c)) ≡ (3 * (a ∸ c))
+    arithmetic3 a b c b≤a c≤b = 
+      let open ≡-Reasoning in
+      begin
+        (3 * (a ∸ b)) + (3 * (b ∸ c))
+      ≡⟨ Nat.*-distribˡ-+ 3 (a ∸ b) (b ∸ c) ⟨
+        3 * ((a ∸ b) + (b ∸ c))
+      ≡⟨ Eq.cong (λ e → 3 * e) (Nat.+-∸-assoc (a ∸ b) c≤b) ⟨  
+        3 * (((a ∸ b) + b) ∸ c) 
+      ≡⟨ Eq.cong (λ e → 3 * (e ∸ c)) (Nat.+-∸-comm b b≤a) ⟨
+        3 * (((a + b) ∸ b) ∸ c)
+      ≡⟨ Eq.cong (λ e → 3 * (e ∸ c)) (Nat.+-∸-assoc a {b} {b} ≤-refl) ⟩ 
+        3 * ((a + (b ∸ b)) ∸ c)
+      ≡⟨ Eq.cong (λ e → 3 * ((a + e) ∸ c)) (Nat.n∸n≡0 b) ⟩
+        3 * ((a + 0) ∸ c)
+      ≡⟨ Eq.cong (λ e → 3 * (e ∸ c)) (Nat.+-comm a 0) ⟩
+        3 * (a ∸ c) 
+      ∎
+    rank/lemma : 
+        sum-of-ranks (node a k (node b p (node c g d)))
+      Nat.≤
+        ((3 * (rank (node a k (node b p (node c g d))) ∸ rank (node a k b))) ∸ 1) + 
+        sum-of-ranks (node (node (node a k b) p c) g d)
+    rank/lemma = 
+      let open Nat.≤-Reasoning in
+      begin
+        sum-of-ranks a + rank (node a k (node b p (node c g d))) + (sum-of-ranks b + rank (node b p (node c g d)) +
+        (sum-of-ranks c + rank (node c g d) + sum-of-ranks d))
+      ≡⟨ rank-arithmetic1 (sum-of-ranks a) (sum-of-ranks b) (sum-of-ranks c) (sum-of-ranks d) (rank (node a k (node b p (node c g d)))) (rank (node b p (node c g d))) (rank (node c g d)) ⟩
+        (sum-of-ranks a + sum-of-ranks b + sum-of-ranks c + sum-of-ranks d) +
+        (rank (node a k (node b p (node c g d)))) +
+        (rank (node b p (node c g d))) +
+        (rank (node c g d))
+      ≤⟨ +-mono-≤ (+-mono-≤ (+-monoʳ-≤ (sum-of-ranks a + sum-of-ranks b + sum-of-ranks c + sum-of-ranks d) ≤-refl) rank-y'≤rank-x') rank-z'≤rank-x' ⟩
+        (sum-of-ranks a + sum-of-ranks b + sum-of-ranks c + sum-of-ranks d) +
+        (rank (node a k (node b p (node c g d)))) +
+        (rank (node a k (node b p (node c g d)))) +
+        (rank (node a k (node b p (node c g d)))) 
+      ≡⟨ Nat.+-identityʳ ((sum-of-ranks a + sum-of-ranks b + sum-of-ranks c + sum-of-ranks d) +
+          (rank (node a k (node b p (node c g d)))) + (rank (node a k (node b p (node c g d)))) +
+            (rank (node a k (node b p (node c g d))))) ⟨
+        (sum-of-ranks a + sum-of-ranks b + sum-of-ranks c + sum-of-ranks d) +
+        (rank (node a k (node b p (node c g d)))) +
+        (rank (node a k (node b p (node c g d)))) +
+        (rank (node a k (node b p (node c g d)))) + 0
+      ≡⟨ Eq.cong (λ e → (sum-of-ranks a + sum-of-ranks b + sum-of-ranks c + sum-of-ranks d) + (rank (node a k (node b p (node c g d)))) + (rank (node a k (node b p (node c g d)))) +
+          (rank (node a k (node b p (node c g d)))) + e) (Eq.trans (Eq.sym (Nat.*-zeroˡ 3)) (Eq.cong (λ e → 3 * e) (Eq.sym (Nat.n∸n≡0 (rank (node a k b)))))) ⟩
+        (sum-of-ranks a + sum-of-ranks b + sum-of-ranks c + sum-of-ranks d) +
+        (rank (node a k (node b p (node c g d)))) +
+        (rank (node a k (node b p (node c g d)))) +
+        (rank (node a k (node b p (node c g d)))) + 
+        (3 * (rank (node a k b) ∸ rank (node a k b)))
+      ≡⟨ rank≡ (sum-of-ranks a + sum-of-ranks b + sum-of-ranks c + sum-of-ranks d) (rank (node a k (node b p (node c g d)))) (rank (node a k b)) rank-x<rank-x' 1≤rank-z ⟩
+        (sum-of-ranks a + sum-of-ranks b + sum-of-ranks c + sum-of-ranks d) +
+        (1 + rank (node a k b)) +
+        (rank (node a k b)) +
+        (rank (node a k b)) + 
+        ((3 * (rank (node a k (node b p (node c g d))) ∸ rank (node a k b))) ∸ 1)
+      ≤⟨ +-monoˡ-≤ ((3 * (rank (node a k (node b p (node c g d))) ∸ rank (node a k b))) ∸ 1) (+-monoˡ-≤ (rank (node a k b)) 
+          (+-mono-≤ (+-monoʳ-≤ (sum-of-ranks a + sum-of-ranks b + sum-of-ranks c + sum-of-ranks d) (≤-trans rank-x<rank-x' (≤-reflexive rank-x'≡rank-z))) 
+            rank-x≤rank-y)) ⟩
+        (sum-of-ranks a + sum-of-ranks b + sum-of-ranks c + sum-of-ranks d) +
+        (rank (node (node (node a k b) p c) g d)) +
+        (rank (node (node a k b) p c)) +
+        (rank (node a k b)) + 
+        ((3 * (rank (node a k (node b p (node c g d))) ∸ rank (node a k b))) ∸ 1)
+      ≡⟨ rank-arithmetic2 (sum-of-ranks a) (sum-of-ranks b) (sum-of-ranks c) (sum-of-ranks d) (rank (node (node (node a k b) p c) g d)) (rank (node (node a k b) p c)) 
+          (rank (node a k b)) ((3 * (rank (node a k (node b p (node c g d))) ∸ rank (node a k b))) ∸ 1) ⟩ 
+        ((3 * (rank (node a k (node b p (node c g d))) ∸ rank (node a k b))) ∸ 1) + 
+        (sum-of-ranks a + rank (node a k b) + sum-of-ranks b + rank (node (node a k b) p c) + sum-of-ranks c + 
+        rank (node (node (node a k b) p c) g d) + sum-of-ranks d)
+      ∎
+      where
+        rank-arithmetic1 : (a b c d e f g : val nat) → a + e + (b + f + (c + g + d)) ≡ (a + b + c + d) + e + f + g
+        rank-arithmetic1 = solve-∀
+        rank-arithmetic2 : (a b c d e f g h : val nat) → (a + b + c + d) + e + f + g + h ≡ h + (a + g + b + f + c + e + d)
+        rank-arithmetic2 = solve-∀
+        rank-y'≤rank-x' : rank (node b p (node c g d)) Nat.≤ rank (node a k (node b p (node c g d)))
+        rank-y'≤rank-x' = ⌊log₂⌋-mono-≤ (Nat.m≤n+m (tree-size b + 1 + (tree-size c + 1 + tree-size d)) (tree-size a + 1))
+        rank-z'≤rank-x' : rank (node c g d) Nat.≤ rank (node a k (node b p (node c g d)))
+        rank-z'≤rank-x' = ≤-trans (⌊log₂⌋-mono-≤ (Nat.m≤n+m (tree-size c + 1 + tree-size d) (tree-size b + 1))) rank-y'≤rank-x'
+        rank-x'≡rank-z : rank (node a k (node b p (node c g d))) ≡ rank (node (node (node a k b) p c) g d)
+        rank-x'≡rank-z = Eq.cong (λ e → ⌊log₂ e ⌋) size/lemma
+        rank-x≤rank-y : rank (node a k b) Nat.≤ rank (node (node a k b) p c)
+        rank-x≤rank-y = ≤-trans (⌊log₂⌋-mono-≤ (Nat.m≤m+n (tree-size a + 1 + tree-size b) (1 + tree-size c))) 
+          (≤-reflexive (Eq.cong (λ e → ⌊log₂ e ⌋) (Eq.sym (+-assoc (tree-size a + 1 + tree-size b) 1 (tree-size c)))))
+        1≤rank-z : 1 Nat.≤ rank (node a k (node b p (node c g d)))
+        1≤rank-z = 
+          let open Nat.≤-Reasoning in
+          begin
+            1
+          ≡⟨⟩
+            ⌊log₂ 2 ⌋
+          ≤⟨ ⌊log₂⌋-mono-≤ (Nat.m≤m+n 2 (tree-size a + tree-size b + tree-size c + tree-size d + 1)) ⟩
+            ⌊log₂ ((1 + 1) + (tree-size a + tree-size b + tree-size c + tree-size d + 1)) ⌋
+          ≡⟨ Eq.cong (λ e → ⌊log₂ e ⌋) (arithmetic (tree-size a) (tree-size b) (tree-size c) (tree-size d) 1) ⟩
+            ⌊log₂ (tree-size a + 1 + (tree-size b + 1 + (tree-size c + 1 + tree-size d))) ⌋
+          ≡⟨⟩
+            rank (node a k (node b p (node c g d)))
+          ∎
+          where
+            arithmetic : (a b c d e : val nat) → (e + e) + (a + b + c + d + e) ≡ a + e + (b + e + (c + e + d))
+            arithmetic = solve-∀ 
+        rank≡ : (a b c : val nat) → c < b → 1 Nat.≤ b → 
+          a + b + b + b + (3 * (c ∸ c)) ≡ a + (1 + c) + c + c + ((3 * (b ∸ c)) ∸ 1)
+        rank≡ a b c c<b 1≤b = 
+          let open ≡-Reasoning in
+          begin
+            a + b + b + b + (3 * (c ∸ c))
+          ≡⟨ Eq.cong (λ e → e + (3 * (c ∸ c))) (Nat.+-assoc (a + b) b b) ⟩
+            a + b + (b + b) + (3 * (c ∸ c))
+          ≡⟨ Eq.cong (λ e → e + (3 * (c ∸ c))) (Nat.+-assoc a b (b + b)) ⟩
+            a + (b + (b + b)) + (3 * (c ∸ c))
+          ≡⟨ Eq.cong (λ e → a + e + (3 * (c ∸ c))) (Eq.cong (λ e → b + (b + e)) (Nat.+-identityʳ b)) ⟨
+            a + (3 * b) + (3 * (c ∸ c))
+          ≡⟨ Nat.+-assoc a (3 * b) (3 * (c ∸ c)) ⟩
+            a + ((3 * b) + (3 * (c ∸ c)))
+          ≡⟨ Eq.cong (λ e → a + e) (Nat.*-distribˡ-+ 3 b (c ∸ c)) ⟨
+            a + (3 * (b + (c ∸ c)))
+          ≡⟨ Eq.cong (λ e → a + (3 * e)) (Nat.+-∸-assoc b {c} {c} ≤-refl) ⟨
+            a + (3 * ((b + c) ∸ c))
+          ≡⟨ Eq.cong (λ e → a + (3 * (e ∸ c))) (Nat.+-comm b c) ⟩
+            a + (3 * ((c + b) ∸ c))
+          ≡⟨ Eq.cong (λ e → a + (3 * e)) (Nat.+-∸-assoc c {b} {c} (Nat.<⇒≤ c<b)) ⟩
+            a + (3 * (c + (b ∸ c)))
+          ≡⟨ Eq.cong (λ e → a + e) (Nat.+-identityʳ (3 * (c + (b ∸ c)))) ⟨
+            a + ((3 * (c + (b ∸ c))) + (1 ∸ 1))
+          ≡⟨ Eq.cong (λ e → a + e) (Nat.+-∸-assoc (3 * (c + (b ∸ c))) {1} {1} ≤-refl) ⟨ 
+            a + (((3 * (c + (b ∸ c))) + 1) ∸ 1)
+          ≡⟨ Eq.cong (λ e → a + (e ∸ 1)) (Nat.+-comm (3 * (c + (b ∸ c))) 1) ⟩
+            a + ((1 + (3 * (c + (b ∸ c)))) ∸ 1)
+          ≡⟨ Eq.cong (λ e → a + e) (Nat.+-∸-assoc 1 {3 * (c + (b ∸ c))} {1} 1≤arith1) ⟩
+            a + (1 + ((3 * (c + (b ∸ c))) ∸ 1))
+          ≡⟨ Nat.+-assoc a 1 ((3 * (c + (b ∸ c))) ∸ 1) ⟨
+            a + 1 + ((3 * (c + (b ∸ c))) ∸ 1)
+          ≡⟨ Eq.cong (λ e → a + 1 + (e ∸ 1)) (Nat.*-distribˡ-+ 3 c (b ∸ c)) ⟩
+            a + 1 + (((3 * c) + (3 * (b ∸ c))) ∸ 1)
+          ≡⟨ Eq.cong (λ e → a + 1 + e) (Nat.+-∸-assoc (3 * c) {3 * (b ∸ c)} {1} 1≤arith2) ⟩
+            a + 1 + ((3 * c) + ((3 * (b ∸ c)) ∸ 1))
+          ≡⟨ Nat.+-assoc (a + 1) (3 * c) ((3 * (b ∸ c)) ∸ 1) ⟨
+            a + 1 + (3 * c) + ((3 * (b ∸ c)) ∸ 1)
+          ≡⟨ Eq.cong (λ e → a + 1 + e + ((3 * (b ∸ c)) ∸ 1)) (Eq.cong (λ e → c + (c + e)) (Nat.+-identityʳ c)) ⟩
+            a + 1 + (c + (c + c)) + ((3 * (b ∸ c)) ∸ 1)
+          ≡⟨ Eq.cong (λ e → e + ((3 * (b ∸ c)) ∸ 1)) (Nat.+-assoc (a + 1) c (c + c)) ⟨
+            a + 1 + c + (c + c) + ((3 * (b ∸ c)) ∸ 1)
+          ≡⟨ Eq.cong (λ e → e + ((3 * (b ∸ c)) ∸ 1)) (Nat.+-assoc (a + 1 + c) c c) ⟨
+            a + 1 + c + c + c + ((3 * (b ∸ c)) ∸ 1)
+          ≡⟨ Eq.cong (λ e → e + c + c + ((3 * (b ∸ c)) ∸ 1)) (Nat.+-assoc a 1 c) ⟩
+            a + (1 + c) + c + c + ((3 * (b ∸ c)) ∸ 1)
+          ∎
+          where
+            1≤arith1 : 1 Nat.≤ 3 * (c + (b ∸ c))
+            1≤arith1 = 
+              let open Nat.≤-Reasoning in
+              begin
+                1
+              ≤⟨ 1≤b ⟩
+                b
+              ≤⟨ Nat.m≤n*m b 3 ⟩
+                3 * b
+              ≡⟨ Eq.cong (λ e → 3 * e) (Nat.m+n∸m≡n c b) ⟨ 
+                3 * (c + b ∸ c)
+              ≡⟨ Eq.cong (λ e → 3 * e) (Nat.+-∸-assoc c {b} {c} (Nat.<⇒≤ c<b)) ⟩
+                3 * (c + (b ∸ c))
+              ∎
+            1≤arith2 : 1 Nat.≤ 3 * (b ∸ c)
+            1≤arith2 = 
+              let open Nat.≤-Reasoning in
+              begin
+                1
+              ≤⟨ Nat.m<n⇒0<n∸m c<b ⟩ 
+                b ∸ c
+              ≤⟨ Nat.m≤n*m (b ∸ c) 3 ⟩
+                3 * (b ∸ c)
+              ∎
+    phi/lemma : 
+        sum-of-ranks (reconstruct (node a k (node b p (node c g d))) anc)
+      Nat.≤
+        ((3 * (rank (node a k (node b p (node c g d))) ∸ rank (node a k b))) ∸ 1) + 
+        sum-of-ranks (reconstruct (node (node (node a k b) p c) g d) anc)
+    phi/lemma = sum-ranks+x/lemma (node a k (node b p (node c g d))) (node (node (node a k b) p c) g d) anc 
+      ((3 * (rank (node a k (node b p (node c g d))) ∸ rank (node a k b))) ∸ 1) size/lemma rank/lemma
 ... | tri≈ ¬a rank-x≡rank-x'' ¬c = 
   let
     rank-x   : val nat
@@ -783,7 +1162,21 @@ splay'/amortized a b (Left p c ∷ Left g d ∷ anc) k with <-cmp (rank (node a 
       Nat.≤
         sum-of-ranks (reconstruct (node (node (node a k b) p c) g d) anc)
     phi/lemma = sum-ranks+1/lemma (node a k (node b p (node c g d))) (node (node (node a k b) p c) g d) anc size/lemma rank/lemma
-... | tri> ¬a ¬b rank-x>rank-x'  = {!   !}
+... | tri> ¬a ¬b rank-x>rank-x'  = ⊥-elim (Nat.≤⇒≯ rank-x≤rank-x' rank-x>rank-x')
+  where
+    rank-x≤rank-x' : rank (node a k b) Nat.≤ rank (node a k (node b p (node c g d)))
+    rank-x≤rank-x' = 
+      let open Nat.≤-Reasoning in
+      begin
+        ⌊log₂ (tree-size a + 1 + tree-size b) ⌋
+      ≤⟨ ⌊log₂⌋-mono-≤ (Nat.m≤m+n (tree-size a + 1 + tree-size b) (tree-size c + 1 + tree-size d + 1)) ⟩
+        ⌊log₂ ((tree-size a + 1 + tree-size b) + (tree-size c + 1 + tree-size d + 1)) ⌋
+      ≡⟨ Eq.cong (λ e → ⌊log₂ e ⌋) (arithmetic (tree-size a) (tree-size b) (tree-size c) (tree-size d) 1) ⟩ 
+        ⌊log₂ (tree-size a + 1 + (tree-size b + 1 + (tree-size c + 1 + tree-size d))) ⌋ 
+      ∎
+      where
+        arithmetic : (a b c d e : val nat) → (a + e + b) + (c + e + d + e) ≡ a + e + (b + e + (c + e + d))
+        arithmetic = solve-∀
 -- zig-zig
 splay'/amortized b c (Left p d ∷ Right a g ∷ anc) k = {!   !}
 -- zag-zig
@@ -1209,46 +1602,12 @@ splay'/amortized b c (Right a p ∷ Left g d ∷ anc) k with <-cmp (rank (node b
               ≤⟨ Nat.m≤n*m (c ∸ d) 2 ⟩
                 2 * (c ∸ d)
               ∎
-    sum-ranks/lemma : (t₁ t₂ : Tree) (anc : List Context) (x : val nat) → tree-size t₁ ≡ tree-size t₂ → sum-of-ranks t₁ Nat.≤ x + sum-of-ranks t₂ →
-        sum-of-ranks (reconstruct t₁ anc)
-      Nat.≤ 
-        x + sum-of-ranks (reconstruct t₂ anc)
-    sum-ranks/lemma t₁ t₂ [] x sizet₁≡sizet₂ rank+t₁≤xrank+t₂ = rank+t₁≤xrank+t₂
-    sum-ranks/lemma t₁ t₂ (Left k t ∷ anc) x sizet₁≡sizet₂ rank+t₁≤xrank+t₂ = sum-ranks/lemma (node t₁ k t) (node t₂ k t) anc x 
-      (Eq.cong (λ e → e + 1 + tree-size t) (sizet₁≡sizet₂)) 
-      (let open Nat.≤-Reasoning in
-      begin
-        sum-of-ranks t₁ + rank (node t₁ k t) + sum-of-ranks t
-      ≡⟨ Eq.cong (λ e → sum-of-ranks t₁ + (⌊log₂ (e + 1 + tree-size t) ⌋) + sum-of-ranks t) sizet₁≡sizet₂ ⟩
-        sum-of-ranks t₁ + rank (node t₂ k t) + sum-of-ranks t
-      ≤⟨ +-monoˡ-≤ (sum-of-ranks t) (+-monoˡ-≤ (rank (node t₂ k t)) rank+t₁≤xrank+t₂) ⟩
-        (x + sum-of-ranks t₂) + rank (node t₂ k t) + sum-of-ranks t
-      ≡⟨ Eq.cong (λ e → e + sum-of-ranks t) (Nat.+-assoc x (sum-of-ranks t₂) (rank (node t₂ k t))) ⟩
-        x + (sum-of-ranks t₂ + rank (node t₂ k t)) + sum-of-ranks t
-      ≡⟨ Nat.+-assoc x (sum-of-ranks t₂ + rank (node t₂ k t)) (sum-of-ranks t) ⟩
-        x + (sum-of-ranks t₂ + rank (node t₂ k t) + sum-of-ranks t)
-      ∎)
-    sum-ranks/lemma t₁ t₂ (Right t k ∷ anc) x sizet₁≡sizet₂ rank+t₁≤xrank+t₂ = sum-ranks/lemma (node t k t₁) (node t k t₂) anc x 
-      (Eq.cong (λ e → tree-size t + 1 + e) (sizet₁≡sizet₂)) 
-      (let open Nat.≤-Reasoning in
-      begin
-        sum-of-ranks t + rank (node t k t₁) + sum-of-ranks t₁
-      ≡⟨ Eq.cong (λ e → sum-of-ranks t + ⌊log₂ (tree-size t + 1 + e) ⌋ + sum-of-ranks t₁) sizet₁≡sizet₂ ⟩
-        sum-of-ranks t + rank (node t k t₂) + sum-of-ranks t₁
-      ≤⟨ +-monoʳ-≤ (sum-of-ranks t + rank (node t k t₂)) rank+t₁≤xrank+t₂ ⟩
-        sum-of-ranks t + rank (node t k t₂) + (x + sum-of-ranks t₂)
-      ≡⟨ arithmetic (sum-of-ranks t) (rank (node t k t₂)) x (sum-of-ranks t₂) ⟩
-        x + (sum-of-ranks t + rank (node t k t₂) + sum-of-ranks t₂)
-      ∎)
-      where
-        arithmetic : (a b c d : val nat) → a + b + (c + d) ≡ c + (a + b + d)
-        arithmetic = solve-∀
     phi/lemma : 
         sum-of-ranks (reconstruct (node (node a p b) k (node c g d)) anc)
       Nat.≤
         ((3 * (rank (node (node a p b) k (node c g d)) ∸ rank (node b k c))) ∸ 1) + 
         sum-of-ranks (reconstruct (node (node a p (node b k c)) g d) anc)
-    phi/lemma = sum-ranks/lemma (node (node a p b) k (node c g d)) (node (node a p (node b k c)) g d) 
+    phi/lemma = sum-ranks+x/lemma (node (node a p b) k (node c g d)) (node (node a p (node b k c)) g d) 
       anc ((3 * (rank (node (node a p b) k (node c g d)) ∸ rank (node b k c))) ∸ 1) size/lemma rank/lemma
 ... | tri≈ ¬a rank-x≡rank-x' ¬c = 
   let
