@@ -25,7 +25,7 @@ open import Calf.Data.IsBoundedG costMonoid
 open import Calf.Data.Product 
 
 open import Relation.Binary.PropositionalEquality as Eq using (_≡_; refl; _≢_; module ≡-Reasoning)
-open import Data.Nat as Nat using (_+_; _⊔_)
+open import Data.Nat as Nat using (_+_; _-_; _⊔_ )
 open import Data.List.Properties using (length-++)
 open import Data.List.Relation.Binary.Permutation.Propositional using (_↭_; prep; refl; ↭-sym)
 open import Data.List.Relation.Binary.Permutation.Propositional.Properties using (↭-length)
@@ -798,7 +798,7 @@ scan/contract/clocked/cost f p e (suc k) l h =
             ∎ 
         
         minlength : 2 Nat.≤ length l 
-        minlength = {!   !}
+        minlength = {!  2 ^ (0 - 1) !}
 
 -- we have (h : val (meta⁺ (⌈log₂ length l ⌉ Nat.≤ k)))
 -- we'll have a bunch of 1s 
