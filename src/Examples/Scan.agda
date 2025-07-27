@@ -707,12 +707,13 @@ log₂-mono-< p = log₂-mono {!   !}
 
 2^⌈log₂n⌉∸1<n : ∀ n → (1 Nat.≤ ⌈log₂ n ⌉ → 2 ^ (⌈log₂ n ⌉ ∸ 1) < n) 
 2^⌈log₂n⌉∸1<n (2+ zero) p = N.≤-refl
-2^⌈log₂n⌉∸1<n (2+ (suc n)) p = let 
-      -- p₁ : ⌈log₂ 2 + n ⌉ ∸ 1 < ⌈log₂ 2 + n ⌉ 
-      p₁ : ⌈log₂ 2 ^ (⌈log₂ 2 + n ⌉ ∸ 1) ⌉ < ⌈log₂ 2 + n ⌉
-      -- p₁ = log₂-mono (2^⌈log₂n⌉∸1<n (2 + n) (s≤s z≤n))  
-      p₁ = log₂-mono (2^⌈log₂n⌉∸1<n {! 2 + n  !} {!   !})
-    in {!   !}
+2^⌈log₂n⌉∸1<n (2+ (suc n)) p = {!   !}
+  -- let 
+  --     -- p₁ : ⌈log₂ 2 + n ⌉ ∸ 1 < ⌈log₂ 2 + n ⌉ 
+  --     p₁ : ⌈log₂ 2 ^ (⌈log₂ 2 + n ⌉ ∸ 1) ⌉ < ⌈log₂ 2 + n ⌉
+  --     -- p₁ = log₂-mono (2^⌈log₂n⌉∸1<n (2 + n) (s≤s z≤n))  
+  --     p₁ = log₂-mono (2^⌈log₂n⌉∸1<n {! 2 + n  !} {!   !})
+  --   in {!   !}
 
 scan/contract : ◯-Monoid A → (cmp  (Π (list A)  (λ _ → F (list A ×⁺ A))))
 scan/contract {A} M L = 
@@ -723,125 +724,142 @@ scan/contract {A} M L =
 
 
 -- -- -- ⌊ suc n /2⌋ + ⌊ suc n /2⌋ ≡ ⌊ suc n /2⌋ + (⌊ suc n /2⌋ + 0)
--- scan/contract/clocked/cost : 
---   {A : tp⁺} →
---   (f :  cmp (Π (A ×⁺ A) (λ _ → F A))) → 
---   ((a b : val A) → IsBounded A (f (a , b)) (0 , 0)) → 
---   (e : val A) → 
---   (k : val nat) → 
---   (l : val (list A)) →
---   (h : val (meta⁺ (⌈log₂ length l ⌉ Nat.≤ k))) →  
---   IsBounded (Σ⁺ (list A ×⁺ A) λ (l' , _) → meta⁺ (length l ≡ length l')) 
---     (scan/contract/clocked f e k l h) 
---     (14 * length l , 4 * k)
--- -- idea behind proof: root-dominated
--- -- initially 2 * length l, recursive call is length l / 2
--- scan/contract/clocked/cost f p e zero [] h = ≤⁻-refl
--- scan/contract/clocked/cost f p e zero (x ∷ []) h = 
---   let open ≤⁻-Reasoning cost in 
---     begin 
---       bind (F _) (f (e , x)) (λ x₁ → ret triv) 
---     ≲⟨ bind-monoˡ-≤⁻ (λ x₁ → ret triv) (p e x) ⟩ 
---       step⋆ (0 , 0) 
---     ≲⟨ step⋆-mono-≤⁻ {c = (0 , 0)} {c' = (14 , 0)} (z≤n , z≤n) ⟩ 
---       step⋆ (14 , 0)   
---     ∎
--- scan/contract/clocked/cost f p e (suc k) l h = 
---     let open ≤⁻-Reasoning cost in 
---         begin
---           step (F _) (2 * ⌈ length l /2⌉ , 2) 
---           (bind (F _) (contract f l) λ (cs , p₁) → 
---             bind (F _) (scan/contract/clocked f e k cs _) λ ((rs , res), p₂) → 
---             step (F _) (2 * length l , 2) 
---             (bind (F _) (expand f l rs _) λ (es , p₃) → 
---               ret triv))
---         ≲⟨ step-monoʳ-≤⁻ (2 * ⌈ length l /2⌉ , 2) 
---           (bind-monoʳ-≤⁻ (contract f l) (λ (cs , p₁) → 
---             bind-monoʳ-≤⁻ (scan/contract/clocked f e k cs _) 
---               λ ((rs , res), p₂) → step-monoʳ-≤⁻ (2 * length l , 2) 
---                 (bind-monoˡ-≤⁻ (λ x → ret triv) (expand/bound f l rs _ p)))) ⟩
---           step (F _) (2 * ⌈ length l /2⌉ , 2) 
---           (bind (F _) (contract f l) λ (cs , p₁) → 
---             bind (F _) (scan/contract/clocked f e k cs _) λ ((rs , res), p₂) → 
---             step⋆ (2 * length l , 2)) 
---         ≲⟨ step-monoʳ-≤⁻ (2 * ⌈ length l /2⌉ , 2) 
---           (bind-monoʳ-≤⁻ (contract f l) 
---             (λ (cs , p₁) → bind-monoˡ-≤⁻ (λ x → step⋆ (2 * length l , 2)) 
---               (scan/contract/clocked/cost f p e k cs _))) ⟩
---           step (F _) (2 * ⌈ length l /2⌉ , 2) 
---           (bind (F _) (contract f l) λ (cs , p₁) → 
---             bind (F _) (step⋆ (14 * length cs , 4 * k)) λ _ → 
---             step⋆ (2 * length l , 2))
---         ≡⟨⟩ 
---           step (F _) (2 * ⌈ length l /2⌉ , 2) 
---           (bind (F _) (contract f l) λ (cs , p₁) → 
---             step⋆ ((14 * length cs) + (2 * length l) , 4 * k + 2)) 
---         ≲⟨ step-monoʳ-≤⁻ (2 * ⌈ length l /2⌉ , 2) 
---             (bind-monoʳ-≤⁻ (contract f l) (λ (cs , p₁) → 
---               step⋆-mono-≤⁻ (N.≤-reflexive (Eq.cong (λ c → (14 * c) + (2 * length l)) (Eq.sym p₁)) , N.≤-refl))) ⟩
---           step (F _) (2 * ⌈ length l /2⌉ , 2) 
---           (bind (F _) (contract f l) λ (cs , p₁) → 
---             step⋆ ((14 * ⌈ length l /2⌉) + (2 * length l) , 4 * k + 2))
---         ≲⟨ step-monoʳ-≤⁻ (2 * ⌈ length l /2⌉ , 2) 
---             (bind-monoˡ-≤⁻ (λ x → 
---               step⋆ ((14 * ⌈ length l /2⌉) + (2 * length l) , 4 * k + 2)) 
---               (contract/bound l f p)) ⟩
---           step⋆ (2 * ⌈ length l /2⌉ + ((14 * ⌈ length l /2⌉) + (2 * length l)) , 2 + (4 * k + 2))
---         ≲⟨ step⋆-mono-≤⁻ (N.≤-reflexive (Eq.sym 
---         (N.+-assoc (2 * ⌈ length l /2⌉) (14 * ⌈ length l /2⌉) (2 * length l))) , 
---         N.≤-reflexive (N.+-comm 2 (4 * k + 2))) ⟩
---           step⋆ ((2 * ⌈ length l /2⌉ + (14 * ⌈ length l /2⌉)) + (2 * length l) , (4 * k + 2) + 2)
---         ≲⟨ step⋆-mono-≤⁻ (N.≤-reflexive (Eq.cong (λ c → c + (2 * length l)) (Eq.sym (N.*-distribʳ-+ ⌈ length l /2⌉ 2 14))) , N.≤-reflexive (N.+-assoc (4 * k) 2 2)) ⟩
---           step⋆ ((16 * ⌈ length l /2⌉) + (2 * length l) , (4 * k + 4))
---         ≡⟨⟩
---           step⋆ (((8 * 2) * ⌈ length l /2⌉) + (2 * length l) , (4 * k + 4))
---         ≡⟨ Eq.cong (λ c → step⋆ (c + (2 * length l) , (4 * k + 4))) (N.*-assoc 8 2 ⌈ length l /2⌉) ⟩
---           step⋆ ((8 * (2 * ⌈ length l /2⌉)) + (2 * length l) , (4 * k + 4))
---         ≲⟨ step⋆-mono-≤⁻ (N.+-monoˡ-≤ ((2 * length l)) 
---             (N.*-monoʳ-≤ 8 (2*⌈n/2⌉≤1+n (length l))) , N.≤-refl) ⟩
---           step⋆ ((8 * (1 + length l)) + (2 * length l) , 4 * k + 4)
---         ≡⟨ Eq.cong (λ c → step⋆ (c + (2 * length l) , 4 * k + 4)) 
---             (N.*-distribˡ-+ 8 1 (length l)) ⟩
---           step⋆ ((8 + 8 * length l) + (2 * length l) , 4 * k + 4)
---         ≡⟨ Eq.cong (λ c → step⋆ (c , (4 * k + 4))) (N.+-assoc 8 (8 * length l) (2 * length l)) ⟩
---           step⋆ (8 + (8 * length l + 2 * length l) , 4 * k + 4)
---         ≡⟨ Eq.cong (λ c → step⋆ (8 + c , 4 * k + 4)) (Eq.sym (N.*-distribʳ-+ (length l) 8 2)) ⟩
---           step⋆ (8 + (10 * length l) , 4 * k + 4)
---         ≡⟨⟩
---           step⋆ ((4 * 2) + (10 * length l) , 4 * k + 4)
---         ≲⟨ step⋆-mono-≤⁻ (N.+-monoˡ-≤ (10 * length l) (N.*-monoʳ-≤ 4 minlength) , N.≤-refl) ⟩
---           step⋆ ((4 * length l) + (10 * length l) , 4 * k + 4)
---         ≡⟨ Eq.cong₂ (λ c₁ → λ c₂ → step⋆ (c₁ , c₂)) 
---           (Eq.sym (N.*-distribʳ-+ (length l) 4 10)) 
---           (Eq.sym (N.*-distribˡ-+ 4 k 1)) ⟩
---           step⋆ (14 * length l , 4 * (k + 1))
---         ≡⟨ Eq.cong (λ c₂ → step⋆ (length l + 13 * length l , 4 * c₂)) (N.+-comm k 1) ⟩
---           step⋆ (length l + 13 * length l , 4 * (1 + k))
---         ≡⟨⟩
---           step⋆ (length l + 13 * length l , 1 + k + 3 * (1 + k))
---         ≡⟨⟩
---           step⋆ (length l + 13 * length l , 1 + (k + 3 * (1 + k)))
---         ∎
---       where 
---         ⌈n/2⌉≤1+⌊n/2⌋ : (n : val nat) → ⌈ n /2⌉ Nat.≤ 1 + ⌊ n /2⌋
---         ⌈n/2⌉≤1+⌊n/2⌋ zero = z≤n
---         ⌈n/2⌉≤1+⌊n/2⌋ (suc n) = s≤s (N.⌊n/2⌋-mono (N.n≤1+n n))
+scan/contract/clocked/cost : 
+  {A : tp⁺} →
+  (f :  cmp (Π (A ×⁺ A) (λ _ → F A))) → 
+  ((a b : val A) → IsBounded A (f (a , b)) (0 , 0)) → 
+  (e : val A) → 
+  (k : val nat) → 
+  (l : val (list A)) →
+  (h : val (meta⁺ (⌈log₂ length l ⌉ Nat.≤ k))) →  
+  (q : val (meta⁺ (1 Nat.≤ k → (2 ^ (k ∸ 1) < length l)))) → 
+  IsBounded (Σ⁺ (list A ×⁺ A) λ (l' , _) → meta⁺ (length l ≡ length l')) 
+    (scan/contract/clocked f e k l h q) 
+    (14 * length l , 4 * k)
+-- idea behind proof: root-dominated
+-- initially 2 * length l, recursive call is length l / 2
+scan/contract/clocked/cost f p e zero [] h q = ≤⁻-refl
+scan/contract/clocked/cost f p e zero (x ∷ []) h q = 
+  let open ≤⁻-Reasoning cost in 
+    begin 
+      bind (F _) (f (e , x)) (λ x₁ → ret triv) 
+    ≲⟨ bind-monoˡ-≤⁻ (λ x₁ → ret triv) (p e x) ⟩ 
+      step⋆ (0 , 0) 
+    ≲⟨ step⋆-mono-≤⁻ {c = (0 , 0)} {c' = (14 , 0)} (z≤n , z≤n) ⟩ 
+      step⋆ (14 , 0)   
+    ∎
+scan/contract/clocked/cost f p e (suc k) l h q = 
+    let open ≤⁻-Reasoning cost in 
+        begin
+          step (F _) (2 * ⌈ length l /2⌉ , 2) 
+          (bind (F _) (contract f l) λ (cs , p₁) → 
+            bind (F _) (scan/contract/clocked f e k cs _ _) λ ((rs , res), p₂) → 
+            step (F _) (2 * length l , 2) 
+            (bind (F _) (expand f l rs _) λ (es , p₃) → 
+              ret triv))
+        ≲⟨ step-monoʳ-≤⁻ (2 * ⌈ length l /2⌉ , 2) 
+          (bind-monoʳ-≤⁻ (contract f l) (λ (cs , p₁) → 
+            bind-monoʳ-≤⁻ (scan/contract/clocked f e k cs _ _) 
+              λ ((rs , res), p₂) → step-monoʳ-≤⁻ (2 * length l , 2) 
+                (bind-monoˡ-≤⁻ (λ x → ret triv) (expand/bound f l rs _ p)))) ⟩
+          step (F _) (2 * ⌈ length l /2⌉ , 2) 
+          (bind (F _) (contract f l) λ (cs , p₁) → 
+            bind (F _) (scan/contract/clocked f e k cs _ _) λ ((rs , res), p₂) → 
+            step⋆ (2 * length l , 2)) 
+        ≲⟨ step-monoʳ-≤⁻ (2 * ⌈ length l /2⌉ , 2) 
+          (bind-monoʳ-≤⁻ (contract f l) 
+            (λ (cs , p₁) → bind-monoˡ-≤⁻ (λ x → step⋆ (2 * length l , 2)) 
+              (scan/contract/clocked/cost f p e k cs _ _))) ⟩
+          step (F _) (2 * ⌈ length l /2⌉ , 2) 
+          (bind (F _) (contract f l) λ (cs , p₁) → 
+            bind (F _) (step⋆ (14 * length cs , 4 * k)) λ _ → 
+            step⋆ (2 * length l , 2))
+        ≡⟨⟩ 
+          step (F _) (2 * ⌈ length l /2⌉ , 2) 
+          (bind (F _) (contract f l) λ (cs , p₁) → 
+            step⋆ ((14 * length cs) + (2 * length l) , 4 * k + 2)) 
+        ≲⟨ step-monoʳ-≤⁻ (2 * ⌈ length l /2⌉ , 2) 
+            (bind-monoʳ-≤⁻ (contract f l) (λ (cs , p₁) → 
+              step⋆-mono-≤⁻ (N.≤-reflexive (Eq.cong (λ c → (14 * c) + (2 * length l)) (Eq.sym p₁)) , N.≤-refl))) ⟩
+          step (F _) (2 * ⌈ length l /2⌉ , 2) 
+          (bind (F _) (contract f l) λ (cs , p₁) → 
+            step⋆ ((14 * ⌈ length l /2⌉) + (2 * length l) , 4 * k + 2))
+        ≲⟨ step-monoʳ-≤⁻ (2 * ⌈ length l /2⌉ , 2) 
+            (bind-monoˡ-≤⁻ (λ x → 
+              step⋆ ((14 * ⌈ length l /2⌉) + (2 * length l) , 4 * k + 2)) 
+              (contract/bound l f p)) ⟩
+          step⋆ (2 * ⌈ length l /2⌉ + ((14 * ⌈ length l /2⌉) + (2 * length l)) , 2 + (4 * k + 2))
+        ≲⟨ step⋆-mono-≤⁻ (N.≤-reflexive (Eq.sym 
+        (N.+-assoc (2 * ⌈ length l /2⌉) (14 * ⌈ length l /2⌉) (2 * length l))) , 
+        N.≤-reflexive (N.+-comm 2 (4 * k + 2))) ⟩
+          step⋆ ((2 * ⌈ length l /2⌉ + (14 * ⌈ length l /2⌉)) + (2 * length l) , (4 * k + 2) + 2)
+        ≲⟨ step⋆-mono-≤⁻ (N.≤-reflexive (Eq.cong (λ c → c + (2 * length l)) (Eq.sym (N.*-distribʳ-+ ⌈ length l /2⌉ 2 14))) , N.≤-reflexive (N.+-assoc (4 * k) 2 2)) ⟩
+          step⋆ ((16 * ⌈ length l /2⌉) + (2 * length l) , (4 * k + 4))
+        ≡⟨⟩
+          step⋆ (((8 * 2) * ⌈ length l /2⌉) + (2 * length l) , (4 * k + 4))
+        ≡⟨ Eq.cong (λ c → step⋆ (c + (2 * length l) , (4 * k + 4))) (N.*-assoc 8 2 ⌈ length l /2⌉) ⟩
+          step⋆ ((8 * (2 * ⌈ length l /2⌉)) + (2 * length l) , (4 * k + 4))
+        ≲⟨ step⋆-mono-≤⁻ (N.+-monoˡ-≤ ((2 * length l)) 
+            (N.*-monoʳ-≤ 8 (2*⌈n/2⌉≤1+n (length l))) , N.≤-refl) ⟩
+          step⋆ ((8 * (1 + length l)) + (2 * length l) , 4 * k + 4)
+        ≡⟨ Eq.cong (λ c → step⋆ (c + (2 * length l) , 4 * k + 4)) 
+            (N.*-distribˡ-+ 8 1 (length l)) ⟩
+          step⋆ ((8 + 8 * length l) + (2 * length l) , 4 * k + 4)
+        ≡⟨ Eq.cong (λ c → step⋆ (c , (4 * k + 4))) (N.+-assoc 8 (8 * length l) (2 * length l)) ⟩
+          step⋆ (8 + (8 * length l + 2 * length l) , 4 * k + 4)
+        ≡⟨ Eq.cong (λ c → step⋆ (8 + c , 4 * k + 4)) (Eq.sym (N.*-distribʳ-+ (length l) 8 2)) ⟩
+          step⋆ (8 + (10 * length l) , 4 * k + 4)
+        ≡⟨⟩
+          step⋆ ((4 * 2) + (10 * length l) , 4 * k + 4)
+        ≲⟨ step⋆-mono-≤⁻ (N.+-monoˡ-≤ (10 * length l) (N.*-monoʳ-≤ 4 minlength) , N.≤-refl) ⟩
+          step⋆ ((4 * length l) + (10 * length l) , 4 * k + 4)
+        ≡⟨ Eq.cong₂ (λ c₁ → λ c₂ → step⋆ (c₁ , c₂)) 
+          (Eq.sym (N.*-distribʳ-+ (length l) 4 10)) 
+          (Eq.sym (N.*-distribˡ-+ 4 k 1)) ⟩
+          step⋆ (14 * length l , 4 * (k + 1))
+        ≡⟨ Eq.cong (λ c₂ → step⋆ (length l + 13 * length l , 4 * c₂)) (N.+-comm k 1) ⟩
+          step⋆ (length l + 13 * length l , 4 * (1 + k))
+        ≡⟨⟩
+          step⋆ (length l + 13 * length l , 1 + k + 3 * (1 + k))
+        ≡⟨⟩
+          step⋆ (length l + 13 * length l , 1 + (k + 3 * (1 + k)))
+        ∎
+      where 
+        ⌈n/2⌉≤1+⌊n/2⌋ : (n : val nat) → ⌈ n /2⌉ Nat.≤ 1 + ⌊ n /2⌋
+        ⌈n/2⌉≤1+⌊n/2⌋ zero = z≤n
+        ⌈n/2⌉≤1+⌊n/2⌋ (suc n) = s≤s (N.⌊n/2⌋-mono (N.n≤1+n n))
 
---         2*⌈n/2⌉≤1+n : (n : val nat) → 2 * ⌈ n /2⌉ Nat.≤ 1 + n
---         2*⌈n/2⌉≤1+n n = 
---           let open N.≤-Reasoning in 
---             begin 
---               ⌈ n /2⌉ + (⌈ n /2⌉ +  0)
---             ≤⟨ N.+-monoˡ-≤ ((⌈ n /2⌉ +  0)) (⌈n/2⌉≤1+⌊n/2⌋ n) ⟩ 
---               1 + ⌊ n /2⌋ + (⌈ n /2⌉ + 0) 
---             ≡⟨ Eq.cong (λ c → 1 + ⌊ n /2⌋ + c) (N.+-identityʳ ⌈ n /2⌉) ⟩ 
---               1 + ⌊ n /2⌋ + ⌈ n /2⌉ 
---             ≡⟨ Eq.cong (λ c → 1 + c) (N.⌊n/2⌋+⌈n/2⌉≡n n) ⟩ 
---               1 + n 
---             ∎ 
-        
---         minlength : 2 Nat.≤ length l 
---         minlength = {!  2 ^ (0 ∸ 1) !}
+        2*⌈n/2⌉≤1+n : (n : val nat) → 2 * ⌈ n /2⌉ Nat.≤ 1 + n
+        2*⌈n/2⌉≤1+n n = 
+          let open N.≤-Reasoning in 
+            begin 
+              ⌈ n /2⌉ + (⌈ n /2⌉ +  0)
+            ≤⟨ N.+-monoˡ-≤ ((⌈ n /2⌉ +  0)) (⌈n/2⌉≤1+⌊n/2⌋ n) ⟩ 
+              1 + ⌊ n /2⌋ + (⌈ n /2⌉ + 0) 
+            ≡⟨ Eq.cong (λ c → 1 + ⌊ n /2⌋ + c) (N.+-identityʳ ⌈ n /2⌉) ⟩ 
+              1 + ⌊ n /2⌋ + ⌈ n /2⌉ 
+            ≡⟨ Eq.cong (λ c → 1 + c) (N.⌊n/2⌋+⌈n/2⌉≡n n) ⟩ 
+              1 + n 
+            ∎ 
+        q' : (2 ^ (suc k ∸ 1) < length l)
+        q' = q (s≤s z≤n) 
+
+        q₂ : 1 Nat.≤ 2 ^ (suc k ∸ 1)
+        q₂ = N.m^n>0 2 k
+
+
+        minlength : 2 Nat.≤ length l 
+        minlength = 
+          let open N.≤-Reasoning in 
+            begin 
+              2
+            ≡⟨⟩ 
+              1 + 1
+            ≤⟨ N.+-monoʳ-≤ 1 q₂ ⟩ 
+              1 + 2 ^ (suc k ∸ 1) 
+            ≤⟨ q' ⟩ 
+              length l
+            ∎
 
 -- we have (h : val (meta⁺ (⌈log₂ length l ⌉ Nat.≤ k)))
 -- we'll have a bunch of 1s 
