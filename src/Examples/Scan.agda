@@ -72,10 +72,6 @@ scan/bruteforce M L = scan/bruteforce/help (◯-Monoid.f M) (◯-Monoid.identity
 +-0-Monoid .◯-Monoid.isMonoid .◯-isMonoid.assoc {a} {b} {c} u = Eq.cong ret (N.+-assoc a b c)
 
 
--- scan/bruteforce/example : val (U (F (meta⁺ (Σ (Calf.Data.List.List ℕ) (λ x → ℕ)))))
--- scan/bruteforce/example = scan/bruteforce +-0-Monoid ( 1 ∷ 2 ∷ [] )
-
-
 scan/accum-independent :  (l : val (list A)) → 
                           (f :  cmp (Π (A ×⁺ A) (λ _ → F A))) → 
                           (a : val A) → 
@@ -418,7 +414,8 @@ scan/divconq/clocked/cost {A} f p e (suc k) l h =
               step⋆ ((length l₂ + (length l₁ + length l₂) , 2)))
   ≡⟨⟩ 
    bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-      step⋆ ( (2 * k + 2) * (length l₁) + (2 * k + 2) * (length l₂) + (length l₂ + (length l₁ + length l₂)) , (2 * k ⊔ 2 * k) + 2 ))
+      step⋆ ( (2 * k + 2) * (length l₁) + (2 * k + 2) * (length l₂) + (length l₂ + (length l₁ + length l₂)) , 
+      (2 * k ⊔ 2 * k) + 2 ))
   ≡⟨ Eq.cong (bind (F _) (split A l)) (funext (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
       Eq.cong step⋆ 
         (Eq.cong₂ _,_ (Eq.sym 
@@ -449,13 +446,15 @@ scan/divconq/clocked/cost {A} f p e (suc k) l h =
     bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
     step⋆ ( (2 * k + 2) * (length (l₁ ++ l₂)) + (0 + length l₂) + length (l₁ ++ l₂)  , 2 * k + 2 )) 
   ≲⟨ bind-monoʳ-≤⁻ (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-    step⋆-mono-≤⁻ {c = ((2 * k + 2) * (length (l₁ ++ l₂)) + (0 + length l₂) + length (l₁ ++ l₂) , 2 * k + 2)}
-    {c' = ((2 * k + 2) * (length (l₁ ++ l₂)) + (length l₁ + length l₂) + length (l₁ ++ l₂) , 2 * k + 2)} 
-    (N.+-monoˡ-≤ (length (l₁ ++ l₂)) (N.+-monoʳ-≤ ((2 * k + 2) * (length (l₁ ++ l₂))) (N.+-mono-≤ z≤n N.≤-refl))  , N.≤-refl)) ⟩ 
+    step⋆-mono-≤⁻  (N.+-monoˡ-≤ (length (l₁ ++ l₂)) 
+    (N.+-monoʳ-≤ ((2 * k + 2) * (length (l₁ ++ l₂))) (N.+-mono-≤ z≤n N.≤-refl)) 
+     , N.≤-refl)) ⟩ 
     bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
     step⋆ ( (2 * k + 2) * (length (l₁ ++ l₂)) + (length l₁ + length l₂) + length (l₁ ++ l₂)  , 2 * k + 2 )) 
   ≲⟨ bind-monoʳ-≤⁻ (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
-      step⋆-mono-≤⁻ (N.≤-reflexive (Eq.cong (λ c → (2 * k + 2) * (length (l₁ ++ l₂)) + c + length (l₁ ++ l₂)) (Eq.sym (length-++ l₁))) , N.≤-refl)) ⟩ 
+      step⋆-mono-≤⁻ (N.≤-reflexive 
+      (Eq.cong (λ c → (2 * k + 2) * (length (l₁ ++ l₂)) + c + length (l₁ ++ l₂)) 
+      (Eq.sym (length-++ l₁))) , N.≤-refl)) ⟩ 
     bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
     step⋆ ( (2 * k + 2) * (length (l₁ ++ l₂)) + length (l₁ ++ l₂) + length (l₁ ++ l₂)  , 2 * k + 2 )) 
   ≲⟨ bind-monoʳ-≤⁻ (split A l) 
@@ -463,9 +462,8 @@ scan/divconq/clocked/cost {A} f p e (suc k) l h =
       step⋆-mono-≤⁻ 
         {c = ( (2 * k + 2) * (length (l₁ ++ l₂)) + length (l₁ ++ l₂) + length (l₁ ++ l₂) , 2 * k + 2 )}
         {c' = ( (2 * k + 2) * (length l) + length (l₁ ++ l₂) + length (l₁ ++ l₂) , 2 * k + 2 )} 
-          ( N.≤-reflexive (Eq.cong (λ c →  ((2 * k + 2) * c) + length (l₁ ++ l₂) + length (l₁ ++ l₂)) (↭-length (↭-sym l↭l₁++l₂)))  , N.≤-refl))  ⟩ 
-            -- N.+-monoˡ-≤ (length l₁) (N.+-monoˡ-≤ (length l₂) 
-            -- (N.*-monoʳ-≤ (k + 1) (N.≤-reflexive (↭-length (↭-sym l↭l₁++l₂)))))
+          ( N.≤-reflexive (Eq.cong (λ c →  ((2 * k + 2) * c) + length (l₁ ++ l₂) + length (l₁ ++ l₂)) 
+          (↭-length (↭-sym l↭l₁++l₂)))  , N.≤-refl))  ⟩ 
     bind (F _) (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
     step⋆ ( (2 * k + 2) * (length l) + length (l₁ ++ l₂) + length (l₁ ++ l₂) , 2 * k + 2 )) 
   ≲⟨ bind-monoʳ-≤⁻ (split A l) (λ ((l₁ , l₂) , length₁ , length₂ , l↭l₁++l₂) → 
@@ -490,7 +488,8 @@ scan/divconq/clocked/cost {A} f p e (suc k) l h =
     step⋆ ( ((2 * k + 2) + 1) * (length l) + length l , 2 * k + 2 ) 
   ≲⟨ step⋆-mono-≤⁻ (N.≤-reflexive (N.+-comm (((2 * k + 2) + 1) * (length l)) (length l)) , N.≤-refl) ⟩ 
     step⋆ ( length l +  ((2 * k + 2) + 1) * (length l) , 2 * k + 2 ) 
-  ≲⟨ step⋆-mono-≤⁻ (N.≤-reflexive (Eq.cong (λ c → length l + (c + 1) * length l) (arithmetic k)) , N.≤-reflexive (arithmetic k)) ⟩ 
+  ≲⟨ step⋆-mono-≤⁻ (N.≤-reflexive (Eq.cong (λ c → length l + (c + 1) * length l) (arithmetic k)) , 
+    N.≤-reflexive (arithmetic k)) ⟩ 
     step⋆ (length l + ((1 + (k + suc (k + zero))) + 1) * length l , suc (k + suc (k + zero))) 
   ≡⟨ Eq.cong (λ c → step⋆ (length l + c * length l , suc (k + suc (k + zero)))) 
     (N.+-comm (1 + (k + suc (k + zero))) 1) ⟩ 
@@ -532,49 +531,22 @@ scan/divconq/cost :
 scan/divconq/cost m l p = scan/divconq/clocked/cost (◯-Monoid.f m) p (◯-Monoid.identity m) ⌈log₂ length l ⌉ l N.≤-refl
 
 
-
--- scan/example : cmp (Π (list nat)  (λ _ → F (list nat ×⁺ nat)))
--- scan/example l = scan/bruteforce +-0-Monoid l 
-
--- scan/example' : cmp (Π (list nat)  (λ _ → F (list nat ×⁺ nat)))
--- scan/example' l = scan/divconq +-0-Monoid l 
+-- correctness proof, unfinished
+-- scan/divconq/correct : (M : ◯-Monoid A) → ◯ (scan/divconq M ≡ scan/bruteforce M)
+-- scan/divconq/correct M = {!  !}
 
 
--- ex = {! scan/example' (1 ∷ 2 ∷ 5 ∷ []) !} 
-
-
-
--- -- scan/divconq/correct : (M : ◯-Monoid A) → ◯ (scan/divconq M ≡ scan/bruteforce M)
--- -- scan/divconq/correct M = {!  !}
-
-
-  -- fun contract i =
-  -- if i = n div 2 then nth S (2*i)
-  -- else f (nth S (2*i), nth S (2*i + 1))
-
--- contract' : 
---   {A : tp⁺} → 
---   (l : val (list A)) → 
---   (i : Fin (⌈ (length l) /2⌉)) → 
---   (f : cmp (Π (A ×⁺ A) (λ _ → F A))) →
---   cmp (F A)
--- contract' {A} l i f with {! fromℕ ⌈ (length l) /2⌉  !}
--- ... | foo = {!   !} -- ≟
 
 contract :  {A : tp⁺} → 
             cmp (Π (U (Π (A ×⁺ A) (λ _ → F A))) λ _ → 
                  Π (list A) (λ l → 
                  F (Σ⁺ (list A) λ l' → meta⁺ ( ⌈ length l /2⌉ ≡ length l' ) )))
-                 -- should be ⌈ length l / 2 ⌉, but this doesnt work for some reason  
 contract f [] = ret ([] , Eq.refl)
-contract f (x ∷ []) = ret (x ∷ [] , refl) -- impossible to do the proofs without ceil 
+contract f (x ∷ []) = ret (x ∷ [] , refl) 
 contract f (x ∷ y ∷ l) = 
   bind (F _) (f (x , y)) (λ x₁ → 
     bind (F _) (contract f l) (λ (l' , p) → 
       ret (x₁ ∷ l' , Eq.cong suc p)) ) 
-
-                 
--- contract should include a proof that this is half the length? 
 
 contract/bound : {A : tp⁺} → 
                 (l : val (list A)) → 
@@ -595,14 +567,13 @@ contract/bound (x ∷ x₁ ∷ l) f p =
       step⋆ (0 , 0) 
     ∎ 
 
--- -- expand needs to take in a proof that length l₁ ≡ ⌈ length l₂ / 2 ⌉ 
 
 expand : {A : tp⁺} → 
          cmp (Π (U (Π (A ×⁺ A) (λ _ → F A))) λ _ → 
               Π (list A) (λ l₂ → 
               Π (list A) (λ l₁ → 
               Π (meta⁺ ( length l₁ ≡ ⌈ length l₂ /2⌉ )) (λ p → 
-              F (Σ⁺ (list A) λ l' → meta⁺ (  length l₂  ≡ length l' ) ))) )) -- not sure if this is the correct proof 
+              F (Σ⁺ (list A) λ l' → meta⁺ (  length l₂  ≡ length l' ) ))) )) 
 expand f [] [] p = ret ( [] , refl)
 expand f (_ ∷ []) (x ∷ [])  p = ret ( x ∷ [] , refl )
 expand f (x ∷ x₁ ∷ l₂) (r ∷ l₁) p = 
@@ -722,8 +693,6 @@ scan/contract {A} M L =
         (λ (L , p) → ret L)
 
 
-
--- -- -- ⌊ suc n /2⌋ + ⌊ suc n /2⌋ ≡ ⌊ suc n /2⌋ + (⌊ suc n /2⌋ + 0)
 scan/contract/clocked/cost : 
   {A : tp⁺} →
   (f :  cmp (Π (A ×⁺ A) (λ _ → F A))) → 
@@ -861,28 +830,3 @@ scan/contract/clocked/cost f p e (suc k) l h q =
               length l
             ∎
 
--- we have (h : val (meta⁺ (⌈log₂ length l ⌉ Nat.≤ k)))
--- we'll have a bunch of 1s 
--- WTS 1 ≤ length l
--- -- SML code for scan 
--- -- fun scan _ b [] = ([], b)
--- --     | scan f b [x] = ([b], f (b, x))
--- --     | scan f b s =
--- --         let
--- --           exception Mismatch
--- --           fun contract [] = []
--- --             | contract [x] = [x]
--- --             | contract (x::y::z) = f (x, y)::contract z
--- --           val (rs, result) = scan f b (contract s)
--- -- whats the work of expand? is it length of the final list, or how many times we compute f 
--- -- based on the book impl it should be final length, since its structured as a tabulate 
--- -- scan preserves length 
--- -- contract l gives l' where ceil (|l| / 2) = |l'| 
--- -- |rs| = ceil (|l| / 2)
--- -- work of expand = length of left list 
--- --           fun expand ([], []) = []
--- --             | expand ([r], [_]) = [r]
--- --             | expand (r::rs, x::_::xs) = r::f (r, x)::expand (rs, xs)
--- --             | expand _ = raise Mismatch
--- --         in (expand (rs, s), result)
--- --         end
