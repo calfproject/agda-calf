@@ -39,6 +39,9 @@ open import Function
 import Data.Nat.Properties as N
 open import Data.Nat.Square
 open import Data.Nat.Log2
+open import Tactic.MonoidSolver using (solve; solve-macro)
+
+open import Data.Nat.Tactic.RingSolver
 
 
 record ◯-isMonoid {A : tp⁺} (f : cmp (Π (A ×⁺ A) (λ _ → F A))) (ε : val A) : Set where 
@@ -654,31 +657,41 @@ scan/contract/clocked {A} f e (suc k) l p q =
           (2 ^ (n ∸ 1)  < length l₂)
     q' l₂ length₂ (suc n') q'' p' = 
       N.≤-trans (N.*-cancelˡ-< 2 (2 ^ n') ⌈ length l /2⌉ 
-      (N.≤-trans (q'' (s≤s z≤n)) (n≤2*⌈n/2⌉ (length l)))) (N.≤-reflexive length₂)
-    -- originally wrote it in this style, which one is better? 
-      -- let open N.≤-Reasoning in
-      --   begin
-      --     1 + 2 ^ n'
-      --   ≤⟨ q-elim n' (q'' (s≤s z≤n)) ⟩
-      --     ⌈ length l /2⌉
-      --   ≡⟨ length₂ ⟩
-      --     length l₂
-      --   ∎
-      --   where 
-      --     q-elim : (n' : val nat) → (2 ^ (suc n') < length l) → (2 ^ n' < ⌈ length l /2⌉)
-      --     q-elim n' q-orig = 
-      --       let
-      --           p₁ : 2 * 2 ^ n' < 2 * ⌈ length l /2⌉
-      --           p₁ = N.≤-trans q-orig (n≤2*⌈n/2⌉ (length l))
-      --         in N.*-cancelˡ-< 2 (2 ^ n') ⌈ length l /2⌉ p₁
+      (N.≤-trans (q'' (s≤s z≤n)) (n≤2*⌈n/2⌉ (length l)))) (N.≤-reflexive length₂) 
 
 
-log₂-mono-< : ∀ {m n} → m < n → ⌈log₂ m ⌉ < ⌈log₂ n ⌉
-log₂-mono-< p = log₂-mono {!   !}
 
-2^⌈log₂n⌉∸1<n : ∀ n → (1 Nat.≤ ⌈log₂ n ⌉ → 2 ^ (⌈log₂ n ⌉ ∸ 1) < n) 
-2^⌈log₂n⌉∸1<n (2+ zero) p = N.≤-refl
-2^⌈log₂n⌉∸1<n (2+ (suc n)) p = {!   !}
+
+2^⌈log₂n⌉∸1<n : ∀ n → (1 Nat.≤ ⌈log₂ n ⌉) → 2 ^ (⌈log₂ n ⌉ ∸ 1) < n 
+2^⌈log₂n⌉∸1<n n p = 
+        lemma p 
+      where 
+        open import Data.Nat.Logarithm.Core
+        open import Induction.WellFounded using (Acc; acc)
+
+        lemma : ∀ {n acc} (p : 1 Nat.≤ ⌈log₂ n ⌉) → 2 ^ (⌈log2⌉ n acc ∸ 1) < n
+        lemma {2+ zero} {acc rs} p = N.≤-refl
+        lemma {2+ (suc zero)} {acc rs} p = s≤s {!   !}
+        lemma {2+ (2+ n)} {acc rs} p = s≤s {!   !}
+        -- lemma {2+ (suc zero)} {acc rs} (s≤s z≤n) = s≤s {!   !}
+        -- lemma {2+ (2+ n)} {acc rs} (s≤s z≤n) = s≤s {!   !}
+          -- let open N.≤-Reasoning in
+          --   begin
+          --     {!   !}
+          --   ≤⟨ {!  !} ⟩ 
+          --     {!   !} 
+          --   ≤⟨ {!   !} ⟩ 
+          --     {!   !} 
+          --   ≤⟨ {!   !} ⟩ 
+          --     {!   !} 
+          --   ≤⟨ {!   !} ⟩ 
+          --     {!   !} 
+          --   ≤⟨ {!   !} ⟩ 
+          --     {!   !}
+          --   ∎
+        lemma' : ∀ {n acc} {{p : NonZero n}} → 2 ^ (⌈log2⌉ n acc) Nat.≤ n
+        lemma' {suc zero} {acc rs} = s≤s z≤n
+        lemma' {2+ n} {acc rs} = {! 2 ^ ⌈log2⌉ (2 + n) (acc rs)  !}
   -- let 
   --     -- p₁ : ⌈log₂ 2 + n ⌉ ∸ 1 < ⌈log₂ 2 + n ⌉ 
   --     p₁ : ⌈log₂ 2 ^ (⌈log₂ 2 + n ⌉ ∸ 1) ⌉ < ⌈log₂ 2 + n ⌉
@@ -717,7 +730,7 @@ scan/contract/clocked/cost f p e zero (x ∷ []) h q =
     ≲⟨ step⋆-mono-≤⁻ {c = (0 , 0)} {c' = (14 , 0)} (z≤n , z≤n) ⟩ 
       step⋆ (14 , 0)   
     ∎
-scan/contract/clocked/cost f p e (suc k) l h q = 
+scan/contract/clocked/cost f p e (suc k) l _ q = 
     let open ≤⁻-Reasoning cost in 
         begin
           step (F _) (2 * ⌈ length l /2⌉ , 2) 
@@ -830,3 +843,9 @@ scan/contract/clocked/cost f p e (suc k) l h q =
               length l
             ∎
 
+scan/contract/cost : 
+  (m : ◯-Monoid A) → 
+  (l : val (list A)) →
+  ((a b : val A) → IsBounded A ( (◯-Monoid.f) m (a , b)) (0 , 0)) → 
+  IsBounded (list A ×⁺ A) (scan/contract m l) (14 * length l , 4 * ⌈log₂ length l ⌉)
+scan/contract/cost m l p = scan/contract/clocked/cost (◯-Monoid.f m) p (◯-Monoid.identity m) ⌈log₂ length l ⌉ l N.≤-refl (2^⌈log₂n⌉∸1<n (length l)) 
