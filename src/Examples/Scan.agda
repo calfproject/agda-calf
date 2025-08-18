@@ -626,15 +626,16 @@ scan/contract/clocked :  {A : tp⁺} →
                           Π nat (λ k → 
                           Π (list A) (λ l → 
                           Π (meta⁺ (⌈log₂ length l ⌉ Nat.≤ k)) (λ p → 
-                          Π (meta⁺ (1 Nat.≤ k → (2 ^ (k ∸ 1) < length l))) (λ q → 
-                          F (Σ⁺ (list A ×⁺ A) λ (l' , _) → meta⁺ (length l ≡ length l'))))))))
-scan/contract/clocked f e zero [] p q = ret ( ([] , e) , refl)
-scan/contract/clocked f e zero (x ∷ []) p q = bind (F _) (f (e , x)) (λ x₁ → ret ((e ∷ [] , x₁ ) , refl)) 
+                          F (Σ⁺ (list A ×⁺ A) λ (l' , _) → meta⁺ (length l ≡ length l')))))))
+scan/contract/clocked f e zero [] p = ret ( ([] , e) , refl)
+scan/contract/clocked f e zero (x ∷ []) p = bind (F _) (f (e , x)) (λ x₁ → ret ((e ∷ [] , x₁ ) , refl)) 
+scan/contract/clocked f e (suc k) [] p = ret ( ([] , e) , refl)
+scan/contract/clocked f e (suc k) (x ∷ []) p = bind (F _) (f (e , x)) (λ x₁ → ret ((e ∷ [] , x₁ ) , refl)) 
 -- note : I changed the bounds of the call to contract and expand to reflect that we'll rewrite them in terms of tabulates in the future. 
-scan/contract/clocked {A} f e (suc k) l p q = 
+scan/contract/clocked {A} f e (suc k) l@(x ∷ y ∷ _) p = 
   step (F _) (2 * ⌈ length l /2⌉ , 2) -- since we need to do 2 lookups 
     (bind (F _) (contract f l) λ (cs , p₁) → 
-      bind (F _) (scan/contract/clocked f e k cs (h cs (Eq.sym p₁)) (q' cs p₁ k q)) λ ((rs , res), p₂) → 
+      bind (F _) (scan/contract/clocked f e k cs (h cs (Eq.sym p₁))) λ ((rs , res), p₂) → 
       step (F _) (2 * length l , 2) -- since we need to do max of 2 lookups
       (bind (F _) (expand f l rs (Eq.sym (Eq.trans p₁ p₂))) λ (es , p₃) → 
         ret ((es , res) , p₃)))
@@ -649,60 +650,13 @@ scan/contract/clocked {A} f e (suc k) l p q =
         ≤⟨ log₂-suc (length l) p ⟩
           k
         ∎)
-    q' :  (l₂ : val (list A)) →  
-          (length₂ : ⌈ length l /2⌉ ≡ length l₂) → 
-          (n : val nat) → 
-          (1 Nat.≤ suc n → (2 ^ (suc n ∸ 1) < length l)) → 
-          (1 Nat.≤ n) → 
-          (2 ^ (n ∸ 1)  < length l₂)
-    q' l₂ length₂ (suc n') q'' p' = 
-      N.≤-trans (N.*-cancelˡ-< 2 (2 ^ n') ⌈ length l /2⌉ 
-      (N.≤-trans (q'' (s≤s z≤n)) (n≤2*⌈n/2⌉ (length l)))) (N.≤-reflexive length₂) 
 
 
-
-
-2^⌈log₂n⌉∸1<n : ∀ n → (1 Nat.≤ ⌈log₂ n ⌉) → 2 ^ (⌈log₂ n ⌉ ∸ 1) < n 
-2^⌈log₂n⌉∸1<n n p = 
-        lemma p 
-      where 
-        open import Data.Nat.Logarithm.Core
-        open import Induction.WellFounded using (Acc; acc)
-
-        lemma : ∀ {n acc} (p : 1 Nat.≤ ⌈log₂ n ⌉) → 2 ^ (⌈log2⌉ n acc ∸ 1) < n
-        lemma {2+ zero} {acc rs} p = N.≤-refl
-        lemma {2+ (suc zero)} {acc rs} p = s≤s {!   !}
-        lemma {2+ (2+ n)} {acc rs} p = s≤s {!   !}
-        -- lemma {2+ (suc zero)} {acc rs} (s≤s z≤n) = s≤s {!   !}
-        -- lemma {2+ (2+ n)} {acc rs} (s≤s z≤n) = s≤s {!   !}
-          -- let open N.≤-Reasoning in
-          --   begin
-          --     {!   !}
-          --   ≤⟨ {!  !} ⟩ 
-          --     {!   !} 
-          --   ≤⟨ {!   !} ⟩ 
-          --     {!   !} 
-          --   ≤⟨ {!   !} ⟩ 
-          --     {!   !} 
-          --   ≤⟨ {!   !} ⟩ 
-          --     {!   !} 
-          --   ≤⟨ {!   !} ⟩ 
-          --     {!   !}
-          --   ∎
-        lemma' : ∀ {n acc} {{p : NonZero n}} → 2 ^ (⌈log2⌉ n acc) Nat.≤ n
-        lemma' {suc zero} {acc rs} = s≤s z≤n
-        lemma' {2+ n} {acc rs} = {! 2 ^ ⌈log2⌉ (2 + n) (acc rs)  !}
-  -- let 
-  --     -- p₁ : ⌈log₂ 2 + n ⌉ ∸ 1 < ⌈log₂ 2 + n ⌉ 
-  --     p₁ : ⌈log₂ 2 ^ (⌈log₂ 2 + n ⌉ ∸ 1) ⌉ < ⌈log₂ 2 + n ⌉
-  --     -- p₁ = log₂-mono (2^⌈log₂n⌉∸1<n (2 + n) (s≤s z≤n))  
-  --     p₁ = log₂-mono (2^⌈log₂n⌉∸1<n {! 2 + n  !} {!   !})
-  --   in {!   !}
 
 scan/contract : ◯-Monoid A → (cmp  (Π (list A)  (λ _ → F (list A ×⁺ A))))
 scan/contract {A} M L = 
     bind (F _) 
-      (scan/contract/clocked (◯-Monoid.f M) (◯-Monoid.identity M) ⌈log₂ length L ⌉ L N.≤-refl {!   !}) 
+      (scan/contract/clocked (◯-Monoid.f M) (◯-Monoid.identity M) ⌈log₂ length L ⌉ L N.≤-refl) 
         (λ (L , p) → ret L)
 
 
@@ -714,14 +668,13 @@ scan/contract/clocked/cost :
   (k : val nat) → 
   (l : val (list A)) →
   (h : val (meta⁺ (⌈log₂ length l ⌉ Nat.≤ k))) →  
-  (q : val (meta⁺ (1 Nat.≤ k → (2 ^ (k ∸ 1) < length l)))) → 
   IsBounded (Σ⁺ (list A ×⁺ A) λ (l' , _) → meta⁺ (length l ≡ length l')) 
-    (scan/contract/clocked f e k l h q) 
+    (scan/contract/clocked f e k l h) 
     (14 * length l , 4 * k)
 -- idea behind proof: root-dominated
 -- initially 2 * length l, recursive call is length l / 2
-scan/contract/clocked/cost f p e zero [] h q = ≤⁻-refl
-scan/contract/clocked/cost f p e zero (x ∷ []) h q = 
+scan/contract/clocked/cost f p e zero [] h = ≤⁻-refl
+scan/contract/clocked/cost f p e zero (x ∷ []) h = 
   let open ≤⁻-Reasoning cost in 
     begin 
       bind (F _) (f (e , x)) (λ x₁ → ret triv) 
@@ -730,28 +683,39 @@ scan/contract/clocked/cost f p e zero (x ∷ []) h q =
     ≲⟨ step⋆-mono-≤⁻ {c = (0 , 0)} {c' = (14 , 0)} (z≤n , z≤n) ⟩ 
       step⋆ (14 , 0)   
     ∎
-scan/contract/clocked/cost f p e (suc k) l _ q = 
+scan/contract/clocked/cost f p e (suc k) [] h = 
+    step⋆-mono-≤⁻ {c' = (0 , 4 * suc k)} (z≤n ,  z≤n) 
+scan/contract/clocked/cost f p e (suc k) (x ∷ []) h = 
+  let open ≤⁻-Reasoning cost in 
+    begin 
+      bind (F _) (f (e , x)) (λ x₁ → ret triv) 
+    ≲⟨ bind-monoˡ-≤⁻ (λ x₁ → ret triv) (p e x) ⟩ 
+      step⋆ (0 , 0) 
+    ≲⟨ step⋆-mono-≤⁻ {c = (0 , 0)} {c' = (14 , 4 * suc k)} (z≤n , z≤n) ⟩ 
+      step⋆ (14 , 4 * suc k)   
+    ∎
+scan/contract/clocked/cost {A} f p e (suc k) l@(x ∷ y ∷ _) h = 
     let open ≤⁻-Reasoning cost in 
         begin
           step (F _) (2 * ⌈ length l /2⌉ , 2) 
           (bind (F _) (contract f l) λ (cs , p₁) → 
-            bind (F _) (scan/contract/clocked f e k cs _ _) λ ((rs , res), p₂) → 
+            bind (F _) (scan/contract/clocked f e k cs (h' cs (Eq.sym p₁))) λ ((rs , res), p₂) → 
             step (F _) (2 * length l , 2) 
-            (bind (F _) (expand f l rs _) λ (es , p₃) → 
+            (bind (F _) (expand f l rs (Eq.sym (Eq.trans p₁ p₂))) λ (es , p₃) → 
               ret triv))
         ≲⟨ step-monoʳ-≤⁻ (2 * ⌈ length l /2⌉ , 2) 
           (bind-monoʳ-≤⁻ (contract f l) (λ (cs , p₁) → 
-            bind-monoʳ-≤⁻ (scan/contract/clocked f e k cs _ _) 
+            bind-monoʳ-≤⁻ (scan/contract/clocked f e k cs (h' cs (Eq.sym p₁))) 
               λ ((rs , res), p₂) → step-monoʳ-≤⁻ (2 * length l , 2) 
-                (bind-monoˡ-≤⁻ (λ x → ret triv) (expand/bound f l rs _ p)))) ⟩
+                (bind-monoˡ-≤⁻ (λ x → ret triv) (expand/bound f l rs (Eq.sym (Eq.trans p₁ p₂)) p)))) ⟩
           step (F _) (2 * ⌈ length l /2⌉ , 2) 
           (bind (F _) (contract f l) λ (cs , p₁) → 
-            bind (F _) (scan/contract/clocked f e k cs _ _) λ ((rs , res), p₂) → 
+            bind (F _) (scan/contract/clocked f e k cs (h' cs (Eq.sym p₁))) λ ((rs , res), p₂) → 
             step⋆ (2 * length l , 2)) 
         ≲⟨ step-monoʳ-≤⁻ (2 * ⌈ length l /2⌉ , 2) 
           (bind-monoʳ-≤⁻ (contract f l) 
             (λ (cs , p₁) → bind-monoˡ-≤⁻ (λ x → step⋆ (2 * length l , 2)) 
-              (scan/contract/clocked/cost f p e k cs _ _))) ⟩
+              (scan/contract/clocked/cost f p e k cs (h' cs (Eq.sym p₁))))) ⟩
           step (F _) (2 * ⌈ length l /2⌉ , 2) 
           (bind (F _) (contract f l) λ (cs , p₁) → 
             bind (F _) (step⋆ (14 * length cs , 4 * k)) λ _ → 
@@ -762,7 +726,7 @@ scan/contract/clocked/cost f p e (suc k) l _ q =
             step⋆ ((14 * length cs) + (2 * length l) , 4 * k + 2)) 
         ≲⟨ step-monoʳ-≤⁻ (2 * ⌈ length l /2⌉ , 2) 
             (bind-monoʳ-≤⁻ (contract f l) (λ (cs , p₁) → 
-              step⋆-mono-≤⁻ (N.≤-reflexive (Eq.cong (λ c → (14 * c) + (2 * length l)) (Eq.sym p₁)) , N.≤-refl))) ⟩
+              step⋆-mono-≤⁻ {c = ((14 * length cs) + (2 * length l) , 4 * k + 2)} (N.≤-reflexive (Eq.cong (λ c → (14 * c) + (2 * length l)) (Eq.sym p₁)) , N.≤-refl))) ⟩
           step (F _) (2 * ⌈ length l /2⌉ , 2) 
           (bind (F _) (contract f l) λ (cs , p₁) → 
             step⋆ ((14 * ⌈ length l /2⌉) + (2 * length l) , 4 * k + 2))
@@ -823,29 +787,24 @@ scan/contract/clocked/cost f p e (suc k) l _ q =
             ≡⟨ Eq.cong (λ c → 1 + c) (N.⌊n/2⌋+⌈n/2⌉≡n n) ⟩ 
               1 + n 
             ∎ 
-        q' : (2 ^ (suc k ∸ 1) < length l)
-        q' = q (s≤s z≤n) 
-
-        q₂ : 1 Nat.≤ 2 ^ (suc k ∸ 1)
-        q₂ = N.m^n>0 2 k
+        h' : (l₂ : val (list A)) (length₂ : length l₂ ≡ ⌈ length l /2⌉) → ⌈log₂ length l₂ ⌉ Nat.≤ k
+        h' l₂ length₂ = 
+          let open N.≤-Reasoning in
+            (begin
+              ⌈log₂ length l₂ ⌉
+            ≡⟨ Eq.cong ⌈log₂_⌉ length₂ ⟩
+              ⌈log₂ ⌈ length l /2⌉ ⌉
+            ≤⟨ log₂-suc (length l) h ⟩
+              k
+            ∎)
 
 
         minlength : 2 Nat.≤ length l 
-        minlength = 
-          let open N.≤-Reasoning in 
-            begin 
-              2
-            ≡⟨⟩ 
-              1 + 1
-            ≤⟨ N.+-monoʳ-≤ 1 q₂ ⟩ 
-              1 + 2 ^ (suc k ∸ 1) 
-            ≤⟨ q' ⟩ 
-              length l
-            ∎
+        minlength = s≤s (s≤s z≤n)
 
 scan/contract/cost : 
   (m : ◯-Monoid A) → 
   (l : val (list A)) →
   ((a b : val A) → IsBounded A ( (◯-Monoid.f) m (a , b)) (0 , 0)) → 
   IsBounded (list A ×⁺ A) (scan/contract m l) (14 * length l , 4 * ⌈log₂ length l ⌉)
-scan/contract/cost m l p = scan/contract/clocked/cost (◯-Monoid.f m) p (◯-Monoid.identity m) ⌈log₂ length l ⌉ l N.≤-refl (2^⌈log₂n⌉∸1<n (length l)) 
+scan/contract/cost m l p = scan/contract/clocked/cost (◯-Monoid.f m) p (◯-Monoid.identity m) ⌈log₂ length l ⌉ l N.≤-refl 
