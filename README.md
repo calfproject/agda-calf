@@ -1,3 +1,17 @@
+This is a fork of [calf](https://github.com/HarrisonGrodin/agda-calf) demonstrating our work on a mechanized cost analysis of the parallel prefix sum algorithm (also known as scan).
+
+# Cost analysis of parallel prefix sum (scan)
+
+We present a mechanized cost analysis of the parallel prefix sum algorithm, formalized in Calf embedded in Agda. 
+
+## Dependencies
+
+We strongly recommend Agda version 2.7.0.1, as well as at least version 2.2 of the Agda standard library. 
+
+## File location
+
+The entirety of the work can be found at Examples.Scan 
+
 # **calf**: A Cost-Aware Logical Framework
 
 The **calf** language is a **c**ost-**a**ware **l**ogical **f**ramework for studying quantitative aspects of functional programs.

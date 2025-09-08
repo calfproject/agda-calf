@@ -3,3 +3,7 @@
 *\#*
 
 /html
+src/Examples/.vscode/
+src/Examples/Scan-writeup.lagda.tex
+src/Examples/isMonoid.lagda.tex
+src/Examples/latex/
