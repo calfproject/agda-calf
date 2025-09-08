@@ -1,4 +1,4 @@
-This is a fork of [calf](https://github.com/HarrisonGrodin/agda-calf) demonstrating our work on a mechanized cost analysis of the parallel prefix sum algorithm (also known as scan).
+This is a branch of [calf](https://github.com/HarrisonGrodin/agda-calf) demonstrating our work on a mechanized cost analysis of the parallel prefix sum algorithm (also known as scan).
 
 # Cost analysis of parallel prefix sum (scan)
 
