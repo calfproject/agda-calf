@@ -2,7 +2,7 @@ This is a branch of [calf](https://github.com/HarrisonGrodin/agda-calf) demonstr
 
 # Cost analysis of parallel prefix sum (scan)
 
-We present a mechanized cost analysis of the parallel prefix sum algorithm, formalized in Calf embedded in Agda. 
+We present a mechanized cost analysis of the work and span of the parallel prefix sum algorithm, formalized in Calf embedded in Agda. 
 
 ## Dependencies
 
@@ -10,7 +10,7 @@ We strongly recommend Agda version 2.7.0.1, as well as at least version 2.2 of t
 
 ## File location
 
-The entirety of the work can be found at Examples.Scan 
+The entirety of the work can be found at [Examples.Scan](https://github.com/HarrisonGrodin/agda-calf/blob/example/scan/src/Examples/Scan.agda) 
 
 # **calf**: A Cost-Aware Logical Framework
 
