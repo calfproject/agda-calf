@@ -15,9 +15,10 @@ open import Calf.Data.List hiding (find)
 open import Calf.Data.IsBounded costMonoid
 
 open import Data.Nat as Nat using (ℕ; _<_; _≤?_; _<?_; zero)
-open import Data.Nat.Properties as Nat using (module ≤-Reasoning)
+open import Data.Nat.Properties as Nat using (module ≤-Reasoning; _≟_)
 open import Data.Bool.Properties as Bool
 open import Data.Nat.Base using (⌊_/2⌋) 
+open import Data.List.Base using (deduplicate)
 open import Data.List.Properties as List
 open import Data.Fin using (Fin; fromℕ<)
 open import Relation.Nullary using (Dec; yes; no)
@@ -40,16 +41,32 @@ record BST : Set where
     size : cmp (Π T (λ _ → F (nat)))
     find : cmp (Π T (λ _ → Π nat (λ _ → F (bool ×⁺ T))))
 
+insert/val : (x : val nat) → (sorted-xs : val (list nat)) → val (list nat)
+insert/val x [] = x ∷ []
+insert/val x (y ∷ ys) with Nat.<-cmp x y
+... | tri< _ _ _ = x ∷ (y ∷ ys)
+... | tri≈ _ _ _ = x ∷ (y ∷ ys)
+... | tri> _ _ _ = y ∷ (insert/val x ys)
+
+sort/val : val (list nat) → val (list nat) 
+sort/val [] = []
+sort/val (x ∷ xs) = insert/val x (sort/val xs)
+
 listFind : (l : val (list nat)) (k : val nat) → cmp (F (bool))
 listFind [] k = ret (false)
-listFind (x ∷ l) k with Nat.<-cmp x k 
-... | tri< _ _ _ = bind (F _) (listFind l k) ret
+listFind (x ∷ xs) k with Nat.<-cmp x k 
+... | tri< _ _ _ = bind (F _) (listFind xs k) ret
 ... | tri≈ _ _ _ = ret (true)
-... | tri> _ _ _ = bind (F _) (listFind l k) ret
+... | tri> _ _ _ = bind (F _) (listFind xs k) ret
+
+deduplicate/cmp : cmp (Π (list nat) λ _ → F (list nat))
+deduplicate/cmp l = ret (deduplicate {R = _≡_} Nat._≟_ l)
 
 ListTree : BST
 ListTree .BST.T = list nat
-ListTree .BST.fromList l = ret l
+ListTree .BST.fromList l = 
+  step (F _) (length (sort/val (deduplicate {R = _≡_} Nat._≟_ l)) * ⌊log₂ (length (sort/val (deduplicate {R = _≡_} Nat._≟_ l))) ⌋) 
+    (ret (sort/val (deduplicate {R = _≡_} Nat._≟_ l)))
 ListTree .BST.size l = ret (length l)
 ListTree .BST.find l k = 
   step (F _) ((3 * ⌊log₂ (length l)⌋) + 1) (
@@ -257,20 +274,13 @@ splay (node l x r) k anc k≡root = bind (F _) (splay' l r anc k) (λ ((l' , r')
     inord/arith : (l r : Tree) (x : val nat) (k≡x : k ≡ x) → inord (node l x r) ≡ inord (node l k r)
     inord/arith l r x k≡x = Eq.cong (λ e → inord l ++ e) (Eq.cong (λ e → e ∷ inord r) (Eq.sym k≡x))
 
-insert : (t : Tree) (k : val nat) → val tree
-insert leaf k = node leaf k leaf
-insert (node l x r) k with Nat.<-cmp k x
-... | tri< _ _ _ = node (insert l k) x r
-... | tri≈ _ _ _ = node l k r
-... | tri> _ _ _ = node l x (insert r k)
-
-makeTree : (t : Tree) (l : val (list nat)) → cmp (F (tree))
-makeTree t [] = ret t
-makeTree t (k ∷ ks) = makeTree (insert t k) ks
+makeTree/nodups/sorted : (t : Tree) (l : val (list nat)) → val (tree)
+makeTree/nodups/sorted t [] = t
+makeTree/nodups/sorted t (k ∷ ks) = makeTree/nodups/sorted (node t k leaf) ks
 
 SplayTree : BST
 SplayTree .BST.T = tree
-SplayTree .BST.fromList l = makeTree leaf l
+SplayTree .BST.fromList l = ret (makeTree/nodups/sorted leaf (sort/val (deduplicate {R = _≡_} Nat._≟_ l)))
 SplayTree .BST.size t = ret (tree-size t)
 SplayTree .BST.find t k with (search t k []) 
 ... | ((false , t' , anc) , _ , _ , _) = ret (false , t)
@@ -2043,16 +2053,184 @@ record BSTHom (bst bst' : BST) : Set where
       ≤⁻[ F (nat) ]
         bind (F _) (ϕ t) (λ t' → bst' .size t')
     ϕ/find : (t : val (bst .T)) (k : val nat) → 
-        bind (F _) (bst .find t k) (λ (b , t') → 
-          bind (F _) (ϕ t) (λ t'' → ret (b , t'')))
-      ≤⁻[ F (bool ×⁺ (bst' .T)) ]
-        bind (F _) (ϕ t) (λ t' → bst' .find t' k)
+        bind (F _) (bst .find t k) (λ (_ , t') → ϕ t')
+      ≤⁻[ F (bst' .T) ]
+        bind (F _) (ϕ t) (λ t' → bind (F _) (bst' .find t' k) (λ (_ , t'') → ret t''))
+
+open BSTHom
+
+list/find/lemma : ∀ (l : val (list nat)) (k : val nat) → ∃[ b ] (listFind l k ≡ ret b)
+list/find/lemma [] k = false , refl
+list/find/lemma (x ∷ xs) k with Nat.<-cmp x k 
+... | tri< _ _ _ = list/find/lemma xs k
+... | tri≈ _ _ _ = true , refl
+... | tri> _ _ _ = list/find/lemma xs k
+
+list/find/bind/lemma : (l : val (list nat)) → (k : val nat) → 
+  bind (F (list nat)) (listFind l k) (λ _ → ret l) ≡ ret l
+list/find/bind/lemma l k with (list/find/lemma l k)
+... | b , eq = 
+  let open ≡-Reasoning in
+  begin
+    bind (F (list nat)) (listFind l k) (λ _ → ret l)
+  ≡⟨ Eq.cong (λ e → bind (F _) e (λ _ → ret l)) eq ⟩
+    bind {A = bool} (F (list nat)) (ret b) (λ _ → ret l)
+  ≡⟨⟩
+    ret l
+  ∎
+
+tree-size/inord/lemma : (t : Tree) → tree-size t ≡ length (inord t)
+tree-size/inord/lemma leaf = refl
+tree-size/inord/lemma (node l x r) = 
+  let open ≡-Reasoning in
+  begin
+    (tree-size l + 1) + tree-size r
+  ≡⟨ Eq.cong₂ (λ e₁ → λ e₂ → e₁ + 1 + e₂) (tree-size/inord/lemma l) (tree-size/inord/lemma r) ⟩
+    (length (inord l) + 1) + length (inord r)
+  ≡⟨ Nat.+-assoc (length (inord l)) 1 (length (inord r)) ⟩
+    length (inord l) + (1 + length (inord r))
+  ≡⟨⟩
+    length (inord l) + length (x ∷ inord r)
+  ≡⟨ length-++ (inord l) ⟨
+    length (inord l ++ x ∷ inord r)
+  ∎
+
+sum-of-ranks/bound : (t : Tree) → 
+  sum-of-ranks t Nat.≤ tree-size t * ⌊log₂ (tree-size t) ⌋
+sum-of-ranks/bound leaf = Nat.≤-refl
+sum-of-ranks/bound (node l x r) = 
+  let 
+    |t| = tree-size (node l x r)
+    |l| = tree-size l
+    |r| = tree-size r
+  in
+  let open Nat.≤-Reasoning in
+  begin
+    sum-of-ranks l + rank (node l x r) + sum-of-ranks r
+  ≤⟨ +-mono-≤ (+-monoˡ-≤ (rank (node l x r)) (sum-of-ranks/bound l)) (sum-of-ranks/bound r) ⟩
+    (|l| * ⌊log₂ |l| ⌋) + rank (node l x r) + (|r| * ⌊log₂ |r| ⌋)
+  ≡⟨⟩
+    (|l| * ⌊log₂ |l| ⌋) + ⌊log₂ |t| ⌋ + (|r| * ⌊log₂ |r| ⌋)
+  ≤⟨ +-mono-≤ 
+      (+-monoˡ-≤ ⌊log₂ |t| ⌋ (Nat.*-monoʳ-≤ |l| (⌊log₂⌋-mono-≤ (Nat.≤-trans (Nat.m≤m+n |l| (1 + |r|)) (Nat.≤-reflexive (Eq.sym (Nat.+-assoc |l| 1 |r|))))))) 
+        (Nat.*-monoʳ-≤ |r| (⌊log₂⌋-mono-≤ (Nat.≤-trans (Nat.m≤m+n |r| (1 + |l|)) (Nat.≤-reflexive (Eq.trans (Nat.+-comm |r| (1 + |l|)) (Eq.cong (λ e → e + |r|) (Nat.+-comm 1 |l|))))))) ⟩
+    (|l| * ⌊log₂ |t| ⌋) + ⌊log₂ |t| ⌋ + (|r| * ⌊log₂ |t| ⌋)
+  ≡⟨ Eq.cong (λ e → (|l| * ⌊log₂ |t| ⌋) + e + (|r| * ⌊log₂ |t| ⌋)) (Nat.+-comm 0 ⌊log₂ |t| ⌋) ⟩
+    (|l| * ⌊log₂ |t| ⌋) + (1 * ⌊log₂ |t| ⌋) + (|r| * ⌊log₂ |t| ⌋)
+  ≡⟨ Eq.cong (λ e → e + (|r| * ⌊log₂ |t| ⌋)) (Nat.*-distribʳ-+ ⌊log₂ |t| ⌋ |l| 1) ⟨
+    ((|l| + 1) * ⌊log₂ |t| ⌋) + (|r| * ⌊log₂ |t| ⌋)
+  ≡⟨ Nat.*-distribʳ-+ ⌊log₂ |t| ⌋ (|l| + 1) |r| ⟨
+    (|l| + 1 + |r|) * ⌊log₂ |t| ⌋
+  ≡⟨ Nat.*-comm (|l| + 1 + |r|) ⌊log₂ |t| ⌋ ⟩
+    ⌊log₂ |t| ⌋ * (|l| + 1 + |r|)
+  ≡⟨⟩
+    ⌊log₂ |t| ⌋ * |t|
+  ≡⟨ Nat.*-comm ⌊log₂ |t| ⌋ |t| ⟩
+    |t| * ⌊log₂ |t| ⌋
+  ∎
+
+makeTree/inord/lemma : (t : Tree) → (l : val (list nat)) →
+  inord (makeTree/nodups/sorted t l) ≡ (inord t) ++ l
+makeTree/inord/lemma t [] = Eq.sym (++-identityʳ (inord t))
+makeTree/inord/lemma t (x ∷ xs) = 
+  let open ≡-Reasoning in
+  begin
+    inord (makeTree/nodups/sorted (node t x leaf) xs)
+  ≡⟨ makeTree/inord/lemma (node t x leaf) xs ⟩
+    inord (node t x leaf) ++ xs
+  ≡⟨ ++-assoc (inord t) (x ∷ []) xs ⟩
+    inord t ++ (x ∷ xs)
+  ∎
+
 
 ST⇒LT : BSTHom SplayTree ListTree
-ST⇒LT .BSTHom.ϕ = φ
-ST⇒LT .BSTHom.ϕ/fromList l = {!   !}
-ST⇒LT .BSTHom.ϕ/size t = {!   !}
-ST⇒LT .BSTHom.ϕ/find t k = {!   !}
+ST⇒LT .ϕ = φ
+ST⇒LT .ϕ/fromList l = 
+  let 
+    l' = sort/val (deduplicate Nat._≟_ l)
+    t  = makeTree/nodups/sorted leaf l'
+  in
+  let open ≤⁻-Reasoning (F _) in
+  begin
+    bind (F _) (ret {A = tree} t) φ
+  ≡⟨⟩ 
+    step (F _) (sum-of-ranks t) (ret (inord t))
+  ≲⟨ step-monoˡ-≤⁻ (ret (inord t)) (sum-of-ranks/bound t) ⟩
+    step (F _) (tree-size t * ⌊log₂ (tree-size t) ⌋) (ret (inord t))
+  ≡⟨ Eq.cong (λ e → step (F _) (e * ⌊log₂ e ⌋) (ret (inord t))) (tree-size/inord/lemma t) ⟩
+    step (F _) ((length (inord t)) * ⌊log₂ (length (inord t)) ⌋) (ret (inord t))
+  ≡⟨ Eq.cong (λ e → step (F _) ((length e) * ⌊log₂ (length e) ⌋) (ret e)) (makeTree/inord/lemma leaf l') ⟩
+    step (F _) (length l' * ⌊log₂ (length l') ⌋) (ret l')
+  ∎
+ST⇒LT .ϕ/size t = 
+  let open ≤⁻-Reasoning (F _) in
+  begin
+    ret (tree-size t)
+  ≡⟨ Eq.cong (λ e → ret e) (tree-size/inord/lemma t) ⟩
+    ret (length (inord t))
+  ≡⟨⟩
+    step (F (nat)) 0 (ret (length (inord t))) 
+  ≲⟨ step-monoˡ-≤⁻ {c' = sum-of-ranks t} (ret (length (inord t))) z≤n ⟩
+    step (F (nat)) (sum-of-ranks t) (ret (length (inord t)))
+  ∎
+ST⇒LT .ϕ/find t k with (search t k []) 
+... | ((false , t' , anc) , _ , _ , _) = 
+  let open ≤⁻-Reasoning (F _) in
+  begin
+    step (F _) (sum-of-ranks t) (ret (inord t))
+  ≲⟨ step-monoˡ-≤⁻ (ret (inord t)) (Nat.m≤n+m (sum-of-ranks t) ((3 * ⌊log₂ (length (inord t))⌋) + 1)) ⟩
+    step (F _) (((3 * ⌊log₂ (length (inord t))⌋) + 1) + sum-of-ranks t) 
+      (ret (inord t))
+  ≡⟨ Eq.cong (λ e → step (F _) e (ret (inord t))) (Nat.+-comm ((3 * ⌊log₂ (length (inord t))⌋) + 1) (sum-of-ranks t)) ⟩
+    step (F _) (sum-of-ranks t + ((3 * ⌊log₂ (length (inord t))⌋) + 1)) 
+      (ret (inord t))
+  ≡⟨ Eq.cong (λ e → step (F _) (sum-of-ranks t + ((3 * ⌊log₂ (length (inord t))⌋) + 1)) e) (list/find/bind/lemma (inord t) k) ⟨
+    step (F _) (sum-of-ranks t + ((3 * ⌊log₂ (length (inord t))⌋) + 1)) 
+      (bind (F _) (listFind (inord t) k) (λ _ → ret (inord t)))
+  ∎
+... | ((true , leaf , anc) , _ , 0<0 , _) = ⊥-elim (Nat.<-irrefl refl (0<0 refl))
+... | ((true , node l x r , anc) , t≡recon , _ , x≡k) = 
+  let open ≤⁻-Reasoning (F _) in
+  begin
+    bind (F (list nat)) (bind (F (bool ×⁺ tree)) (splay' l r anc k) (λ ((l' , r') , _) → 
+      ret (true , node l' x r'))) (λ (_ , t') → ST⇒LT .ϕ t')
+  ≡⟨⟩
+    bind (F _) (splay' l r anc k) (λ ((l' , r') , _) → ST⇒LT .ϕ (node l' x r'))
+  ≡⟨ Eq.cong (λ e → bind (F _) (splay' l r anc k) e) (funext λ ((l' , r') , _) → 
+      Eq.cong (λ e → ST⇒LT .ϕ (node l' e r')) (x≡k refl)) ⟩
+    bind (F _) (splay' l r anc k) (λ ((l' , r') , _) → ST⇒LT .ϕ (node l' k r'))
+  ≲⟨ splay'/amortized l r anc k ⟩
+    step (F _) (1 + 3 * (rank (reconstruct (node l k r) anc) ∸ rank (node l k r))) (φ (reconstruct (node l k r) anc))
+  ≲⟨ step-monoˡ-≤⁻ (φ (reconstruct (node l k r) anc)) (Nat.+-monoʳ-≤ 1 (Nat.*-monoʳ-≤ 3 
+      (Nat.m∸n≤m (rank (reconstruct (node l k r) anc)) (rank (node l k r))))) ⟩
+    step (F _) (1 + 3 * (rank (reconstruct (node l k r) anc))) (φ (reconstruct (node l k r) anc))
+  ≡⟨ Eq.cong₂ (λ e₁ → λ e₂ → step (F _) e₁ e₂) 
+      (Eq.cong (λ e → 1 + 3 * (rank (reconstruct (node l e r) anc))) (x≡k refl)) 
+        (Eq.cong (λ e → φ (reconstruct (node l e r) anc)) (x≡k refl)) ⟨
+    step (F _) (1 + 3 * (rank (reconstruct (node l x r) anc))) (φ (reconstruct (node l x r) anc))
+  ≡⟨ Eq.cong₂ (λ e₁ → λ e₂ → step (F _) e₁ e₂) 
+      (Eq.cong (λ e → 1 + 3 * (rank e)) t≡recon) 
+        (Eq.cong (λ e → φ e) t≡recon) ⟨
+    step (F _) (1 + 3 * (rank t)) (φ t)
+  ≡⟨⟩
+    step (F _) (1 + 3 * (rank t)) (step (F _) (sum-of-ranks t) (ret (inord t)))
+  ≡⟨⟩
+    step (F _) ((1 + 3 * (rank t)) + sum-of-ranks t) (ret (inord t))
+  ≡⟨ Eq.cong (λ e → step (F _) e (ret (inord t))) (Nat.+-comm (1 + 3 * (rank t)) (sum-of-ranks t)) ⟩
+    step (F _) (sum-of-ranks t + (1 + 3 * (rank t))) (ret (inord t))
+  ≡⟨ Eq.cong (λ e → step (F _) (sum-of-ranks t + e) (ret (inord t))) (Nat.+-comm 1 (3 * (rank t))) ⟩
+    step (F _) (sum-of-ranks t + ((3 * (rank t)) + 1)) (ret (inord t))
+  ≡⟨⟩
+    step (F _) (sum-of-ranks t + ((3 * ⌊log₂ (tree-size t)⌋) + 1)) 
+      (ret (inord t))
+  ≡⟨ Eq.cong (λ e → step (F _) (sum-of-ranks t + ((3 * ⌊log₂ e ⌋) + 1)) (ret (inord t))) 
+      (tree-size/inord/lemma t) ⟩
+    step (F _) (sum-of-ranks t + ((3 * ⌊log₂ (length (inord t))⌋) + 1)) 
+      (ret (inord t))
+  ≡⟨ Eq.cong (λ e → step (F _) (sum-of-ranks t + ((3 * ⌊log₂ (length (inord t))⌋) + 1)) e) (list/find/bind/lemma (inord t) k) ⟨
+    step (F _) (sum-of-ranks t + ((3 * ⌊log₂ (length (inord t))⌋) + 1)) 
+      (bind (F _) (listFind (inord t) k) (λ _ → ret (inord t)))
+  ∎
 
 data BSTOperation : Set where
   findKey : val nat → BSTOperation
@@ -2065,51 +2243,71 @@ fold-apply [] bst t = ret t
 fold-apply (op ∷ ops) bst t = 
   bind (F _) (fold-apply ops bst t) (λ t' → 
     bind (F _) (apply op bst t') ret)
+  bind (F _) (apply op bst t) (λ t' → 
+    bind (F _) (fold-apply ops bst t') ret)
 
-commutes : (ops : List BSTOperation) → (t : val (SplayTree .T)) →
-    bind (F _) (fold-apply ops SplayTree t) (ST⇒LT .BSTHom.ϕ)
+commutes : (ops : List BSTOperation) → (t : val (SplayTree .T)) → 
+    bind (F _) (fold-apply ops SplayTree t) (ST⇒LT .ϕ)
   ≤⁻[ F (ListTree .T) ]
-    bind (F _) (ST⇒LT .BSTHom.ϕ t) (λ t' → fold-apply ops ListTree t')
-commutes [] t = {!   !}
-commutes (findKey k ∷ ops) t = {!   !}
+    bind (F _) (ST⇒LT .ϕ t) (λ t' → fold-apply ops ListTree t')
+commutes [] t = ≤⁻-refl
+commutes (findKey k ∷ ops) t = 
+  let open ≤⁻-Reasoning (F _) in 
+  begin 
+    bind (F _) (fold-apply ops SplayTree t) (λ t' → 
+      bind (F _) (SplayTree .find t' k) (λ (_ , t'') → ST⇒LT .ϕ t''))
+  ≲⟨ bind-monoʳ-≤⁻ (fold-apply ops SplayTree t) (λ t' → ST⇒LT .ϕ/find t' k) ⟩
+    bind (F _) (fold-apply ops SplayTree t) (λ t' → 
+      bind (F _) (ST⇒LT .ϕ t') (λ t'' → 
+        bind (F _) (ListTree .find t'' k) (λ (_ , t''') → ret t''')))
+  ≡⟨⟩
+    bind (F _) (bind (F _) (fold-apply ops SplayTree t) (ST⇒LT .ϕ)) (λ t' → 
+      bind (F _) (ListTree .find t' k) (λ (_ , t'') → ret t''))
+  ≲⟨ bind-monoˡ-≤⁻ (λ t' → bind (F _) (ListTree .find t' k) (λ (_ , t'') → ret t'')) (commutes ops t) ⟩
+    bind (F _) (bind (F _) (ST⇒LT .ϕ t) (λ t' → fold-apply ops ListTree t')) (λ t' → 
+      bind (F _) (ListTree .find t' k) (λ (_ , t'') → ret t''))
+  ∎
 
 thm : (keys : val (list nat)) → (ops : List BSTOperation) → 
   IsBounded (SplayTree .T) (bind (F _) (SplayTree .fromList keys) (λ t → 
     fold-apply ops SplayTree t)) 
       (((length ops) * ⌊log₂ length keys ⌋) + (length keys * ⌊log₂ length keys ⌋))
 thm keys ops = {!   !}
-  
+  where 
+    LT/bound : (keys : val (list nat)) → (ops : List BSTOperation) → 
+      Σ[ l ∈ val (ListTree .T) ]
+        bind (F _) (ListTree .fromList keys) (λ l' → fold-apply ops ListTree l')
+      ≤⁻[ F _ ]
+        step (F _) (
+          (length (ops)) * ((3 * ⌊log₂ (length l) ⌋) + 1) +
+          ((length l) * ⌊log₂ (length l) ⌋)) (ret l)
+    LT/bound keys [] = sort/val (deduplicate {R = _≡_} Nat._≟_ keys) , ≤⁻-refl
+    LT/bound keys (findKey k ∷ ops) with LT/bound keys ops 
+    ... | l , leq = l , 
+      let open ≤⁻-Reasoning (F _) in
+      begin 
+        bind (F _) (ListTree .fromList keys) (λ l' → 
+          bind (F _) (fold-apply ops ListTree l') (λ l'' → 
+            step (F _) ((3 * ⌊log₂ (length l'') ⌋) + 1) 
+              (bind (F _) (listFind l'' k) (λ _ → ret l''))))
+      ≡⟨ {!   !} ⟩ 
+        bind (F _) (ListTree .fromList keys) (λ l' → 
+          bind (F _) (fold-apply ops ListTree l') (λ l'' → 
+            step (F _) ((3 * ⌊log₂ (length l'') ⌋) + 1) (ret l'')))
+      ≡⟨ ? ⟩
+        step (F _) ((3 * ⌊log₂ (length l) ⌋) + 1) 
+          (bind (F _) (ListTree .fromList keys) (λ l' → 
+            bind (F _) (fold-apply ops ListTree l') (λ l'' → ret l'')))
+      ≡⟨ ? ⟩
+        {!   !}
+      ∎
 
-
--- open BST renaming (splay to splay/)
-
--- record BSTHom (bst bst' : BST) : Set where
---   field
---     ϕ : cmp (Π (bst .T) λ _ → F (bst' .T))
---     ϕ/splay : (t : val (bst .T)) (k : val nat) → 
---         bind (F _) (bst .splay/ t k) (λ (k' , t') → ϕ t')
---       ≡
---         ϕ t
-
--- open BSTHom
-
--- ST⇒LT : BSTHom SplayTree ListTree
--- ST⇒LT .ϕ t = ret (inord t)
--- ST⇒LT .ϕ/splay t k = 
---   let open ≡-Reasoning in 
---   begin
---     bind (F _) (search k t []) (λ ((t' , anc) , _ , k≡root) →
---       bind (F _) (splay t' k anc (Eq.sym k≡root)) (λ ((k' , t'') , _ , _ , _) → ret (inord t'')))
---   ≡⟨ Eq.cong (bind (F _) (search k t [])) (funext (λ ((t' , anc) , t≡recon/t' , k≡root) → 
---       Eq.cong (bind (F _) (splay t' k anc (Eq.sym k≡root))) (funext (λ ((k' , t'') , inord/recon/t'≡inord/t'' , _ , _) → 
---         Eq.cong ret (Eq.sym (Eq.trans (Eq.cong inord t≡recon/t') inord/recon/t'≡inord/t'')))))) ⟩
---     bind (F _) (search k t []) (λ ((t' , anc) , _ , k≡root) →
---       bind (F _) (splay t' k anc (Eq.sym k≡root)) (λ ((k' , t'') , _ , _ , _) → ret (inord t)))
---   ≡⟨ {!   !} ⟩
---     ret (inord t)
---   ∎
-
--- open BST renaming (splay to splay/)
+--   bind (F _) (fold-apply ops ListQueue []) (λ l' → step (F _) 1 (ret (l' ++ n ∷ [])))
+-- ≲⟨ bind-monoˡ-≤⁻ (λ l' → step (F _) 1 (ret (l' ++ n ∷ []))) leq ⟩
+--   step (F _) (length ops ⊕ 1) (ret (l ++ n ∷ []))
+-- ≡⟨ Eq.cong (λ c → step (F _) c (ret (l ++ n ∷ []))) (+-comm (length ops) 1) ⟩
+--   step (F _) (1 + length ops) (ret (l ++ n ∷ []))
+-- ∎
 
 
 -- ex : Tree
