@@ -605,7 +605,7 @@ splay'/amortized a b (Left p c ∷ []) k =
     arithmetic3 : (a b c d e f : val nat) → a + b + c + (d + e + f) ≡ (a + b + d + f) + (c + e)
     arithmetic3 = solve-∀
 -- zig
-splay'/amortized b c (Right a p ∷ []) k = {!   !}
+splay'/amortized b c (Right a p ∷ []) k = ?
 -- zag
 splay'/amortized a b (Left p c ∷ Left g d ∷ anc) k with Nat.<-cmp (rank (node a k b)) (rank (node a k (node b p (node c g d))))
 ... | tri< rank-x<rank-x' ¬b ¬c  = let
@@ -2056,6 +2056,10 @@ record BSTHom (bst bst' : BST) : Set where
         bind (F _) (bst .find t k) (λ (_ , t') → ϕ t')
       ≤⁻[ F (bst' .T) ]
         bind (F _) (ϕ t) (λ t' → bind (F _) (bst' .find t' k) (λ (_ , t'') → ret t''))
+    ϕ/total : (t : val (bst .T)) →
+        ret triv
+      ≤⁻[ F unit ]
+        bind (F _) (ϕ t) (λ _ → ret triv)
 
 open BSTHom
 
@@ -2231,6 +2235,7 @@ ST⇒LT .ϕ/find t k with (search t k [])
     step (F _) (sum-of-ranks t + ((3 * ⌊log₂ (length (inord t))⌋) + 1)) 
       (bind (F _) (listFind (inord t) k) (λ _ → ret (inord t)))
   ∎
+ST⇒LT .ϕ/total t = step-monoˡ-≤⁻ {c' = sum-of-ranks t} (ret triv) z≤n
 
 data BSTOperation : Set where
   findKey : val nat → BSTOperation
@@ -2243,8 +2248,6 @@ fold-apply [] bst t = ret t
 fold-apply (op ∷ ops) bst t = 
   bind (F _) (fold-apply ops bst t) (λ t' → 
     bind (F _) (apply op bst t') ret)
-  bind (F _) (apply op bst t) (λ t' → 
-    bind (F _) (fold-apply ops bst t') ret)
 
 commutes : (ops : List BSTOperation) → (t : val (SplayTree .T)) → 
     bind (F _) (fold-apply ops SplayTree t) (ST⇒LT .ϕ)
@@ -2270,45 +2273,96 @@ commutes (findKey k ∷ ops) t =
 
 thm : (keys : val (list nat)) → (ops : List BSTOperation) → 
   IsBounded (SplayTree .T) (bind (F _) (SplayTree .fromList keys) (λ t → 
-    fold-apply ops SplayTree t)) 
-      (((length ops) * ⌊log₂ length keys ⌋) + (length keys * ⌊log₂ length keys ⌋))
-thm keys ops = {!   !}
+    fold-apply ops SplayTree t))
+      (((length ops) * ((3 * ⌊log₂ length (sort/val (deduplicate {R = _≡_} Nat._≟_ keys)) ⌋) + 1)) + 
+          (length (sort/val (deduplicate {R = _≡_} Nat._≟_ keys)) * 
+          ⌊log₂ length (sort/val (deduplicate {R = _≡_} Nat._≟_ keys)) ⌋))
+thm keys ops = ST/bound keys ops
   where 
-    LT/bound : (keys : val (list nat)) → (ops : List BSTOperation) → 
-      Σ[ l ∈ val (ListTree .T) ]
-        bind (F _) (ListTree .fromList keys) (λ l' → fold-apply ops ListTree l')
-      ≤⁻[ F _ ]
-        step (F _) (
-          (length (ops)) * ((3 * ⌊log₂ (length l) ⌋) + 1) +
-          ((length l) * ⌊log₂ (length l) ⌋)) (ret l)
-    LT/bound keys [] = sort/val (deduplicate {R = _≡_} Nat._≟_ keys) , ≤⁻-refl
-    LT/bound keys (findKey k ∷ ops) with LT/bound keys ops 
-    ... | l , leq = l , 
+    LT/bound : (keys : val (list nat)) → (ops : List BSTOperation) →
+        fold-apply ops ListTree keys
+      ≤⁻[ F _ ] 
+        step (F _) ((length (ops)) * ((3 * ⌊log₂ (length keys) ⌋) + 1)) (ret keys)
+    LT/bound keys [] = ≤⁻-refl
+    LT/bound keys (findKey k ∷ ops) with LT/bound keys ops
+    ... | leq = 
       let open ≤⁻-Reasoning (F _) in
-      begin 
-        bind (F _) (ListTree .fromList keys) (λ l' → 
-          bind (F _) (fold-apply ops ListTree l') (λ l'' → 
-            step (F _) ((3 * ⌊log₂ (length l'') ⌋) + 1) 
-              (bind (F _) (listFind l'' k) (λ _ → ret l''))))
-      ≡⟨ {!   !} ⟩ 
-        bind (F _) (ListTree .fromList keys) (λ l' → 
-          bind (F _) (fold-apply ops ListTree l') (λ l'' → 
-            step (F _) ((3 * ⌊log₂ (length l'') ⌋) + 1) (ret l'')))
-      ≡⟨ ? ⟩
-        step (F _) ((3 * ⌊log₂ (length l) ⌋) + 1) 
-          (bind (F _) (ListTree .fromList keys) (λ l' → 
-            bind (F _) (fold-apply ops ListTree l') (λ l'' → ret l'')))
-      ≡⟨ ? ⟩
-        {!   !}
+      begin
+        bind (F _) (fold-apply ops ListTree keys) (λ l' → 
+          step (F _) ((3 * ⌊log₂ (length l') ⌋) + 1) 
+            (bind (F _) (listFind l' k) (λ _ → ret l')))
+      ≡⟨ Eq.cong (λ e → bind (F _) (fold-apply ops ListTree keys) e) (funext λ l' → 
+          Eq.cong (λ e → step (F _) ((3 * ⌊log₂ (length l') ⌋) + 1) e) (list/find/bind/lemma l' k)) ⟩
+        bind (F _) (fold-apply ops ListTree keys) (λ l' → 
+          step (F _) ((3 * ⌊log₂ (length l') ⌋) + 1) (ret l'))
+      ≲⟨ bind-monoˡ-≤⁻ (((λ l' → step (F _) ((3 * ⌊log₂ (length l') ⌋) + 1) (ret l')))) leq ⟩
+        step (F _) (((length (ops)) * ((3 * ⌊log₂ (length keys) ⌋) + 1)) + ((3 * ⌊log₂ (length keys) ⌋) + 1)) (ret keys)
+      ≡⟨ Eq.cong (λ e → step (F _) e (ret keys)) 
+          (Nat.+-comm ((length (ops)) * ((3 * ⌊log₂ (length keys) ⌋) + 1)) 
+            ((3 * ⌊log₂ (length keys) ⌋) + 1)) ⟩
+        step (F _) (((1 + length ops) * ((3 * ⌊log₂ (length keys) ⌋) + 1))) (ret keys)
       ∎
-
---   bind (F _) (fold-apply ops ListQueue []) (λ l' → step (F _) 1 (ret (l' ++ n ∷ [])))
--- ≲⟨ bind-monoˡ-≤⁻ (λ l' → step (F _) 1 (ret (l' ++ n ∷ []))) leq ⟩
---   step (F _) (length ops ⊕ 1) (ret (l ++ n ∷ []))
--- ≡⟨ Eq.cong (λ c → step (F _) c (ret (l ++ n ∷ []))) (+-comm (length ops) 1) ⟩
---   step (F _) (1 + length ops) (ret (l ++ n ∷ []))
--- ∎
-
+    
+    ST/bound : (keys : val (list nat)) → (ops : List BSTOperation) →
+      IsBounded (SplayTree .T) (bind (F _) (SplayTree .fromList keys) (λ t → 
+        fold-apply ops SplayTree t))
+          (((length ops) * ((3 * ⌊log₂ length (sort/val (deduplicate {R = _≡_} Nat._≟_ keys)) ⌋) + 1)) + 
+              (length (sort/val (deduplicate {R = _≡_} Nat._≟_ keys)) * 
+              ⌊log₂ length (sort/val (deduplicate {R = _≡_} Nat._≟_ keys)) ⌋))
+    ST/bound keys ops with LT/bound (sort/val (deduplicate {R = _≡_} Nat._≟_ keys)) ops
+    ... | leq = 
+      let
+        key-set = (sort/val (deduplicate {R = _≡_} Nat._≟_ keys))
+        N = length (key-set)
+        M = length (ops)
+      in
+      let open ≤⁻-Reasoning (F _) in
+      begin
+        bind (F _) (SplayTree .fromList keys) (λ t → 
+          bind (F _) (fold-apply ops SplayTree t) (λ _ → ret triv))
+      ≲⟨ bind-monoʳ-≤⁻ (SplayTree .fromList keys) (λ t → 
+          bind-monoʳ-≤⁻ (fold-apply ops SplayTree t) (λ t' → 
+            ST⇒LT .ϕ/total t')) ⟩
+        bind (F _) (SplayTree .fromList keys) (λ t → 
+          bind (F _) (fold-apply ops SplayTree t) (λ t' → 
+            bind (F _) (ST⇒LT .ϕ t') (λ _ → ret triv)))
+      ≡⟨⟩
+        bind (F _) (SplayTree .fromList keys) (λ t → 
+          bind (F _) (bind (F _) (fold-apply ops SplayTree t) (ST⇒LT .ϕ)) (λ _ →
+            ret triv))
+      ≲⟨ bind-monoʳ-≤⁻ (SplayTree .fromList keys) (λ t → 
+          bind-monoˡ-≤⁻ (λ _ → ret triv) (commutes ops t)) ⟩
+        bind (F _) (SplayTree .fromList keys) (λ t → 
+          bind (F _) (bind (F _) (ST⇒LT .ϕ t) (λ t' → fold-apply ops ListTree t')) (λ _ →
+            ret triv))
+      ≡⟨⟩
+        bind (F _) (SplayTree .fromList keys) (λ t → 
+          bind (F _) (ST⇒LT .ϕ t) (λ t' → 
+            bind (F _) (fold-apply ops ListTree t') (λ _ →
+              ret triv)))
+      ≡⟨⟩
+        bind (F _) (bind (F _) (SplayTree .fromList keys) (ST⇒LT .ϕ)) (λ t →
+          bind (F _) (fold-apply ops ListTree t) (λ _ → ret triv))
+      ≲⟨ bind-monoˡ-≤⁻ (λ t → bind (F _) (fold-apply ops ListTree t) (λ _ → ret triv)) 
+          (ST⇒LT .ϕ/fromList keys) ⟩
+        bind (F _) (ListTree .fromList keys) (λ l → 
+          bind (F _) (fold-apply ops ListTree l) (λ _ → 
+            ret triv))
+      ≡⟨⟩
+        step (F _) (N * ⌊log₂ N ⌋) (
+          bind (F _) (fold-apply ops ListTree key-set) 
+            (λ _ → ret triv))
+      ≲⟨ step-monoʳ-≤⁻ (N * ⌊log₂ N ⌋) 
+          (bind-monoˡ-≤⁻ (λ _ → ret triv) leq) ⟩
+        step (F _) (N * ⌊log₂ N ⌋) (
+          bind {A = list nat} (F _) (step (F _) (M * ((3 * ⌊log₂ N ⌋) + 1)) (ret key-set)) (λ _ →
+            ret triv))
+      ≡⟨⟩
+        step (F _) ((N * ⌊log₂ N ⌋) + (M * ((3 * ⌊log₂ N ⌋) + 1))) (ret triv)
+      ≡⟨ Eq.cong (λ e → step (F _) e (ret triv)) 
+          (Nat.+-comm (N * ⌊log₂ N ⌋) ((M * ((3 * ⌊log₂ N ⌋) + 1)))) ⟩
+        step (F _) ((M * ((3 * ⌊log₂ N ⌋) + 1)) + (N * ⌊log₂ N ⌋)) (ret triv)
+      ∎
 
 -- ex : Tree
 -- ex = node (node (node (node (node (node (node leaf 3 leaf) 5 leaf) 6 leaf) 8 leaf) 10 leaf) 11 leaf) 12 leaf
