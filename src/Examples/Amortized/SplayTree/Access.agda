@@ -207,6 +207,7 @@ splay'/amortized b c (Right a p ∷ []) k =
     step (F _) (1 + 3 * (rank-y ∸ rank-x)) (φ (node a p (node b k c))) 
   ∎
 -- zag
+
 splay'/amortized a b (Left p c ∷ Left g d ∷ anc) k with Nat.<-cmp (rank (node a k b)) (rank (node a k (node b p (node c g d))))
 ... | tri< rank-x<rank-x' ¬b ¬c  = let
     rank-x  : val nat
@@ -814,8 +815,10 @@ splay'/amortized a b (Left p c ∷ Left g d ∷ anc) k with Nat.<-cmp (rank (nod
         arithmetic : (a b c d e : val nat) → (a + e + b) + (c + e + d + e) ≡ a + e + (b + e + (c + e + d))
         arithmetic = {!   !}
 -- zig-zig
+
 splay'/amortized b c (Left p d ∷ Right a g ∷ anc) k = {!   !}
 -- zag-zig
+
 splay'/amortized b c (Right a p ∷ Left g d ∷ anc) k with Nat.<-cmp (rank (node b k c)) (rank (node (node a p b) k (node c g d)))
 ... | tri< rank-x<rank-x' ¬b ¬c = 
   let
@@ -1636,6 +1639,7 @@ splay'/amortized b c (Right a p ∷ Left g d ∷ anc) k with Nat.<-cmp (rank (no
         arithmetic : (a b c d e f g : val nat) → (c + d + e) + (b + a + f + g) ≡ (a + b + c) + d + (e + f + g)
         arithmetic = {!   !}
 -- zig-zag
+
 splay'/amortized c d (Right b p ∷ Right a g ∷ anc) k = {!   !}
 -- zag-zag
 

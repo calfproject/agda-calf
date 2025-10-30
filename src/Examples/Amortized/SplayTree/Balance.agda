@@ -21,7 +21,7 @@ open import Data.Nat.Logarithm
 
 open import Examples.Amortized.SplayTree.Prelude
 open import Examples.Amortized.SplayTree.SplayTree
-open import Examples.Amortized.SplayTree.LaxHom 
+open import Examples.Amortized.SplayTree.LaxHomomorphism 
 
 open BST
 open BSTHom 

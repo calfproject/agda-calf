@@ -12,7 +12,7 @@ import Examples.Amortized.SplayTree.SplayTree
 import Examples.Amortized.SplayTree.Access
 
 -- Lax homomorphism
-import Examples.Amortized.SplayTree.LaxHom 
+import Examples.Amortized.SplayTree.LaxHomomorphism 
 
 -- Balance theorem
 import Examples.Amortized.SplayTree.Balance

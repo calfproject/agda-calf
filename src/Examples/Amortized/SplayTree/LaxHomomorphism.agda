@@ -1,6 +1,6 @@
 {-# OPTIONS --rewriting --allow-unsolved-metas #-}
 
-module Examples.Amortized.SplayTree.LaxHom where
+module Examples.Amortized.SplayTree.LaxHomomorphism where
 
 open import Algebra.Cost
 
