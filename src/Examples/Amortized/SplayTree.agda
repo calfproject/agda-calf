@@ -13,3 +13,6 @@ import Examples.Amortized.SplayTree.Access
 
 -- Lax homomorphism
 import Examples.Amortized.SplayTree.LaxHom 
+
+-- Balance theorem
+import Examples.Amortized.SplayTree.Balance
