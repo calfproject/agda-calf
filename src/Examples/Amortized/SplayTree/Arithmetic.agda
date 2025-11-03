@@ -53,6 +53,9 @@ arithmetic₁₁ = solve-∀
 arithmetic₁₂ : (a b c d e : val nat) → (a + b) + ((c + d) + e) ≡ ((a + b) + c) + d + e 
 arithmetic₁₂ = solve-∀
 
+arithmetic₁₃ : (a b c d e f g : val nat) → a + e + (b + f + (c + g + d)) ≡ (a + b + c + d) + e + f + g
+arithmetic₁₃ = solve-∀
+
 arithmetic-manual : (a b : val nat) → b Nat.≤ a → a + a ≡ (a + b) + (a ∸ b)
 arithmetic-manual a b p = 
   let open ≡-Reasoning in 
