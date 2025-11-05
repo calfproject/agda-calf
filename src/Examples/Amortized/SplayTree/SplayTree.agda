@@ -129,20 +129,38 @@ zig/zag/inord/arith : (a b c d : Tree) (k p g : val nat) →
   inord (node (node a p (node b k c)) g d) ≡ inord (node (node a p b) k (node c g d))
 zig/zag/inord/arith a b c d k p g = zig/zag/arithmetic (inord a) (p ∷ inord b) (k ∷ inord c) (g ∷ inord d)
 
+zag/zig/arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → l₁ ++ (l₂ ++ l₃) ++ l₄ ≡ (l₁ ++ l₂) ++ l₃ ++ l₄
+zag/zig/arithmetic l₁ l₂ l₃ l₄ =
+  let open ≡-Reasoning in
+  begin
+    l₁ ++ (l₂ ++ l₃) ++ l₄
+  ≡⟨ ++-assoc l₁ (l₂ ++ l₃) l₄ ⟨
+    (l₁ ++ (l₂ ++ l₃)) ++ l₄
+  ≡⟨ Eq.cong (λ e → e ++ l₄) (++-assoc l₁ l₂ l₃) ⟨
+    ((l₁ ++ l₂) ++ l₃) ++ l₄
+  ≡⟨ ++-assoc (l₁ ++ l₂) l₃ l₄ ⟩
+    (l₁ ++ l₂) ++ l₃ ++ l₄
+  ∎
+
+zag/zig/inord/arith : (a b c d : Tree) (k p g : val nat) →  
+  inord (node a g (node (node b k c) p d)) ≡ inord (node (node a g b) k (node c p d))
+zag/zig/inord/arith a b c d k p g = zag/zig/arithmetic (inord a) (g ∷ inord b) (k ∷ inord c) (p ∷ inord d)
+
 splay' : (a : Tree) (b : Tree) (anc : List Context) (k : val nat) → cmp (F (splay'ResultType k a b anc))
-splay' a b [] k = ret ((a , b) , refl)
 -- done
+splay' a b [] k = ret ((a , b) , refl)
+-- zig
 splay' a b (Left p c ∷ []) k = 
   step (F _) 1 (
     ret ((a , node b p c) , ++-assoc (inord a) (k ∷ inord b) (p ∷ inord c)))
--- zig
+-- zag
 splay' b c (Right a p ∷ []) k = 
   step (F _) 1 (
     ret ((node a p b , c) , arithmetic (inord a) (p ∷ inord b) (k ∷ inord c)))
   where
     arithmetic : (l₁ l₂ l₃ : val (list nat)) → l₁ ++ l₂ ++ l₃ ≡ (l₁ ++ l₂) ++ l₃
     arithmetic l₁ l₂ l₃ = Eq.sym (++-assoc l₁ l₂ l₃)
--- zag
+-- zig-zig
 splay' a b (Left p c ∷ Left g d ∷ anc) k = 
   step (F _) 1 (
     bind (F _) (splay' a (node b p (node c g d)) anc k) (λ ((l' , r') , recon≡inord) → 
@@ -151,32 +169,16 @@ splay' a b (Left p c ∷ Left g d ∷ anc) k =
         (node a k (node b p (node c g d)))
         anc
         (zig/zig/inord/arith a b c d k p g)) recon≡inord)))
--- zig-zig
-splay' b c (Left p d ∷ Right a g ∷ anc) k = 
-  bind (F _) (splay' (node a g b) (node c p d) anc k) (λ ((l' , r') , recon≡inord) → 
-    step (F _) 1 (
-      ret ((l' , r') , Eq.trans (inord/reconstruct 
-       (node a g (node (node b k c) p d))
-       (node (node a g b) k (node c p d))
-       anc 
-       (inord/arith a b c d k p g)) recon≡inord)))
-  where
-    arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → l₁ ++ (l₂ ++ l₃) ++ l₄ ≡ (l₁ ++ l₂) ++ l₃ ++ l₄
-    arithmetic l₁ l₂ l₃ l₄ = 
-      let open ≡-Reasoning in
-      begin
-        l₁ ++ (l₂ ++ l₃) ++ l₄
-      ≡⟨ ++-assoc l₁ (l₂ ++ l₃) l₄ ⟨
-        (l₁ ++ (l₂ ++ l₃)) ++ l₄
-      ≡⟨ Eq.cong (λ e → e ++ l₄) (++-assoc l₁ l₂ l₃) ⟨
-        ((l₁ ++ l₂) ++ l₃) ++ l₄
-      ≡⟨ ++-assoc (l₁ ++ l₂) l₃ l₄ ⟩
-        (l₁ ++ l₂) ++ l₃ ++ l₄
-      ∎
-    inord/arith : (a b c d : Tree) (k p g : val nat) →  
-      inord (node a g (node (node b k c) p d)) ≡ inord (node (node a g b) k (node c p d))
-    inord/arith a b c d k p g = arithmetic (inord a) (g ∷ inord b) (k ∷ inord c) (p ∷ inord d)
 -- zag-zig
+splay' b c (Left p d ∷ Right a g ∷ anc) k = 
+  step (F _) 1 (
+    bind (F _) (splay' (node a g b) (node c p d) anc k) (λ ((l' , r') , recon≡inord) →
+      ret ((l' , r') , Eq.trans (inord/reconstruct
+        (node a g (node (node b k c) p d))
+        (node (node a g b) k (node c p d))
+        anc
+        (zag/zig/inord/arith a b c d k p g)) recon≡inord)))
+-- zig-zag
 splay' b c (Right a p ∷ Left g d ∷ anc) k = 
   step (F _) 1 (
     bind (F _) (splay' (node a p b) (node c g d) anc k) (λ ((l' , r') , recon≡inord) →
@@ -185,7 +187,7 @@ splay' b c (Right a p ∷ Left g d ∷ anc) k =
         (node (node a p b) k (node c g d))
         anc
         (zig/zag/inord/arith a b c d k p g)) recon≡inord)))
--- zig-zag
+-- zag-zag
 splay' c d (Right b p ∷ Right a g ∷ anc) k = 
   bind (F _) (splay' (node (node a g b) p c) d anc k) (λ ((l' , r') , recon≡inord) →
     step (F _) 1 (
@@ -208,7 +210,6 @@ splay' c d (Right b p ∷ Right a g ∷ anc) k =
     inord/arith : (a b c d : Tree) (k p g : val nat) → 
       inord (node a g (node b p (node c k d))) ≡ inord (node (node (node a g b) p c) k d)
     inord/arith a b c d k p g = arithmetic (inord a) (g ∷ inord b) (p ∷ inord c) (k ∷ inord d)
--- zag-zag
 
 splayResultType : (t' : Tree) → (k : val nat) → List Context → k ≡ root t' → tp⁺
 splayResultType t' k anc k≡root = Σ⁺ (nat ×⁺ tree) (λ (k' , t'') → 
