@@ -183,4 +183,67 @@ sum-ranks+x/lemma t₁ t₂ (Right t k ∷ anc) x sizet₁≡sizet₂ rank+t₁�
   ≡⟨ arithmetic₃ (sum-of-ranks t) (rank (node t k t₂)) x (sum-of-ranks t₂) ⟩
     x + (sum-of-ranks t + rank (node t k t₂) + sum-of-ranks t₂)
   ∎)
+
+tree-size/inord/lemma : (t : Tree) → tree-size t ≡ length (inord t)
+tree-size/inord/lemma leaf = refl
+tree-size/inord/lemma (node l x r) = 
+  let open ≡-Reasoning in
+  begin
+    (tree-size l + 1) + tree-size r
+  ≡⟨ Eq.cong₂ (λ e₁ → λ e₂ → e₁ + 1 + e₂) (tree-size/inord/lemma l) (tree-size/inord/lemma r) ⟩
+    (length (inord l) + 1) + length (inord r)
+  ≡⟨ Nat.+-assoc (length (inord l)) 1 (length (inord r)) ⟩
+    length (inord l) + (1 + length (inord r))
+  ≡⟨⟩
+    length (inord l) + length (x ∷ inord r)
+  ≡⟨ length-++ (inord l) ⟨
+    length (inord l ++ x ∷ inord r)
+  ∎
+
+sum-of-ranks/bound : (t : Tree) → 
+  sum-of-ranks t Nat.≤ tree-size t * ⌊log₂ (tree-size t) ⌋
+sum-of-ranks/bound leaf = Nat.≤-refl
+sum-of-ranks/bound (node l x r) = 
+  let 
+    |t| = tree-size (node l x r)
+    |l| = tree-size l
+    |r| = tree-size r
+  in
+  let open Nat.≤-Reasoning in
+  begin
+    sum-of-ranks l + rank (node l x r) + sum-of-ranks r
+  ≤⟨ +-mono-≤ (+-monoˡ-≤ (rank (node l x r)) (sum-of-ranks/bound l)) (sum-of-ranks/bound r) ⟩
+    (|l| * ⌊log₂ |l| ⌋) + rank (node l x r) + (|r| * ⌊log₂ |r| ⌋)
+  ≡⟨⟩
+    (|l| * ⌊log₂ |l| ⌋) + ⌊log₂ |t| ⌋ + (|r| * ⌊log₂ |r| ⌋)
+  ≤⟨ +-mono-≤ 
+      (+-monoˡ-≤ ⌊log₂ |t| ⌋ (Nat.*-monoʳ-≤ |l| (⌊log₂⌋-mono-≤ (Nat.≤-trans (Nat.m≤m+n |l| (1 + |r|)) (Nat.≤-reflexive (Eq.sym (Nat.+-assoc |l| 1 |r|))))))) 
+        (Nat.*-monoʳ-≤ |r| (⌊log₂⌋-mono-≤ (Nat.≤-trans (Nat.m≤m+n |r| (1 + |l|)) (Nat.≤-reflexive (Eq.trans (Nat.+-comm |r| (1 + |l|)) (Eq.cong (λ e → e + |r|) (Nat.+-comm 1 |l|))))))) ⟩
+    (|l| * ⌊log₂ |t| ⌋) + ⌊log₂ |t| ⌋ + (|r| * ⌊log₂ |t| ⌋)
+  ≡⟨ Eq.cong (λ e → (|l| * ⌊log₂ |t| ⌋) + e + (|r| * ⌊log₂ |t| ⌋)) (Nat.+-comm 0 ⌊log₂ |t| ⌋) ⟩
+    (|l| * ⌊log₂ |t| ⌋) + (1 * ⌊log₂ |t| ⌋) + (|r| * ⌊log₂ |t| ⌋)
+  ≡⟨ Eq.cong (λ e → e + (|r| * ⌊log₂ |t| ⌋)) (Nat.*-distribʳ-+ ⌊log₂ |t| ⌋ |l| 1) ⟨
+    ((|l| + 1) * ⌊log₂ |t| ⌋) + (|r| * ⌊log₂ |t| ⌋)
+  ≡⟨ Nat.*-distribʳ-+ ⌊log₂ |t| ⌋ (|l| + 1) |r| ⟨
+    (|l| + 1 + |r|) * ⌊log₂ |t| ⌋
+  ≡⟨ Nat.*-comm (|l| + 1 + |r|) ⌊log₂ |t| ⌋ ⟩
+    ⌊log₂ |t| ⌋ * (|l| + 1 + |r|)
+  ≡⟨⟩
+    ⌊log₂ |t| ⌋ * |t|
+  ≡⟨ Nat.*-comm ⌊log₂ |t| ⌋ |t| ⟩
+    |t| * ⌊log₂ |t| ⌋
+  ∎
+
+makeTree/inord/lemma : (t : Tree) → (l : val (list nat)) →
+  inord (makeTree/nodups/sorted t l) ≡ (inord t) ++ l
+makeTree/inord/lemma t [] = Eq.sym (++-identityʳ (inord t))
+makeTree/inord/lemma t (x ∷ xs) = 
+  let open ≡-Reasoning in
+  begin
+    inord (makeTree/nodups/sorted (node t x leaf) xs)
+  ≡⟨ makeTree/inord/lemma (node t x leaf) xs ⟩
+    inord (node t x leaf) ++ xs
+  ≡⟨ ++-assoc (inord t) (x ∷ []) xs ⟩
+    inord t ++ (x ∷ xs)
+  ∎
   

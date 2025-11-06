@@ -129,6 +129,22 @@ zig/zag/inord/arith : (a b c d : Tree) (k p g : val nat) →
   inord (node (node a p (node b k c)) g d) ≡ inord (node (node a p b) k (node c g d))
 zig/zag/inord/arith a b c d k p g = zig/zag/arithmetic (inord a) (p ∷ inord b) (k ∷ inord c) (g ∷ inord d)
 
+
+zag/zag/arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → l₁ ++ l₂ ++ l₃ ++ l₄ ≡ ((l₁ ++ l₂) ++ l₃) ++ l₄
+zag/zag/arithmetic l₁ l₂ l₃ l₄ = 
+  let open ≡-Reasoning in
+  begin
+    l₁ ++ (l₂ ++ (l₃ ++ l₄))
+  ≡⟨ ++-assoc l₁ l₂ (l₃ ++ l₄) ⟨
+    (l₁ ++ l₂) ++ (l₃ ++ l₄)
+  ≡⟨ ++-assoc (l₁ ++ l₂) l₃ l₄ ⟨
+    ((l₁ ++ l₂) ++ l₃) ++ l₄
+  ∎
+
+zag/zag/inord/arith : (a b c d : Tree) (k p g : val nat) → 
+  inord (node a g (node b p (node c k d))) ≡ inord (node (node (node a g b) p c) k d)
+zag/zag/inord/arith a b c d k p g = zag/zag/arithmetic (inord a) (g ∷ inord b) (p ∷ inord c) (k ∷ inord d)
+
 zag/zig/arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → l₁ ++ (l₂ ++ l₃) ++ l₄ ≡ (l₁ ++ l₂) ++ l₃ ++ l₄
 zag/zig/arithmetic l₁ l₂ l₃ l₄ =
   let open ≡-Reasoning in
@@ -145,6 +161,7 @@ zag/zig/arithmetic l₁ l₂ l₃ l₄ =
 zag/zig/inord/arith : (a b c d : Tree) (k p g : val nat) →  
   inord (node a g (node (node b k c) p d)) ≡ inord (node (node a g b) k (node c p d))
 zag/zig/inord/arith a b c d k p g = zag/zig/arithmetic (inord a) (g ∷ inord b) (k ∷ inord c) (p ∷ inord d)
+
 
 splay' : (a : Tree) (b : Tree) (anc : List Context) (k : val nat) → cmp (F (splay'ResultType k a b anc))
 -- done
@@ -189,45 +206,13 @@ splay' b c (Right a p ∷ Left g d ∷ anc) k =
         (zig/zag/inord/arith a b c d k p g)) recon≡inord)))
 -- zag-zag
 splay' c d (Right b p ∷ Right a g ∷ anc) k = 
-  bind (F _) (splay' (node (node a g b) p c) d anc k) (λ ((l' , r') , recon≡inord) →
-    step (F _) 1 (
-      ret ((l' , r') , Eq.trans (inord/reconstruct 
-       (node a g (node b p (node c k d)))
-       (node (node (node a g b) p c) k d)
-       anc 
-       (inord/arith a b c d k p g)) recon≡inord)))
-  where
-    arithmetic : (l₁ l₂ l₃ l₄ : val (list nat)) → l₁ ++ l₂ ++ l₃ ++ l₄ ≡ ((l₁ ++ l₂) ++ l₃) ++ l₄
-    arithmetic l₁ l₂ l₃ l₄ = 
-      let open ≡-Reasoning in
-      begin
-        l₁ ++ (l₂ ++ (l₃ ++ l₄))
-      ≡⟨ ++-assoc l₁ l₂ (l₃ ++ l₄) ⟨
-        (l₁ ++ l₂) ++ (l₃ ++ l₄)
-      ≡⟨ ++-assoc (l₁ ++ l₂) l₃ l₄ ⟨
-        ((l₁ ++ l₂) ++ l₃) ++ l₄
-      ∎
-    inord/arith : (a b c d : Tree) (k p g : val nat) → 
-      inord (node a g (node b p (node c k d))) ≡ inord (node (node (node a g b) p c) k d)
-    inord/arith a b c d k p g = arithmetic (inord a) (g ∷ inord b) (p ∷ inord c) (k ∷ inord d)
-
-splayResultType : (t' : Tree) → (k : val nat) → List Context → k ≡ root t' → tp⁺
-splayResultType t' k anc k≡root = Σ⁺ (nat ×⁺ tree) (λ (k' , t'') → 
-  (meta⁺ (inord (reconstruct t' anc) ≡ inord t'')) ×⁺ (meta⁺ (0 < tree-size t' → k ≡ root t'')) ×⁺ (meta⁺ (k' ≡ k)))
-
-splay : (t' : Tree) (k : val nat) (anc : List Context) (k≡root : k ≡ root t') → cmp (F (splayResultType t' k anc k≡root))
-splay leaf k anc k≡root = ret ((k , reconstruct leaf anc) , refl , (λ x → ⊥-elim (Nat.<-irrefl refl x)) , refl)
-splay (node l x r) k anc k≡root = bind (F _) (splay' l r anc k) (λ ((l' , r') , t''≡recon) → 
-  ret ((x , node l' x r') , 
-      Eq.trans 
-        (inord/reconstruct (node l x r) (node l k r) anc (inord/arith l r x k≡root)) 
-        (Eq.trans t''≡recon (Eq.sym (inord/arith l' r' x k≡root))) , 
-      (λ _ → k≡root) , 
-      Eq.sym k≡root))
-  where
-    inord/arith : (l r : Tree) (x : val nat) (k≡x : k ≡ x) → inord (node l x r) ≡ inord (node l k r)
-    inord/arith l r x k≡x = Eq.cong (λ e → inord l ++ e) (Eq.cong (λ e → e ∷ inord r) (Eq.sym k≡x))
-
+  step (F _) 1 (
+    bind (F _) (splay' (node (node a g b) p c) d anc k) (λ ((l' , r') , recon≡inord) →
+      ret ((l' , r') , Eq.trans (inord/reconstruct
+        (node a g (node b p (node c k d)))
+        (node (node (node a g b) p c) k d)
+        anc 
+        (zag/zag/inord/arith a b c d k p g)) recon≡inord)))
 makeTree/nodups/sorted : (t : Tree) (l : val (list nat)) → val (tree)
 makeTree/nodups/sorted t [] = t
 makeTree/nodups/sorted t (k ∷ ks) = makeTree/nodups/sorted (node t k leaf) ks

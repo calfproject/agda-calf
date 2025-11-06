@@ -143,6 +143,33 @@ arithmetic₄₁ = solve-∀
 arithmetic₄₂ : (a b c d e : val nat) → (e + e) + (a + b + c + d + e) ≡ a + e + ((b + e + c) + e + d)
 arithmetic₄₂ = solve-∀
 
+arithmetic₄₃ : (a b c d e f g h : val nat) → ((a + b + c) + d + (e + f + g)) + h ≡ (a + c + e + g) + (f + h) + d + b
+arithmetic₄₃ = solve-∀
+
+arithmetic₄₄ : (a b c d e f g : val nat) → (a + b + c + d) + e + f + g ≡ (a + f + (b + g + c + e + d))
+arithmetic₄₄ = solve-∀
+
+arithmetic₄₅ : (a b c d e : val nat) → ((a + e + b) + e + (c + e + d)) ≡ a + e + ((b + e + c) + e + d)
+arithmetic₄₅ = solve-∀
+
+arithmetic₄₆ : (a b c d e f g h : val nat) → ((a + g + b) + f + (c + e + d)) + h ≡ (a + b + c + d) + e + f + (g + h)
+arithmetic₄₆ = solve-∀
+
+arithmetic₄₈ : (a b c d e : val nat) → (b + e + c) + (a + e + d + e) ≡ ((a + e + b) + e + (c + e + d))
+arithmetic₄₈ = solve-∀
+
+arithmetic₄₉ : (a b c d e : val nat) → (((a + e + b) + e + c) + e + d) ≡ a + e + (b + e + (c + e + d))
+arithmetic₄₉ = solve-∀
+
+arithmetic₅₀ : (a b c d e f g : val nat) → (((a + e + b) + f + c) + g + d) ≡ (a + b + c + d) + e + f + g
+arithmetic₅₀ = solve-∀
+
+arithmetic₅₁ : (a b c d e f g h : val nat) → (a + b + c + d) + e + f + g + h ≡ h + (a + e + (b + f + (c + g + d)))
+arithmetic₅₁ = solve-∀
+
+arithmetic₅₂ : (a b c d e : val nat) → (e + e) + (a + b + c + d + e) ≡ (((a + e + b) + e + c) + e + d)
+arithmetic₅₂ = solve-∀
+
 arithmetic-manual : (a b : val nat) → b Nat.≤ a → a + a ≡ (a + b) + (a ∸ b)
 arithmetic-manual a b p = 
   let open ≡-Reasoning in 
@@ -307,4 +334,77 @@ arithmetic-manual₄ a b c d d<c 1≤c =
         c ∸ d
       ≤⟨ Nat.m≤n*m (c ∸ d) 2 ⟩
         2 * (c ∸ d)
+      ∎
+
+arithmetic-manual₅ : (a b c : val nat) → c < b → 1 Nat.≤ b → 
+  a + b + b + b + (3 * (c ∸ c)) ≡ a + (1 + c) + c + c + ((3 * (b ∸ c)) ∸ 1)
+arithmetic-manual₅ a b c c<b 1≤b = 
+  let open ≡-Reasoning in
+  begin
+    a + b + b + b + (3 * (c ∸ c))
+  ≡⟨ Eq.cong (λ e → e + (3 * (c ∸ c))) (Nat.+-assoc (a + b) b b) ⟩
+    a + b + (b + b) + (3 * (c ∸ c))
+  ≡⟨ Eq.cong (λ e → e + (3 * (c ∸ c))) (Nat.+-assoc a b (b + b)) ⟩
+    a + (b + (b + b)) + (3 * (c ∸ c))
+  ≡⟨ Eq.cong (λ e → a + e + (3 * (c ∸ c))) (Eq.cong (λ e → b + (b + e)) (Nat.+-identityʳ b)) ⟨
+    a + (3 * b) + (3 * (c ∸ c))
+  ≡⟨ Nat.+-assoc a (3 * b) (3 * (c ∸ c)) ⟩
+    a + ((3 * b) + (3 * (c ∸ c)))
+  ≡⟨ Eq.cong (λ e → a + e) (Nat.*-distribˡ-+ 3 b (c ∸ c)) ⟨
+    a + (3 * (b + (c ∸ c)))
+  ≡⟨ Eq.cong (λ e → a + (3 * e)) (Nat.+-∸-assoc b {c} {c} Nat.≤-refl) ⟨
+    a + (3 * ((b + c) ∸ c))
+  ≡⟨ Eq.cong (λ e → a + (3 * (e ∸ c))) (Nat.+-comm b c) ⟩
+    a + (3 * ((c + b) ∸ c))
+  ≡⟨ Eq.cong (λ e → a + (3 * e)) (Nat.+-∸-assoc c {b} {c} (Nat.<⇒≤ c<b)) ⟩
+    a + (3 * (c + (b ∸ c)))
+  ≡⟨ Eq.cong (λ e → a + e) (Nat.+-identityʳ (3 * (c + (b ∸ c)))) ⟨
+    a + ((3 * (c + (b ∸ c))) + (1 ∸ 1))
+  ≡⟨ Eq.cong (λ e → a + e) (Nat.+-∸-assoc (3 * (c + (b ∸ c))) {1} {1} Nat.≤-refl) ⟨ 
+    a + (((3 * (c + (b ∸ c))) + 1) ∸ 1)
+  ≡⟨ Eq.cong (λ e → a + (e ∸ 1)) (Nat.+-comm (3 * (c + (b ∸ c))) 1) ⟩
+    a + ((1 + (3 * (c + (b ∸ c)))) ∸ 1)
+  ≡⟨ Eq.cong (λ e → a + e) (Nat.+-∸-assoc 1 {3 * (c + (b ∸ c))} {1} 1≤arith1) ⟩
+    a + (1 + ((3 * (c + (b ∸ c))) ∸ 1))
+  ≡⟨ Nat.+-assoc a 1 ((3 * (c + (b ∸ c))) ∸ 1) ⟨
+    a + 1 + ((3 * (c + (b ∸ c))) ∸ 1)
+  ≡⟨ Eq.cong (λ e → a + 1 + (e ∸ 1)) (Nat.*-distribˡ-+ 3 c (b ∸ c)) ⟩
+    a + 1 + (((3 * c) + (3 * (b ∸ c))) ∸ 1)
+  ≡⟨ Eq.cong (λ e → a + 1 + e) (Nat.+-∸-assoc (3 * c) {3 * (b ∸ c)} {1} 1≤arith2) ⟩
+    a + 1 + ((3 * c) + ((3 * (b ∸ c)) ∸ 1))
+  ≡⟨ Nat.+-assoc (a + 1) (3 * c) ((3 * (b ∸ c)) ∸ 1) ⟨
+    a + 1 + (3 * c) + ((3 * (b ∸ c)) ∸ 1)
+  ≡⟨ Eq.cong (λ e → a + 1 + e + ((3 * (b ∸ c)) ∸ 1)) (Eq.cong (λ e → c + (c + e)) (Nat.+-identityʳ c)) ⟩
+    a + 1 + (c + (c + c)) + ((3 * (b ∸ c)) ∸ 1)
+  ≡⟨ Eq.cong (λ e → e + ((3 * (b ∸ c)) ∸ 1)) (Nat.+-assoc (a + 1) c (c + c)) ⟨
+    a + 1 + c + (c + c) + ((3 * (b ∸ c)) ∸ 1)
+  ≡⟨ Eq.cong (λ e → e + ((3 * (b ∸ c)) ∸ 1)) (Nat.+-assoc (a + 1 + c) c c) ⟨
+    a + 1 + c + c + c + ((3 * (b ∸ c)) ∸ 1)
+  ≡⟨ Eq.cong (λ e → e + c + c + ((3 * (b ∸ c)) ∸ 1)) (Nat.+-assoc a 1 c) ⟩
+    a + (1 + c) + c + c + ((3 * (b ∸ c)) ∸ 1)
+  ∎
+  where
+    1≤arith1 : 1 Nat.≤ 3 * (c + (b ∸ c))
+    1≤arith1 = 
+      let open Nat.≤-Reasoning in
+      begin
+        1
+      ≤⟨ 1≤b ⟩
+        b
+      ≤⟨ Nat.m≤n*m b 3 ⟩
+        3 * b
+      ≡⟨ Eq.cong (λ e → 3 * e) (Nat.m+n∸m≡n c b) ⟨ 
+        3 * (c + b ∸ c)
+      ≡⟨ Eq.cong (λ e → 3 * e) (Nat.+-∸-assoc c {b} {c} (Nat.<⇒≤ c<b)) ⟩
+        3 * (c + (b ∸ c))
+      ∎
+    1≤arith2 : 1 Nat.≤ 3 * (b ∸ c)
+    1≤arith2 = 
+      let open Nat.≤-Reasoning in
+      begin
+        1
+      ≤⟨ Nat.m<n⇒0<n∸m c<b ⟩ 
+        b ∸ c
+      ≤⟨ Nat.m≤n*m (b ∸ c) 3 ⟩
+        3 * (b ∸ c)
       ∎
