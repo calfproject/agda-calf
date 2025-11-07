@@ -1,4 +1,4 @@
-{-# OPTIONS --rewriting --allow-unsolved-metas #-}
+{-# OPTIONS --rewriting #-}
 
 module Examples.Amortized.SplayTree.LaxHomomorphism where
 

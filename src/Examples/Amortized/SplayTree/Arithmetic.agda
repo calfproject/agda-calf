@@ -170,6 +170,24 @@ arithmetic₅₁ = solve-∀
 arithmetic₅₂ : (a b c d e : val nat) → (e + e) + (a + b + c + d + e) ≡ (((a + e + b) + e + c) + e + d)
 arithmetic₅₂ = solve-∀
 
+arithmetic₅₃ : (a b c : val nat) → a + a + b + c ≡ (a + b) + (c + a)
+arithmetic₅₃ = solve-∀
+
+arithmetic₅₄ : (a b c d e f g h : val nat) → (((a + e + b) + f + c) + g + d) + h ≡ (a + b + c + d) + g + f + (e + h)
+arithmetic₅₄ = solve-∀
+
+arithmetic₅₅ : (a b c d e f g : val nat) → (a + b + c + d) + e + f + g ≡ a + g + (b + f + (c + e + d))
+arithmetic₅₅ = solve-∀
+
+arithmetic₅₆ : (a b c d e : val nat) → ((a + e + b) + e + (c + e + d)) ≡ (a + e + (b + e + (c + e + d)))
+arithmetic₅₆ = solve-∀
+
+arithmetic₅₇ : (a b c d e : val nat) → ((a + e + b) + (e + c + e + d)) ≡ ((a + e + b) + e + (c + e + d))
+arithmetic₅₇ = solve-∀
+
+arithmetic₅₈ : (a b c d e : val nat) → (a + e + b + e) + (c + e + d) ≡ (((a + e + b) + e + c) + e + d)
+arithmetic₅₈ = solve-∀
+
 arithmetic-manual : (a b : val nat) → b Nat.≤ a → a + a ≡ (a + b) + (a ∸ b)
 arithmetic-manual a b p = 
   let open ≡-Reasoning in 
