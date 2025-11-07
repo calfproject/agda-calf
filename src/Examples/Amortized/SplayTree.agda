@@ -3,7 +3,7 @@
 module Examples.Amortized.SplayTree where
 
 -- BST signature and list-based specification 
-import Examples.Amortized.SplayTree.Prelude
+import Examples.Amortized.SplayTree.Base
 
 -- Splay tree implementation 
 import Examples.Amortized.SplayTree.SplayTree

@@ -23,7 +23,7 @@ open import Relation.Binary.PropositionalEquality as Eq using (_≡_; _≢_; ref
 open import Data.Nat.Logarithm
 open import Data.Empty using (⊥; ⊥-elim)
 
-open import Examples.Amortized.SplayTree.Prelude
+open import Examples.Amortized.SplayTree.Base
 open import Examples.Amortized.SplayTree.SplayTree
 open import Examples.Amortized.SplayTree.AccessPrepare
 open import Examples.Amortized.SplayTree.Access

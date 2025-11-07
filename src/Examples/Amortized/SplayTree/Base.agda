@@ -1,6 +1,6 @@
 {-# OPTIONS --rewriting #-}
 
-module Examples.Amortized.SplayTree.Prelude where
+module Examples.Amortized.SplayTree.Base where
 
 open import Algebra.Cost
 
