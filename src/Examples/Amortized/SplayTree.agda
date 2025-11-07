@@ -16,3 +16,6 @@ import Examples.Amortized.SplayTree.LaxHomomorphism
 
 -- Balance theorem
 import Examples.Amortized.SplayTree.Balance
+
+-- Example rotations of splay tree
+import Examples.Amortized.SplayTree.Example

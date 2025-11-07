@@ -213,6 +213,7 @@ splay' c d (Right b p ∷ Right a g ∷ anc) k =
         (node (node (node a g b) p c) k d)
         anc 
         (zag/zag/inord/arith a b c d k p g)) recon≡inord)))
+        
 makeTree/nodups/sorted : (t : Tree) (l : val (list nat)) → val (tree)
 makeTree/nodups/sorted t [] = t
 makeTree/nodups/sorted t (k ∷ ks) = makeTree/nodups/sorted (node t k leaf) ks

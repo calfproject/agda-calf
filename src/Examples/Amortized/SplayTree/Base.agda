@@ -58,6 +58,7 @@ ListTree .BST.size l = ret (length l)
 ListTree .BST.find l k = 
   step (F _) ((3 * ⌊log₂ (length l)⌋) + 1) (
     bind (F _) (listFind l k) (λ b → ret (b , l)))
+    
 list/find/lemma : ∀ (l : val (list nat)) (k : val nat) → ∃[ b ] (listFind l k ≡ ret b)
 list/find/lemma [] k = false , refl
 list/find/lemma (x ∷ xs) k with Nat.<-cmp x k 
@@ -77,3 +78,4 @@ list/find/bind/lemma l k with (list/find/lemma l k)
   ≡⟨⟩
     ret l
   ∎
+  
