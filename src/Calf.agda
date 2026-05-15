@@ -6,7 +6,7 @@ module Calf (costMonoid : CostMonoid) where
 
 open CostMonoid costMonoid
 
-open import Calf.Prelude public
+-- open import Calf.Prelude public
 open import Calf.CBPV public
 open import Calf.Directed public
 open import Calf.Phase public
