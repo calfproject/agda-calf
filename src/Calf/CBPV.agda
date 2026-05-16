@@ -169,6 +169,9 @@ _⊗_ : 𝒞 → 𝒞 → 𝒞
 (A ⊗ B) .charge/+ {law₂ c c' a b i} = {! squash  !}
 (A ⊗ B) .charge/+ {squash _ _ _ _ _ _} = {!   !}
 
+_∥_ : cmp A → cmp B → cmp (A ⊗ B)
+a ∥ b = inj a b 0ℂ
+
 opaque
   unfolding M
 
@@ -199,6 +202,20 @@ opaque
       A .charge c (A .charge (e .U δ .fst) (k (e .U δ .snd)))
     ∎
   syntax bind' e (λ x → k) = bind x ← e ⨾ k
+
+  F⊗-fwd : (F X ⊗ F Y) ⊸ F (X ×ᵛ Y)
+  F⊗-fwd .U (inj (cx , x) (cy , y) c) = c +ℂ (cx +ℂ cy) , x , y
+  F⊗-fwd .U (law₁ c c' a b i) = {!   !}
+  F⊗-fwd .U (law₂ c c' a b i) = {!   !}
+  F⊗-fwd .U (squash e e₁ x y i i₁) = {!   !}
+  F⊗-fwd .charge = {!   !}
+
+  F⊗-bwd : F (X ×ᵛ Y) ⊸ (F X ⊗ F Y)
+  F⊗-bwd .U (c , x , y) = inj (0ℂ , x) (0ℂ , y) c
+  F⊗-bwd .charge = {!   !}
+
+par : cmp (F X) → cmp (F Y) → cmp (F (X ×ᵛ Y))
+par ex ey = F⊗-fwd .U (ex ∥ ey)
 
 module Demo where
   double : cmp (ℕᵛ ⇀ F ℕᵛ)
