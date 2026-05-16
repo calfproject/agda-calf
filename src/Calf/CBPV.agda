@@ -187,6 +187,12 @@ opaque
   bind : cmp (F X) → (val X → cmp A) → cmp A
   bind {A = A} (c , x) k = A .charge c (k x)
 
+  bind/charge : ∀ {c e k} → bind {A = A} (F X .charge c e) k ≡ A .charge c (bind {A = A} e k)
+  bind/charge = {!   !}
+
+  F/η : ∀ {x k} → bind {A = A} (ret {X} x) k ≡ k x
+  F/η = {!   !}
+
   syntax bind {A = A} e (λ x → k) = bind[ A ] x ← e ⨾ k
 
   variable
@@ -224,6 +230,23 @@ module Demo where
     F ℕᵛ .charge 1 $
     bind[ F ℕᵛ ] n' ← double n ⨾
     ret (suc (suc n'))
+
+  opaque
+    unfolding ℂ
+
+    DOUBLE : ℕ → ℕ
+    DOUBLE zero = 0
+    DOUBLE (suc n) = suc (suc (DOUBLE n))
+
+    foo : double ⊑[ U (ℕᵛ ⇀ F ℕᵛ) ] (λ n → F ℕᵛ .charge (` n) (ret (DOUBLE n)))
+    foo = ⊑-funext lemma
+      where
+        lemma : ∀ n → double n ⊑[ U (F ℕᵛ) ] F ℕᵛ .charge (` n) (ret (DOUBLE n))
+        lemma zero = ≡⇒⊑ (sym (F ℕᵛ .charge/0))
+        lemma (suc n) =
+          ⊑-trans (⊑-mono (λ e → F ℕᵛ .charge 1 (bind e _)) (lemma n)) $
+          ⊑-trans (⊑-mono {X = U (F ℕᵛ)} (F ℕᵛ .charge 1) (⊑-trans (≡⇒⊑ bind/charge) (⊑-mono {X = U (F ℕᵛ)} (F ℕᵛ .charge n) (≡⇒⊑ F/η)))) $
+          ≡⇒⊑ (sym (F ℕᵛ .charge/+ {c₁ = 1}))
 
   BQ : 𝒞
   BQ = F (Listᵛ ℕᵛ ×ᵛ Listᵛ ℕᵛ)

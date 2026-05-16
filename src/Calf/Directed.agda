@@ -44,13 +44,13 @@ open BinaryRelation
 ≡⇒⊑ : ∀ {x x'} → x ≡ x' → x ⊑[ X ] x'
 ≡⇒⊑ = {!   !} -- {x = x} x≡x' = ∣ const x , refl , x≡x' ∣₁
 
-⊑-refl : isRefl (_⊑_ {X})
+⊑-refl : isRefl' (_⊑_ {X})
 ⊑-refl = {!   !} --  x = ≡⇒⊑ refl
 
 ⊑-mono : ∀ (f : val X → val Y) {x x'} → x ⊑[ X ] x' → f x ⊑[ Y ] f x'
 ⊑-mono = {!   !} -- f = map λ (path , path₀ , path₁) → f ∘ path , cong f path₀ , cong f path₁
 
-⊑-trans : isTrans (_⊑_ {X})
+⊑-trans : isTrans' (_⊑_ {X})
 ⊑-trans = {!   !}
 
 IsDiscrete : 𝒱 → Type
@@ -74,7 +74,7 @@ _×ᵛ_ : 𝒱 → 𝒱 → 𝒱
 Πᵛ X Y .isPreorder = {!   !}
 
 ⊑-funext : {Y : val X → 𝒱}
-  → (f f' : (x : val X) → val (Y x))
+  → {f f' : (x : val X) → val (Y x)}
   → ((x : val X) → f x ⊑[ Y x ] f' x)
   → f ⊑[ Πᵛ X Y ] f'
 ⊑-funext = {!   !}
