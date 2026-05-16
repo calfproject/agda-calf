@@ -30,10 +30,22 @@ opaque
   _+ℂ_ = _+_
 
   +ℂ-identityˡ : ∀ c → 0ℂ +ℂ c ≡ c
-  +ℂ-identityˡ = {!   !}
+  +ℂ-identityˡ c = refl
 
   +ℂ-assoc : ∀ c₁ c₂ c₃ → (c₁ +ℂ c₂) +ℂ c₃ ≡ c₁ +ℂ (c₂ +ℂ c₃)
-  +ℂ-assoc = {!   !}
+  +ℂ-assoc c₁ c₂ c₃ = sym (+-assoc c₁ c₂ c₃)
+
+  +ℂ-comm : ∀ c₁ c₂ → c₁ +ℂ c₂ ≡ c₂ +ℂ c₁
+  +ℂ-comm = +-comm
+
+  ℕ→ℂ : ℕ → val ℂ
+  ℕ→ℂ n = n
+
+instance
+  fromNatℂ : HasFromNat (val ℂ)
+  fromNatℂ = record { Constraint = λ _ → Unit ; fromNat = λ n → ℕ→ℂ n }
+
+`_ = fromNat
 
 variable
   c c₁ c₂ : val ℂ
@@ -117,6 +129,46 @@ syntax Σᶜ X (λ x → A) = [ x ∈ X ] ⋊ A
 _⋊_ : (X : 𝒱) ⦃ _ : IsDiscrete X ⦄ → 𝒞 → 𝒞
 X ⋊ A = Σᶜ X (const A)
 
+data _U⊗_ (A B : 𝒞) : Type where
+  inj : (a : cmp A) (b : cmp B) (c : val ℂ) → A U⊗ B
+  law₁ : ∀ c c' a b → inj (A .charge c' a) b c ≡ inj a b (c +ℂ c')
+  law₂ : ∀ c c' a b → inj a (B .charge c' b) c ≡ inj a b (c +ℂ c')
+  squash : isSet (A U⊗ B)
+
+_⊗_ : 𝒞 → 𝒞 → 𝒞
+(A ⊗ B) .U .val = A U⊗ B
+(A ⊗ B) .U .isPreorder = {!   !}
+(A ⊗ B) .charge c (inj a b c') = inj a b (c +ℂ c')
+(A ⊗ B) .charge c (law₁ c₁ c' a b i) = lemma i
+  where
+    lemma : inj (A .charge c' a) b (c +ℂ c₁) ≡ inj a b (c +ℂ (c₁ +ℂ c'))
+    lemma =
+        inj (A .charge c' a) b (c +ℂ c₁)
+      ≡⟨ law₁ (c +ℂ c₁) c' a b ⟩
+        inj a b ((c +ℂ c₁) +ℂ c')
+      ≡⟨ cong (inj a b) (+ℂ-assoc c c₁ c') ⟩
+        inj a b (c +ℂ (c₁ +ℂ c'))
+      ∎
+(A ⊗ B) .charge c (law₂ c₁ c' a b i) = lemma i
+  where
+    lemma : inj a (B .charge c' b) (c +ℂ c₁) ≡ inj a b (c +ℂ (c₁ +ℂ c'))
+    lemma =
+        inj a (B .charge c' b) (c +ℂ c₁)
+      ≡⟨ law₂ (c +ℂ c₁) c' a b ⟩
+        inj a b ((c +ℂ c₁) +ℂ c')
+      ≡⟨ cong (inj a b) (+ℂ-assoc c c₁ c') ⟩
+        inj a b (c +ℂ (c₁ +ℂ c'))
+      ∎
+(A ⊗ B) .charge c (squash _ _ _ _ _ _) = {!   !}
+(A ⊗ B) .charge/0 {inj a b c} = cong (inj a b) (+ℂ-identityˡ c)
+(A ⊗ B) .charge/0 {law₁ c c' a b i} j = squash (inj a b c') (inj a b c') refl refl {!   !} {!   !}
+(A ⊗ B) .charge/0 {law₂ c c' a b i} = {! squash  !}
+(A ⊗ B) .charge/0 {squash _ _ _ _ _ _} = {!   !}
+(A ⊗ B) .charge/+ {inj a b c} = cong (inj a b) (+ℂ-assoc _ _ c)
+(A ⊗ B) .charge/+ {law₁ c c' a b i} = {! squash  !}
+(A ⊗ B) .charge/+ {law₂ c c' a b i} = {! squash  !}
+(A ⊗ B) .charge/+ {squash _ _ _ _ _ _} = {!   !}
+
 opaque
   unfolding M
 
@@ -132,6 +184,8 @@ opaque
   bind : cmp (F X) → (val X → cmp A) → cmp A
   bind {A = A} (c , x) k = A .charge c (k x)
 
+  syntax bind {A = A} e (λ x → k) = bind[ A ] x ← e ⨾ k
+
   variable
     Δ : 𝒞
 
@@ -144,12 +198,14 @@ opaque
     ≡⟨ A .charge/+ ⟩
       A .charge c (A .charge (e .U δ .fst) (k (e .U δ .snd)))
     ∎
+  syntax bind' e (λ x → k) = bind x ← e ⨾ k
 
 module Demo where
   double : cmp (ℕᵛ ⇀ F ℕᵛ)
   double zero = ret 0
   double (suc n) =
-    bind {A = F ℕᵛ} (double n) λ n' →
+    F ℕᵛ .charge 1 $
+    bind[ F ℕᵛ ] n' ← double n ⨾
     ret (suc (suc n'))
 
   BQ : 𝒞
@@ -158,10 +214,12 @@ module Demo where
   LQ : 𝒞
   LQ = F (Listᵛ ℕᵛ)
 
-  opaque
-    unfolding ℂ
+  φ : BQ ⊸ LQ
+  φ =
+    bind (l₁ , l₂) ← id⊸ ⨾
+    LQ .charge (` length l₁) (ret (l₂ ++ rev l₁))
 
-    dequeue : LQ ⊸ (ℕᵛ ⋊ LQ)
-    dequeue = bind' id⊸ λ
-      { []      → 0 , ret []
-      ; (x ∷ l) → x , LQ .charge 1 (ret l) }
+  dequeue : LQ ⊸ (ℕᵛ ⋊ LQ)
+  dequeue = bind' id⊸ λ
+    { []      → 0 , ret []
+    ; (x ∷ l) → x , LQ .charge 1 (ret l) }
