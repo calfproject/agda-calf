@@ -1,23 +1,30 @@
 {-# OPTIONS --cubical #-}
 
 open import Cubical.Foundations.Prelude
--- open import Cubical.Foundations.Equiv
-open import Cubical.Foundations.Function
-open import Cubical.Data.List
-open import Cubical.Data.Sum
-open import Cubical.Data.Unit
+open import Cubical.Data.Equality.Conversion
 open import Cubical.Data.Empty
-open import Cubical.Data.Nat
-open import Cubical.Data.Nat.Properties
-open import Cubical.Data.Sigma
--- open import Cubical.Foundations.HLevels
--- open import Cubical.Foundations.Isomorphism
--- open import Cubical.Foundations.Path
--- open import Cubical.Foundations.Univalence
+open import Data.List
+open import Data.Nat
+open import Data.Nat.Properties
+open import Data.Product
+open import Data.Sum
+open import Data.Unit
+open import Function
 
 open import Calf.Directed
 
 module Calf.CBPV where
+
+open import Agda.Builtin.FromNat renaming (Number to HasFromNat)
+import Data.Nat.Literals
+
+instance
+  fromNatℕ : HasFromNat ℕ
+  fromNatℕ = Data.Nat.Literals.number
+
+
+module _ {A : Type} where
+  open import Algebra.Definitions {A = A} _≡_ public
 
 opaque
   ℂ : 𝒱
@@ -29,21 +36,21 @@ opaque
   _+ℂ_ : val ℂ → val ℂ → val ℂ
   _+ℂ_ = _+_
 
-  +ℂ-identityˡ : ∀ c → 0ℂ +ℂ c ≡ c
-  +ℂ-identityˡ c = refl
+  +ℂ-identityˡ : LeftIdentity 0ℂ _+ℂ_
+  +ℂ-identityˡ c = eqToPath (+-identityˡ c)
 
-  +ℂ-assoc : ∀ c₁ c₂ c₃ → (c₁ +ℂ c₂) +ℂ c₃ ≡ c₁ +ℂ (c₂ +ℂ c₃)
-  +ℂ-assoc c₁ c₂ c₃ = sym (+-assoc c₁ c₂ c₃)
+  +ℂ-assoc : Associative _+ℂ_
+  +ℂ-assoc c₁ c₂ c₃ = eqToPath (+-assoc c₁ c₂ c₃)
 
-  +ℂ-comm : ∀ c₁ c₂ → c₁ +ℂ c₂ ≡ c₂ +ℂ c₁
-  +ℂ-comm = +-comm
+  +ℂ-comm : Commutative _+ℂ_
+  +ℂ-comm c₁ c₂ = eqToPath (+-comm c₁ c₂)
 
   ℕ→ℂ : ℕ → val ℂ
   ℕ→ℂ n = n
 
 instance
   fromNatℂ : HasFromNat (val ℂ)
-  fromNatℂ = record { Constraint = λ _ → Unit ; fromNat = λ n → ℕ→ℂ n }
+  fromNatℂ = record { Constraint = λ _ → ⊤ ; fromNat = λ n → ℕ→ℂ n }
 
 `_ = fromNat
 
@@ -112,12 +119,12 @@ X ⇀ A = Πᶜ X (const A)
 
 _+ᶜ_ : 𝒞 → 𝒞 → 𝒞
 (A +ᶜ B) .U = A .U +ᵛ B .U
-(A +ᶜ B) .charge c (inl a) = inl (A .charge c a)
-(A +ᶜ B) .charge c (inr b) = inr (B .charge c b)
-(A +ᶜ B) .charge/0 {inl a} = cong inl (A .charge/0)
-(A +ᶜ B) .charge/0 {inr b} = cong inr (B .charge/0)
-(A +ᶜ B) .charge/+ {inl a} = cong inl (A .charge/+)
-(A +ᶜ B) .charge/+ {inr b} = cong inr (B .charge/+)
+(A +ᶜ B) .charge c (inj₁ a) = inj₁ (A .charge c a)
+(A +ᶜ B) .charge c (inj₂ b) = inj₂ (B .charge c b)
+(A +ᶜ B) .charge/0 {inj₁ a} = cong inj₁ (A .charge/0)
+(A +ᶜ B) .charge/0 {inj₂ b} = cong inj₂ (B .charge/0)
+(A +ᶜ B) .charge/+ {inj₁ a} = cong inj₁ (A .charge/+)
+(A +ᶜ B) .charge/+ {inj₂ b} = cong inj₂ (B .charge/+)
 
 Σᶜ : (X : 𝒱) ⦃ _ : IsDiscrete X ⦄ → (val X → 𝒞) → 𝒞
 Σᶜ X A .U = Σᵛ X (U ∘ A)
@@ -257,7 +264,7 @@ module Demo where
   φ : BQ ⊸ LQ
   φ =
     bind (l₁ , l₂) ← id⊸ ⨾
-    LQ .charge (` length l₁) (ret (l₂ ++ rev l₁))
+    LQ .charge (` length l₁) (ret (l₂ ++ reverse l₁))
 
   dequeue : LQ ⊸ (ℕᵛ ⋊ LQ)
   dequeue = bind' id⊸ λ

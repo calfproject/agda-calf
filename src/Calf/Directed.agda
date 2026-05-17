@@ -2,17 +2,15 @@
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
-open import Cubical.Foundations.Function
-open import Cubical.Foundations.HLevels
-open import Cubical.Data.Bool
-open import Cubical.Data.Empty
-open import Cubical.Data.List
-open import Cubical.Data.Nat
-open import Cubical.Data.Sigma
-open import Cubical.Data.Sum
-open import Cubical.Data.Unit
-open import Cubical.HITs.PropositionalTruncation
-open import Cubical.Relation.Binary
+open import Data.Bool
+open import Data.Empty
+open import Data.List
+open import Data.Nat
+open import Data.Product
+open import Data.Sum
+open import Data.Unit
+open import Function
+open import Relation.Binary.Definitions
 
 module Calf.Directed where  -- (BEH : Type) (BEH-isProp : isProp BEH) (𝕀 : Type) (𝕀0 𝕀1 : 𝕀) (𝕀-isAlgorithmic : BEH → isContr 𝕀) where
 
@@ -39,18 +37,16 @@ syntax ⊑-syntax {X} x x' = x ⊑[ X ] x'
 ⊑-isProp : {x x' : val X} → isProp (x ⊑[ X ] x')
 ⊑-isProp = {!   !}
 
-open BinaryRelation
-
 ≡⇒⊑ : ∀ {x x'} → x ≡ x' → x ⊑[ X ] x'
 ≡⇒⊑ = {!   !} -- {x = x} x≡x' = ∣ const x , refl , x≡x' ∣₁
 
-⊑-refl : isRefl' (_⊑_ {X})
+⊑-refl : Reflexive (_⊑_ {X})
 ⊑-refl = {!   !} --  x = ≡⇒⊑ refl
 
 ⊑-mono : ∀ (f : val X → val Y) {x x'} → x ⊑[ X ] x' → f x ⊑[ Y ] f x'
 ⊑-mono = {!   !} -- f = map λ (path , path₀ , path₁) → f ∘ path , cong f path₀ , cong f path₁
 
-⊑-trans : isTrans' (_⊑_ {X})
+⊑-trans : Transitive (_⊑_ {X})
 ⊑-trans = {!   !}
 
 IsDiscrete : 𝒱 → Type
@@ -62,7 +58,7 @@ module _ (BEH : Type) (BEH-isProp : isProp BEH) where
 
 
 1ᵛ : 𝒱
-1ᵛ .val = Unit
+1ᵛ .val = ⊤
 1ᵛ .isPreorder = {!   !}
 
 _×ᵛ_ : 𝒱 → 𝒱 → 𝒱
