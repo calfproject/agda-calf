@@ -2,11 +2,11 @@
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels
-open import Cubical.Data.Equality.Conversion
 open import Cubical.Data.Empty
-open import Data.List
-open import Data.Nat
-open import Data.Nat.Properties
+open import Cubical.Data.List using (List; []; _∷_; _++_; [_]; length) renaming (rev to reverse)
+import Cubical.Data.List.Properties as List
+open import Cubical.Data.Nat.Base using (ℕ; zero; suc; _+_)
+import Cubical.Data.Nat.Properties as Nat
 open import Data.Product
 open import Data.Sum
 open import Data.Unit
@@ -38,13 +38,13 @@ opaque
   _+ℂ_ = _+_
 
   +ℂ-identityˡ : LeftIdentity 0ℂ _+ℂ_
-  +ℂ-identityˡ c = eqToPath (+-identityˡ c)
+  +ℂ-identityˡ c = refl
 
   +ℂ-assoc : Associative _+ℂ_
-  +ℂ-assoc c₁ c₂ c₃ = eqToPath (+-assoc c₁ c₂ c₃)
+  +ℂ-assoc c₁ c₂ c₃ = sym (Nat.+-assoc c₁ c₂ c₃)
 
   +ℂ-comm : Commutative _+ℂ_
-  +ℂ-comm c₁ c₂ = eqToPath (+-comm c₁ c₂)
+  +ℂ-comm c₁ c₂ = Nat.+-comm c₁ c₂
 
   ℕ→ℂ : ℕ → val ℂ
   ℕ→ℂ n = n
@@ -341,7 +341,7 @@ module Demo where
   dequeue : LQ ⊸ (ℕᵛ ⋊ LQ)
   dequeue = bind' id⊸ λ
     { []      → 0 , ret []
-    ; (x ∷ l) → x , LQ .charge 1 (ret l) }
+    ; (x ∷ l) → x , ret l }
 
   emptyᵗ : cmp BQ
   emptyᵗ = ret ([] , [])
@@ -356,5 +356,47 @@ module Demo where
     where
       reverse-front : List ℕ → cmp (ℕᵛ ⋊ BQ)
       reverse-front back with reverse back
-      ... | []     = 0 , ret ([] , [])
+      ... | []     = 0 , BQ .charge (` length back) (ret ([] , []))
       ... | x ∷ l  = x , BQ .charge (` length back) (ret ([] , l))
+
+  mapφ : (ℕᵛ ⋊ BQ) ⊸ (ℕᵛ ⋊ LQ)
+  mapφ .U (x , q) = x , φ .U q
+  mapφ .charge c (x , q) i .fst = x
+  mapφ .charge c (x , q) i .snd = φ .charge c q i
+
+  opaque
+    unfolding ℂ
+    unfolding F
+    unfolding bind'
+
+    enqueue-cost : (c n : ℕ) → c + 0 + suc (n + 0) ≡ c + (n + 0) + 1
+    enqueue-cost c n =
+      cong (_+ suc (n + 0)) (Nat.+-zero c)
+      ∙ Nat.+-suc c (n + 0)
+      ∙ Nat.+-comm 1 ((c + (n + 0)))
+
+    dequeue-front-cost : (c n : ℕ) → c + 0 + (n + 0) ≡ c + (n + 0) + 0
+    dequeue-front-cost c n =
+      cong (_+ (n + 0)) (Nat.+-zero c)
+      ∙ sym (Nat.+-zero (c + (n + 0)))
+
+    empty-coherent : φ .U emptyᵗ ≡ emptyq
+    empty-coherent = refl
+
+    enqueue-coherent :
+      (e : val ℕᵛ) (q : cmp BQ)
+      → φ .U (enqueueᵗ e .U q) ≡ enqueue e .U (φ .U q)
+    enqueue-coherent e (c , back , front) =
+      cong₂ _,_
+        (enqueue-cost c (length back))
+        (sym (List.++-assoc front (reverse back) [ e ]))
+
+    dequeue-coherent :
+      (q : cmp BQ)
+      → mapφ .U (dequeueᵗ .U q) ≡ dequeue .U (φ .U q)
+    dequeue-coherent (c , back , []) with reverse back
+    ... | [] = refl
+    ... | x ∷ front =
+      λ i → x , c + (length back + 0) + 0 , List.++-unit-r front i
+    dequeue-coherent (c , back , x ∷ front) =
+      λ i → x , dequeue-front-cost c (length back) i , front ++ reverse back
