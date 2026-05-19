@@ -8,6 +8,7 @@ open import Calf.Value.Sigma public
 open import Calf.Computation.Free public
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels
+open import Cubical.Data.Nat using (isSetℕ)
 open import Function
 
 data _U⊗_ (A B : 𝒞) : Type where
@@ -101,6 +102,12 @@ _∥_ : cmp A → cmp B → cmp (A ⊗ B)
 a ∥ b = inj a b 0ℂ
 
 opaque
+  unfolding ℂ
+
+  isSetℂ : isSet (val ℂ)
+  isSetℂ = isSetℕ
+
+opaque
   unfolding F
 
   leftF : (val X → cmp (F Y)) → (F X ⊸ F Y)
@@ -113,24 +120,58 @@ opaque
             → rightF {X} {Y} (leftF k) a ≡ k a
   right-leftF {Y = Y} k a = F Y .charge/0
 
-  F⊗-fwd : (F X ⊗ F Y) ⊸ F (X ×ᵛ Y)
-  F⊗-fwd .U (inj (cx , x) (cy , y) c) = c +ℂ (cx +ℂ cy) , x , y
-  F⊗-fwd .U (law₁ c c' (cx , x) (cy , y) i) =
-    ( cong (c +ℂ_) (+ℂ-assoc c' cx cy)
-      ∙ sym (+ℂ-assoc c c' (cx +ℂ cy))) i
-    , x , y
-  F⊗-fwd .U (law₂ c c' (cx , x) (cy , y) i) =
-    ( cong (c +ℂ_) (sym (+ℂ-assoc cx c' cy))
-      ∙ cong (λ z → c +ℂ (z +ℂ cy)) (+ℂ-comm cx c')
-      ∙ cong (c +ℂ_) (+ℂ-assoc c' cx cy)
-      ∙ sym (+ℂ-assoc c c' (cx +ℂ cy)) ) i
-    , x , y
-  F⊗-fwd .U (squash e e₁ x y i i₁) = {!   !}
-  F⊗-fwd .charge = {!   !}
+  F⊗-fwd : isSet (val X) → isSet (val Y) → (F X ⊗ F Y) ⊸ F (X ×ᵛ Y)
+  F⊗-fwd {X} {Y} hX hY = record { U = f ; charge = chargeF }
+    where
+      f : cmp (F X ⊗ F Y) → cmp (F (X ×ᵛ Y))
+      f (inj (cx , x) (cy , y) c) = c +ℂ (cx +ℂ cy) , x , y
+      f (law₁ c c' (cx , x) (cy , y) i) =
+        ( cong (c +ℂ_) (+ℂ-assoc c' cx cy)
+          ∙ sym (+ℂ-assoc c c' (cx +ℂ cy))) i
+        , x , y
+      f (law₂ c c' (cx , x) (cy , y) i) =
+        ( cong (c +ℂ_) (sym (+ℂ-assoc cx c' cy))
+          ∙ cong (λ z → c +ℂ (z +ℂ cy)) (+ℂ-comm cx c')
+          ∙ cong (c +ℂ_) (+ℂ-assoc c' cx cy)
+          ∙ sym (+ℂ-assoc c c' (cx +ℂ cy)) ) i
+        , x , y
+      f (squash e e₁ p q i j) =
+        isSet→SquareP (λ _ _ → isSet× isSetℂ (isSet× hX hY))
+          (cong f p) (cong f q)
+          (λ _ → f e) (λ _ → f e₁)
+          i j
+
+      chargeF : (c : val ℂ) (a : cmp (F X ⊗ F Y))
+        → f ((F X ⊗ F Y) .charge c a) ≡ F (X ×ᵛ Y) .charge c (f a)
+      chargeF c (inj (cx , x) (cy , y) c') =
+        cong (_, x , y) (+ℂ-assoc c c' (cx +ℂ cy))
+      chargeF c (law₁ c' c'' (cx , x) (cy , y) i) =
+        isSet→isSet' (isSet× isSetℂ (isSet× hX hY))
+          (cong (_, x , y) (+ℂ-assoc c c' ((c'' +ℂ cx) +ℂ cy)))
+          (cong (_, x , y) (+ℂ-assoc c (c' +ℂ c'') (cx +ℂ cy)))
+          (λ k → f (chargeU⊗ (F X) (F Y) c (law₁ c' c'' (cx , x) (cy , y) k)))
+          (λ k → F (X ×ᵛ Y) .charge c (f (law₁ c' c'' (cx , x) (cy , y) k)))
+          i
+      chargeF c (law₂ c' c'' (cx , x) (cy , y) i) =
+        isSet→isSet' (isSet× isSetℂ (isSet× hX hY))
+          (cong (_, x , y) (+ℂ-assoc c c' (cx +ℂ (c'' +ℂ cy))))
+          (cong (_, x , y) (+ℂ-assoc c (c' +ℂ c'') (cx +ℂ cy)))
+          (λ k → f (chargeU⊗ (F X) (F Y) c (law₂ c' c'' (cx , x) (cy , y) k)))
+          (λ k → F (X ×ᵛ Y) .charge c (f (law₂ c' c'' (cx , x) (cy , y) k)))
+          i
+      chargeF c (squash x y p q i j) =
+        isSet→SquareP
+          (λ k l → isProp→isSet
+            (isSet× isSetℂ (isSet× hX hY)
+              (f ((F X ⊗ F Y) .charge c (squash x y p q k l)))
+              (F (X ×ᵛ Y) .charge c (f (squash x y p q k l)))))
+          (cong (chargeF c) p) (cong (chargeF c) q)
+          (λ _ → chargeF c x) (λ _ → chargeF c y)
+          i j
 
   F⊗-bwd : F (X ×ᵛ Y) ⊸ (F X ⊗ F Y)
   F⊗-bwd .U (c , x , y) = inj (0ℂ , x) (0ℂ , y) c
   F⊗-bwd .charge c (c' , x , y) = refl
 
-par : cmp (F X) → cmp (F Y) → cmp (F (X ×ᵛ Y))
-par ex ey = F⊗-fwd .U (ex ∥ ey)
+par : isSet (val X) → isSet (val Y) → cmp (F X) → cmp (F Y) → cmp (F (X ×ᵛ Y))
+par hX hY ex ey = F⊗-fwd hX hY .U (ex ∥ ey)
