@@ -12,6 +12,9 @@ record 𝒱 : Type₁ where
   field
     val : Type
     isPreorder : IsPreorder val
+
+  isSet𝒱 : isSet val
+  isSet𝒱 = {!   !}
 open 𝒱 public
 
 variable
