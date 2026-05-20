@@ -1,74 +1,25 @@
-{-# OPTIONS --rewriting #-}
+open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.HLevels
 
--- Open/extensional modality.
+module Calf.Phase.Open (φ : Type) (φ-isProp : isProp φ) where
 
-module Calf.Phase.Open where
+open import Cubical.Foundations.Equiv
+open import Function
 
-open import Calf.Prelude
-open import Calf.CBPV
-open import Relation.Binary.PropositionalEquality as Eq using (_≡_; refl)
+◯ : Type → Type
+◯ X = (p : φ) → X
 
-open import Calf.Phase.Core
+◯' : (φ → Type) → Type
+◯' X = (p : φ) → X p
 
+η∘ : {X : Type} → X → ◯ X
+η∘ x _ = x
 
-◯ : □ → □
-◯ 𝕁 = (u : ext) → 𝕁
+map : {X Y : Type} → (X → Y) → ◯ X → ◯ Y
+map f x∘ p = f (x∘ p)
 
-postulate
-  open⁺ : (ext → tp⁺) → tp⁺
-  open⁺/decode : ∀ {A} → val (open⁺ A) ≡ ((u : ext) → val (A u))
-  {-# REWRITE open⁺/decode #-}
+η∘-isNatural : {X Y : Type} (f : X → Y) → η∘ ∘ f ≡ map f ∘ η∘
+η∘-isNatural f = funExt λ x → refl
 
-  open⁻ : (ext → tp⁻) → tp⁻
-  open⁻/decode : ∀ {A} → val (U (open⁻ A)) ≡ ((u : ext) → cmp (A u))
-  {-# REWRITE open⁻/decode #-}
-
-infix 10 ◯⁺_ ◯⁻_
-◯⁺_ : tp⁺ → tp⁺
-◯⁺ A = open⁺ λ _ → A
-◯⁻_ : tp⁻ → tp⁻
-◯⁻ A = open⁻ λ _ → A
-
-
-module _ where
-  open import Algebra.Cost
-
-  ◯-CostMonoid : CostMonoid → CostMonoid
-  ◯-CostMonoid cm =
-    record
-      { ℂ = ◯ ℂ
-      ; _+_ = λ c₁ c₂ u → c₁ u + c₂ u
-      ; zero = λ u → zero
-      ; _≤_ = λ c₁ c₂ → (u : ext) → c₁ u ≤ c₂ u
-      ; isCostMonoid =
-          record
-            { isMonoid =
-                record
-                  { isSemigroup =
-                      record
-                        { isMagma =
-                            record
-                              { isEquivalence = Eq.isEquivalence
-                              ; ∙-cong = Eq.cong₂ _
-                              }
-                        ; assoc = λ c₁ c₂ c₃ → funext/Ω λ u → +-assoc (c₁ u) (c₂ u) (c₃ u)
-                        }
-                  ; identity =
-                      (λ c → funext/Ω λ u → +-identityˡ (c u)) ,
-                      (λ c → funext/Ω λ u → +-identityʳ (c u))
-                  }
-            ; isPreorder =
-                record
-                  { isEquivalence = Eq.isEquivalence
-                  ; reflexive = λ h u → ≤-reflexive (Eq.cong (λ x → x u) h)
-                  ; trans = λ h₁ h₂ u → ≤-trans (h₁ u) (h₂ u)
-                  }
-            ; isMonotone =
-                record
-                  { ∙-mono-≤ = λ h₁ h₂ u → +-mono-≤ (h₁ u) (h₂ u)
-                  }
-            }
-      }
-      where
-        open CostMonoid cm
-        open import Data.Product
+Type∘ : Type₁
+Type∘ = Σ[ X ∈ Type ] isEquiv (η∘ {X})

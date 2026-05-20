@@ -1,0 +1,20 @@
+open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.HLevels
+
+module Calf.Value.Closed (φ : Type) (φ-isProp : isProp φ) where
+
+open import Calf.Value
+open import Calf.Phase.Closed φ φ-isProp public
+open import Cubical.Data.Sigma
+open import Cubical.Foundations.Equiv
+
+●ᵛ : 𝒱 → 𝒱
+●ᵛ X .val = ● (X .val)
+●ᵛ X .isPreorder = {!   !}
+
+𝒱• : Type₁
+𝒱• = Σ[ X ∈ 𝒱 ] isEquiv (η• {val X})
+
+𝒱•→Type• : 𝒱• → Type•
+𝒱•→Type• X• .fst = val (X• .fst)
+𝒱•→Type• X• .snd = X• .snd

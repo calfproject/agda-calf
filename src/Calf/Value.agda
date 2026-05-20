@@ -25,8 +25,8 @@ _⊑_ = {!   !}
 
 syntax ⊑-syntax {X} x x' = x ⊑[ X ] x'
 
-⊑-isProp : {x x' : val X} → isProp (x ⊑[ X ] x')
-⊑-isProp = {!   !}
+-- ⊑-isProp : {x x' : val X} → isProp (x ⊑[ X ] x')
+-- ⊑-isProp = {!   !}
 
 ≡⇒⊑ : ∀ {x x'} → x ≡ x' → x ⊑[ X ] x'
 ≡⇒⊑ = {!   !} -- {x = x} x≡x' = ∣ const x , refl , x≡x' ∣₁
@@ -46,3 +46,7 @@ IsDiscrete X = {x x' : val X} → isEquiv (≡⇒⊑ {X} {x} {x'})
 module _ (BEH : Type) (BEH-isProp : isProp BEH) where
   ⊑-beh : BEH → IsDiscrete X
   ⊑-beh = {!   !}
+
+fromProp : {X : Type} → isProp X → 𝒱
+fromProp {X} X-isProp .val = X
+fromProp {X} X-isProp .isPreorder = {!   !}
