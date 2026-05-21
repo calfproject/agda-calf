@@ -4,7 +4,7 @@ open import Cubical.Foundations.HLevels
 module Calf.Computation.Closed (φ : Type) (φ-isProp : isProp φ) where
 
 open import Calf.Value
-open import Calf.Value.Closed φ φ-isProp public
+open import Calf.Value.Closed φ φ-isProp as ●ᵛ using (●ᵛ; η•; ∗; law; 𝒱•)
 open import Calf.Computation
 open import Calf.Computation.Power
 open import Cubical.Foundations.Equiv
@@ -31,3 +31,7 @@ open import Cubical.Foundations.Equiv
 U• : 𝒞• → 𝒱•
 U• A• .fst = A• .fst .U
 U• A• .snd = A• .snd
+
+map : (A ⊸ B) → (●ᶜ A ⊸ ●ᶜ B)
+map f .U = ●ᵛ.map (f .U)
+map f .charge = {!   !}

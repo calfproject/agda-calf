@@ -3,6 +3,7 @@ module Calf.Computation where
 open import Calf.Core.Cost
 open import Calf.Value
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Function
 
 record 𝒞 : Type₁ where
   field
@@ -27,3 +28,11 @@ open _⊸_ public
 id⊸ : A ⊸ A
 id⊸ .U a = a
 id⊸ .charge c a = refl
+
+_⨾⊸_ : (A ⊸ B) → (B ⊸ C) → (A ⊸ C)
+(f ⨾⊸ g) .U = g .U ∘ f .U
+(f ⨾⊸ g) .charge = {!   !}
+
+CHARGE : val ℂ → A ⊸ A
+CHARGE {A} c .U = A .charge c
+CHARGE c .charge = {!   !}
