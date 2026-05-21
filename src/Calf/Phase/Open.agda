@@ -4,6 +4,7 @@ open import Cubical.Foundations.HLevels
 module Calf.Phase.Open (φ : Type) (φ-isProp : isProp φ) where
 
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Structure
 open import Function
 
 ◯ : Type → Type
@@ -22,4 +23,4 @@ map f x∘ p = f (x∘ p)
 η∘-isNatural f = funExt λ x → refl
 
 Type∘ : Type₁
-Type∘ = Σ[ X ∈ Type ] isEquiv (η∘ {X})
+Type∘ = TypeWithStr _ λ X → isEquiv (η∘ {X})

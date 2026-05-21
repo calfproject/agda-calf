@@ -6,11 +6,12 @@ module Calf.Phase.Glue (φ : Type) (φ-isProp : isProp φ) where
 open import Calf.Phase.Open φ φ-isProp as ◯
 open import Calf.Phase.Closed φ φ-isProp as ●
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Structure
 
-record Glue (X• : Type•) (X∘ : Type∘) (χ : X• .fst → ● (X∘ .fst)) : Type where
+record Glue (X• : Type•) (X∘ : Type∘) (χ : ⟨ X• ⟩ → ● ⟨ X∘ ⟩) : Type where
   field
-    • : X• .fst
-    ∘ : X∘ .fst
+    • : ⟨ X• ⟩
+    ∘ : ⟨ X∘ ⟩
     •→∘ : χ • ≡ η• ∘
 open Glue public
 
@@ -18,7 +19,7 @@ record FRAC : Type₁ where
   field
     X• : Type•
     X∘ : Type∘
-    χ : X• .fst → ● (X∘ .fst)
+    χ : ⟨ X• ⟩ → ● ⟨ X∘ ⟩
 open FRAC
 
 fracture-and-gluing : Type ≃ FRAC

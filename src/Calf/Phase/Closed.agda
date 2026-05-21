@@ -4,6 +4,7 @@ open import Cubical.Foundations.HLevels
 module Calf.Phase.Closed (φ : Type) (φ-isProp : isProp φ) where
 
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Structure
 
 data ● (X : Type) : Type where
   η• : (x : X) → ● X
@@ -25,4 +26,4 @@ map f (∗ p) = ∗ p
 map f (law x p i) = law (f x) p i
 
 Type• : Type₁
-Type• = Σ[ X ∈ Type ] isEquiv (η• {X})
+Type• = TypeWithStr _ λ X → isEquiv (η• {X})

@@ -7,6 +7,7 @@ open import Calf.Computation
 open import Calf.Value.Glue φ φ-isProp
 open import Calf.Computation.Open φ φ-isProp as ◯
 open import Calf.Computation.Closed φ φ-isProp as ●
+open import Cubical.Foundations.Equiv
 
 Glueᶜ : (A• : 𝒞•) (A∘ : 𝒞∘) (α : A• .fst ⊸ ●ᶜ (A∘ .fst)) → 𝒞
 Glueᶜ A• A∘ α .U = Glueᵛ (U• A•) (U∘ A∘) (α .U)
@@ -17,3 +18,16 @@ Glueᶜ A• A∘ α .charge/0 {a} i .• = A• .fst .charge/0 {a .•} i
 Glueᶜ A• A∘ α .charge/0 {a} i .∘ = A∘ .fst .charge/0 {a .∘} i
 Glueᶜ A• A∘ α .charge/0 {a} i .•→∘ = {!   !}
 Glueᶜ A• A∘ α .charge/+ = {!   !}
+
+record 𝒞-FRAC : Type₁ where
+  field
+    A• : 𝒞•
+    A∘ : 𝒞∘
+    α : A• .fst ⊸ ●ᶜ (A∘ .fst)
+open 𝒞-FRAC
+
+𝒞-fracture-and-gluing : 𝒞 ≃ 𝒞-FRAC
+𝒞-fracture-and-gluing .fst A .A• = {!   !}
+𝒞-fracture-and-gluing .fst A .A∘ = {!   !}
+𝒞-fracture-and-gluing .fst A .α = {!   !}
+𝒞-fracture-and-gluing .snd .equiv-proof A = {!   !}
