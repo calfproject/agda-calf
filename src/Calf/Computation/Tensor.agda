@@ -3,8 +3,8 @@ module Calf.Computation.Tensor where
 open import Calf.Value
 open import Calf.Computation
 open import Calf.Core.Cost
-open import Calf.Value.Product public
-open import Calf.Value.Sigma public
+open import Calf.Value.Product
+open import Calf.Value.Sigma
 open import Calf.Computation.Free public
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels
