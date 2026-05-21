@@ -46,25 +46,12 @@ opaque
   𝕀1-maximum tt = tt
 
 
-BEH : Type
-BEH = 𝕀0 ≡ 𝕀1
-
-BEH-isProp : isProp BEH
-BEH-isProp = isSet𝕀 𝕀0 𝕀1
-
-𝕀-isAlgorithmic : BEH → isContr 𝕀
-𝕀-isAlgorithmic beh .fst = 𝕀0
-𝕀-isAlgorithmic beh .snd i =
-  ≤𝕀-antisym
-    (𝕀0-minimum _)
-    (≤𝕀-trans (𝕀1-maximum _) (subst (_≤𝕀 𝕀0) beh ≤𝕀-refl))
-
 𝕀₂ : Type
 𝕀₂ = Σ[ 𝕚 ∈ 𝕀 ] Σ[ 𝕛 ∈ 𝕀 ] 𝕚 ≤𝕀 𝕛
 
 data 𝕀∨𝕀 : Type where
-  inj₀ : 𝕀 → 𝕀∨𝕀
-  inj₁ : 𝕀 → 𝕀∨𝕀
+  inj₀ : (𝕚 : 𝕀) → 𝕀∨𝕀
+  inj₁ : (𝕚 : 𝕀) → 𝕀∨𝕀
   law : inj₀ 𝕀1 ≡ inj₁ 𝕀0
 
 ι : 𝕀∨𝕀 → 𝕀₂
@@ -132,28 +119,45 @@ syntax ⊑-syntax {X} x x' = x ⊑[ X ] x'
     aux (inj₁ 𝕚) = x'⊑x'' .path 𝕚
     aux (law i) = (x⊑x' .path₁ ∙ sym (x'⊑x'' .path₀)) i
 
+⊑-antisym : Antisymmetric _≡_ (_⊑_ {X})
+⊑-antisym {X} x⊑x' x'⊑x = {!   !}
+
 IsDiscrete : 𝒱 → Type
 IsDiscrete X = {x x' : val X} → isEquiv (≡⇒⊑ {X} {x} {x'})
-
-⊑-beh : BEH → IsDiscrete X
-⊑-beh {X} beh {x} {x'} = isoToEquiv (iso ≡⇒⊑ ⊑⇒≡ sec ret) .snd
-  where
-    ⊑⇒≡ : _⊑_ ⇒ _≡_
-    ⊑⇒≡ x⊑x' = sym (x⊑x' .path₀) ∙ cong (x⊑x' .path) beh ∙ x⊑x' .path₁
-
-    sec : section ≡⇒⊑ ⊑⇒≡
-    sec x⊑x' i .path 𝕚 =
-      ( sym (x⊑x' .path₀)
-      ∙ cong (x⊑x' .path) (isContr→isProp (𝕀-isAlgorithmic beh) 𝕀0 𝕚)
-      ) i
-    sec x⊑x' i .path₀ = {!   !}
-    sec x⊑x' i .path₁ = {!   !}
-
-    ret : retract ≡⇒⊑ ⊑⇒≡
-    ret x≡x' i = isSet𝒱 X x x' (⊑⇒≡ (≡⇒⊑ x≡x')) x≡x' i
 
 fromProp : {X : Type} → isProp X → 𝒱
 fromProp {X} X-isProp .val = X
 fromProp {X} X-isProp .isPreorder g =
   (g ∘ inj₀ ∘ fst , λ i i∨i → X-isProp (g (inj₀ (fst (ι i∨i)))) (g i∨i) i) ,
   λ (g' , pf) i → (λ i₂ → X-isProp (g (inj₀ (fst i₂))) (g' i₂) i) , {!   !}
+
+module _ where
+  BEH : Type
+  BEH = 𝕀0 ≡ 𝕀1
+
+  BEH-isProp : isProp BEH
+  BEH-isProp = isSet𝕀 𝕀0 𝕀1
+
+  𝕀-isAlgorithmic : BEH → isContr 𝕀
+  𝕀-isAlgorithmic beh .fst = 𝕀0
+  𝕀-isAlgorithmic beh .snd i =
+    ≤𝕀-antisym
+      (𝕀0-minimum _)
+      (≤𝕀-trans (𝕀1-maximum _) (subst (_≤𝕀 𝕀0) beh ≤𝕀-refl))
+
+  ⊑-beh : BEH → IsDiscrete X
+  ⊑-beh {X} beh {x} {x'} = isoToEquiv (iso ≡⇒⊑ ⊑⇒≡ sec ret) .snd
+    where
+      ⊑⇒≡ : _⊑_ ⇒ _≡_
+      ⊑⇒≡ x⊑x' = sym (x⊑x' .path₀) ∙ cong (x⊑x' .path) beh ∙ x⊑x' .path₁
+
+      sec : section ≡⇒⊑ ⊑⇒≡
+      sec x⊑x' i .path 𝕚 =
+        ( sym (x⊑x' .path₀)
+        ∙ cong (x⊑x' .path) (isContr→isProp (𝕀-isAlgorithmic beh) 𝕀0 𝕚)
+        ) i
+      sec x⊑x' i .path₀ = {!   !}
+      sec x⊑x' i .path₁ = {!   !}
+
+      ret : retract ≡⇒⊑ ⊑⇒≡
+      ret x≡x' i = isSet𝒱 X x x' (⊑⇒≡ (≡⇒⊑ x≡x')) x≡x' i
