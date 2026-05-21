@@ -7,10 +7,15 @@ open import Cubical.Foundations.Function
 Πᵛ : (X : 𝒱) (Y : val X → 𝒱) → 𝒱
 Πᵛ X Y .val = (x : val X) → val (Y x)
 Πᵛ X Y .isPreorder g .fst .fst 𝕚₂ x = Y x .isPreorder (flip g x) .fst .fst 𝕚₂
-Πᵛ X Y .isPreorder g .fst .snd i 𝕚∨𝕚 x = cong (_$ 𝕚∨𝕚) (Y x .isPreorder (flip g x) .fst .snd) i
-Πᵛ X Y .isPreorder g .snd f i .fst 𝕚₂ x = {!   !}
-Πᵛ X Y .isPreorder g .snd f i .snd = {!   !}
-
+Πᵛ X Y .isPreorder g .fst .snd i 𝕚∨𝕚 x = (Y x .isPreorder (flip g x) .fst .snd) i 𝕚∨𝕚
+Πᵛ X Y .isPreorder g .snd f i .fst 𝕚₂ x = 
+  Y x .isPreorder (flip g x) .snd
+    ((λ 𝕚₂ → f .fst 𝕚₂ x) , λ j 𝕚∨𝕚 → f .snd j 𝕚∨𝕚 x)
+    i .fst 𝕚₂
+Πᵛ X Y .isPreorder g .snd f i .snd j 𝕚∨𝕚 x = 
+  Y x .isPreorder (flip g x) .snd
+    ((λ 𝕚₂ → f .fst 𝕚₂ x) , λ j 𝕚∨𝕚 → f .snd j 𝕚∨𝕚 x) 
+    i .snd j 𝕚∨𝕚
 syntax Πᵛ X (λ x → Y) = [ x ∈ X ] →ᵛ Y
 
 ⊑-funext : {Y : val X → 𝒱}
