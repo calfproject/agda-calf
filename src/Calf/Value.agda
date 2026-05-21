@@ -1,25 +1,50 @@
+module Calf.Value where
+
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
-open import Cubical.Data.Bool
+open import Cubical.Foundations.Isomorphism
 open import Cubical.Data.Sigma
 open import Function
+open import Relation.Binary using (_⇒_)
 open import Relation.Binary.Definitions
-
-module Calf.Value where
 
 IsOrthogonal : {X Y : Type} (f : X → Y) → Type → Type
 IsOrthogonal {X} {Y} f Z = (g : X → Z) → ∃![ g' ∈ (Y → Z) ] g' ∘ f ≡ g
 
 opaque
-  𝕀 : Type
-  𝕀 = Bool
+  open import Cubical.Data.Unit
 
-  𝕀0 𝕀1 : 𝕀
-  𝕀0 = false
-  𝕀1 = true
+  𝕀 : Type
+  𝕀 = Unit
 
   isSet𝕀 : isSet 𝕀
-  isSet𝕀 = isSetBool
+  isSet𝕀 = isSetUnit
+
+  _≤𝕀_ : 𝕀 → 𝕀 → Type
+  tt ≤𝕀 tt = Unit
+
+  ≤𝕀-isProp : ∀ {i j} → isProp (i ≤𝕀 j)
+  ≤𝕀-isProp = isContr→isProp isContrUnit
+
+  ≤𝕀-refl : Reflexive _≤𝕀_
+  ≤𝕀-refl = tt
+
+  ≤𝕀-trans : Transitive _≤𝕀_
+  ≤𝕀-trans _ _ = tt
+
+  ≤𝕀-antisym : Antisymmetric _≡_ _≤𝕀_
+  ≤𝕀-antisym = isContr→isProp isContrUnit
+
+  𝕀0 𝕀1 : 𝕀
+  𝕀0 = tt
+  𝕀1 = tt
+
+  𝕀0-minimum : Minimum _≤𝕀_ 𝕀0
+  𝕀0-minimum _ = tt
+
+  𝕀1-maximum : Maximum _≤𝕀_ 𝕀1
+  𝕀1-maximum tt = tt
+
 
 BEH : Type
 BEH = 𝕀0 ≡ 𝕀1
@@ -27,14 +52,15 @@ BEH = 𝕀0 ≡ 𝕀1
 BEH-isProp : isProp BEH
 BEH-isProp = isSet𝕀 𝕀0 𝕀1
 
-opaque
-  unfolding 𝕀
-
-  𝕀-isAlgorithmic : BEH → isContr 𝕀
-  𝕀-isAlgorithmic beh = false , λ { false → refl ; true → beh }
+𝕀-isAlgorithmic : BEH → isContr 𝕀
+𝕀-isAlgorithmic beh .fst = 𝕀0
+𝕀-isAlgorithmic beh .snd i =
+  ≤𝕀-antisym
+    (𝕀0-minimum _)
+    (≤𝕀-trans (𝕀1-maximum _) (subst (_≤𝕀 𝕀0) beh ≤𝕀-refl))
 
 𝕀₂ : Type
-𝕀₂ = Σ[ i ∈ 𝕀 ] Σ[ j ∈ 𝕀 ] (i ≡ 𝕀1 → j ≡ 𝕀1)
+𝕀₂ = Σ[ 𝕚 ∈ 𝕀 ] Σ[ 𝕛 ∈ 𝕀 ] 𝕚 ≤𝕀 𝕛
 
 data 𝕀∨𝕀 : Type where
   inj₀ : 𝕀 → 𝕀∨𝕀
@@ -42,9 +68,9 @@ data 𝕀∨𝕀 : Type where
   law : inj₀ 𝕀1 ≡ inj₁ 𝕀0
 
 ι : 𝕀∨𝕀 → 𝕀₂
-ι (inj₀ i) = 𝕀0 , i , λ beh → isContr→isProp (𝕀-isAlgorithmic beh) i 𝕀1
-ι (inj₁ i) = i , 𝕀1 , λ _ → refl
-ι (law i) = 𝕀0 , 𝕀1 , λ beh → isSet𝕀 𝕀1 𝕀1 (isContr→isProp (𝕀-isAlgorithmic beh) 𝕀1 𝕀1) refl i
+ι (inj₀ 𝕚) = 𝕀0 , 𝕚 , 𝕀0-minimum 𝕚
+ι (inj₁ 𝕚) = 𝕚 , 𝕀1 , 𝕀1-maximum 𝕚
+ι (law i) = 𝕀0 , 𝕀1 , ≤𝕀-isProp (𝕀0-minimum 𝕀1) (𝕀1-maximum 𝕀0) i
 
 
 IsPreorder : Type → Type
@@ -74,7 +100,7 @@ open _⊑_
 
 syntax ⊑-syntax {X} x x' = x ⊑[ X ] x'
 
-≡⇒⊑ : ∀ {x x'} → x ≡ x' → x ⊑[ X ] x'
+≡⇒⊑ : _≡_ ⇒  _⊑_ {X}
 ≡⇒⊑ {x = x} x≡x' .path _ = x
 ≡⇒⊑ {x = x} x≡x' .path₀ = refl
 ≡⇒⊑ {x = x} x≡x' .path₁ = x≡x'
@@ -90,33 +116,44 @@ syntax ⊑-syntax {X} x x' = x ⊑[ X ] x'
 ⊑-trans : Transitive (_⊑_ {X})
 ⊑-trans {X} {x} {x'} {x''} x⊑x' x'⊑x'' =
   record
-    { path = λ i → X .isPreorder aux .fst .fst (i , i , λ i≡1 → i≡1)
+    { path = λ 𝕚 → X .isPreorder aux .fst .fst (𝕚 , 𝕚 , ≤𝕀-refl)
     ; path₀ =
-        cong (X .isPreorder aux .fst .fst ∘ (𝕀0 ,_) ∘ (𝕀0 ,_)) (λ i beh → isSet𝕀 𝕀0 𝕀1 beh (isContr→isProp (𝕀-isAlgorithmic beh) 𝕀0 𝕀1) i)
+        cong (X .isPreorder aux .fst .fst ∘ (𝕀0 ,_) ∘ (𝕀0 ,_)) (≤𝕀-isProp _ _)
         ∙ cong (_$ inj₀ 𝕀0) (X .isPreorder aux .fst .snd)
         ∙ x⊑x' .path₀
     ; path₁ =
-        cong (X .isPreorder aux .fst .fst ∘ (𝕀1 ,_) ∘ (𝕀1 ,_)) (λ i beh → isSet𝕀 𝕀1 𝕀1 beh (λ _ → 𝕀1) i)
+        cong (X .isPreorder aux .fst .fst ∘ (𝕀1 ,_) ∘ (𝕀1 ,_)) (≤𝕀-isProp _ _)
         ∙ cong (_$ inj₁ 𝕀1) (X .isPreorder aux .fst .snd)
         ∙ x'⊑x'' .path₁
     }
   where
     aux : 𝕀∨𝕀 → val X
-    aux (inj₀ i) = x⊑x' .path i
-    aux (inj₁ i) = x'⊑x'' .path i
+    aux (inj₀ 𝕚) = x⊑x' .path 𝕚
+    aux (inj₁ 𝕚) = x'⊑x'' .path 𝕚
     aux (law i) = (x⊑x' .path₁ ∙ sym (x'⊑x'' .path₀)) i
 
 IsDiscrete : 𝒱 → Type
 IsDiscrete X = {x x' : val X} → isEquiv (≡⇒⊑ {X} {x} {x'})
 
 ⊑-beh : BEH → IsDiscrete X
-⊑-beh beh .equiv-proof x⊑x' .fst .fst =
-  sym (x⊑x' .path₀)
-  ∙ cong (x⊑x' .path) (isContr→isProp (𝕀-isAlgorithmic beh) 𝕀0 𝕀1)
-  ∙ x⊑x' .path₁
-⊑-beh beh .equiv-proof x⊑x' .fst .snd = {!   !}
-⊑-beh beh .equiv-proof x⊑x' .snd = {!   !}
+⊑-beh {X} beh {x} {x'} = isoToEquiv (iso ≡⇒⊑ ⊑⇒≡ sec ret) .snd
+  where
+    ⊑⇒≡ : _⊑_ ⇒ _≡_
+    ⊑⇒≡ x⊑x' = sym (x⊑x' .path₀) ∙ cong (x⊑x' .path) beh ∙ x⊑x' .path₁
+
+    sec : section ≡⇒⊑ ⊑⇒≡
+    sec x⊑x' i .path 𝕚 =
+      ( sym (x⊑x' .path₀)
+      ∙ cong (x⊑x' .path) (isContr→isProp (𝕀-isAlgorithmic beh) 𝕀0 𝕚)
+      ) i
+    sec x⊑x' i .path₀ = {!   !}
+    sec x⊑x' i .path₁ = {!   !}
+
+    ret : retract ≡⇒⊑ ⊑⇒≡
+    ret x≡x' i = isSet𝒱 X x x' (⊑⇒≡ (≡⇒⊑ x≡x')) x≡x' i
 
 fromProp : {X : Type} → isProp X → 𝒱
 fromProp {X} X-isProp .val = X
-fromProp {X} X-isProp .isPreorder = {!   !}
+fromProp {X} X-isProp .isPreorder g =
+  (g ∘ inj₀ ∘ fst , λ i i∨i → X-isProp (g (inj₀ (fst (ι i∨i)))) (g i∨i) i) ,
+  λ (g' , pf) i → (λ i₂ → X-isProp (g (inj₀ (fst i₂))) (g' i₂) i) , {!   !}
