@@ -119,3 +119,48 @@ opaque
     λ i → x , c + (length back + 0) + 0 , List.++-unit-r front i
   dequeue-coherent (c , back , x ∷ front) =
     λ i → x , dequeue-front-cost c (length back) i , front ++ reverse back
+
+
+module _ (ABS : Type) (ABS-isProp : isProp ABS) where
+  open import Cubical.Foundations.Equiv
+  open import Calf.Computation.Open ABS ABS-isProp as ◯ᶜ
+  open import Calf.Computation.Closed ABS ABS-isProp as ●ᶜ
+  open import Calf.Computation.Glue ABS ABS-isProp
+  open import Calf.Value.Open ABS ABS-isProp as ◯ᵛ
+  open import Calf.Value.Closed ABS ABS-isProp as ●ᵛ
+
+  BLQ : 𝒞
+  BLQ = Glueᶜ (●ᶜ BQ , {!   !}) (◯ᶜ LQ , {!   !}) (●ᶜ.map (φ ⨾⊸ η∘ᶜ))
+
+  enqueue' : val ℕᵛ → BLQ ⊸ BLQ
+  enqueue' e .U q .• = ●ᵛ.map (enqueueᵗ e .U) (q .•)
+  enqueue' e .U q .∘ = ◯ᵛ.map (enqueue e .U) (q .∘)
+  enqueue' e .U q .•→∘ =
+      ●ᵛ.map (λ bq → η∘ᵛ {U LQ} (φ .U bq)) (●ᵛ.map (enqueueᵗ e .U) (q .•))
+    ≡⟨ {!   !} ⟩
+      ●ᵛ.map (λ bq → η∘ᵛ {U LQ} (φ .U (enqueueᵗ e .U bq))) (q .•)
+    ≡⟨ {!   !} ⟩
+      ●ᵛ.map (λ bq → ◯ᵛ.map (enqueue e .U) (η∘ᵛ {U LQ} (φ .U bq))) (q .•)
+    ≡⟨ {!   !} ⟩
+      ●ᵛ.map (◯ᵛ.map (enqueue e .U)) (●ᵛ.map (λ bq → η∘ᵛ {U LQ} (φ .U bq)) (q .•))
+    ≡⟨ cong (●ᵛ.map (◯ᵛ.map (enqueue e .U))) (q .•→∘) ⟩
+      ●ᵛ.map (◯ᵛ.map (enqueue e .U)) (η• (q .∘))
+    ≡⟨ refl ⟩
+      η• (◯ᵛ.map (enqueue e .U) (q .∘))
+    ∎
+  enqueue' e .charge c q i .• = {!   !}
+  enqueue' e .charge c q i .∘ = {!   !}
+  enqueue' e .charge c q i .•→∘ = {!   !}
+
+  dequeue' : BLQ ⊸ (ℕᵛ ⋊ BLQ)
+  dequeue' .U q .fst =
+    transport
+      (cong val (retIsEq (equivIsEquiv 𝒱-fracture-and-gluing) ℕᵛ))
+      {! ●ᵛ.map (λ bq → fst (dequeueᵗ .U bq)) (q .•) , ... , ... !}
+  dequeue' .U q .snd = {! transport  !}
+    -- let
+    --   e : val ℕᵛ
+    --   e = {! dequeue .U  !}
+    -- in
+    -- e , {!   !}
+  dequeue' .charge = {!   !}
