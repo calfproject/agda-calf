@@ -1,5 +1,4 @@
 open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.HLevels
 
 module Calf.Value.Open (φ : Type) (φ-isProp : isProp φ) where
 

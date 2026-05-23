@@ -7,7 +7,6 @@ open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Structure
 open import Cubical.Data.Sigma
-open import Relation.Unary using (_⊆_)
 open import Relation.Binary using (_⇒_)
 open import Relation.Binary.Definitions
 
@@ -78,6 +77,9 @@ data 𝕀∨𝕀 : Type where
 IsPreorder : Type → Type
 IsPreorder = IsOrthogonal ι
 
+isPropIsPreorder : {X : Type} → isProp (IsPreorder X)
+isPropIsPreorder P Q i .ortho g = isProp∃! (P .ortho g) (Q .ortho g) i
+
 record 𝒱 : Type₁ where
   field
     val : Type
@@ -86,6 +88,15 @@ record 𝒱 : Type₁ where
   isSet𝒱 : isSet val
   isSet𝒱 x x' p p' = {!   !}
 open 𝒱 public
+
+𝒱-path : {X Y : 𝒱} → val X ≡ val Y → X ≡ Y
+𝒱-path {X} {Y} p i .val = p i
+𝒱-path {X} {Y} p i .isPreorder =
+  isProp→PathP
+    (λ i → isPropIsPreorder {p i})
+    (X .isPreorder)
+    (Y .isPreorder)
+    i
 
 variable
   X Y Z : 𝒱
