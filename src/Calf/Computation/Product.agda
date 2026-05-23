@@ -5,9 +5,9 @@ open import Calf.Value.Product public
 
 _×ᶜ_ : 𝒞 → 𝒞 → 𝒞
 (A ×ᶜ B) .U = A .U ×ᵛ B .U
-(A ×ᶜ B) .charge c e .proj₁ = A .charge c (e .proj₁)
-(A ×ᶜ B) .charge c e .proj₂ = B .charge c (e .proj₂)
-(A ×ᶜ B) .charge/0 {e} i .proj₁ = A .charge/0 {e .proj₁} i
-(A ×ᶜ B) .charge/0 {e} i .proj₂ = B .charge/0 {e .proj₂} i
-(A ×ᶜ B) .charge/+ {e} {c₁} {c₂} i .proj₁ = A .charge/+ {e .proj₁} {c₁} {c₂} i
-(A ×ᶜ B) .charge/+ {e} {c₁} {c₂} i .proj₂ = B .charge/+ {e .proj₂} {c₁} {c₂} i
+(A ×ᶜ B) .charge c e .fst = A .charge c (e .fst)
+(A ×ᶜ B) .charge c e .snd = B .charge c (e .snd)
+(A ×ᶜ B) .charge/0 {e} i .fst = A .charge/0 {e .fst} i
+(A ×ᶜ B) .charge/0 {e} i .snd = B .charge/0 {e .snd} i
+(A ×ᶜ B) .charge/+ {e} {c₁} {c₂} i .fst = A .charge/+ {e .fst} {c₁} {c₂} i
+(A ×ᶜ B) .charge/+ {e} {c₁} {c₂} i .snd = B .charge/+ {e .snd} {c₁} {c₂} i

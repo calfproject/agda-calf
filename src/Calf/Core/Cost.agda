@@ -3,7 +3,6 @@ module Calf.Core.Cost where
 open import Calf.Value
 open import Calf.Value.Nat
 open import Cubical.Foundations.Prelude
-open import Cubical.Data.Nat using (ℕ)
 open import Cubical.Data.Nat.Literals public
 import Cubical.Data.Nat.Properties as Nat
 open import Data.Unit
