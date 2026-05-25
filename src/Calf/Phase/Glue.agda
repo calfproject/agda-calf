@@ -198,10 +198,7 @@ glue-χ-path-base F =
 
   ∗-case : (p : φ) → R (∗ p)
   ∗-case p =
-    toPathP (fromPathP star-step ∙ sym (●-path-to-star p (F .χ (glue•-out F (∗ p)))))
-    where
-    star-step : PathP B (∗ p) (∗ p)
-    star-step i = ∗ p
+    toPathP (fromPathP (sym (●-path-to-star p (F .χ (glue•-out F (∗ p))))))
 
   law-case : (g : fromFRAC F) (p : φ) → PathP (λ i → R (law g p i)) (η•-case g) (∗-case p)
   law-case g p =
