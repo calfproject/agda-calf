@@ -6,16 +6,22 @@ module Calf.Computation.Potential (φ : Type) (φ-isProp : isProp φ) where
 
 open import Calf.Core.Cost
 open import Calf.Value
+open import Calf.Value.Closed φ φ-isProp as ◯ᵛ
 open import Calf.Computation
 open import Calf.Computation.Open φ φ-isProp as ◯ᶜ
 open import Calf.Computation.Closed φ φ-isProp as ●ᶜ
 open import Calf.Computation.Glue φ φ-isProp
 
 ℙ : 𝒱
-ℙ = ℂ -- ●ᵛ ℂ
+ℙ = ●ᵛ ℂ
 
 variable
   p q r s : val ℙ
 
+▷'[_] : val ℂ → 𝒞 → 𝒞
+▷'[ c ] A = Glueᶜ (●ᶜ A , ●ᶜ-ηᶜ-isEquiv) (◯ᶜ A , ◯ᶜ-ηᶜ-isEquiv) (●ᶜ.map (CHARGE c ⨾⊸ η∘ᶜ))
+
 ▷[_] : val ℙ → 𝒞 → 𝒞
-▷[ p ] A = Glueᶜ (●ᶜ A , ●ᶜ-ηᶜ-isEquiv) (◯ᶜ A , ◯ᶜ-ηᶜ-isEquiv) (●ᶜ.map (CHARGE p ⨾⊸ η∘ᶜ))
+▷[ η• c ] A = ▷'[ c ] A
+▷[ ∗ p ] A = A
+▷[ law c p i ] A = {!   !}
