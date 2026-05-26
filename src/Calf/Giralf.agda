@@ -12,17 +12,9 @@ open import Calf.Computation.Tensor
 open import Calf.Computation.Open ABS ABS-isProp as ◯ᶜ
 open import Calf.Computation.Closed ABS ABS-isProp as ●ᶜ
 open import Calf.Computation.Glue ABS ABS-isProp
+open import Calf.Computation.Potential ABS ABS-isProp
 open import Cubical.Data.List
 open import Cubical.Data.Sigma
-
-ℙ : 𝒱
-ℙ = ℂ -- ●ᵛ ℂ
-
-variable
-  p q r s : val ℙ
-
-▷[_] : val ℙ → 𝒞 → 𝒞
-▷[ p ] A = Glueᶜ (●ᶜ A , {!   !}) (◯ᶜ A , {!   !}) (●ᶜ.map (CHARGE p ⨾⊸ η∘ᶜ))
 
 Context : Type₁
 Context = List 𝒞 × val ℙ

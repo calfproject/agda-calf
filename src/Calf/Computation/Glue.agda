@@ -9,8 +9,6 @@ module Calf.Computation.Glue (φ : Type) (φ-isProp : isProp φ) where
 open import Calf.Core.Cost
 open import Calf.Computation
 open import Calf.Value
-open import Calf.Value.Closed φ φ-isProp using (η•; ●-η-isEquiv)
-open import Calf.Value.Open φ φ-isProp using (η∘; ◯-η-isEquiv)
 open import Calf.Value.Glue φ φ-isProp public
 open import Calf.Computation.Open φ φ-isProp as ◯
 open import Calf.Computation.Closed φ φ-isProp as ●
@@ -61,8 +59,8 @@ open 𝒞-FRAC
     }
 
 𝒞-toFRAC : 𝒞 → 𝒞-FRAC
-𝒞-toFRAC A .A• = ●ᶜ A , ●-η-isEquiv
-𝒞-toFRAC A .A∘ = ◯ᶜ A , ◯-η-isEquiv
+𝒞-toFRAC A .A• = ●ᶜ A , ●ᶜ-ηᶜ-isEquiv
+𝒞-toFRAC A .A∘ = ◯ᶜ A , ◯ᶜ-ηᶜ-isEquiv
 𝒞-toFRAC A .α = ●.map η∘ᶜ
 
 𝒞-fromFRAC : 𝒞-FRAC → 𝒞
@@ -86,10 +84,10 @@ glue•-out-charge F c g• =
     (glue•-out (𝒱-FRAC→FRAC (𝒞-FRAC→𝒱-FRAC F)) (●ᶜ (𝒞-fromFRAC F) .charge c g•))
     (F .A• .fst .charge c
       (glue•-out (𝒱-FRAC→FRAC (𝒞-FRAC→𝒱-FRAC F)) g•))
-    (secIsEq (F .A• .snd) (map (proj•ᶜ F) .U (●ᶜ (𝒞-fromFRAC F) .charge c g•))
-      ∙ map (proj•ᶜ F) .charge c g•
+    (secIsEq (F .A• .snd) (●.map (proj•ᶜ F) .U (●ᶜ (𝒞-fromFRAC F) .charge c g•))
+      ∙ ●.map (proj•ᶜ F) .charge c g•
       ∙ cong (●ᶜ (F .A• .fst) .charge c)
-        (sym (secIsEq (F .A• .snd) (map (proj•ᶜ F) .U g•))))
+        (sym (secIsEq (F .A• .snd) (●.map (proj•ᶜ F) .U g•))))
 
 glue∘-out-charge
   : (F : 𝒞-FRAC) (c : val ℂ) (g∘ : cmp (◯ᶜ (𝒞-fromFRAC F)))
@@ -107,7 +105,7 @@ glue∘-out-charge F c g∘ =
           (sym (funExt⁻ (secIsEq (F .A∘ .snd) (λ p → g∘ p .∘)) p))))
 
 𝒞-glue•-path : (F : 𝒞-FRAC) →
-  (●ᶜ (𝒞-fromFRAC F) , ●-η-isEquiv) ≡ F .A•
+  (●ᶜ (𝒞-fromFRAC F) , ●ᶜ-ηᶜ-isEquiv) ≡ F .A•
 𝒞-glue•-path F =
   𝒞•-path
     (𝒞-path
@@ -119,7 +117,7 @@ glue∘-out-charge F c g∘ =
         (glue•-out-charge F)))
 
 𝒞-glue∘-path : (F : 𝒞-FRAC) →
-  (◯ᶜ (𝒞-fromFRAC F) , ◯-η-isEquiv) ≡ F .A∘
+  (◯ᶜ (𝒞-fromFRAC F) , ◯ᶜ-ηᶜ-isEquiv) ≡ F .A∘
 𝒞-glue∘-path F =
   𝒞∘-path
     (𝒞-path
@@ -137,7 +135,7 @@ glue∘-out-charge F c g∘ =
   ⊸-path
     (λ i → 𝒞-glue•-path F i .fst)
     (λ i → ●ᶜ (𝒞-glue∘-path F i .fst))
-    {f₀ = map η∘ᶜ}
+    {f₀ = ●.map η∘ᶜ}
     {f₁ = F .α}
     (λ i → FRAC.χ (glue-fracture-section (𝒱-FRAC→FRAC (𝒞-FRAC→𝒱-FRAC F)) i))
     i

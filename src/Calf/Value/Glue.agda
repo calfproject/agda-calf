@@ -33,19 +33,19 @@ open 𝒱-FRAC
 𝒱-fromFRAC F = Glueᵛ (F .X•) (F .X∘) (F .χ)
 
 𝒱-toFRAC : 𝒱 → 𝒱-FRAC
-𝒱-toFRAC X .X• = ●ᵛ X , ●-η-isEquiv
-𝒱-toFRAC X .X∘ = ◯ᵛ X , ◯-η-isEquiv
+𝒱-toFRAC X .X• = ●ᵛ X , ●ᵛ-ηᵛ-isEquiv
+𝒱-toFRAC X .X∘ = ◯ᵛ X , ◯ᵛ-ηᵛ-isEquiv
 𝒱-toFRAC X .χ = ●.map η∘
 
 𝒱-glue•-path : (F : 𝒱-FRAC) →
-  (●ᵛ (𝒱-fromFRAC F) , ●-η-isEquiv) ≡ F .X•
+  (●ᵛ (𝒱-fromFRAC F) , ●ᵛ-ηᵛ-isEquiv) ≡ F .X•
 𝒱-glue•-path F =
   Σ≡Prop
     (λ X → isPropIsEquiv (η• {val X}))
     (𝒱-path (cong fst (glue•-path (𝒱-FRAC→FRAC F))))
 
 𝒱-glue∘-path : (F : 𝒱-FRAC) →
-  (◯ᵛ (𝒱-fromFRAC F) , ◯-η-isEquiv) ≡ F .X∘
+  (◯ᵛ (𝒱-fromFRAC F) , ◯ᵛ-ηᵛ-isEquiv) ≡ F .X∘
 𝒱-glue∘-path F =
   Σ≡Prop
     (λ X → isPropIsEquiv (η∘ {val X}))

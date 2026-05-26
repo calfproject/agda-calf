@@ -131,13 +131,13 @@ opaque
 module _ (ABS : Type) (ABS-isProp : isProp ABS) where
   open import Cubical.Foundations.Equiv
   open import Calf.Computation.Open ABS ABS-isProp as ◯ᶜ
-  open import Calf.Computation.Closed ABS ABS-isProp as ●ᶜ
+  open import Calf.Computation.Closed ABS ABS-isProp as ●ᶜ hiding (law)
   open import Calf.Computation.Glue ABS ABS-isProp
   open import Calf.Value.Open ABS ABS-isProp as ◯ᵛ
   open import Calf.Value.Closed ABS ABS-isProp as ●ᵛ
 
   BLQ : 𝒞
-  BLQ = Glueᶜ (●ᶜ BQ , ●-η-isEquiv) (◯ᶜ LQ , ◯-η-isEquiv) (●ᶜ.map (φ ⨾⊸ η∘ᶜ))
+  BLQ = Glueᶜ (●ᶜ BQ , ●ᶜ-ηᶜ-isEquiv) (◯ᶜ LQ , ◯ᶜ-ηᶜ-isEquiv) (●ᶜ.map (φ ⨾⊸ η∘ᶜ))
 
   empty' : cmp BLQ
   empty' .• = η•ᵛ {U BQ} emptyᵗ
@@ -149,11 +149,11 @@ module _ (ABS : Type) (ABS-isProp : isProp ABS) where
   enqueue' e .U q .∘ = ◯ᵛ.map (enqueue e .U) (q .∘)
   enqueue' e .U q .•→∘ =
       ●ᵛ.map (λ bq → η∘ᵛ {U LQ} (φ .U bq)) (●ᵛ.map (enqueueᵗ e .U) (q .•))
-    ≡⟨ ●-map-∘ (enqueueᵗ e .U) (λ bq → η∘ᵛ {U LQ} (φ .U bq)) (q .•) ⟩
+    ≡⟨ ●ᵛ.●-map-∘ (enqueueᵗ e .U) (λ bq → η∘ᵛ {U LQ} (φ .U bq)) (q .•) ⟩
       ●ᵛ.map (λ bq → η∘ᵛ {U LQ} (φ .U (enqueueᵗ e .U bq))) (q .•)
     ≡⟨ cong (λ h → ●ᵛ.map h (q .•)) (funExt λ bq → funExt λ _ → enqueue-coherent e bq) ⟩
       ●ᵛ.map (λ bq → ◯ᵛ.map (enqueue e .U) (η∘ᵛ {U LQ} (φ .U bq))) (q .•)
-    ≡⟨ sym (●-map-∘ (λ bq → η∘ᵛ {U LQ} (φ .U bq)) (◯ᵛ.map (enqueue e .U)) (q .•)) ⟩
+    ≡⟨ sym (●ᵛ.●-map-∘ (λ bq → η∘ᵛ {U LQ} (φ .U bq)) (◯ᵛ.map (enqueue e .U)) (q .•)) ⟩
       ●ᵛ.map (◯ᵛ.map (enqueue e .U)) (●ᵛ.map (λ bq → η∘ᵛ {U LQ} (φ .U bq)) (q .•))
     ≡⟨ cong (●ᵛ.map (◯ᵛ.map (enqueue e .U))) (q .•→∘) ⟩
       ●ᵛ.map (◯ᵛ.map (enqueue e .U)) (η•ᵛ {◯ᵛ (U LQ)} (q .∘))
@@ -177,11 +177,11 @@ module _ (ABS : Type) (ABS-isProp : isProp ABS) where
   dequeue'-fst-glue q .∘ = ◯ᵛ.map (λ lq → fst (dequeue .U lq)) (q .∘)
   dequeue'-fst-glue q .•→∘ =
       ●ᵛ.map (η∘ᵛ {ℕᵛ}) (●ᵛ.map (λ bq → fst (dequeueᵗ .U bq)) (q .•))
-    ≡⟨ ●-map-∘ (λ bq → fst (dequeueᵗ .U bq)) (η∘ᵛ {ℕᵛ}) (q .•) ⟩
+    ≡⟨ ●ᵛ.●-map-∘ (λ bq → fst (dequeueᵗ .U bq)) (η∘ᵛ {ℕᵛ}) (q .•) ⟩
       ●ᵛ.map (λ bq → η∘ᵛ {ℕᵛ} (fst (dequeueᵗ .U bq))) (q .•)
     ≡⟨ cong (λ h → ●ᵛ.map h (q .•)) (funExt λ bq → funExt λ _ → cong fst (dequeue-coherent bq)) ⟩
       ●ᵛ.map (λ bq → η∘ᵛ {ℕᵛ} (fst (dequeue .U (φ .U bq)))) (q .•)
-    ≡⟨ sym (●-map-∘ (λ bq → η∘ᵛ {U LQ} (φ .U bq)) (◯ᵛ.map (λ lq → fst (dequeue .U lq))) (q .•)) ⟩
+    ≡⟨ sym (●ᵛ.●-map-∘ (λ bq → η∘ᵛ {U LQ} (φ .U bq)) (◯ᵛ.map (λ lq → fst (dequeue .U lq))) (q .•)) ⟩
       ●ᵛ.map (◯ᵛ.map (λ lq → fst (dequeue .U lq))) (●ᵛ.map (λ bq → η∘ᵛ {U LQ} (φ .U bq)) (q .•))
     ≡⟨ cong (●ᵛ.map (◯ᵛ.map (λ lq → fst (dequeue .U lq)))) (q .•→∘) ⟩
       ●ᵛ.map (◯ᵛ.map (λ lq → fst (dequeue .U lq))) (η•ᵛ {◯ᵛ (U LQ)} (q .∘))
@@ -194,11 +194,11 @@ module _ (ABS : Type) (ABS-isProp : isProp ABS) where
   dequeue'-snd q .∘ = ◯ᵛ.map (λ lq → snd (dequeue .U lq)) (q .∘)
   dequeue'-snd q .•→∘ =
       ●ᵛ.map (λ bq → η∘ᵛ {U LQ} (φ .U bq)) (●ᵛ.map (λ bq → snd (dequeueᵗ .U bq)) (q .•))
-    ≡⟨ ●-map-∘ (λ bq → snd (dequeueᵗ .U bq)) (λ bq → η∘ᵛ {U LQ} (φ .U bq)) (q .•) ⟩
+    ≡⟨ ●ᵛ.●-map-∘ (λ bq → snd (dequeueᵗ .U bq)) (λ bq → η∘ᵛ {U LQ} (φ .U bq)) (q .•) ⟩
       ●ᵛ.map (λ bq → η∘ᵛ {U LQ} (φ .U (snd (dequeueᵗ .U bq)))) (q .•)
     ≡⟨ cong (λ h → ●ᵛ.map h (q .•)) (funExt λ bq → funExt λ _ → cong snd (dequeue-coherent bq)) ⟩
       ●ᵛ.map (λ bq → η∘ᵛ {U LQ} (snd (dequeue .U (φ .U bq)))) (q .•)
-    ≡⟨ sym (●-map-∘ (λ bq → η∘ᵛ {U LQ} (φ .U bq)) (◯ᵛ.map (λ lq → snd (dequeue .U lq))) (q .•)) ⟩
+    ≡⟨ sym (●ᵛ.●-map-∘ (λ bq → η∘ᵛ {U LQ} (φ .U bq)) (◯ᵛ.map (λ lq → snd (dequeue .U lq))) (q .•)) ⟩
       ●ᵛ.map (◯ᵛ.map (λ lq → snd (dequeue .U lq))) (●ᵛ.map (λ bq → η∘ᵛ {U LQ} (φ .U bq)) (q .•))
     ≡⟨ cong (●ᵛ.map (◯ᵛ.map (λ lq → snd (dequeue .U lq)))) (q .•→∘) ⟩
       ●ᵛ.map (◯ᵛ.map (λ lq → snd (dequeue .U lq))) (η•ᵛ {◯ᵛ (U LQ)} (q .∘))

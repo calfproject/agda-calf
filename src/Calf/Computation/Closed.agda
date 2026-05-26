@@ -6,7 +6,8 @@ module Calf.Computation.Closed (φ : Type) (φ-isProp : isProp φ) where
 
 open import Calf.Core.Cost
 open import Calf.Value
-open import Calf.Value.Closed φ φ-isProp as ●ᵛ using (●ᵛ; η•; ∗; law; 𝒱•)
+open import Calf.Value.Closed φ φ-isProp as ●ᵛ using (●ᵛ; 𝒱•)
+open import Calf.Value.Closed φ φ-isProp using (η•; ∗; law; ●-map-∘) renaming (●ᵛ-ηᵛ-isEquiv to ●ᶜ-ηᶜ-isEquiv) public
 open import Calf.Computation
 
 ●ᶜ : 𝒞 → 𝒞

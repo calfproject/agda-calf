@@ -3,7 +3,7 @@ open import Cubical.Foundations.Prelude
 module Calf.Value.Closed (φ : Type) (φ-isProp : isProp φ) where
 
 open import Calf.Value
-open import Calf.Phase.Closed φ φ-isProp public
+open import Calf.Phase.Closed φ φ-isProp renaming (●-η-isEquiv to ●ᵛ-ηᵛ-isEquiv) public
 open import Cubical.Data.Sigma
 open import Cubical.Foundations.Equiv
 

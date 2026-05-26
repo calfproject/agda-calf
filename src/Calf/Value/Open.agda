@@ -4,7 +4,7 @@ module Calf.Value.Open (φ : Type) (φ-isProp : isProp φ) where
 
 open import Calf.Value
 open import Calf.Value.Function
-open import Calf.Phase.Open φ φ-isProp public
+open import Calf.Phase.Open φ φ-isProp renaming (◯-η-isEquiv to ◯ᵛ-ηᵛ-isEquiv) public
 open import Cubical.Foundations.Equiv
 
 ◯ᵛ : 𝒱 → 𝒱
