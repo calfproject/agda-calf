@@ -7,7 +7,7 @@ module Calf.Computation.Closed (φ : Type) (φ-isProp : isProp φ) where
 open import Calf.Core.Cost
 open import Calf.Value
 open import Calf.Value.Closed φ φ-isProp as ●ᵛ using (●ᵛ; 𝒱•)
-open import Calf.Value.Closed φ φ-isProp using (η•; ∗; law; ●-map-∘) renaming (●ᵛ-ηᵛ-isEquiv to ●ᶜ-ηᶜ-isEquiv) public
+open import Calf.Value.Closed φ φ-isProp using (η•; ∗; law; ●-isProp; ●-map-∘) renaming (●ᵛ-ηᵛ-isEquiv to ●ᶜ-ηᶜ-isEquiv) public
 open import Calf.Computation
 
 ●ᶜ : 𝒞 → 𝒞
@@ -62,3 +62,17 @@ map {A} {B} f .charge c (law a p i) =
     (cong η• (f .charge c a))
     refl
     i
+
+map-open : φ → (f g : A ⊸ B) → map f ≡ map g
+map-open {A} {B} p f g =
+  ⊸-path
+    {A₀ = ●ᶜ A}
+    {A₁ = ●ᶜ A}
+    {B₀ = ●ᶜ B}
+    {B₁ = ●ᶜ B}
+    refl
+    refl
+    (funExt λ a• →
+      ●-isProp p
+        (map {A = A} {B = B} f .U a•)
+        (map {A = A} {B = B} g .U a•))
