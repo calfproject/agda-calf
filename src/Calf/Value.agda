@@ -26,7 +26,12 @@ open 𝒱 public
 
 𝒱-path : {X Y : 𝒱} → val X ≡ val Y → X ≡ Y
 𝒱-path {X} {Y} p i .val = p i
-𝒱-path {X} {Y} p i .is-set = {!   !}
+𝒱-path {X} {Y} p i .is-set =
+  isProp→PathP
+    (λ i → isPropIsSet {_} {p i})
+    (X .is-set)
+    (Y .is-set)
+    i
 𝒱-path {X} {Y} p i .is-preorder =
   isProp→PathP
     (λ i → isPropIsPreorder {p i})

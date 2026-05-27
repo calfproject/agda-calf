@@ -159,7 +159,7 @@ BEH-isProp = isSet𝟚 0𝟚 1𝟚
     (≤𝟚-trans (1𝟚-maximum _) (subst (_≤𝟚 0𝟚) beh ≤𝟚-refl))
 
 ⊑-beh : isSet X → BEH → IsDiscrete X
-⊑-beh = {!   !}
+⊑-beh = {!    !}
 -- ⊑'-beh beh .ortho g .fst .fst _ = g 0𝟚
 -- ⊑'-beh beh .ortho g .fst .snd = funExt λ x → cong g (isContr→isProp (𝟚-isAlgorithmic beh) 0𝟚 x)
 -- ⊑'-beh beh .ortho g .snd y i .fst _ = sym (cong (_$ 0𝟚) (y .snd)) i
