@@ -63,15 +63,15 @@ opaque
 𝒱-family : (_ : Unit) → Λ² → Δ²
 𝒱-family _ = ι
 
-IsPreorder : Type → Type
-IsPreorder = isLocal 𝒱-family
+isPreorder : Type → Type
+isPreorder = isLocal 𝒱-family
 
 P : Type → Type
 P = Localize 𝒱-family
 
 private variable X Y : Type
 
-isPropIsPreorder : isProp (IsPreorder X)
+isPropIsPreorder : isProp (isPreorder X)
 isPropIsPreorder = isPropΠ (λ _ → isPropIsPathSplitEquiv _)
 
 
@@ -96,17 +96,17 @@ module _ {X : Type} where
   ⊑-refl : Reflexive _⊑_
   ⊑-refl = ≡⇒⊑ refl
 
-  ⊑-trans : IsPreorder X → Transitive _⊑_
-  ⊑-trans X-isPreorder {x} {x'} {x''} x⊑x' x'⊑x'' =
+  ⊑-trans : isPreorder X → Transitive _⊑_
+  ⊑-trans X-is-preorder {x} {x'} {x''} x⊑x' x'⊑x'' =
     record
-      { path = λ 𝕚 → X-isPreorder _ .sec .fst aux ((𝕚 , 𝕚) , ≤𝟚-refl)
+      { path = λ 𝕚 → X-is-preorder _ .sec .fst aux ((𝕚 , 𝕚) , ≤𝟚-refl)
       ; path₀ =
-          cong (X-isPreorder _ .sec .fst aux ∘ ((0𝟚 , 0𝟚) ,_)) (≤𝟚-isProp _ _)
-          ∙ cong (_$ (0𝟚 , 0𝟚) , inl refl) (X-isPreorder _ .sec .snd aux)
+          cong (X-is-preorder _ .sec .fst aux ∘ ((0𝟚 , 0𝟚) ,_)) (≤𝟚-isProp _ _)
+          ∙ cong (_$ (0𝟚 , 0𝟚) , inl refl) (X-is-preorder _ .sec .snd aux)
           ∙ x⊑x' .path₀
       ; path₁ =
-          cong (X-isPreorder _ .sec .fst aux ∘ ((1𝟚 , 1𝟚) ,_)) (≤𝟚-isProp _ _)
-          ∙ cong (_$ (1𝟚 , 1𝟚) , inr refl) (X-isPreorder _ .sec .snd aux)
+          cong (X-is-preorder _ .sec .fst aux ∘ ((1𝟚 , 1𝟚) ,_)) (≤𝟚-isProp _ _)
+          ∙ cong (_$ (1𝟚 , 1𝟚) , inr refl) (X-is-preorder _ .sec .snd aux)
           ∙ x'⊑x'' .path₁
       }
     where
@@ -139,7 +139,7 @@ record IsDiscrete (X : Type) : Type where
     ortho : isLocal {A = Unit} {S = const 𝟚} (λ _ _ → tt) X
 open IsDiscrete
 
-IsDiscrete⊆IsPreorder : ⦃ _ : IsDiscrete X ⦄ → IsPreorder X
+IsDiscrete⊆IsPreorder : ⦃ _ : IsDiscrete X ⦄ → isPreorder X
 IsDiscrete⊆IsPreorder = {!   !}
 
 IsDiscrete⇒isEquiv[≡⇒⊑] : ⦃ _ : IsDiscrete X ⦄ → {x x' : X} → isEquiv (≡⇒⊑ {X} {x} {x'})
@@ -225,5 +225,5 @@ record dhom {Y : X → Type} {x x' : X} (x⊑x' : x ⊑ x') (y : Y x) (y' : Y x'
 IsCovariant : (X → Type) → Type
 IsCovariant {X} Y = {x x' : X} (x⊑x' : x ⊑ x') (y : Y x) → ∃![ y' ∈ Y x' ] dhom x⊑x' y y'
 
-RS-8∙11 : {Y : X → Type} → IsPreorder X → IsCovariant Y → IsPreorder (Σ X Y)
+RS-8∙11 : {Y : X → Type} → isPreorder X → IsCovariant Y → isPreorder (Σ X Y)
 RS-8∙11 = {!   !}

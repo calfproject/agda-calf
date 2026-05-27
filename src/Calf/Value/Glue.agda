@@ -12,7 +12,7 @@ open import Calf.Phase.Glue φ φ-isProp public
 
 Glueᵛ : (X• : 𝒱•) (X∘ : 𝒱∘) (χ : val (X• .fst) → val (●ᵛ (X∘ .fst))) → 𝒱
 Glueᵛ X• X∘ χ .val = Glue (𝒱•→Type• X•) (𝒱∘→Type∘ X∘) χ
-Glueᵛ X• X∘ χ .isPreorder = {!   !}
+Glueᵛ X• X∘ χ .is-preorder = {!   !}
 
 record 𝒱-FRAC : Type₁ where
   field

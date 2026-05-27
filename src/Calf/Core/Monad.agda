@@ -34,7 +34,7 @@ open IsMonad public
 𝒱-Cat .⋆IdL _ = refl
 𝒱-Cat .⋆IdR _ = refl
 𝒱-Cat .⋆Assoc _ _ _ = refl
-𝒱-Cat .isSetHom {X} {Y} = isSet→ (isSet𝒱 Y)
+𝒱-Cat .isSetHom {X} {Y} = isSet→ (Y .is-set)
 
 record Glue≤ (X• : 𝒱•) (X∘ : 𝒱∘) (χ : val (X• .fst) → val (●ᵛ (X∘ .fst))) : Type where
   field
@@ -45,7 +45,8 @@ open Glue≤
 
 Seal : Monad 𝒱-Cat
 Seal .fst .F-ob X .val = Glue≤ (●ᵛ X , ●ᵛ-ηᵛ-isEquiv) (◯ᵛ X , ◯ᵛ-ηᵛ-isEquiv) (●ᵛ.map (η∘ᵛ {X}))
-Seal .fst .F-ob X .isPreorder = subst IsPreorder {!   !} (RS-8∙11 (●ᵛ X .isPreorder) is-covariant)
+Seal .fst .F-ob X .is-set = {!   !}
+Seal .fst .F-ob X .is-preorder = subst isPreorder {!   !} (RS-8∙11 (●ᵛ X .is-preorder) is-covariant)
   where
     is-covariant : IsCovariant (λ x• → Σ[ x∘ ∈ val (◯ᵛ X) ] ●ᵛ.map (η∘ᵛ {X}) x• ⊑[ ●ᵛ (◯ᵛ X) ] η• x∘)
     is-covariant = {!   !}

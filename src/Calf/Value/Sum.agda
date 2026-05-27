@@ -13,10 +13,10 @@ open import Calf.Value.Sigma
 
 _+ᵛ_ : 𝒱 → 𝒱 → 𝒱
 (X +ᵛ Y) .val = val X ⊎ val Y
-(X +ᵛ Y) .isPreorder =
-  subst IsPreorder
+(X +ᵛ Y) .is-preorder =
+  subst isPreorder
     (ua (isoToEquiv lemma))
-    (Σᵛ Boolᵛ (if_then Y else X) .isPreorder)
+    (Σᵛ Boolᵛ (if_then Y else X) .is-preorder)
   where
     lemma : Iso (Σ Bool (val ∘ (if_then Y else X))) (val X ⊎ val Y)
     lemma .Iso.fun (false , v) = inj₁ v

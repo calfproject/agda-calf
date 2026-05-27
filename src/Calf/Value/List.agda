@@ -15,7 +15,7 @@ open import Calf.Value.Unit
 
 Listᵛ : 𝒱 → 𝒱
 Listᵛ X .val = List (X .val)
-Listᵛ X .isPreorder = subst IsPreorder lemma (Σᵛ ℕᵛ Vec .isPreorder)
+Listᵛ X .is-preorder = subst isPreorder lemma (Σᵛ ℕᵛ Vec .is-preorder)
   where
     Vec : ℕ → 𝒱
     Vec zero = 1ᵛ

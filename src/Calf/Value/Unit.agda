@@ -6,4 +6,4 @@ open import Cubical.Foundations.Prelude
 
 1ᵛ : 𝒱
 1ᵛ .val = ⊤
-1ᵛ .isPreorder .ortho g = ((λ _ → tt) , refl) , λ _ → refl
+1ᵛ .is-preorder .ortho g = ((λ _ → tt) , refl) , λ _ → refl

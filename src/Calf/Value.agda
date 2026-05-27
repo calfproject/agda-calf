@@ -19,19 +19,18 @@ open import Relation.Binary.Definitions
 record 𝒱 : Type₁ where
   field
     val : Type
-    isPreorder : IsPreorder val
-
-  isSet𝒱 : isSet val
-  isSet𝒱 x x' p p' = {!   !}
+    is-set : isSet val
+    is-preorder : isPreorder val
 open 𝒱 public
 
 𝒱-path : {X Y : 𝒱} → val X ≡ val Y → X ≡ Y
 𝒱-path {X} {Y} p i .val = p i
-𝒱-path {X} {Y} p i .isPreorder =
+𝒱-path {X} {Y} p i .is-set = {!   !}
+𝒱-path {X} {Y} p i .is-preorder =
   isProp→PathP
     (λ i → isPropIsPreorder {p i})
-    (X .isPreorder)
-    (Y .isPreorder)
+    (X .is-preorder)
+    (Y .is-preorder)
     i
 
 variable
@@ -48,7 +47,7 @@ module _ {X : 𝒱} where
   ⊑ᵛ-refl = ⊑-refl
 
   ⊑ᵛ-trans : Transitive _⊑ᵛ_
-  ⊑ᵛ-trans = ⊑-trans (X .isPreorder)
+  ⊑ᵛ-trans = ⊑-trans (X .is-preorder)
 
 ⊑ᵛ-syntax : val X → val X → Type
 ⊑ᵛ-syntax {X} = _⊑ᵛ_ {X}
@@ -66,4 +65,5 @@ IsDiscreteᵛ = IsDiscrete ∘ val
 
 fromProp : {X : Type} → isProp X → 𝒱
 fromProp {X} X-isProp .val = X
-fromProp {X} X-isProp .isPreorder = {!   !}
+fromProp {X} X-isProp .is-set = isProp→isSet X-isProp
+fromProp {X} X-isProp .is-preorder = {!   !}

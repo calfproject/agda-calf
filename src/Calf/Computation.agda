@@ -97,14 +97,14 @@ isPropCharge/0
   : {U : 𝒱} (charge : val ℂ → val U → val U)
   → isProp (∀ {a} → charge 0ℂ a ≡ a)
 isPropCharge/0 {U} charge =
-  isPropImplicitΠ λ a → 𝒱.isSet𝒱 U (charge 0ℂ a) a
+  isPropImplicitΠ λ a → U .is-set (charge 0ℂ a) a
 
 isPropCharge/+
   : {U : 𝒱} (charge : val ℂ → val U → val U)
   → isProp (∀ {a c₁ c₂} → charge (c₁ +ℂ c₂) a ≡ charge c₁ (charge c₂ a))
 isPropCharge/+ {U} charge =
   isPropImplicitΠ3 λ a c₁ c₂ →
-    𝒱.isSet𝒱 U (charge (c₁ +ℂ c₂) a) (charge c₁ (charge c₂ a))
+    U .is-set (charge (c₁ +ℂ c₂) a) (charge c₁ (charge c₂ a))
 
 𝒞-path
   : {A B : 𝒞}

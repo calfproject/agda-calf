@@ -9,7 +9,8 @@ open import Cubical.Foundations.Equiv
 
 ●ᵛ : 𝒱 → 𝒱
 ●ᵛ X .val = ● (X .val)
-●ᵛ X .isPreorder = {!   !}
+●ᵛ X .is-set = {!   !}
+●ᵛ X .is-preorder = {!   !}
 
 η•ᵛ : val X → val (●ᵛ X)
 η•ᵛ = η•
