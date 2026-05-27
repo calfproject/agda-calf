@@ -47,20 +47,20 @@ opaque
   1𝟚-maximum : Maximum _≤𝟚_ 1𝟚
   1𝟚-maximum tt = tt
 
-𝟚₂ : Type
-𝟚₂ = Σ[ (𝕚 , 𝕛) ∈ 𝟚 × 𝟚 ] 𝕚 ≤𝟚 𝕛
+Δ² : Type
+Δ² = Σ[ (𝕚 , 𝕛) ∈ 𝟚 × 𝟚 ] 𝕚 ≤𝟚 𝕛
 
-Λ₂ : Type
-Λ₂ = Σ[ (𝕚 , 𝕛) ∈ 𝟚 × 𝟚 ] join (𝕚 ≡ 0𝟚) (𝕛 ≡ 1𝟚)
+Λ² : Type
+Λ² = Σ[ (𝕚 , 𝕛) ∈ 𝟚 × 𝟚 ] join (𝕚 ≡ 0𝟚) (𝕛 ≡ 1𝟚)
 
-ι : Λ₂ → 𝟚₂
+ι : Λ² → Δ²
 ι (𝕚𝕛 , inl 𝕚≡0𝟚) = 𝕚𝕛 , subst (_≤𝟚 _) (sym 𝕚≡0𝟚) (0𝟚-minimum _)
 ι (𝕚𝕛 , inr 𝕛≡1𝟚) = 𝕚𝕛 , subst (_ ≤𝟚_) (sym 𝕛≡1𝟚) (1𝟚-maximum _)
 ι (𝕚𝕛 , push _ _ i) .fst = 𝕚𝕛
 ι (𝕚𝕛 , push 𝕚≡0𝟚 𝕛≡1𝟚 i) .snd = ≤𝟚-isProp (subst (_≤𝟚 _) (sym 𝕚≡0𝟚) (0𝟚-minimum _)) (subst (_ ≤𝟚_) (sym 𝕛≡1𝟚) (1𝟚-maximum _)) i
 
 
-𝒱-family : (_ : Unit) → Λ₂ → 𝟚₂
+𝒱-family : (_ : Unit) → Λ² → Δ²
 𝒱-family _ = ι
 
 IsPreorder : Type → Type
@@ -112,7 +112,7 @@ module _ {X : Type} where
     where
       open isPathSplitEquiv
 
-      aux : Λ₂ → X
+      aux : Λ² → X
       aux ((𝕚 , 𝕛) , inl 𝕚≡0𝟚) = x⊑x' .path 𝕛
       aux ((𝕚 , 𝕛) , inr 𝕛≡1𝟚) = x'⊑x'' .path 𝕚
       aux ((𝕚 , 𝕛) , push 𝕚≡0𝟚 𝕛≡1𝟚 i) =
@@ -212,7 +212,7 @@ module _ where
         is-retract true = refl
 
 
--- mylemma : IsDiscrete X → IsOrthogonal (const {B = Λ₂} tt) (val X)
+-- mylemma : IsDiscrete X → IsOrthogonal (const {B = Λ²} tt) (val X)
 -- mylemma = {!    !}
 
 
