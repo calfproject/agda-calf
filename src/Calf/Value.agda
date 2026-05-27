@@ -1,6 +1,7 @@
 module Calf.Value where
 
 open import Calf.Core.Directed
+open import Calf.Core.Directed using (BEH) public
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Equiv.PathSplit
@@ -62,6 +63,9 @@ syntax ⊑ᵛ-syntax {X} x x' = x ⊑[ X ] x'
 
 IsDiscreteᵛ : 𝒱 → Type
 IsDiscreteᵛ = IsDiscrete ∘ val
+
+⊑ᵛ-beh : BEH → IsDiscreteᵛ X
+⊑ᵛ-beh {X} = ⊑-beh (X .is-set)
 
 fromProp : {X : Type} → isProp X → 𝒱
 fromProp {X} X-isProp .val = X
