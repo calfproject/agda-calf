@@ -91,10 +91,34 @@ opaque
   isPropIsPreorder : isProp (isPreorder X)
   isPropIsPreorder = isPropΠ (λ _ → isPropIsPathSplitEquiv _)
 
+open isPathSplitEquiv
 
-module _ {A : Type} {S : A → Type} {T : A → Type} {F : ∀ α → S α → T α} where
-  retract-local : {Z' Z : Type} (sec : Z' → Z) (ret : Z → Z') → retract sec ret → isLocal F Z → isLocal F Z'
-  retract-local sec ret is-ret Z-local = {!   !}
+module _
+  {A : Type} {S : A → Type} {T : A → Type} {F : ∀ α → S α → T α}
+  {Z' Z : Type} (Z'→Z : Z' → Z) (Z→Z' : Z → Z')
+  (Z'-isSet : isSet Z')
+  (Z◃Z' : retract Z'→Z Z→Z')
+  where
+
+  retract-local : isLocal F Z → isLocal F Z'
+  retract-local Z-local α .sec .fst S→Z' t = Z→Z' (Z-local α .sec .fst (Z'→Z ∘ S→Z') t)
+  retract-local Z-local α .sec .snd S→Z' =
+      (λ x → Z→Z' (Z-local α .sec .fst (λ x₁ → Z'→Z (S→Z' x₁)) (F α x)))
+    ≡⟨ cong (Z→Z' ∘_) (Z-local α .sec .snd (Z'→Z ∘ S→Z')) ⟩
+      (Z→Z' ∘ Z'→Z) ∘ S→Z'
+    ≡⟨ cong (_∘ S→Z') (funExt Z◃Z') ⟩
+      S→Z'
+    ∎
+  retract-local Z-local α .secCong T→Z'₁ T→Z'₂ .fst h =
+      T→Z'₁
+    ≡⟨ sym (cong (_∘ T→Z'₁) (funExt Z◃Z')) ⟩
+      (Z→Z' ∘ Z'→Z) ∘ T→Z'₁
+    ≡⟨ cong (Z→Z' ∘_) (Z-local α .secCong (Z'→Z ∘ T→Z'₁) (Z'→Z ∘ T→Z'₂) .fst (cong (Z'→Z ∘_) h)) ⟩
+      (Z→Z' ∘ Z'→Z) ∘ T→Z'₂
+    ≡⟨ cong (_∘ T→Z'₂) (funExt Z◃Z') ⟩
+      T→Z'₂
+    ∎
+  retract-local Z-local α .secCong T→Z'₁ T→Z'₂ .snd h = isSet→ Z'-isSet _ _ _ h
 
 module _ {X : Type} where
 
@@ -159,8 +183,13 @@ record IsDiscrete (X : Type) : Type where
     ortho : isLocal {A = Unit} {S = const 𝟚} (λ _ _ → tt) X
 open IsDiscrete
 
-IsDiscrete⊆IsPreorder : ⦃ _ : IsDiscrete X ⦄ → isPreorder X
-IsDiscrete⊆IsPreorder = {!   !}
+opaque
+  unfolding 𝒱-family
+
+  IsDiscrete⊆IsPreorder : ⦃ _ : IsDiscrete X ⦄ → isPreorder X
+  IsDiscrete⊆IsPreorder {X} ⦃ X-discrete ⦄ α .sec .fst S→X (𝕚𝕛 , p) = S→X (𝕚𝕛 , {!   !}) -- X-discrete .ortho _ .sec .fst (λ 𝕚 → S→X ({!   !} , {!   !})) _
+  IsDiscrete⊆IsPreorder {X} ⦃ X-discrete ⦄ α .sec .snd b = {! X-discrete .ortho _ .sec .fst  !}
+  IsDiscrete⊆IsPreorder {X} ⦃ X-discrete ⦄ α .secCong = {!   !}
 
 IsDiscrete⇒isEquiv[≡⇒⊑] : ⦃ _ : IsDiscrete X ⦄ → {x x' : X} → isEquiv (≡⇒⊑ {X} {x} {x'})
 IsDiscrete⇒isEquiv[≡⇒⊑] = {!   !}
@@ -217,7 +246,7 @@ module _ where
       ℕ-isDiscrete = ⊑-beh isSetℕ refl
 
     Bool-isDiscrete : IsDiscrete Bool
-    Bool-isDiscrete .ortho = retract-local inj prj is-retract (ℕ-isDiscrete .ortho)
+    Bool-isDiscrete .ortho = retract-local inj prj isSetBool is-retract (ℕ-isDiscrete .ortho)
       where
         inj : Bool → ℕ
         inj false = 0
