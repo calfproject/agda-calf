@@ -36,32 +36,32 @@ open IsMonad public
 𝒱-Cat .⋆Assoc _ _ _ = refl
 𝒱-Cat .isSetHom {X} {Y} = isSet→ (Y .is-set)
 
-record Glue≤ (X• : 𝒱•) (X∘ : 𝒱∘) (χ : val (X• .fst) → val (●ᵛ (X∘ .fst))) : Type where
+record Glue≤ (X• : 𝒱•) (X◦ : 𝒱◦) (χ : val (X• .fst) → val (●ᵛ (X◦ .fst))) : Type where
   field
     • : val (X• .fst)
-    ∘ : val (X∘ .fst)
-    •→∘ : χ • ⊑[ ●ᵛ (X∘ .fst) ] η• ∘
+    ◦ : val (X◦ .fst)
+    •→◦ : χ • ⊑[ ●ᵛ (X◦ .fst) ] η• ◦
 open Glue≤
 
 Seal : Monad 𝒱-Cat
-Seal .fst .F-ob X .val = Glue≤ (●ᵛ X , ●ᵛ-ηᵛ-isEquiv) (◯ᵛ X , ◯ᵛ-ηᵛ-isEquiv) (●ᵛ.map (η∘ᵛ {X}))
+Seal .fst .F-ob X .val = Glue≤ (●ᵛ X , ●ᵛ-ηᵛ-isEquiv) (◯ᵛ X , ◯ᵛ-ηᵛ-isEquiv) (●ᵛ.map (η◦ᵛ {X}))
 Seal .fst .F-ob X .is-set = {!   !}
 Seal .fst .F-ob X .is-preorder = subst isPreorder {!   !} (RS-8∙11 (●ᵛ X .is-preorder) is-covariant)
   where
-    is-covariant : IsCovariant (λ x• → Σ[ x∘ ∈ val (◯ᵛ X) ] ●ᵛ.map (η∘ᵛ {X}) x• ⊑[ ●ᵛ (◯ᵛ X) ] η• x∘)
+    is-covariant : IsCovariant (λ x• → Σ[ x◦ ∈ val (◯ᵛ X) ] ●ᵛ.map (η◦ᵛ {X}) x• ⊑[ ●ᵛ (◯ᵛ X) ] η• x◦)
     is-covariant = {!   !}
 Seal .fst .F-hom f g≤ .• = ●ᵛ.map f (g≤ .•)
-Seal .fst .F-hom f g≤ .∘ = ◯ᵛ.map f (g≤ .∘)
-Seal .fst .F-hom f g≤ .•→∘ = {!   !}
+Seal .fst .F-hom f g≤ .◦ = ◯ᵛ.map f (g≤ .◦)
+Seal .fst .F-hom f g≤ .•→◦ = {!   !}
 Seal .fst .F-id = {!   !}
 Seal .fst .F-seq = {!   !}
 Seal .snd .η .N-ob X x .• = η•ᵛ {X} x
-Seal .snd .η .N-ob X x .∘ = η∘ᵛ {X} x
-Seal .snd .η .N-ob X x .•→∘ = ⊑ᵛ-refl {●ᵛ (◯ᵛ X)}
+Seal .snd .η .N-ob X x .◦ = η◦ᵛ {X} x
+Seal .snd .η .N-ob X x .•→◦ = ⊑ᵛ-refl {●ᵛ (◯ᵛ X)}
 Seal .snd .η .N-hom = {!   !}
 Seal .snd .μ .N-ob X g≤ .• = ●-join (●ᵛ.map • (g≤ .•))
-Seal .snd .μ .N-ob X g≤ .∘ abs = g≤ .∘ abs .∘ abs
-Seal .snd .μ .N-ob X g≤ .•→∘ = {!   !}
+Seal .snd .μ .N-ob X g≤ .◦ abs = g≤ .◦ abs .◦ abs
+Seal .snd .μ .N-ob X g≤ .•→◦ = {!   !}
 Seal .snd .μ .N-hom = {!   !}
 Seal .snd .idl-μ = {!   !}
 Seal .snd .idr-μ = {!   !}
@@ -100,18 +100,18 @@ opaque
   chargeᴹ/+ = {!   !}
 
   sealᴹ :
-    (a : val (M .fst .F-ob X)) (a∘ : ⟨ ABS ⟩ → val (M .fst .F-ob X))
-    → ((abs : ⟨ ABS ⟩) → a ⊑[ M .fst .F-ob X ] a∘ abs)
+    (a : val (M .fst .F-ob X)) (a◦ : ⟨ ABS ⟩ → val (M .fst .F-ob X))
+    → ((abs : ⟨ ABS ⟩) → a ⊑[ M .fst .F-ob X ] a◦ abs)
     → val (M .fst .F-ob X)
-  sealᴹ {X} m m∘ m⊑m∘ =
+  sealᴹ {X} m m◦ m⊑m◦ =
     M .snd .μ .N-ob X $
       record
         { • = η•ᵛ {ℂ ×ᵛ M .fst .F-ob X} (0ℂ , m)
-        ; ∘ = λ abs → (0ℂ , m∘ abs)
-        ; •→∘ =
+        ; ◦ = λ abs → (0ℂ , m◦ abs)
+        ; •→◦ =
             ⊑ᵛ-mono {◯ᵛ (ℂ ×ᵛ M .fst .F-ob X)} {●ᵛ (◯ᵛ (ℂ ×ᵛ M .fst .F-ob X))}
               (η•ᵛ {◯ᵛ (ℂ ×ᵛ M .fst .F-ob X)})
               (⊑ᵛ-funext {fromProp φ-isProp} {λ _ → ℂ ×ᵛ M .fst .F-ob X}
                 λ abs → ⊑ᵛ-mono {M .fst .F-ob X} {ℂ ×ᵛ M .fst .F-ob X}
-                (0ℂ ,_) (m⊑m∘ abs))
+                (0ℂ ,_) (m⊑m◦ abs))
         }

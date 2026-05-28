@@ -13,6 +13,8 @@ open import Cubical.HITs.Localization
 open import Relation.Binary using (_⇒_)
 open import Relation.Binary.Definitions
 
+private variable X Y : Type
+
 opaque
   open import Cubical.Data.Unit
 
@@ -60,19 +62,34 @@ opaque
 ι (𝕚𝕛 , push 𝕚≡0𝟚 𝕛≡1𝟚 i) .snd = ≤𝟚-isProp (subst (_≤𝟚 _) (sym 𝕚≡0𝟚) (0𝟚-minimum _)) (subst (_ ≤𝟚_) (sym 𝕛≡1𝟚) (1𝟚-maximum _)) i
 
 
-𝒱-family : (_ : Unit) → Λ² → Δ²
-𝒱-family _ = ι
+opaque
+  𝒱-family-A : Type
+  𝒱-family-A = Unit
+
+  𝒱-family-S : 𝒱-family-A → Type
+  𝒱-family-S _ = Λ²
+
+  𝒱-family-T : 𝒱-family-A → Type
+  𝒱-family-T _ = Δ²
+
+  𝒱-family : (α : 𝒱-family-A) → 𝒱-family-S α → 𝒱-family-T α
+  𝒱-family _ = ι
 
 isPreorder : Type → Type
 isPreorder = isLocal 𝒱-family
 
-P : Type → Type
-P = Localize 𝒱-family
+opaque
+  P : Type → Type
+  P = Localize 𝒱-family
 
-private variable X Y : Type
+  ηᴾ : X → P X
+  ηᴾ = ∣_∣
 
-isPropIsPreorder : isProp (isPreorder X)
-isPropIsPreorder = isPropΠ (λ _ → isPropIsPathSplitEquiv _)
+  isPreorder-P : isPreorder (P X)
+  isPreorder-P = isLocal-Localize 𝒱-family _
+
+  isPropIsPreorder : isProp (isPreorder X)
+  isPropIsPreorder = isPropΠ (λ _ → isPropIsPathSplitEquiv _)
 
 
 module _ {A : Type} {S : A → Type} {T : A → Type} {F : ∀ α → S α → T α} where
@@ -96,30 +113,33 @@ module _ {X : Type} where
   ⊑-refl : Reflexive _⊑_
   ⊑-refl = ≡⇒⊑ refl
 
-  ⊑-trans : isPreorder X → Transitive _⊑_
-  ⊑-trans X-is-preorder {x} {x'} {x''} x⊑x' x'⊑x'' =
-    record
-      { path = λ 𝕚 → X-is-preorder _ .sec .fst aux ((𝕚 , 𝕚) , ≤𝟚-refl)
-      ; path₀ =
-          cong (X-is-preorder _ .sec .fst aux ∘ ((0𝟚 , 0𝟚) ,_)) (≤𝟚-isProp _ _)
-          ∙ cong (_$ (0𝟚 , 0𝟚) , inl refl) (X-is-preorder _ .sec .snd aux)
-          ∙ x⊑x' .path₀
-      ; path₁ =
-          cong (X-is-preorder _ .sec .fst aux ∘ ((1𝟚 , 1𝟚) ,_)) (≤𝟚-isProp _ _)
-          ∙ cong (_$ (1𝟚 , 1𝟚) , inr refl) (X-is-preorder _ .sec .snd aux)
-          ∙ x'⊑x'' .path₁
-      }
-    where
-      open isPathSplitEquiv
+  opaque
+    unfolding 𝒱-family
 
-      aux : Λ² → X
-      aux ((𝕚 , 𝕛) , inl 𝕚≡0𝟚) = x⊑x' .path 𝕛
-      aux ((𝕚 , 𝕛) , inr 𝕛≡1𝟚) = x'⊑x'' .path 𝕚
-      aux ((𝕚 , 𝕛) , push 𝕚≡0𝟚 𝕛≡1𝟚 i) =
-        ( cong (x⊑x' .path) 𝕛≡1𝟚
-        ∙ x⊑x' .path₁
-        ∙ sym (cong (x'⊑x'' .path) 𝕚≡0𝟚 ∙ x'⊑x'' .path₀))
-        i
+    ⊑-trans : isPreorder X → Transitive _⊑_
+    ⊑-trans X-is-preorder {x} {x'} {x''} x⊑x' x'⊑x'' =
+      record
+        { path = λ 𝕚 → X-is-preorder _ .sec .fst aux ((𝕚 , 𝕚) , ≤𝟚-refl)
+        ; path₀ =
+            cong (X-is-preorder _ .sec .fst aux ∘ ((0𝟚 , 0𝟚) ,_)) (≤𝟚-isProp _ _)
+            ∙ cong (_$ (0𝟚 , 0𝟚) , inl refl) (X-is-preorder _ .sec .snd aux)
+            ∙ x⊑x' .path₀
+        ; path₁ =
+            cong (X-is-preorder _ .sec .fst aux ∘ ((1𝟚 , 1𝟚) ,_)) (≤𝟚-isProp _ _)
+            ∙ cong (_$ (1𝟚 , 1𝟚) , inr refl) (X-is-preorder _ .sec .snd aux)
+            ∙ x'⊑x'' .path₁
+        }
+      where
+        open isPathSplitEquiv
+
+        aux : Λ² → X
+        aux ((𝕚 , 𝕛) , inl 𝕚≡0𝟚) = x⊑x' .path 𝕛
+        aux ((𝕚 , 𝕛) , inr 𝕛≡1𝟚) = x'⊑x'' .path 𝕚
+        aux ((𝕚 , 𝕛) , push 𝕚≡0𝟚 𝕛≡1𝟚 i) =
+          ( cong (x⊑x' .path) 𝕛≡1𝟚
+          ∙ x⊑x' .path₁
+          ∙ sym (cong (x'⊑x'' .path) 𝕚≡0𝟚 ∙ x'⊑x'' .path₀))
+          i
 
 ⊑-mono : (f : X → Y) {x x' : X} → x ⊑ x' → f x ⊑ f x'
 ⊑-mono f x⊑x' .path = f ∘ x⊑x' .path

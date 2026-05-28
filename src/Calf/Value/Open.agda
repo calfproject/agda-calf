@@ -10,12 +10,12 @@ open import Cubical.Foundations.Equiv
 ◯ᵛ : 𝒱 → 𝒱
 ◯ᵛ = fromProp φ-isProp →ᵛ_
 
-η∘ᵛ : val X → val (◯ᵛ X)
-η∘ᵛ = η∘
+η◦ᵛ : val X → val (◯ᵛ X)
+η◦ᵛ = η◦
 
-𝒱∘ : Type₁
-𝒱∘ = Σ[ X ∈ 𝒱 ] isEquiv (η∘ {val X})
+𝒱◦ : Type₁
+𝒱◦ = Σ[ X ∈ 𝒱 ] isEquiv (η◦ {val X})
 
-𝒱∘→Type∘ : 𝒱∘ → Type∘
-𝒱∘→Type∘ X∘ .fst = val (X∘ .fst)
-𝒱∘→Type∘ X∘ .snd = X∘ .snd
+𝒱◦→Type◦ : 𝒱◦ → Type◦
+𝒱◦→Type◦ X◦ .fst = val (X◦ .fst)
+𝒱◦→Type◦ X◦ .snd = X◦ .snd

@@ -30,32 +30,32 @@ record 𝒞 : Type₁ where
   charge/+ = cong effect chargeᴹ/+ ∙ {! ?  !}
 
   seal :
-    (a : cmp) (a∘ : ⟨ ABS ⟩ → cmp)
-    → ((abs : ⟨ ABS ⟩) → a ⊑[ U ] a∘ abs)
+    (a : cmp) (a◦ : ⟨ ABS ⟩ → cmp)
+    → ((abs : ⟨ ABS ⟩) → a ⊑[ U ] a◦ abs)
     → cmp
-  seal a a∘ a⊑a∘ = effect $
+  seal a a◦ a⊑a◦ = effect $
     sealᴹ
       (M .snd .η .N-ob _ a)
-      (λ abs → M .snd .η .N-ob _ (a∘ abs))
-      (λ abs → ⊑ᵛ-mono {U} {M .fst .F-ob U} (M .snd .η .N-ob _) (a⊑a∘ abs))
+      (λ abs → M .snd .η .N-ob _ (a◦ abs))
+      (λ abs → ⊑ᵛ-mono {U} {M .fst .F-ob U} (M .snd .η .N-ob _) (a⊑a◦ abs))
 
-  seal/abs : ∀ {a a∘ a⊑a∘} (abs : ⟨ ABS ⟩) → seal a a∘ a⊑a∘ ≡ a∘ abs
+  seal/abs : ∀ {a a◦ a⊑a◦} (abs : ⟨ ABS ⟩) → seal a a◦ a⊑a◦ ≡ a◦ abs
   seal/abs = {!   !}
 
-  seal/conc : ∀ {a a∘ a⊑a∘} → (⟨ ABS ⟩ → isContr cmp) → seal a a∘ a⊑a∘ ≡ a
+  seal/conc : ∀ {a a◦ a⊑a◦} → (⟨ ABS ⟩ → isContr cmp) → seal a a◦ a⊑a◦ ≡ a
   seal/conc = {!   !}
 
-  seal/charge : ∀ {a a∘ a⊑a∘ c} →
-    charge c (seal a a∘ a⊑a∘) ≡
-    seal (charge c a) (charge c ∘ a∘) (⊑ᵛ-mono {U} {U} (charge c) ∘ a⊑a∘)
+  seal/charge : ∀ {a a◦ a⊑a◦ c} →
+    charge c (seal a a◦ a⊑a◦) ≡
+    seal (charge c a) (charge c ◦ a◦) (⊑ᵛ-mono {U} {U} (charge c) ◦ a⊑a◦)
   seal/charge = {!   !}
 
   seal/unit : ∀ {a} → seal a (λ _ → a) (λ _ → ⊑ᵛ-refl {U}) ≡ a
   seal/unit = {!   !}
 
-  seal/mult : ∀ {a a∘ a∘' a⊑a∘} {a∘⊑a∘' : (abs : ⟨ ABS ⟩) → a∘ abs ⊑[ U ] a∘' abs} →
-    seal (seal a a∘ a⊑a∘) a∘' (λ abs → ⊑ᵛ-trans {U} (≡⇒⊑ᵛ {U} (seal/abs abs)) (a∘⊑a∘' abs)) ≡
-    seal a a∘' (λ abs → ⊑ᵛ-trans {U} (a⊑a∘ abs) (a∘⊑a∘' abs))
+  seal/mult : ∀ {a a◦ a◦' a⊑a◦} {a◦⊑a◦' : (abs : ⟨ ABS ⟩) → a◦ abs ⊑[ U ] a◦' abs} →
+    seal (seal a a◦ a⊑a◦) a◦' (λ abs → ⊑ᵛ-trans {U} (≡⇒⊑ᵛ {U} (seal/abs abs)) (a◦⊑a◦' abs)) ≡
+    seal a a◦' (λ abs → ⊑ᵛ-trans {U} (a⊑a◦ abs) (a◦⊑a◦' abs))
   seal/mult = {!   !}
 open 𝒞 public
 
