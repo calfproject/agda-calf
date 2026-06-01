@@ -7,7 +7,24 @@ open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
 
 Πᵛ : (X : 𝒱) (Y : val X → 𝒱) → 𝒱
-Πᵛ X Y .fst = (x : val X) → val (Y x)
-Πᵛ X Y .snd = isSetΠ (λ x → Y x .snd)
+Πᵛ X Y .val = (x : val X) → val (Y x)
+Πᵛ X Y .is-set = isSetΠ (λ x → Y x .is-set)
+Πᵛ X Y .is-preorder = {!   !}
+-- .ortho g .fst .fst 𝕚₂ x = Y x .is-preorder .ortho (flip g x) .fst .fst 𝕚₂
+-- Πᵛ X Y .is-preorder .ortho g .fst .snd i 𝕚∨𝕚 x = (Y x .is-preorder .ortho (flip g x) .fst .snd) i 𝕚∨𝕚
+-- Πᵛ X Y .is-preorder .ortho g .snd f i .fst 𝕚₂ x =
+--   Y x .is-preorder .ortho (flip g x) .snd
+--     ((λ 𝕚₂ → f .fst 𝕚₂ x) , λ j 𝕚∨𝕚 → f .snd j 𝕚∨𝕚 x)
+--     i .fst 𝕚₂
+-- Πᵛ X Y .is-preorder .ortho g .snd f i .snd j 𝕚∨𝕚 x =
+--   Y x .is-preorder .ortho (flip g x) .snd
+--     ((λ 𝕚₂ → f .fst 𝕚₂ x) , λ j 𝕚∨𝕚 → f .snd j 𝕚∨𝕚 x)
+--     i .snd j 𝕚∨𝕚
 
 syntax Πᵛ X (λ x → Y) = [ x ∈ X ] →ᵛ Y
+
+⊑ᵛ-funext : {Y : val X → 𝒱}
+  → {f f' : (x : val X) → val (Y x)}
+  → ((x : val X) → f x ⊑[ Y x ] f' x)
+  → f ⊑[ Πᵛ X Y ] f'
+⊑ᵛ-funext = ⊑-funext

@@ -6,5 +6,6 @@ open import Cubical.Data.Bool public
 open import Cubical.Foundations.Prelude
 
 Boolᵛ : 𝒱
-Boolᵛ .fst = Bool
-Boolᵛ .snd = isSetBool
+Boolᵛ .val = Bool
+Boolᵛ .is-set = isSetBool
+Boolᵛ .is-preorder = IsDiscrete⊆IsPreorder

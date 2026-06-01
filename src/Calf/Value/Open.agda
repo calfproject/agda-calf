@@ -8,7 +8,7 @@ open import Calf.Phase.Open φ φ-isProp renaming (◯-η-isEquiv to ◯ᵛ-η�
 open import Cubical.Foundations.Equiv
 
 ◯ᵛ : 𝒱 → 𝒱
-◯ᵛ = (φ , isProp→isSet φ-isProp) →ᵛ_
+◯ᵛ = fromProp φ-isProp →ᵛ_
 
 η◦ᵛ : val X → val (◯ᵛ X)
 η◦ᵛ = η◦

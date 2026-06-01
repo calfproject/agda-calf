@@ -75,10 +75,8 @@ opaque
   𝒱-family : (α : 𝒱-family-A) → 𝒱-family-S α → 𝒱-family-T α
   𝒱-family _ = ι
 
-record isPreorder (X : Type) : Type where
-  field
-    is-preorder : isLocal 𝒱-family X
-open isPreorder
+isPreorder : Type → Type
+isPreorder = isLocal 𝒱-family
 
 opaque
   P : Type → Type
@@ -88,11 +86,10 @@ opaque
   ηᴾ = ∣_∣
 
   isPreorder-P : isPreorder (P X)
-  isPreorder-P .is-preorder = isLocal-Localize 𝒱-family _
+  isPreorder-P = isLocal-Localize 𝒱-family _
 
-  isPropisPreorder : isProp (isPreorder X)
-  isPropisPreorder p p' i .is-preorder =
-    isPropΠ (λ _ → isPropIsPathSplitEquiv _) (p .is-preorder) (p' .is-preorder) i
+  isPropIsPreorder : isProp (isPreorder X)
+  isPropIsPreorder = isPropΠ (λ _ → isPropIsPathSplitEquiv _)
 
 open isPathSplitEquiv
 
@@ -143,17 +140,17 @@ module _ {X : Type} where
   opaque
     unfolding 𝒱-family
 
-    ⊑-trans : ⦃ _ : isPreorder X ⦄ → Transitive _⊑_
-    ⊑-trans ⦃ X-is-preorder ⦄ {x} {x'} {x''} x⊑x' x'⊑x'' =
+    ⊑-trans : isPreorder X → Transitive _⊑_
+    ⊑-trans X-is-preorder {x} {x'} {x''} x⊑x' x'⊑x'' =
       record
-        { path = λ 𝕚 → X-is-preorder .is-preorder _ .sec .fst aux ((𝕚 , 𝕚) , ≤𝟚-refl)
+        { path = λ 𝕚 → X-is-preorder _ .sec .fst aux ((𝕚 , 𝕚) , ≤𝟚-refl)
         ; path₀ =
-            cong (X-is-preorder .is-preorder _ .sec .fst aux ∘ ((0𝟚 , 0𝟚) ,_)) (≤𝟚-isProp _ _)
-            ∙ cong (_$ (0𝟚 , 0𝟚) , inl refl) (X-is-preorder .is-preorder _ .sec .snd aux)
+            cong (X-is-preorder _ .sec .fst aux ∘ ((0𝟚 , 0𝟚) ,_)) (≤𝟚-isProp _ _)
+            ∙ cong (_$ (0𝟚 , 0𝟚) , inl refl) (X-is-preorder _ .sec .snd aux)
             ∙ x⊑x' .path₀
         ; path₁ =
-            cong (X-is-preorder .is-preorder _ .sec .fst aux ∘ ((1𝟚 , 1𝟚) ,_)) (≤𝟚-isProp _ _)
-            ∙ cong (_$ (1𝟚 , 1𝟚) , inr refl) (X-is-preorder .is-preorder _ .sec .snd aux)
+            cong (X-is-preorder _ .sec .fst aux ∘ ((1𝟚 , 1𝟚) ,_)) (≤𝟚-isProp _ _)
+            ∙ cong (_$ (1𝟚 , 1𝟚) , inr refl) (X-is-preorder _ .sec .snd aux)
             ∙ x'⊑x'' .path₁
         }
       where
@@ -181,23 +178,21 @@ module _ {X : Type} where
 ⊑-funext pointwise .path₀ = funExt λ x → pointwise x .path₀
 ⊑-funext pointwise .path₁ = funExt λ x → pointwise x .path₁
 
-record isDiscrete (X : Type) : Type where
+record IsDiscrete (X : Type) : Type where
   field
-    is-discrete : isLocal {A = Unit} {S = const 𝟚} (λ _ _ → tt) X
-open isDiscrete
+    ortho : isLocal {A = Unit} {S = const 𝟚} (λ _ _ → tt) X
+open IsDiscrete
 
 opaque
   unfolding 𝒱-family
 
-  instance
-    isDiscrete→isPreorder : ⦃ _ : isDiscrete X ⦄ → isPreorder X
-    isDiscrete→isPreorder = {!   !}
-    -- isDiscrete→isPreorder {X} ⦃ X-discrete ⦄ .is-preorder α .sec .fst S→X (𝕚𝕛 , p) = S→X (𝕚𝕛 , {!   !}) -- X-discrete .is-discrete _ .sec .fst (λ 𝕚 → S→X ({!   !} , {!   !})) _
-    -- isDiscrete→isPreorder {X} ⦃ X-discrete ⦄ .is-preorder α .sec .snd b = {! X-discrete .is-discrete _ .sec .fst  !}
-    -- isDiscrete→isPreorder {X} ⦃ X-discrete ⦄ .is-preorder α .secCong = {!   !}
+  IsDiscrete⊆IsPreorder : ⦃ _ : IsDiscrete X ⦄ → isPreorder X
+  IsDiscrete⊆IsPreorder {X} ⦃ X-discrete ⦄ α .sec .fst S→X (𝕚𝕛 , p) = S→X (𝕚𝕛 , {!   !}) -- X-discrete .ortho _ .sec .fst (λ 𝕚 → S→X ({!   !} , {!   !})) _
+  IsDiscrete⊆IsPreorder {X} ⦃ X-discrete ⦄ α .sec .snd b = {! X-discrete .ortho _ .sec .fst  !}
+  IsDiscrete⊆IsPreorder {X} ⦃ X-discrete ⦄ α .secCong = {!   !}
 
--- isDiscrete→isEquiv[≡⇒⊑] : ⦃ _ : isDiscrete X ⦄ → {x x' : X} → isEquiv (≡⇒⊑ {X} {x} {x'})
--- isDiscrete→isEquiv[≡⇒⊑] = {!   !}
+IsDiscrete⇒isEquiv[≡⇒⊑] : ⦃ _ : IsDiscrete X ⦄ → {x x' : X} → isEquiv (≡⇒⊑ {X} {x} {x'})
+IsDiscrete⇒isEquiv[≡⇒⊑] = {!   !}
 
 BEH : Type
 BEH = 0𝟚 ≡ 1𝟚
@@ -212,14 +207,32 @@ BEH-isProp = isSet𝟚 0𝟚 1𝟚
     (0𝟚-minimum _)
     (≤𝟚-trans (1𝟚-maximum _) (subst (_≤𝟚 0𝟚) beh ≤𝟚-refl))
 
-⊑-beh : BEH → isDiscrete X
-⊑-beh beh .is-discrete _ .sec .fst f _ = f 0𝟚
-⊑-beh beh .is-discrete _ .sec .snd f =
-  funExt (cong (f $_) ∘ isContr→isProp (𝟚-isAlgorithmic beh) 0𝟚)
-⊑-beh beh .is-discrete _ .secCong g g' .fst p = funExt λ _ → cong (_$ 0𝟚) p
-⊑-beh beh .is-discrete _ .secCong g g' .snd p i j 𝕚 =
-  p j (isContr→isProp (𝟚-isAlgorithmic beh) 0𝟚 𝕚 i)
+⊑-beh : isSet X → BEH → IsDiscrete X
+⊑-beh = {!    !}
+-- ⊑'-beh beh .ortho g .fst .fst _ = g 0𝟚
+-- ⊑'-beh beh .ortho g .fst .snd = funExt λ x → cong g (isContr→isProp (𝟚-isAlgorithmic beh) 0𝟚 x)
+-- ⊑'-beh beh .ortho g .snd y i .fst _ = sym (cong (_$ 0𝟚) (y .snd)) i
+-- ⊑'-beh {X} beh .ortho g .snd y i .snd j x = {!   !}
 
+-- ⊑-beh : BEH → IsDiscrete X
+-- ⊑-beh {X} = ⊑'-beh {val X , isSet𝒱 X}
+
+--   -- ⊑-beh {X} beh {x} {x'} = {!   !}
+--   -- isoToEquiv (iso ≡⇒⊑ ⊑⇒≡ sec ret) .snd
+--   --   where
+--   --     ⊑⇒≡ : _⊑_ ⇒ _≡_
+--   --     ⊑⇒≡ x⊑x' = sym (x⊑x' .path₀) ∙ cong (x⊑x' .path) beh ∙ x⊑x' .path₁
+
+--   --     sec : section ≡⇒⊑ ⊑⇒≡
+--   --     sec x⊑x' i .path 𝕚 =
+--   --       ( sym (x⊑x' .path₀)
+--   --       ∙ cong (x⊑x' .path) (isContr→isProp (𝟚-isAlgorithmic beh) 0𝟚 𝕚)
+--   --       ) i
+--   --     sec x⊑x' i .path₀ = {!   !}
+--   --     sec x⊑x' i .path₁ = {!   !}
+
+--   --     ret : retract ≡⇒⊑ ⊑⇒≡
+--   --     ret x≡x' i = isSet𝒱 X x x' (⊑⇒≡ (≡⇒⊑ x≡x')) x≡x' i
 
 module _ where
   open import Cubical.Data.Nat
@@ -229,11 +242,11 @@ module _ where
     opaque
       unfolding 𝟚
 
-      ℕ-isDiscrete : isDiscrete ℕ
-      ℕ-isDiscrete = ⊑-beh refl
+      ℕ-isDiscrete : IsDiscrete ℕ
+      ℕ-isDiscrete = ⊑-beh isSetℕ refl
 
-    Bool-isDiscrete : isDiscrete Bool
-    Bool-isDiscrete .is-discrete = retract-local inj prj isSetBool is-retract (ℕ-isDiscrete .is-discrete)
+    Bool-isDiscrete : IsDiscrete Bool
+    Bool-isDiscrete .ortho = retract-local inj prj isSetBool is-retract (ℕ-isDiscrete .ortho)
       where
         inj : Bool → ℕ
         inj false = 0
@@ -248,7 +261,7 @@ module _ where
         is-retract true = refl
 
 
--- mylemma : isDiscrete X → IsOrthogonal (const {B = Λ²} tt) (val X)
+-- mylemma : IsDiscrete X → IsOrthogonal (const {B = Λ²} tt) (val X)
 -- mylemma = {!    !}
 
 
@@ -261,5 +274,5 @@ record dhom {Y : X → Type} {x x' : X} (x⊑x' : x ⊑ x') (y : Y x) (y' : Y x'
 IsCovariant : (X → Type) → Type
 IsCovariant {X} Y = {x x' : X} (x⊑x' : x ⊑ x') (y : Y x) → ∃![ y' ∈ Y x' ] dhom x⊑x' y y'
 
--- isProp→isPreorder : isProp X → isPreorder X
--- isProp→isPreorder = {!   !}
+RS-8∙11 : {Y : X → Type} → isPreorder X → IsCovariant Y → isPreorder (Σ X Y)
+RS-8∙11 = {!   !}

@@ -17,14 +17,62 @@ open import Relation.Binary using (_⇒_)
 open import Relation.Binary.Definitions
 
 
-𝒱 : Type₁
-𝒱 = hSet ℓ-zero
+record 𝒱 : Type₁ where
+  field
+    val : Type
+    is-set : isSet val
+    is-preorder : isPreorder val
+open 𝒱 public
 
-val : 𝒱 → Type
-val = ⟨_⟩
+𝒱-path : {X Y : 𝒱} → val X ≡ val Y → X ≡ Y
+𝒱-path {X} {Y} p i .val = p i
+𝒱-path {X} {Y} p i .is-set =
+  isProp→PathP
+    (λ i → isPropIsSet {_} {p i})
+    (X .is-set)
+    (Y .is-set)
+    i
+𝒱-path {X} {Y} p i .is-preorder =
+  isProp→PathP
+    (λ i → isPropIsPreorder {p i})
+    (X .is-preorder)
+    (Y .is-preorder)
+    i
 
 variable
   X Y Z : 𝒱
 
-𝒱-path : val X ≡ val Y → X ≡ Y
-𝒱-path = TypeOfHLevel≡ 2
+module _ {X : 𝒱} where
+  _⊑ᵛ_ : val X → val X → Type
+  x ⊑ᵛ x' = x ⊑ x'
+
+  ≡⇒⊑ᵛ : _≡_ ⇒ _⊑ᵛ_
+  ≡⇒⊑ᵛ = ≡⇒⊑
+
+  ⊑ᵛ-refl : Reflexive _⊑ᵛ_
+  ⊑ᵛ-refl = ⊑-refl
+
+  ⊑ᵛ-trans : Transitive _⊑ᵛ_
+  ⊑ᵛ-trans = ⊑-trans (X .is-preorder)
+
+⊑ᵛ-syntax : val X → val X → Type
+⊑ᵛ-syntax {X} = _⊑ᵛ_ {X}
+
+syntax ⊑ᵛ-syntax {X} x x' = x ⊑[ X ] x'
+
+⊑ᵛ-mono : (f : val X → val Y) {x x' : val X} → x ⊑[ X ] x' → f x ⊑[ Y ] f x'
+⊑ᵛ-mono = ⊑-mono
+
+-- ⊑-antisym : Antisymmetric _≡_ (_⊑_ {X})
+-- ⊑-antisym {X} x⊑x' x'⊑x = {!    !}
+
+IsDiscreteᵛ : 𝒱 → Type
+IsDiscreteᵛ = IsDiscrete ∘ val
+
+⊑ᵛ-beh : BEH → IsDiscreteᵛ X
+⊑ᵛ-beh {X} = ⊑-beh (X .is-set)
+
+fromProp : {X : Type} → isProp X → 𝒱
+fromProp {X} X-isProp .val = X
+fromProp {X} X-isProp .is-set = isProp→isSet X-isProp
+fromProp {X} X-isProp .is-preorder = {!   !}

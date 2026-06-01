@@ -7,5 +7,6 @@ open import Cubical.Data.Nat
 open import Cubical.Foundations.Prelude
 
 ℕᵛ : 𝒱
-ℕᵛ .fst = ℕ
-ℕᵛ .snd = isSetℕ
+ℕᵛ .val = ℕ
+ℕᵛ .is-set = isSetℕ
+ℕᵛ .is-preorder = IsDiscrete⊆IsPreorder

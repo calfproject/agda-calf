@@ -14,14 +14,12 @@ open import Calf.Value.Sigma
 open import Calf.Value.Unit
 
 Listᵛ : 𝒱 → 𝒱
-Listᵛ X .fst = List (val X)
-Listᵛ X .snd = {! isSetList  !}
+Listᵛ X .val = List (X .val)
+Listᵛ X .is-preorder = subst isPreorder lemma (Σᵛ ℕᵛ Vec .is-preorder)
+  where
+    Vec : ℕ → 𝒱
+    Vec zero = 1ᵛ
+    Vec (suc n) = X ×ᵛ Vec n
 
--- Listᵛ X .is-preorder = subst isPreorder lemma (Σᵛ ℕᵛ Vec .is-preorder)
---   where
---     Vec : ℕ → 𝒱
---     Vec zero = 1ᵛ
---     Vec (suc n) = X ×ᵛ Vec n
-
---     lemma : Σ ℕ (val ∘ Vec) ≡ List (X .val)
---     lemma = {!   !}
+    lemma : Σ ℕ (val ∘ Vec) ≡ List (X .val)
+    lemma = {!   !}
