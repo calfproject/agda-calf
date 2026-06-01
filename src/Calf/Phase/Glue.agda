@@ -284,3 +284,8 @@ glue-fracture-retract X = sym (ua (fracture , fracture-isEquiv))
 fracture-and-gluing : Type ≃ FRAC
 fracture-and-gluing .fst = toFRAC
 fracture-and-gluing .snd = isoToIsEquiv (iso toFRAC fromFRAC glue-fracture-section glue-fracture-retract)
+
+isSetGlue : ∀ {X• X◦ χ} → isSet ⟨ X• ⟩ → isSet ⟨ X◦ ⟩ → isSet (Glue X• X◦ χ)
+isSetGlue isSetX• isSetX◦ x x' h h' i j .• = isSetX• (x .•) (x' .•) (cong • h) (cong • h') i j
+isSetGlue isSetX• isSetX◦ x x' h h' i j .◦ = isSetX◦ (x .◦) (x' .◦) (cong ◦ h) (cong ◦ h') i j
+isSetGlue isSetX• isSetX◦ x x' h h' i j .•→◦ = {!   !}

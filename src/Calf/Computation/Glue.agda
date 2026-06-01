@@ -59,7 +59,7 @@ open 𝒞-FRAC
     }
 
 𝒞-toFRAC : 𝒞 → 𝒞-FRAC
-𝒞-toFRAC A .A• = ●ᶜ A , ●ᶜ-ηᶜ-isEquiv
+𝒞-toFRAC A .A• = ●ᶜ A , ●ᶜ-η•ᶜ-isEquiv {A}
 𝒞-toFRAC A .A◦ = ◯ᶜ A , ◯ᶜ-ηᶜ-isEquiv
 𝒞-toFRAC A .α = ●.map η◦ᶜ
 
@@ -107,7 +107,7 @@ glue◦-out-charge F c g◦ =
           (sym (funExt⁻ (secIsEq (F .A◦ .snd) (λ p → g◦ p .◦)) p))))
 
 𝒞-glue•-path : (F : 𝒞-FRAC) →
-  (●ᶜ (𝒞-fromFRAC F) , ●ᶜ-ηᶜ-isEquiv) ≡ F .A•
+  (●ᶜ (𝒞-fromFRAC F) , ●ᶜ-η•ᶜ-isEquiv {𝒞-fromFRAC F}) ≡ F .A•
 𝒞-glue•-path F =
   𝒞•-path
     (𝒞-path

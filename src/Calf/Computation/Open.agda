@@ -12,7 +12,7 @@ open import Calf.Computation
 open import Calf.Computation.Power
 
 ◯ᶜ : 𝒞 → 𝒞
-◯ᶜ = fromProp (ABS .snd) ⇀_
+◯ᶜ = fromProp ABS ⇀_
 
 η◦ᶜ : A ⊸ ◯ᶜ A
 η◦ᶜ {A} .U = η◦ᵛ {A .U}

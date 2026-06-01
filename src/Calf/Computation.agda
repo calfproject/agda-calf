@@ -82,6 +82,9 @@ record _⊸_ (A B : 𝒞) : Type where
     seal : ∀ a a◦ h → U (A .seal a a◦ h) ≡ B .seal (U a) (U ∘ a◦) (⊑ᵛ-mono {𝒞.U A} {𝒞.U B} U ∘ h)
 open _⊸_ public
 
+isEquivᶜ : (A ⊸ B) → Type
+isEquivᶜ f = isEquiv (U f)
+
 id⊸ : A ⊸ A
 id⊸ .U a = a
 id⊸ .charge _ _ = refl
