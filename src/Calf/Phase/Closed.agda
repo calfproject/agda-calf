@@ -289,4 +289,4 @@ Type•-at-open-isContr X• p .snd x =
   cong (invIsEq (X• .snd)) (sym (law x p)) ∙ retIsEq (X• .snd) x
 
 isSet● : ∀ {X} → isSet X → isSet (● X)
-isSet● = {!   !}
+isSet● isSetX = {!   !}

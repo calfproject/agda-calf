@@ -59,7 +59,7 @@ open 𝒞-FRAC
     }
 
 𝒞-toFRAC : 𝒞 → 𝒞-FRAC
-𝒞-toFRAC A .A• = ●ᶜ A , ●ᶜ-η•ᶜ-isEquiv
+𝒞-toFRAC A .A• = ●ᶜ A , ●ᶜ-η•ᶜ-isEquiv {A}
 𝒞-toFRAC A .A◦ = ◯ᶜ A , ◯ᶜ-ηᶜ-isEquiv
 𝒞-toFRAC A .α = ●.map η◦ᶜ
 

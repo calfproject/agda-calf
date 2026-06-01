@@ -14,7 +14,7 @@ open import Calf.Phase.Glue (ABS .fst) (ABS .snd) public
 
 Glueᵛ : (X• : 𝒱•) (X◦ : 𝒱◦) (χ : val (X• .fst) → val (●ᵛ (X◦ .fst))) → 𝒱
 Glueᵛ X• X◦ χ .val = Glue (𝒱•→Type• X•) (𝒱◦→Type◦ X◦) χ
-Glueᵛ X• X◦ χ .is-set = {!   !}
+Glueᵛ X• X◦ χ .is-set = isSetGlue (X• .fst .is-set) (X◦ .fst .is-set)
 
 record 𝒱-FRAC : Type₁ where
   field
