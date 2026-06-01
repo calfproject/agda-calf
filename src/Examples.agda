@@ -1,6 +1,7 @@
 module Examples where
 
 open import Calf.Core.Cost
+open import Calf.Core.Directed
 open import Calf.Value
 open import Calf.Value.List
 open import Calf.Value.Nat
@@ -29,23 +30,23 @@ opaque
   DOUBLE (suc n) = suc (suc (DOUBLE n))
 
   foo : double ⊑[ U (ℕᵛ ⇀ F ℕᵛ) ] (λ n → F ℕᵛ .charge (` n) (ret (DOUBLE n)))
-  foo = ⊑-funext {X = ℕᵛ} {Y = λ _ → U (F ℕᵛ)} lemma
+  foo = ⊑ᵛ-funext {X = ℕᵛ} {Y = λ _ → U (F ℕᵛ)} lemma
     where
       lemma : ∀ n → double n ⊑[ U (F ℕᵛ) ] F ℕᵛ .charge (` n) (ret (DOUBLE n))
-      lemma zero = ≡⇒⊑ {X = U (F ℕᵛ)} (sym (F ℕᵛ .charge/0))
+      lemma zero = ≡⇒⊑ᵛ {X = U (F ℕᵛ)} (sym (F ℕᵛ .charge/0))
       lemma (suc n) =
-        ⊑-trans {X = U (F ℕᵛ)}
-          (⊑-mono {X = U (F ℕᵛ)} {Y = U (F ℕᵛ)}
+        ⊑ᵛ-trans {X = U (F ℕᵛ)}
+          (⊑ᵛ-mono {X = U (F ℕᵛ)} {Y = U (F ℕᵛ)}
             (λ e → F ℕᵛ .charge 1 (bind e _)) (lemma n)) $
-        ⊑-trans {X = U (F ℕᵛ)}
-          (⊑-mono {X = U (F ℕᵛ)} {Y = U (F ℕᵛ)}
+        ⊑ᵛ-trans {X = U (F ℕᵛ)}
+          (⊑ᵛ-mono {X = U (F ℕᵛ)} {Y = U (F ℕᵛ)}
             (F ℕᵛ .charge 1)
-            (⊑-trans {X = U (F ℕᵛ)}
-              (≡⇒⊑ {X = U (F ℕᵛ)} bind/charge)
-              (⊑-mono {X = U (F ℕᵛ)} {Y = U (F ℕᵛ)}
+            (⊑ᵛ-trans {X = U (F ℕᵛ)}
+              (≡⇒⊑ᵛ {X = U (F ℕᵛ)} bind/charge)
+              (⊑ᵛ-mono {X = U (F ℕᵛ)} {Y = U (F ℕᵛ)}
                 (F ℕᵛ .charge n)
-                (≡⇒⊑ {X = U (F ℕᵛ)} F/η)))) $
-        ≡⇒⊑ {X = U (F ℕᵛ)} (sym (F ℕᵛ .charge/+ {c₁ = 1}))
+                (≡⇒⊑ᵛ {X = U (F ℕᵛ)} F/η)))) $
+        ≡⇒⊑ᵛ {X = U (F ℕᵛ)} (sym (F ℕᵛ .charge/+ {c₁ = 1}))
 
 BQ : 𝒞
 BQ = F (Listᵛ ℕᵛ ×ᵛ Listᵛ ℕᵛ)
@@ -89,6 +90,7 @@ mapφ : (ℕᵛ ⋊ BQ) ⊸ (ℕᵛ ⋊ LQ)
 mapφ .U (x , q) = x , φ .U q
 mapφ .charge c (x , q) i .fst = x
 mapφ .charge c (x , q) i .snd = φ .charge c q i
+mapφ .seal = {!   !}
 
 opaque
   unfolding ℂ
@@ -170,6 +172,7 @@ enqueue' e .charge c q i .•→◦ =
     (enqueue' e .U (BLQ .charge c q) .•→◦)
     (BLQ .charge c (enqueue' e .U q) .•→◦)
     i
+enqueue' e .seal = {!   !}
 
 dequeue'-fst-glue : cmp BLQ → val (𝒱-fromFRAC (𝒱-toFRAC ℕᵛ))
 dequeue'-fst-glue q .• = ●ᵛ.map (λ bq → fst (dequeueᵗ .U bq)) (q .•)
@@ -284,3 +287,4 @@ dequeue' .charge c q =
     ( cong (invEq (fracture , fracture-isEquiv)) (dequeue'-fst-glue-charge c q)
     , dequeue'-snd-charge c q
     )
+dequeue' .seal = {!   !}

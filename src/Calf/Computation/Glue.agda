@@ -42,6 +42,9 @@ Glueᶜ A• A◦ α .charge/+ {a} {c₁} {c₂} i .•→◦ =
       ∙ cong (●ᶜ (A◦ .fst) .charge c₁)
         (α .charge c₂ (a .•) ∙ cong (●ᶜ (A◦ .fst) .charge c₂) (a .•→◦)))
     i
+Glueᶜ A• A◦ α .seal = {!   !}
+Glueᶜ A• A◦ α .seal/abs = {!   !}
+Glueᶜ A• A◦ α .seal/charge = {!   !}
 
 record 𝒞-FRAC : Type₁ where
   field

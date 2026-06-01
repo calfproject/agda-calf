@@ -13,6 +13,9 @@ opaque
   F X .charge c (c' , x) = c +ℂ c' , x
   F X .charge/0 {c , x} = cong (_, x) (+ℂ-identityˡ c)
   F X .charge/+ {c , x} {c₁} {c₂} = cong (_, x) (+ℂ-assoc c₁ c₂ c)
+  F X .seal = {!   !}
+  F X .seal/abs = {!   !}
+  F X .seal/charge = {!   !}
 
   ret : val X → cmp (F X)
   ret {X} = retᴹ {X}
@@ -40,4 +43,5 @@ opaque
     ≡⟨ A .charge/+ ⟩
       A .charge c (A .charge (e .U δ .fst) (k (e .U δ .snd)))
     ∎
+  bind' {Δ} {A = A} e k .seal = {!   !}
   syntax bind' e (λ x → k) = bind x ← e ⨾ k

@@ -6,8 +6,14 @@ open import Cubical.Data.List
   renaming (rev to reverse)
   public
 
+open import Calf.Core.Directed
+open import Calf.Value.Nat
+open import Calf.Value.Product
+open import Calf.Value.Sigma
+open import Calf.Value.Unit
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence

@@ -70,12 +70,12 @@ syntax ⊑ᵛ-syntax {X} x x' = x ⊑[ X ] x'
 -- ⊑-antisym {X} x⊑x' x'⊑x = {!    !}
 
 isDiscreteᵛ : 𝒱 → Type
-isDiscreteᵛ = isDiscrete ∘ val
+isDiscreteᵛ X = isDiscrete (val X)
 
 ⊑ᵛ-beh : BEH → isDiscreteᵛ X
 ⊑ᵛ-beh = ⊑-beh
 
-fromProp : {X : Type} → isProp X → 𝒱
-fromProp {X} X-isProp .val = X
-fromProp {X} X-isProp .is-set = isProp→isSet X-isProp
-fromProp {X} X-isProp .is-preorder = {!   !}
+fromProp : hProp ℓ-zero → 𝒱
+fromProp P .val = ⟨ P ⟩
+fromProp P .is-set = isProp→isSet (P .snd)
+fromProp P .is-preorder = {!   !}
