@@ -59,7 +59,7 @@ open 𝒞-FRAC
     }
 
 𝒞-toFRAC : 𝒞 → 𝒞-FRAC
-𝒞-toFRAC A .A• = ●ᶜ A , ●ᶜ-ηᶜ-isEquiv
+𝒞-toFRAC A .A• = ●ᶜ A , ●ᶜ-η•ᶜ-isEquiv
 𝒞-toFRAC A .A◦ = ◯ᶜ A , ◯ᶜ-ηᶜ-isEquiv
 𝒞-toFRAC A .α = ●.map η◦ᶜ
 
@@ -69,12 +69,10 @@ open 𝒞-FRAC
 proj•ᶜ : (F : 𝒞-FRAC) → 𝒞-fromFRAC F ⊸ F .A• .fst
 proj•ᶜ F .U g = g .•
 proj•ᶜ F .charge c g = refl
-proj•ᶜ F .seal = {!   !}
 
 proj◦ᶜ : (F : 𝒞-FRAC) → 𝒞-fromFRAC F ⊸ F .A◦ .fst
 proj◦ᶜ F .U g = g .◦
 proj◦ᶜ F .charge c g = refl
-proj◦ᶜ F .seal = {!   !}
 
 glue•-out-charge
   : (F : 𝒞-FRAC) (c : val ℂ) (g• : cmp (●ᶜ (𝒞-fromFRAC F)))
@@ -107,7 +105,7 @@ glue◦-out-charge F c g◦ =
           (sym (funExt⁻ (secIsEq (F .A◦ .snd) (λ p → g◦ p .◦)) p))))
 
 𝒞-glue•-path : (F : 𝒞-FRAC) →
-  (●ᶜ (𝒞-fromFRAC F) , ●ᶜ-ηᶜ-isEquiv) ≡ F .A•
+  (●ᶜ (𝒞-fromFRAC F) , ●ᶜ-η•ᶜ-isEquiv {𝒞-fromFRAC F}) ≡ F .A•
 𝒞-glue•-path F =
   𝒞•-path
     (𝒞-path

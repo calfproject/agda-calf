@@ -20,56 +20,6 @@ record 𝒞 : Type₁ where
     charge : val ℂ → cmp → cmp
     charge/0 : ∀ {a} → charge 0ℂ a ≡ a
     charge/+ : ∀ {a c₁ c₂} → charge (c₁ +ℂ c₂) a ≡ charge c₁ (charge c₂ a)
-
-  field
-    seal :
-      (a : cmp) (a◦ : ⟨ ABS ⟩ → cmp)
-      → ((abs : ⟨ ABS ⟩) → a ⊑[ U ] a◦ abs)
-      → cmp
-    seal/abs : ∀ {a a◦ a⊑a◦} (abs : ⟨ ABS ⟩) → seal a a◦ a⊑a◦ ≡ a◦ abs
-    seal/charge : ∀ {a a◦ a⊑a◦ c} →
-      charge c (seal a a◦ a⊑a◦) ≡
-      seal (charge c a) (charge c ∘ a◦) (⊑ᵛ-mono {U} {U} (charge c) ∘ a⊑a◦)
-
-  -- field
-  --   effect : val (M .fst .F-ob U) → cmp
-  --   effect/unit : ∀ {a} → effect (M .snd .η .N-ob _ a) ≡ a
-  --   effect/mult : ∀ {a} → effect (M .snd .μ .N-ob _ a) ≡ effect (M .fst .F-hom effect a)
-
-  -- charge : val ℂ → cmp → cmp
-  -- charge c a = effect (chargeᴹ c (M .snd .η .N-ob _ a))
-
-  -- charge/0 : ∀ {a} → charge 0ℂ a ≡ a
-  -- charge/0 = cong effect chargeᴹ/0 ∙ effect/unit
-
-  -- charge/+ : ∀ {a c₁ c₂} → charge (c₁ +ℂ c₂) a ≡ charge c₁ (charge c₂ a)
-  -- charge/+ = cong effect chargeᴹ/+ ∙ {! ?  !}
-
-  -- seal :
-  --   (a : cmp) (a◦ : ⟨ ABS ⟩ → cmp)
-  --   → ((abs : ⟨ ABS ⟩) → a ⊑[ U ] a◦ abs)
-  --   → cmp
-  -- seal a a◦ a⊑a◦ = effect $
-  --   sealᴹ
-  --     (M .snd .η .N-ob _ a)
-  --     (λ abs → M .snd .η .N-ob _ (a◦ abs))
-  --     (λ abs → ⊑ᵛ-mono {U} {M .fst .F-ob U} (M .snd .η .N-ob _) (a⊑a◦ abs))
-
-  -- seal/abs : ∀ {a a◦ a⊑a◦} (abs : ⟨ ABS ⟩) → seal a a◦ a⊑a◦ ≡ a◦ abs
-  -- seal/abs = {!   !}
-
-  -- seal/charge : ∀ {a a◦ a⊑a◦ c} →
-  --   charge c (seal a a◦ a⊑a◦) ≡
-  --   seal (charge c a) (charge c ∘ a◦) (⊑ᵛ-mono {U} {U} (charge c) ∘ a⊑a◦)
-  -- seal/charge = {!   !}
-
-  -- seal/unit : ∀ {a} → seal a (λ _ → a) (λ _ → ⊑ᵛ-refl {U}) ≡ a
-  -- seal/unit = {!   !}
-
-  -- seal/mult : ∀ {a a◦ a◦' a⊑a◦} {a◦⊑a◦' : (abs : ⟨ ABS ⟩) → a◦ abs ⊑[ U ] a◦' abs} →
-  --   seal (seal a a◦ a⊑a◦) a◦' (λ abs → ⊑ᵛ-trans {U} (≡⇒⊑ᵛ {U} (seal/abs abs)) (a◦⊑a◦' abs)) ≡
-  --   seal a a◦' (λ abs → ⊑ᵛ-trans {U} (a⊑a◦ abs) (a◦⊑a◦' abs))
-  -- seal/mult = {!   !}
 open 𝒞 public
 
 variable
@@ -79,20 +29,18 @@ record _⊸_ (A B : 𝒞) : Type where
   field
     U : cmp A → cmp B
     charge : ∀ c a → U (A .charge c a) ≡ B .charge c (U a)
-    seal : ∀ a a◦ h → U (A .seal a a◦ h) ≡ B .seal (U a) (U ∘ a◦) (⊑ᵛ-mono {𝒞.U A} {𝒞.U B} U ∘ h)
 open _⊸_ public
+
+isEquivᶜ : (A ⊸ B) → Type
+isEquivᶜ f = isEquiv (U f)
 
 id⊸ : A ⊸ A
 id⊸ .U a = a
 id⊸ .charge _ _ = refl
-id⊸ {A} .seal _ _ _ = refl
 
 _⨾⊸_ : (A ⊸ B) → (B ⊸ C) → (A ⊸ C)
 (f ⨾⊸ g) .U = g .U ∘ f .U
 (f ⨾⊸ g) .charge c a = cong (g .U) (f .charge c a) ∙ g .charge c (f .U a)
-_⨾⊸_ {A} {B} f g .seal a a◦ h =
-  cong (g .U) (f .seal a a◦ h)
-  ∙ g .seal (f .U a) (f .U ∘ a◦) (⊑ᵛ-mono {U A} {U B} (f .U) ∘ h)
 
 CHARGE : val ℂ → A ⊸ A
 CHARGE {A} c .U = charge A c
@@ -105,7 +53,6 @@ CHARGE {A} c .charge c' a =
   ≡⟨ A .charge/+ {a = a} {c₁ = c'} {c₂ = c} ⟩
     A .charge c' (A .charge c a)
   ∎
-CHARGE {A} c .seal a a◦ h = A .seal/charge
 
 isPropCharge/0
   : {U : 𝒱} (charge : val ℂ → val U → val U)
@@ -142,9 +89,6 @@ isPropCharge/+ {U} charge =
     (A .charge/+)
     (B .charge/+)
     i
-𝒞-path {A} {B} U-path charge-path i .seal = {!   !}
-𝒞-path {A} {B} U-path charge-path i .seal/abs = {!   !}
-𝒞-path {A} {B} U-path charge-path i .seal/charge = {!   !}
 
 isProp⊸charge
   : (A B : 𝒞) (f : cmp A → cmp B)
@@ -167,7 +111,6 @@ isProp⊸charge A B f =
     (f₀ .charge)
     (f₁ .charge)
     i
-⊸-path A-path B-path {f₀ = f₀} {f₁ = f₁} U-path i .seal = {!   !}
 
 charge-path-inv
   : {X Y : Type}

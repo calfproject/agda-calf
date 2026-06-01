@@ -10,9 +10,6 @@ open import Function
 Πᶜ X A .charge c e x = A x .charge c (e x)
 Πᶜ X A .charge/0 {e} i x = A x .charge/0 {e x} i
 Πᶜ X A .charge/+ {e} {c₁} {c₂} i x = A x .charge/+ {e x} {c₁} {c₂} i
-Πᶜ X A .seal = {!   !}
-Πᶜ X A .seal/abs = {!   !}
-Πᶜ X A .seal/charge = {!   !}
 
 syntax Πᶜ X (λ x → A) = [ x ∈ X ] ⇀ A
 

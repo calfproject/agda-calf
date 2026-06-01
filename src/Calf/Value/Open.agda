@@ -9,7 +9,7 @@ open import Calf.Phase.Open (ABS .fst) (ABS .snd) renaming (◯-η-isEquiv to �
 open import Cubical.Foundations.Equiv
 
 ◯ᵛ : 𝒱 → 𝒱
-◯ᵛ = fromProp (ABS .snd) →ᵛ_
+◯ᵛ = fromProp ABS →ᵛ_
 
 η◦ᵛ : val X → val (◯ᵛ X)
 η◦ᵛ = η◦

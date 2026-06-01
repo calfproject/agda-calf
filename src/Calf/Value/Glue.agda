@@ -7,7 +7,6 @@ open import Cubical.Foundations.Isomorphism
 module Calf.Value.Glue where
 
 open import Calf.Core.Abstract
-open import Calf.Core.Directed
 open import Calf.Value
 open import Calf.Value.Open as ◯
 open import Calf.Value.Closed as ●
@@ -16,11 +15,6 @@ open import Calf.Phase.Glue (ABS .fst) (ABS .snd) public
 Glueᵛ : (X• : 𝒱•) (X◦ : 𝒱◦) (χ : val (X• .fst) → val (●ᵛ (X◦ .fst))) → 𝒱
 Glueᵛ X• X◦ χ .val = Glue (𝒱•→Type• X•) (𝒱◦→Type◦ X◦) χ
 Glueᵛ X• X◦ χ .is-set = {!   !}
-Glueᵛ X• X◦ χ .is-preorder α .sec .fst f t .• = X• .fst .is-preorder α .sec .fst (• ∘ f) t
-Glueᵛ X• X◦ χ .is-preorder α .sec .fst f t .◦ = X◦ .fst .is-preorder α .sec .fst (◦ ∘ f) t
-Glueᵛ X• X◦ χ .is-preorder α .sec .fst f t .•→◦ = {!   !}
-Glueᵛ X• X◦ χ .is-preorder α .sec .snd f = {!   !}
-Glueᵛ X• X◦ χ .is-preorder α .secCong = {!   !}
 
 record 𝒱-FRAC : Type₁ where
   field

@@ -9,7 +9,7 @@ open import Calf.Core.Abstract
 open import Calf.Core.Cost
 open import Calf.Value
 open import Calf.Value.Closed as ●ᵛ using (●ᵛ; 𝒱•)
-open import Calf.Value.Closed using (η•; ∗; law; ●-isProp; ●-map-∘) renaming (●ᵛ-η•ᵛ-isEquiv to ●ᶜ-ηᶜ-isEquiv) public
+open import Calf.Value.Closed using (η•; ∗; law; ●-isProp; ●-map-∘) public
 open import Calf.Computation
 
 ●ᶜ : 𝒞 → 𝒞
@@ -37,14 +37,10 @@ open import Calf.Computation
     (cong η• (A .charge/+))
     refl
     i
-●ᶜ A .seal = {!   !}
-●ᶜ A .seal/abs = {!   !}
-●ᶜ A .seal/charge = {!   !}
 
 η•ᶜ : A ⊸ ●ᶜ A
 η•ᶜ .U = η•
 η•ᶜ .charge _ _ = refl
-η•ᶜ .seal = {!   !}
 
 𝒞• : Type₁
 𝒞• = Σ[ A ∈ 𝒞 ] isEquiv (η•ᶜ {A} .U)
@@ -68,7 +64,6 @@ map {A} {B} f .charge c (law a p i) =
     (cong η• (f .charge c a))
     refl
     i
-map f .seal = {!   !}
 
 map-open : ⟨ ABS ⟩ → (f g : A ⊸ B) → map f ≡ map g
 map-open {A} {B} p f g =
@@ -83,3 +78,6 @@ map-open {A} {B} p f g =
       ●-isProp p
         (map {A = A} {B = B} f .U a•)
         (map {A = A} {B = B} g .U a•))
+
+●ᶜ-η•ᶜ-isEquiv : isEquivᶜ (η•ᶜ {●ᶜ A})
+●ᶜ-η•ᶜ-isEquiv {A} = ●ᵛ.●ᵛ-η•ᵛ-isEquiv {U A}

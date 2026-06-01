@@ -12,12 +12,11 @@ open import Calf.Computation
 open import Calf.Computation.Power
 
 ◯ᶜ : 𝒞 → 𝒞
-◯ᶜ = fromProp (ABS .snd) ⇀_
+◯ᶜ = fromProp ABS ⇀_
 
 η◦ᶜ : A ⊸ ◯ᶜ A
 η◦ᶜ {A} .U = η◦ᵛ {A .U}
 η◦ᶜ .charge _ _ = refl
-η◦ᶜ .seal = {!   !}
 
 𝒞◦ : Type₁
 𝒞◦ = Σ[ A ∈ 𝒞 ] isEquiv (η◦ᶜ {A} .U)
