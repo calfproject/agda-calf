@@ -6,15 +6,20 @@ open import Cubical.Foundations.Isomorphism
 
 module Calf.Value.Glue (φ : Type) (φ-isProp : isProp φ) where
 
+open import Calf.Core.Directed
 open import Calf.Value
 open import Calf.Value.Open φ φ-isProp as ◯
 open import Calf.Value.Closed φ φ-isProp as ●
 open import Calf.Phase.Glue φ φ-isProp public
 
 Glueᵛ : (X• : 𝒱•) (X◦ : 𝒱◦) (χ : val (X• .fst) → val (●ᵛ (X◦ .fst))) → 𝒱
-Glueᵛ X• X◦ χ .val = Glue (𝒱•→Type• X•) (𝒱◦→Type◦ X◦) {! χ  !}
+Glueᵛ X• X◦ χ .val = Glue (𝒱•→Type• X•) (𝒱◦→Type◦ X◦) χ
 Glueᵛ X• X◦ χ .is-set = {!   !}
-Glueᵛ X• X◦ χ .is-preorder = {!   !}
+Glueᵛ X• X◦ χ .is-preorder α .sec .fst f t .• = X• .fst .is-preorder α .sec .fst (• ∘ f) t
+Glueᵛ X• X◦ χ .is-preorder α .sec .fst f t .◦ = X◦ .fst .is-preorder α .sec .fst (◦ ∘ f) t
+Glueᵛ X• X◦ χ .is-preorder α .sec .fst f t .•→◦ = {!   !}
+Glueᵛ X• X◦ χ .is-preorder α .sec .snd f = {!   !}
+Glueᵛ X• X◦ χ .is-preorder α .secCong = {!   !}
 
 record 𝒱-FRAC : Type₁ where
   field
@@ -28,19 +33,19 @@ open 𝒱-FRAC
   record
     { X• = 𝒱•→Type• (F .X•)
     ; X◦ = 𝒱◦→Type◦ (F .X◦)
-    ; χ = {! F .χ !}
+    ; χ = F .χ
     }
 
 𝒱-fromFRAC : 𝒱-FRAC → 𝒱
 𝒱-fromFRAC F = Glueᵛ (F .X•) (F .X◦) (F .χ)
 
 𝒱-toFRAC : 𝒱 → 𝒱-FRAC
-𝒱-toFRAC X .X• = ●ᵛ X , ●ᵛ-η•ᵛ-isEquiv
+𝒱-toFRAC X .X• = ●ᵛ X , ●ᵛ-η•ᵛ-isEquiv {X}
 𝒱-toFRAC X .X◦ = ◯ᵛ X , ◯ᵛ-ηᵛ-isEquiv
-𝒱-toFRAC X .χ = {! ●.map η◦ᵛ !}
+𝒱-toFRAC X .χ = ●.map (η◦ᵛ {X})
 
 𝒱-glue•-path : (F : 𝒱-FRAC) →
-  (●ᵛ (𝒱-fromFRAC F) , ●ᵛ-η•ᵛ-isEquiv) ≡ F .X•
+  (●ᵛ (𝒱-fromFRAC F) , ●ᵛ-η•ᵛ-isEquiv {𝒱-fromFRAC F}) ≡ F .X•
 𝒱-glue•-path F =
   Σ≡Prop
     (λ X → isPropIsEquiv (η•ᵛ {X}))

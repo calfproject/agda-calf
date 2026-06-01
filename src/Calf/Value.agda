@@ -66,11 +66,11 @@ syntax ⊑ᵛ-syntax {X} x x' = x ⊑[ X ] x'
 -- ⊑-antisym : Antisymmetric _≡_ (_⊑_ {X})
 -- ⊑-antisym {X} x⊑x' x'⊑x = {!    !}
 
-IsDiscreteᵛ : 𝒱 → Type
-IsDiscreteᵛ = IsDiscrete ∘ val
+isDiscreteᵛ : 𝒱 → Type
+isDiscreteᵛ = isDiscrete ∘ val
 
-⊑ᵛ-beh : BEH → IsDiscreteᵛ X
-⊑ᵛ-beh {X} = ⊑-beh (X .is-set)
+⊑ᵛ-beh : BEH → isDiscreteᵛ X
+⊑ᵛ-beh = ⊑-beh
 
 fromProp : {X : Type} → isProp X → 𝒱
 fromProp {X} X-isProp .val = X

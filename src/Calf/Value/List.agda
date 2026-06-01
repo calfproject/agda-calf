@@ -8,6 +8,7 @@ open import Cubical.Data.List
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
+open import Calf.Core.Directed
 open import Calf.Value.Nat
 open import Calf.Value.Product
 open import Calf.Value.Sigma
@@ -15,6 +16,7 @@ open import Calf.Value.Unit
 
 Listᵛ : 𝒱 → 𝒱
 Listᵛ X .val = List (X .val)
+Listᵛ X .is-set = {!   !}
 Listᵛ X .is-preorder = subst isPreorder lemma (Σᵛ ℕᵛ Vec .is-preorder)
   where
     Vec : ℕ → 𝒱

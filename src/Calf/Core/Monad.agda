@@ -21,7 +21,7 @@ open import Cubical.Categories.Functor
 open import Cubical.Categories.NaturalTransformation.Base
 open import Cubical.Categories.Monad.Base
 
-open Category
+open Category hiding (_∘_)
 open Functor public
 open NatTrans public
 open IsMonad public
@@ -44,12 +44,13 @@ record Glue≤ (X• : 𝒱•) (X◦ : 𝒱◦) (χ : val (X• .fst) → val (
 open Glue≤
 
 Seal : Monad 𝒱-Cat
-Seal .fst .F-ob X .val = Glue≤ (●ᵛ X , ●ᵛ-ηᵛ-isEquiv) (◯ᵛ X , ◯ᵛ-ηᵛ-isEquiv) (●ᵛ.map (η◦ᵛ {X}))
+Seal .fst .F-ob X .val = Glue≤ (●ᵛ X , ●ᵛ-η•ᵛ-isEquiv {X}) (◯ᵛ X , ◯ᵛ-ηᵛ-isEquiv) (●ᵛ.map (η◦ᵛ {X}))
 Seal .fst .F-ob X .is-set = {!   !}
-Seal .fst .F-ob X .is-preorder = subst isPreorder {!   !} (RS-8∙11 (●ᵛ X .is-preorder) is-covariant)
-  where
-    is-covariant : IsCovariant (λ x• → Σ[ x◦ ∈ val (◯ᵛ X) ] ●ᵛ.map (η◦ᵛ {X}) x• ⊑[ ●ᵛ (◯ᵛ X) ] η• x◦)
-    is-covariant = {!   !}
+Seal .fst .F-ob X .is-preorder α .sec .fst f t .• = ●ᵛ X .is-preorder α .sec .fst (• ∘ f) t
+Seal .fst .F-ob X .is-preorder α .sec .fst f t .◦ = ◯ᵛ X .is-preorder α .sec .fst (◦ ∘ f) t
+Seal .fst .F-ob X .is-preorder α .sec .fst f t .•→◦ = {!   !}
+Seal .fst .F-ob X .is-preorder α .sec .snd = {!   !}
+Seal .fst .F-ob X .is-preorder α .secCong = {!   !}
 Seal .fst .F-hom f g≤ .• = ●ᵛ.map f (g≤ .•)
 Seal .fst .F-hom f g≤ .◦ = ◯ᵛ.map f (g≤ .◦)
 Seal .fst .F-hom f g≤ .•→◦ = {!   !}

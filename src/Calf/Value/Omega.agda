@@ -17,10 +17,16 @@ data valω : Type where
 ℕ→ω zero = zero
 ℕ→ω (suc n) = suc (ℕ→ω n)
 
+opaque
+  unfolding 𝒱-family
+
+  isPreorder-valω : isPreorder valω
+  isPreorder-valω = {!   !}
+
 ω : 𝒱
 ω .val = valω
 ω .is-set = {!   !}
-ω .is-preorder = {!   !}
+ω .is-preorder = isPreorder-valω
 
 instance
   fromNatω : HasFromNat (val ω)

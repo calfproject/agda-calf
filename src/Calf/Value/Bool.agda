@@ -8,4 +8,4 @@ open import Cubical.Foundations.Prelude
 Boolᵛ : 𝒱
 Boolᵛ .val = Bool
 Boolᵛ .is-set = isSetBool
-Boolᵛ .is-preorder = IsDiscrete⊆IsPreorder
+Boolᵛ .is-preorder = isDiscrete→isPreorder

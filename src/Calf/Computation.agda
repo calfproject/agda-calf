@@ -47,7 +47,7 @@ record 𝒞 : Type₁ where
 
   seal/charge : ∀ {a a◦ a⊑a◦ c} →
     charge c (seal a a◦ a⊑a◦) ≡
-    seal (charge c a) (charge c ◦ a◦) (⊑ᵛ-mono {U} {U} (charge c) ◦ a⊑a◦)
+    seal (charge c a) (charge c ∘ a◦) (⊑ᵛ-mono {U} {U} (charge c) ∘ a⊑a◦)
   seal/charge = {!   !}
 
   seal/unit : ∀ {a} → seal a (λ _ → a) (λ _ → ⊑ᵛ-refl {U}) ≡ a

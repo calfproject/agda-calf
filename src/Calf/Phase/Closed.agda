@@ -64,12 +64,12 @@ Type• = TypeWithStr _ λ X → isEquiv (η• {X})
       ; (j = i1) → law x p k })
     (η• x)
 
-●-isProp : {X : Type} → φ → isProp (● X)
-●-isProp p x y = ●-path-to-star p x ∙ sym (●-path-to-star p y)
-
 ●-isContr : {X : Type} → φ → isContr (● X)
 ●-isContr p .fst = ∗ p
 ●-isContr p .snd x = sym (●-path-to-star p x)
+
+●-isProp : {X : Type} → φ → isProp (● X)
+●-isProp p = isContr→isProp (●-isContr p)
 
 ●-encode : ∀ {X} → X → ● X → Type
 ●-encode x (η• x') = ● (x ≡ x')
@@ -287,3 +287,6 @@ Type•-at-open-isContr : (X• : Type•) → φ → isContr ⟨ X• ⟩
 Type•-at-open-isContr X• p .fst = invIsEq (X• .snd) (∗ p)
 Type•-at-open-isContr X• p .snd x =
   cong (invIsEq (X• .snd)) (sym (law x p)) ∙ retIsEq (X• .snd) x
+
+isSet● : ∀ {X} → isSet X → isSet (● X)
+isSet● = {!   !}

@@ -9,17 +9,9 @@ open import Cubical.Foundations.HLevels
 Πᵛ : (X : 𝒱) (Y : val X → 𝒱) → 𝒱
 Πᵛ X Y .val = (x : val X) → val (Y x)
 Πᵛ X Y .is-set = isSetΠ (λ x → Y x .is-set)
-Πᵛ X Y .is-preorder = {!   !}
--- .ortho g .fst .fst 𝕚₂ x = Y x .is-preorder .ortho (flip g x) .fst .fst 𝕚₂
--- Πᵛ X Y .is-preorder .ortho g .fst .snd i 𝕚∨𝕚 x = (Y x .is-preorder .ortho (flip g x) .fst .snd) i 𝕚∨𝕚
--- Πᵛ X Y .is-preorder .ortho g .snd f i .fst 𝕚₂ x =
---   Y x .is-preorder .ortho (flip g x) .snd
---     ((λ 𝕚₂ → f .fst 𝕚₂ x) , λ j 𝕚∨𝕚 → f .snd j 𝕚∨𝕚 x)
---     i .fst 𝕚₂
--- Πᵛ X Y .is-preorder .ortho g .snd f i .snd j 𝕚∨𝕚 x =
---   Y x .is-preorder .ortho (flip g x) .snd
---     ((λ 𝕚₂ → f .fst 𝕚₂ x) , λ j 𝕚∨𝕚 → f .snd j 𝕚∨𝕚 x)
---     i .snd j 𝕚∨𝕚
+Πᵛ X Y .is-preorder α .sec .fst f t x = Y x .is-preorder α .sec .fst (λ s → f s x) t
+Πᵛ X Y .is-preorder α .sec .snd f = funExt λ s → funExt λ x → cong (_$ s) (Y x .is-preorder α .sec .snd (λ s → f s x))
+Πᵛ X Y .is-preorder α .secCong = {!   !}
 
 syntax Πᵛ X (λ x → Y) = [ x ∈ X ] →ᵛ Y
 
