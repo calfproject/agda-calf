@@ -4,14 +4,14 @@ open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence using (ua; ua→; ua-gluePath)
 open import Cubical.Functions.Embedding
 
-module Calf.Computation.Glue (φ : Type) (φ-isProp : isProp φ) where
+module Calf.Computation.Glue where
 
 open import Calf.Core.Cost
 open import Calf.Computation
 open import Calf.Value
-open import Calf.Value.Glue φ φ-isProp public
-open import Calf.Computation.Open φ φ-isProp as ◯
-open import Calf.Computation.Closed φ φ-isProp as ●
+open import Calf.Value.Glue public
+open import Calf.Computation.Open as ◯
+open import Calf.Computation.Closed as ●
 
 Glueᶜ : (A• : 𝒞•) (A◦ : 𝒞◦) (α : A• .fst ⊸ ●ᶜ (A◦ .fst)) → 𝒞
 Glueᶜ A• A◦ α .U = Glueᵛ (U• A•) (U◦ A◦) (α .U)
@@ -22,7 +22,7 @@ Glueᶜ A• A◦ α .charge/0 {a} i .• = A• .fst .charge/0 {a .•} i
 Glueᶜ A• A◦ α .charge/0 {a} i .◦ = A◦ .fst .charge/0 {a .◦} i
 Glueᶜ A• A◦ α .charge/0 {a} i .•→◦ =
   isProp→PathP
-    (λ i → 𝒱.isSet𝒱 (●ᶜ (A◦ .fst) .U)
+    (λ i → ●ᶜ (A◦ .fst) .U .is-set
       (α .U (A• .fst .charge/0 {a .•} i))
       (η• (A◦ .fst .charge/0 {a .◦} i)))
     (α .charge 0ℂ (a .•) ∙ cong (●ᶜ (A◦ .fst) .charge 0ℂ) (a .•→◦))
@@ -34,7 +34,7 @@ Glueᶜ A• A◦ α .charge/+ {a} {c₁} {c₂} i .◦ =
   A◦ .fst .charge/+ {a .◦} {c₁} {c₂} i
 Glueᶜ A• A◦ α .charge/+ {a} {c₁} {c₂} i .•→◦ =
   isProp→PathP
-    (λ i → 𝒱.isSet𝒱 (●ᶜ (A◦ .fst) .U)
+    (λ i → ●ᶜ (A◦ .fst) .U .is-set
       (α .U (A• .fst .charge/+ {a .•} {c₁} {c₂} i))
       (η• (A◦ .fst .charge/+ {a .◦} {c₁} {c₂} i)))
     (α .charge (c₁ +ℂ c₂) (a .•) ∙ cong (●ᶜ (A◦ .fst) .charge (c₁ +ℂ c₂)) (a .•→◦))
@@ -69,10 +69,12 @@ open 𝒞-FRAC
 proj•ᶜ : (F : 𝒞-FRAC) → 𝒞-fromFRAC F ⊸ F .A• .fst
 proj•ᶜ F .U g = g .•
 proj•ᶜ F .charge c g = refl
+proj•ᶜ F .seal = {!   !}
 
 proj◦ᶜ : (F : 𝒞-FRAC) → 𝒞-fromFRAC F ⊸ F .A◦ .fst
 proj◦ᶜ F .U g = g .◦
 proj◦ᶜ F .charge c g = refl
+proj◦ᶜ F .seal = {!   !}
 
 glue•-out-charge
   : (F : 𝒞-FRAC) (c : val ℂ) (g• : cmp (●ᶜ (𝒞-fromFRAC F)))
@@ -151,7 +153,7 @@ fracture-charge A c a i .• = η• (A .charge c a)
 fracture-charge A c a i .◦ = η◦ (A .charge c a)
 fracture-charge A c a i .•→◦ =
   isProp→PathP
-    (λ i → 𝒱.isSet𝒱 (●ᶜ (◯ᶜ A) .U)
+    (λ i → ●ᶜ (◯ᶜ A) .U .is-set
       (𝒞-fromFRAC (𝒞-toFRAC A) .charge c (fracture a) .•→◦ i0)
       (η• (η◦ (A .charge c a))))
     (𝒞-fromFRAC (𝒞-toFRAC A) .charge c (fracture a) .•→◦)

@@ -6,6 +6,9 @@ open import Cubical.Foundations.Prelude using (refl)
 
 1ᶜ : 𝒞
 1ᶜ .U = 1ᵛ
-1ᶜ .charge _ tt = tt
+1ᶜ .charge _ _ = tt
 1ᶜ .charge/0 = refl
 1ᶜ .charge/+ = refl
+1ᶜ .seal _ _ _ = tt
+1ᶜ .seal/abs _ = refl
+1ᶜ .seal/charge = refl

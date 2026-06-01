@@ -3,16 +3,14 @@ open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Structure
 
-module Calf.Core.Monad (ABS : hProp ℓ-zero) where
+module Calf.Core.Monad where
 
-φ = ABS .fst
-φ-isProp = ABS .snd
-
+open import Calf.Core.Abstract
 open import Calf.Core.Directed
 open import Calf.Value
 open import Calf.Core.Cost public
-open import Calf.Value.Open φ φ-isProp as ◯ᵛ
-open import Calf.Value.Closed φ φ-isProp as ●ᵛ
+open import Calf.Value.Open as ◯ᵛ
+open import Calf.Value.Closed as ●ᵛ
 open import Calf.Value.Product
 open import Calf.Value.Pi
 
@@ -112,7 +110,7 @@ opaque
         ; •→◦ =
             ⊑ᵛ-mono {◯ᵛ (ℂ ×ᵛ M .fst .F-ob X)} {●ᵛ (◯ᵛ (ℂ ×ᵛ M .fst .F-ob X))}
               (η•ᵛ {◯ᵛ (ℂ ×ᵛ M .fst .F-ob X)})
-              (⊑ᵛ-funext {fromProp φ-isProp} {λ _ → ℂ ×ᵛ M .fst .F-ob X}
+              (⊑ᵛ-funext {fromProp (ABS .snd)} {λ _ → ℂ ×ᵛ M .fst .F-ob X}
                 λ abs → ⊑ᵛ-mono {M .fst .F-ob X} {ℂ ×ᵛ M .fst .F-ob X}
                 (0ℂ ,_) (m⊑m◦ abs))
         }

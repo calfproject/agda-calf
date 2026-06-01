@@ -1,10 +1,11 @@
 open import Cubical.Foundations.Prelude
 
-module Calf.Value.Closed (φ : Type) (φ-isProp : isProp φ) where
+module Calf.Value.Closed where
 
+open import Calf.Core.Abstract
 open import Calf.Core.Directed
 open import Calf.Value
-open import Calf.Phase.Closed φ φ-isProp as ● hiding (●-η-isEquiv) public
+open import Calf.Phase.Closed (ABS .fst) (ABS .snd) as ● hiding (●-η-isEquiv) public
 open import Cubical.Data.Sigma
 open import Cubical.Foundations.Equiv
 

@@ -165,6 +165,9 @@ module _ {X : Type} where
           ∙ sym (cong (x'⊑x'' .path) 𝕚≡0𝟚 ∙ x'⊑x'' .path₀))
           i
 
+    -- isPreorder→isProp[⊑] : isPreorder X → (x x' : X) → isProp (x ⊑ x')
+    -- isPreorder→isProp[⊑] = {!   !}
+
 ⊑-mono : (f : X → Y) {x x' : X} → x ⊑ x' → f x ⊑ f x'
 ⊑-mono f x⊑x' .path = f ∘ x⊑x' .path
 ⊑-mono f x⊑x' .path₀ = cong f (x⊑x' .path₀)

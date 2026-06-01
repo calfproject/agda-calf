@@ -15,7 +15,7 @@ opaque
   F X .charge/+ {c , x} {c₁} {c₂} = cong (_, x) (+ℂ-assoc c₁ c₂ c)
 
   ret : val X → cmp (F X)
-  ret {X} = M-ret {X}
+  ret {X} = ?
 
   bind : cmp (F X) → (val X → cmp A) → cmp A
   bind {A = A} (c , x) k = A .charge c (k x)

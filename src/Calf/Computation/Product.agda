@@ -1,7 +1,9 @@
 module Calf.Computation.Product where
 
+open import Calf.Value
 open import Calf.Computation
 open import Calf.Value.Product public
+open import Cubical.Foundations.Function
 
 _×ᶜ_ : 𝒞 → 𝒞 → 𝒞
 (A ×ᶜ B) .U = A .U ×ᵛ B .U
@@ -11,3 +13,7 @@ _×ᶜ_ : 𝒞 → 𝒞 → 𝒞
 (A ×ᶜ B) .charge/0 {e} i .snd = B .charge/0 {e .snd} i
 (A ×ᶜ B) .charge/+ {e} {c₁} {c₂} i .fst = A .charge/+ {e .fst} {c₁} {c₂} i
 (A ×ᶜ B) .charge/+ {e} {c₁} {c₂} i .snd = B .charge/+ {e .snd} {c₁} {c₂} i
+(A ×ᶜ B) .seal e e◦ h .fst = A .seal (e .fst) (fst ∘ e◦) (⊑ᵛ-mono {U (A ×ᶜ B)} {U A} fst ∘ h)
+(A ×ᶜ B) .seal e e◦ h .snd = B .seal (e .snd) (snd ∘ e◦) (⊑ᵛ-mono {U (A ×ᶜ B)} {U B} snd ∘ h)
+(A ×ᶜ B) .seal/abs = {!   !}
+(A ×ᶜ B) .seal/charge = {!   !}

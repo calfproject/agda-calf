@@ -1,13 +1,15 @@
 open import Cubical.Foundations.Prelude
-open import Cubical.Data.Sigma
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Structure
+open import Cubical.Data.Sigma
 
-module Calf.Computation.Closed (φ : Type) (φ-isProp : isProp φ) where
+module Calf.Computation.Closed where
 
+open import Calf.Core.Abstract
 open import Calf.Core.Cost
 open import Calf.Value
-open import Calf.Value.Closed φ φ-isProp as ●ᵛ using (●ᵛ; 𝒱•)
-open import Calf.Value.Closed φ φ-isProp using (η•; ∗; law; ●-isProp; ●-map-∘) renaming (●ᵛ-ηᵛ-isEquiv to ●ᶜ-ηᶜ-isEquiv) public
+open import Calf.Value.Closed as ●ᵛ using (●ᵛ; 𝒱•)
+open import Calf.Value.Closed using (η•; ∗; law; ●-isProp; ●-map-∘) renaming (●ᵛ-η•ᵛ-isEquiv to ●ᶜ-ηᶜ-isEquiv) public
 open import Calf.Computation
 
 ●ᶜ : 𝒞 → 𝒞
@@ -19,7 +21,7 @@ open import Calf.Computation
 ●ᶜ A .charge/0 {∗ p} = refl
 ●ᶜ A .charge/0 {law a p i} =
   isProp→PathP
-    (λ i → 𝒱.isSet𝒱 (●ᶜ A .U)
+    (λ i → ●ᶜ A .U .is-set
       (●ᶜ A .charge 0ℂ (law a p i))
       (law a p i))
     (cong η• (A .charge/0))
@@ -29,16 +31,20 @@ open import Calf.Computation
 ●ᶜ A .charge/+ {∗ p} = refl
 ●ᶜ A .charge/+ {law a p i} {c₁} {c₂} =
   isProp→PathP
-    (λ i → 𝒱.isSet𝒱 (●ᶜ A .U)
+    (λ i → ●ᶜ A .U .is-set
       (●ᶜ A .charge (c₁ +ℂ c₂) (law a p i))
       (●ᶜ A .charge c₁ (●ᶜ A .charge c₂ (law a p i))))
     (cong η• (A .charge/+))
     refl
     i
+●ᶜ A .seal = {!   !}
+●ᶜ A .seal/abs = {!   !}
+●ᶜ A .seal/charge = {!   !}
 
 η•ᶜ : A ⊸ ●ᶜ A
 η•ᶜ .U = η•
 η•ᶜ .charge _ _ = refl
+η•ᶜ .seal = {!   !}
 
 𝒞• : Type₁
 𝒞• = Σ[ A ∈ 𝒞 ] isEquiv (η•ᶜ {A} .U)
@@ -56,14 +62,15 @@ map f .charge c (η• a) = cong η• (f .charge c a)
 map f .charge c (∗ p) = refl
 map {A} {B} f .charge c (law a p i) =
   isProp→PathP
-    (λ i → 𝒱.isSet𝒱 (●ᶜ B .U)
+    (λ i → ●ᶜ B .U .is-set
       (map f .U (●ᶜ A .charge c (law a p i)))
       (●ᶜ B .charge c (map f .U (law a p i))))
     (cong η• (f .charge c a))
     refl
     i
+map f .seal = {!   !}
 
-map-open : φ → (f g : A ⊸ B) → map f ≡ map g
+map-open : ⟨ ABS ⟩ → (f g : A ⊸ B) → map f ≡ map g
 map-open {A} {B} p f g =
   ⊸-path
     {A₀ = ●ᶜ A}

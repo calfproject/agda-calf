@@ -1,14 +1,15 @@
 open import Cubical.Foundations.Prelude
 
-module Calf.Value.Open (φ : Type) (φ-isProp : isProp φ) where
+module Calf.Value.Open where
 
+open import Calf.Core.Abstract
 open import Calf.Value
 open import Calf.Value.Function
-open import Calf.Phase.Open φ φ-isProp renaming (◯-η-isEquiv to ◯ᵛ-ηᵛ-isEquiv) public
+open import Calf.Phase.Open (ABS .fst) (ABS .snd) renaming (◯-η-isEquiv to ◯ᵛ-ηᵛ-isEquiv) public
 open import Cubical.Foundations.Equiv
 
 ◯ᵛ : 𝒱 → 𝒱
-◯ᵛ = fromProp φ-isProp →ᵛ_
+◯ᵛ = fromProp (ABS .snd) →ᵛ_
 
 η◦ᵛ : val X → val (◯ᵛ X)
 η◦ᵛ = η◦

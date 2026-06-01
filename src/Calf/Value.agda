@@ -63,6 +63,9 @@ syntax ⊑ᵛ-syntax {X} x x' = x ⊑[ X ] x'
 ⊑ᵛ-mono : (f : val X → val Y) {x x' : val X} → x ⊑[ X ] x' → f x ⊑[ Y ] f x'
 ⊑ᵛ-mono = ⊑-mono
 
+-- ⊑ᵛ-isProp : {x x' : val X} → isProp (x ⊑[ X ] x')
+-- ⊑ᵛ-isProp {X} = isPreorder→isProp[⊑] (X .is-preorder) _ _
+
 -- ⊑-antisym : Antisymmetric _≡_ (_⊑_ {X})
 -- ⊑-antisym {X} x⊑x' x'⊑x = {!    !}
 

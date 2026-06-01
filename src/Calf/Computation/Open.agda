@@ -1,21 +1,23 @@
 open import Cubical.Foundations.Prelude
-open import Cubical.Data.Sigma
 open import Cubical.Foundations.Equiv
+open import Cubical.Data.Sigma
 
-module Calf.Computation.Open (φ : Type) (φ-isProp : isProp φ) where
+module Calf.Computation.Open where
 
+open import Calf.Core.Abstract
 open import Calf.Value
-open import Calf.Value.Open φ φ-isProp using (η◦ᵛ)
-open import Calf.Value.Open φ φ-isProp hiding (◯ᵛ; η◦ᵛ) renaming (◯ᵛ-ηᵛ-isEquiv to ◯ᶜ-ηᶜ-isEquiv) public
+open import Calf.Value.Open using (η◦ᵛ)
+open import Calf.Value.Open hiding (◯ᵛ; η◦ᵛ) renaming (◯ᵛ-ηᵛ-isEquiv to ◯ᶜ-ηᶜ-isEquiv) public
 open import Calf.Computation
 open import Calf.Computation.Power
 
 ◯ᶜ : 𝒞 → 𝒞
-◯ᶜ = fromProp φ-isProp ⇀_
+◯ᶜ = fromProp (ABS .snd) ⇀_
 
 η◦ᶜ : A ⊸ ◯ᶜ A
 η◦ᶜ {A} .U = η◦ᵛ {A .U}
 η◦ᶜ .charge _ _ = refl
+η◦ᶜ .seal = {!   !}
 
 𝒞◦ : Type₁
 𝒞◦ = Σ[ A ∈ 𝒞 ] isEquiv (η◦ᶜ {A} .U)
