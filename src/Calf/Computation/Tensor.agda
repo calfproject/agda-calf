@@ -38,7 +38,7 @@ chargeU⊗ A B c (squash x y p q i j) =
 
 _⊗_ : 𝒞 → 𝒞 → 𝒞
 (A ⊗ B) .U .val = A U⊗ B
-(A ⊗ B) .U .isPreorder = {!   !}
+(A ⊗ B) .U .is-set = squash
 (A ⊗ B) .charge c x = chargeU⊗ A B c x
 (A ⊗ B) .charge/0 {x} = chargeU⊗/0 A B x
   where
@@ -100,14 +100,11 @@ _⊗_ : 𝒞 → 𝒞 → 𝒞
 _∥_ : cmp A → cmp B → cmp (A ⊗ B)
 a ∥ b = inj a b 0ℂ
 
-isSetℂ : isSet (val ℂ)
-isSetℂ = isSet𝒱 ℂ
-
 opaque
   unfolding F
 
   leftF : (val X → cmp (F Y)) → (F X ⊸ F Y)
-  leftF k = bind' id⊸ k
+  leftF {X} k = bind' {X = X} id⊸ k
 
   rightF : (F X ⊸ F Y) → val X → cmp (F Y)
   rightF {X} f a = f .U (ret {X} a)
@@ -132,7 +129,7 @@ opaque
           ∙ sym (+ℂ-assoc c c' (cx +ℂ cy)) ) i
         , x , y
       f (squash e e₁ p q i j) =
-        isSet→SquareP (λ _ _ → isSet× isSetℂ (isSet× (isSet𝒱 X) (isSet𝒱 Y)))
+        isSet→SquareP (λ _ _ → isSet× (ℂ .is-set) (isSet× (X .is-set) (Y .is-set)))
           (cong f p) (cong f q)
           (λ _ → f e) (λ _ → f e₁)
           i j
@@ -142,14 +139,14 @@ opaque
       chargeF c (inj (cx , x) (cy , y) c') =
         cong (_, x , y) (+ℂ-assoc c c' (cx +ℂ cy))
       chargeF c (law₁ c' c'' (cx , x) (cy , y) i) =
-        isSet→isSet' (isSet× isSetℂ (isSet× (isSet𝒱 X) (isSet𝒱 Y)))
+        isSet→isSet' (isSet× (ℂ .is-set) (isSet× (X .is-set) (Y .is-set)))
           (cong (_, x , y) (+ℂ-assoc c c' ((c'' +ℂ cx) +ℂ cy)))
           (cong (_, x , y) (+ℂ-assoc c (c' +ℂ c'') (cx +ℂ cy)))
           (λ k → f (chargeU⊗ (F X) (F Y) c (law₁ c' c'' (cx , x) (cy , y) k)))
           (λ k → F (X ×ᵛ Y) .charge c (f (law₁ c' c'' (cx , x) (cy , y) k)))
           i
       chargeF c (law₂ c' c'' (cx , x) (cy , y) i) =
-        isSet→isSet' (isSet× isSetℂ (isSet× (isSet𝒱 X) (isSet𝒱 Y)))
+        isSet→isSet' (isSet× (ℂ .is-set) (isSet× (X .is-set) (Y .is-set)))
           (cong (_, x , y) (+ℂ-assoc c c' (cx +ℂ (c'' +ℂ cy))))
           (cong (_, x , y) (+ℂ-assoc c (c' +ℂ c'') (cx +ℂ cy)))
           (λ k → f (chargeU⊗ (F X) (F Y) c (law₂ c' c'' (cx , x) (cy , y) k)))
@@ -158,7 +155,7 @@ opaque
       chargeF c (squash x y p q i j) =
         isSet→SquareP
           (λ k l → isProp→isSet
-            (isSet× isSetℂ (isSet× (isSet𝒱 X) (isSet𝒱 Y))
+            (isSet× (ℂ .is-set) (isSet× (X .is-set) (Y .is-set))
               (f ((F X ⊗ F Y) .charge c (squash x y p q k l)))
               (F (X ×ᵛ Y) .charge c (f (squash x y p q k l)))))
           (cong (chargeF c) p) (cong (chargeF c) q)
