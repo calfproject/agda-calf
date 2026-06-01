@@ -103,16 +103,6 @@ a ∥ b = inj a b 0ℂ
 opaque
   unfolding F
 
-  leftF : (val X → cmp (F Y)) → (F X ⊸ F Y)
-  leftF {X} k = bind' {X = X} id⊸ k
-
-  rightF : (F X ⊸ F Y) → val X → cmp (F Y)
-  rightF {X} f a = f .U (ret {X} a)
-
-  right-leftF : (k : val X → cmp (F Y)) (a : val X)
-            → rightF {X} {Y} (leftF k) a ≡ k a
-  right-leftF {Y = Y} k a = F Y .charge/0
-
   F⊗-fwd : (F X ⊗ F Y) ⊸ F (X ×ᵛ Y)
   F⊗-fwd {X} {Y} = record { U = f ; charge = chargeF }
     where

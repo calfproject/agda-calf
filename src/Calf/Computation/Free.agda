@@ -41,3 +41,16 @@ opaque
       A .charge c (A .charge (e .U δ .fst) (k (e .U δ .snd)))
     ∎
   syntax bind' e (λ x → k) = bind x ← e ⨾ k
+
+  leftF : (val X → cmp (F Y)) → (F X ⊸ F Y)
+  leftF {X} k = bind' {X = X} id⊸ k
+
+  F/η' : ∀ {x k} → leftF {Y = Y} k .U (ret {X} x) ≡ k x
+  F/η' {x = x} {k} = cong (_, k x .snd) (+ℂ-identityˡ (k x .fst))
+
+  rightF : (F X ⊸ F Y) → val X → cmp (F Y)
+  rightF {X} f a = f .U (ret {X} a)
+
+  right-leftF : (k : val X → cmp (F Y)) (a : val X)
+            → rightF {X} {Y} (leftF k) a ≡ k a
+  right-leftF {Y = Y} k a = F Y .charge/0

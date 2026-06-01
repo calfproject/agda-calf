@@ -252,3 +252,30 @@ dequeue' .charge c q =
     ( cong (invEq (fracture , fracture-isEquiv)) (dequeue'-fst-glue-charge c q)
     , dequeue'-snd-charge c q
     )
+
+
+opaque
+  unfolding ℂ
+
+  open import Calf.Value.Unit
+  open import Calf.Computation.Potential
+  open import Calf.Computation.PList2
+
+  foo : F 1ᵛ ⊸ PList2 1 1 1ᵛ
+  foo = bind' id⊸ (λ _ → pnil) ⨾⊸ pcons' tt ⨾⊸ pcons' tt ⨾⊸ pcons' tt
+
+  id₁ : ∀ c → PList2 c 0 1ᵛ ⊸ PList2 0 0 1ᵛ
+  id₁ c =
+    pfoldr
+      (λ c-lin → PList2 0 0 1ᵛ)
+      (λ c-lin → pnil)
+      (λ c-lin x → release' ⨾⊸ pcons₀ x)
+
+  id₂ : PList2 0 1 1ᵛ ⊸ PList2 0 0 1ᵛ
+  id₂ =
+    pfoldr
+      (λ c-lin → {!   !} ⇀ PList2 0 0 1ᵛ)
+      (λ c-lin → {!   !})
+      (λ c-lin x → release' ⨾⊸ {! id₁ c-lin  !})
+    ⨾⊸
+    {!   !}

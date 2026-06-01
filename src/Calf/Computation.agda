@@ -38,6 +38,7 @@ id⊸ : A ⊸ A
 id⊸ .U a = a
 id⊸ .charge _ _ = refl
 
+infixl 9 _⨾⊸_
 _⨾⊸_ : (A ⊸ B) → (B ⊸ C) → (A ⊸ C)
 (f ⨾⊸ g) .U = g .U ∘ f .U
 (f ⨾⊸ g) .charge c a = cong (g .U) (f .charge c a) ∙ g .charge c (f .U a)

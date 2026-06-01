@@ -11,7 +11,7 @@ open import Calf.Computation
 open import Calf.Value
 open import Calf.Value.Glue public
 open import Calf.Computation.Open as ◯
-open import Calf.Computation.Closed as ●
+open import Calf.Computation.Closed as ●ᶜ
 
 Glueᶜ : (A• : 𝒞•) (A◦ : 𝒞◦) (α : A• .fst ⊸ ●ᶜ (A◦ .fst)) → 𝒞
 Glueᶜ A• A◦ α .U = Glueᵛ (U• A•) (U◦ A◦) (α .U)
@@ -61,7 +61,7 @@ open 𝒞-FRAC
 𝒞-toFRAC : 𝒞 → 𝒞-FRAC
 𝒞-toFRAC A .A• = ●ᶜ A , ●ᶜ-η•ᶜ-isEquiv {A}
 𝒞-toFRAC A .A◦ = ◯ᶜ A , ◯ᶜ-ηᶜ-isEquiv
-𝒞-toFRAC A .α = ●.map η◦ᶜ
+𝒞-toFRAC A .α = ●ᶜ.map η◦ᶜ
 
 𝒞-fromFRAC : 𝒞-FRAC → 𝒞
 𝒞-fromFRAC F = Glueᶜ (F .A•) (F .A◦) (F .α)
@@ -84,10 +84,10 @@ glue•-out-charge F c g• =
     (glue•-out (𝒱-FRAC→FRAC (𝒞-FRAC→𝒱-FRAC F)) (●ᶜ (𝒞-fromFRAC F) .charge c g•))
     (F .A• .fst .charge c
       (glue•-out (𝒱-FRAC→FRAC (𝒞-FRAC→𝒱-FRAC F)) g•))
-    (secIsEq (F .A• .snd) (●.map (proj•ᶜ F) .U (●ᶜ (𝒞-fromFRAC F) .charge c g•))
-      ∙ ●.map (proj•ᶜ F) .charge c g•
+    (secIsEq (F .A• .snd) (●ᶜ.map (proj•ᶜ F) .U (●ᶜ (𝒞-fromFRAC F) .charge c g•))
+      ∙ ●ᶜ.map (proj•ᶜ F) .charge c g•
       ∙ cong (●ᶜ (F .A• .fst) .charge c)
-        (sym (secIsEq (F .A• .snd) (●.map (proj•ᶜ F) .U g•))))
+        (sym (secIsEq (F .A• .snd) (●ᶜ.map (proj•ᶜ F) .U g•))))
 
 glue◦-out-charge
   : (F : 𝒞-FRAC) (c : val ℂ) (g◦ : cmp (◯ᶜ (𝒞-fromFRAC F)))
@@ -135,7 +135,7 @@ glue◦-out-charge F c g◦ =
   ⊸-path
     (λ i → 𝒞-glue•-path F i .fst)
     (λ i → ●ᶜ (𝒞-glue◦-path F i .fst))
-    {f₀ = ●.map η◦ᶜ}
+    {f₀ = ●ᶜ.map η◦ᶜ}
     {f₁ = F .α}
     (λ i → FRAC.χ (glue-fracture-section (𝒱-FRAC→FRAC (𝒞-FRAC→𝒱-FRAC F)) i))
     i
@@ -208,3 +208,38 @@ fracture-inv-charge A c g =
       𝒞-fromFRAC
       𝒞-glue-fracture-section
       𝒞-glue-fracture-retract)
+
+
+Glueᶜ' : (A-⊤ A-abs : 𝒞) → (A-⊤ ⊸ A-abs) → 𝒞
+Glueᶜ' A-⊤ A-abs α = Glueᶜ (●ᶜ A-⊤ , ●ᶜ-η•ᶜ-isEquiv {A-⊤}) (◯ᶜ A-abs , ◯ᶜ-ηᶜ-isEquiv) (●ᶜ.map (α ⨾⊸ η◦ᶜ))
+
+square' : ∀ {A-⊤ A-abs α B-⊤ B-abs β} (f-⊤ : A-⊤ ⊸ B-⊤) (f-abs : A-abs ⊸ B-abs)
+  → ((a-⊤ : cmp A-⊤) → U β (U f-⊤ a-⊤) ≡ U f-abs (U α a-⊤))
+  → Glueᶜ' A-⊤ A-abs α ⊸ Glueᶜ' B-⊤ B-abs β
+square' f-⊤ f-abs f-coherence = {!   !}
+--  .U q .• = ●ᵛ.map (enqueueᵗ e .U) (q .•)
+-- square .U q .◦ = ◯ᵛ.map (enqueue e .U) (q .◦)
+-- square .U q .•→◦ =
+--     ●ᵛ.map (λ bq → η◦ᵛ {U LQ} (φ .U bq)) (●ᵛ.map (enqueueᵗ e .U) (q .•))
+--   ≡⟨ ●ᵛ.●-map-∘ (enqueueᵗ e .U) (λ bq → η◦ᵛ {U LQ} (φ .U bq)) (q .•) ⟩
+--     ●ᵛ.map (λ bq → η◦ᵛ {U LQ} (φ .U (enqueueᵗ e .U bq))) (q .•)
+--   ≡⟨ cong (λ h → ●ᵛ.map h (q .•)) (funExt λ bq → funExt λ _ → enqueue-coherent e bq) ⟩
+--     ●ᵛ.map (λ bq → ◯ᵛ.map (enqueue e .U) (η◦ᵛ {U LQ} (φ .U bq))) (q .•)
+--   ≡⟨ sym (●ᵛ.●-map-∘ (λ bq → η◦ᵛ {U LQ} (φ .U bq)) (◯ᵛ.map (enqueue e .U)) (q .•)) ⟩
+--     ●ᵛ.map (◯ᵛ.map (enqueue e .U)) (●ᵛ.map (λ bq → η◦ᵛ {U LQ} (φ .U bq)) (q .•))
+--   ≡⟨ cong (●ᵛ.map (◯ᵛ.map (enqueue e .U))) (q .•→◦) ⟩
+--     ●ᵛ.map (◯ᵛ.map (enqueue e .U)) (η•ᵛ {◯ᵛ (U LQ)} (q .◦))
+--   ≡⟨ refl ⟩
+--     η•ᵛ {◯ᵛ (U LQ)} (◯ᵛ.map (enqueue e .U) (q .◦))
+--   ∎
+-- square .charge c q i .• = ●ᶜ.map (enqueueᵗ e) .charge c (q .•) i
+-- square .charge c q i .◦ p = enqueue e .charge c (q .◦ p) i
+-- square .charge c q i .•→◦ =
+--   isProp→PathP
+--     (λ i → ●ᶜ (◯ᶜ LQ) .U .is-set
+--       (●ᵛ.map (λ bq → η◦ᵛ {U LQ} (φ .U bq))
+--         (●ᶜ.map (enqueueᵗ e) .charge c (q .•) i))
+--       (η•ᵛ {◯ᵛ (U LQ)} (λ p → enqueue e .charge c (q .◦ p) i)))
+--     (square .U (BLQ .charge c q) .•→◦)
+--     (BLQ .charge c (square .U q) .•→◦)
+--     i

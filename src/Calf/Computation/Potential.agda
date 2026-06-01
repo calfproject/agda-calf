@@ -42,6 +42,13 @@ variable
 ▷'-open : ⟨ ABS ⟩ → (c : val ℂ) (A : 𝒞) → ▷'[ c ] A ≡ A
 ▷'-open abs c A = cong 𝒞-fromFRAC (▷'-FRAC-open abs c A) ∙ 𝒞-glue-fracture-retract A
 
+▷'-map : (A ⊸ B) → (▷'[ c ] A ⊸ ▷'[ c ] B)
+▷'-map = {!   !}
+
+release' : ▷'[ c ] A ⊸ A
+release' .U = {!   !}
+release' .charge = {!   !}
+
 ▷[_] : val ℙ → 𝒞 → 𝒞
 ▷[ η• c ] A = ▷'[ c ] A
 ▷[ ∗ p ] A = A

@@ -27,6 +27,9 @@ Type◦ = TypeWithStr _ λ X → isEquiv (η◦ {X})
 ◯-join : {X : Type} → ◯ (◯ X) → ◯ X
 ◯-join x p = x p p
 
+bind : {X Y : Type} → ◯ X → (X → ◯ Y) → ◯ Y
+bind x◦ k = ◯-join (map k x◦)
+
 ◯-η-isEquiv : {X : Type} → isEquiv (η◦ {◯ X})
 ◯-η-isEquiv = isoToIsEquiv (iso η◦ ◯-join sec ret)
   where
