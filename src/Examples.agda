@@ -254,28 +254,41 @@ dequeue' .charge c q =
     )
 
 
+open import Calf.Value.Unit
+open import Calf.Computation.Potential
+open import Calf.Computation.PList1
+open import Calf.Computation.PList2
+open import Cubical.Data.Nat
+
+-- open import Cubical.Data.Nat.Order
+
+-- open import Relation.Binary.PropositionalEquality as Eq using (refl)
+
+-- (x ≡ᵛ x') .val = Eq._≡_ x x'
+-- _≡ᵛ_ {X} x x' .is-set = {!   !} -- isProp→isSet (X .is-set x x')
+
+-- _≤ᵛ_ : val ℂ → val ℂ → 𝒱
+-- c ≤ᵛ c' = fromProp ((c ≤ c') , isProp≤)
+
+
 opaque
   unfolding ℂ
-
-  open import Calf.Value.Unit
-  open import Calf.Computation.Potential
-  open import Calf.Computation.PList2
 
   foo : F 1ᵛ ⊸ PList2 1 1 1ᵛ
   foo = bind' id⊸ (λ _ → pnil) ⨾⊸ pcons' tt ⨾⊸ pcons' tt ⨾⊸ pcons' tt
 
-  id₁ : ∀ c → PList2 c 0 1ᵛ ⊸ PList2 0 0 1ᵛ
-  id₁ c =
-    pfoldr
-      (λ c-lin → PList2 0 0 1ᵛ)
-      (λ c-lin → pnil)
-      (λ c-lin x → release' ⨾⊸ pcons₀ x)
+  id₁ : ∀ c → PList1 (c +ℂ 1) X ⊸ PList1 c X
+  id₁ {X} c =
+    pfoldr₁
+      pnil₁
+      (λ x → release-part 1 ⨾⊸ pcons₁ x)
+    where
+      release-part : ∀ c' → ▷'[ c + c' ] A ⊸ ▷'[ c ] A
+      release-part = {!   !}
 
-  id₂ : PList2 0 1 1ᵛ ⊸ PList2 0 0 1ᵛ
-  id₂ =
+  id₂ : PList2 0 1 X ⊸ PList1 0 X
+  id₂ {X} =
     pfoldr
-      (λ c-lin → {!   !} ⇀ PList2 0 0 1ᵛ)
-      (λ c-lin → {!   !})
-      (λ c-lin x → release' ⨾⊸ {! id₁ c-lin  !})
-    ⨾⊸
-    {!   !}
+      (λ c-lin → PList1 c-lin X)
+      (λ c-lin → pnil₁)
+      (λ c-lin x → ▷'-map (id₁ c-lin) ⨾⊸ pcons₁ x)

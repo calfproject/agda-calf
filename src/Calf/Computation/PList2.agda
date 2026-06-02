@@ -31,10 +31,10 @@ binom n k = _C_ n k
 opaque
   PList2 : val ℂ → val ℂ → 𝒱 → 𝒞
   PList2 c-linear c-quadratic X =
-    Glueᶜ
-      (●ᶜ (F (Listᵛ X)) , ●ᶜ-η•ᶜ-isEquiv {F (Listᵛ X)})
-      (◯ᶜ (F (Listᵛ X)) , ◯ᶜ-ηᶜ-isEquiv)
-      (●ᶜ.map (leftF (λ l → F _ .charge ((length l ⊙ c-linear) +ℂ (binom (length l) 2 ⊙ c-quadratic)) (ret l)) ⨾⊸ η◦ᶜ {F _}))
+    Glueᶜ'
+      (F (Listᵛ X))
+      (F (Listᵛ X))
+      (leftF (λ l → F _ .charge ((length l ⊙ c-linear) +ℂ (binom (length l) 2 ⊙ c-quadratic)) (ret l)))
 
   pnil : ∀ {c-lin c-quad} → cmp (PList2 c-lin c-quad X)
   pnil .• = η• (ret [])
