@@ -11,7 +11,7 @@ open import Cubical.Foundations.Equiv
 
 ●ᵛ : 𝒱 → 𝒱
 ●ᵛ X .val = ● (X .val)
-●ᵛ X .is-set = isSet● (X .is-set)
+●ᵛ X .is-set = ●-preserves-isSet (X .is-set)
 
 η•ᵛ : val X → val (●ᵛ X)
 η•ᵛ = η•

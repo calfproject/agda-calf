@@ -10,6 +10,7 @@ module Calf.Phase.Closed (φ : Type) (φ-isProp : isProp φ) where
 
 open import Calf.Phase.Open φ φ-isProp using (◯)
 
+-- The following two proofs are imported from the 1Lab: https://1lab.dev/1Lab.Type.Pi.html
 funext-dep
   : ∀ {A : I → Type} {B : (i : I) → A i → Type} {f g}
   → ( ∀ {x₀ x₁} (p : PathP A x₀ x₁)
@@ -88,6 +89,29 @@ Type• = TypeWithStr _ λ X → isEquiv (η• {X})
     (law x p ∙ sym (law x' p))
     i
 
+●-unlex' : ∀ {X} {x : X} {y : ● X} → ●-encode x y → η• x ≡ y
+●-unlex' {X} {x} {y} e =
+  ind R η•-case ∗-case law-case y e
+  where
+  R : ● X → Type
+  R y = ●-encode x y → η• x ≡ y
+
+  η•-case : (x' : X) → R (η• x')
+  η•-case x' e = ●-unlex e
+
+  ∗-case : (p : φ) → R (∗ p)
+  ∗-case p _ = law x p
+
+  law-case : (x' : X) (p : φ) → PathP (λ i → R (law x' p i)) (η•-case x') (∗-case p)
+  law-case x' p =
+    funext-dep-i0 λ e →
+      isProp→PathP
+        (λ i → isProp→isSet (●-isProp p)
+          (η• x)
+          (law x' p i))
+        (η•-case x' e)
+        (∗-case p (coe0→1 (λ i → ●-encode x (law x' p i)) e))
+
 ●-lex-unlex : ∀ {X} {x x' : X} (e : ● (x ≡ x')) → ●-lex (●-unlex e) ≡ e
 ●-lex-unlex {x = x} (η• h) =
   J
@@ -106,6 +130,15 @@ Type• = TypeWithStr _ λ X → isEquiv (η• {X})
     (●-lex-unlex (η• h))
     (●-lex-unlex (∗ p))
     i
+
+●-unlex-lex : ∀ {X} {x x' : X} (h : η• x ≡ η• x') → ●-unlex (●-lex h) ≡ h
+●-unlex-lex {X} {x} h =
+  J
+    (λ y h → ●-unlex' (●-lex h) ≡ h)
+    (cong
+      (λ e → ●-unlex' {X = X} {x = x} {y = η• x} e)
+      (JRefl {x = η• x} (λ y _ → ●-encode x y) (η• {X = x ≡ x} refl)))
+    h
 
 ●-join : {X : Type} → ● (● X) → ● X
 ●-join (η• x) = x
@@ -291,5 +324,91 @@ Type•-at-open-isContr X• p .fst = invIsEq (X• .snd) (∗ p)
 Type•-at-open-isContr X• p .snd x =
   cong (invIsEq (X• .snd)) (sym (law x p)) ∙ retIsEq (X• .snd) x
 
-isSet● : ∀ {X} → isSet X → isSet (● X)
-isSet● isSetX = {!   !}
+●-path-to-point : ∀ {X} → isProp X → (x : X) (x• : ● X) → x• ≡ η• x
+●-path-to-point {X} X-isProp x =
+  ind R η•-case ∗-case law-case
+  where
+  R : ● X → Type
+  R x• = x• ≡ η• x
+
+  η•-case : (y : X) → R (η• y)
+  η•-case y = cong η• (X-isProp y x)
+
+  ∗-case : (p : φ) → R (∗ p)
+  ∗-case p = sym (law x p)
+
+  law-case : (y : X) (p : φ) → PathP (λ i → R (law y p i)) (η•-case y) (∗-case p)
+  law-case y p =
+    isProp→PathP
+      (λ i → isProp→isSet (●-isProp p) (law y p i) (η• x))
+      (η•-case y)
+      (∗-case p)
+
+●-preserves-isProp : ∀ {X} → isProp X → isProp (● X)
+●-preserves-isProp {X} X-isProp =
+  ind R η•-case ∗-case law-case
+  where
+  R : ● X → Type
+  R x• = (y• : ● X) → x• ≡ y•
+
+  η•-case : (x : X) → R (η• x)
+  η•-case x y• = sym (●-path-to-point X-isProp x y•)
+
+  ∗-case : (p : φ) → R (∗ p)
+  ∗-case p y• = ●-isProp p (∗ p) y•
+
+  law-case : (x : X) (p : φ) → PathP (λ i → R (law x p i)) (η•-case x) (∗-case p)
+  law-case x p i y• =
+    isProp→PathP
+      (λ i → isProp→isSet (●-isProp p) (law x p i) y•)
+      (η•-case x y•)
+      (∗-case p y•)
+      i
+
+●-isPropPath : ∀ {X} → isSet X → (x• y• : ● X) → isProp (x• ≡ y•)
+●-isPropPath {X} X-isSet =
+  ind R η•-case ∗-case law-case
+  where
+  R : ● X → Type
+  R x• = (y• : ● X) → isProp (x• ≡ y•)
+
+  η•η•-case : (x y : X) → isProp (η• x ≡ η• y)
+  η•η•-case x y h h' =
+    sym (●-unlex-lex h)
+    ∙ cong ●-unlex (●-preserves-isProp (X-isSet x y) (●-lex h) (●-lex h'))
+    ∙ ●-unlex-lex h'
+
+  η•-case : (x : X) → R (η• x)
+  η•-case x =
+    ind S η•η•-case' ∗-case' law-case'
+    where
+    S : ● X → Type
+    S y• = isProp (η• x ≡ y•)
+
+    η•η•-case' : (y : X) → S (η• y)
+    η•η•-case' y = η•η•-case x y
+
+    ∗-case' : (p : φ) → S (∗ p)
+    ∗-case' p = isProp→isSet (●-isProp p) (η• x) (∗ p)
+
+    law-case' : (y : X) (p : φ) → PathP (λ i → S (law y p i)) (η•η•-case' y) (∗-case' p)
+    law-case' y p =
+      isProp→PathP
+        (λ _ → isPropIsProp)
+        (η•η•-case' y)
+        (∗-case' p)
+
+  ∗-case : (p : φ) → R (∗ p)
+  ∗-case p y• = isProp→isSet (●-isProp p) (∗ p) y•
+
+  law-case : (x : X) (p : φ) → PathP (λ i → R (law x p i)) (η•-case x) (∗-case p)
+  law-case x p i y• =
+    isProp→PathP
+      (λ j → isPropIsProp {A = law x p j ≡ y•})
+      (η•-case x y•)
+      (∗-case p y•)
+      i
+
+opaque
+  ●-preserves-isSet : ∀ {X} → isSet X → isSet (● X)
+  ●-preserves-isSet X-isSet x• y• = ●-isPropPath X-isSet x• y•
