@@ -63,8 +63,14 @@ squareᵛ'
   → (f-abs : val X-abs → val Y-abs)
   → ((x-⊤ : val X-⊤) → β (f-⊤ x-⊤) ≡ f-abs (α x-⊤))
   → val (Glueᵛ' X-⊤ X-abs α) → val (Glueᵛ' Y-⊤ Y-abs β)
-squareᵛ' {X-abs = X-abs} {α = α} {Y-abs = Y-abs} {β = β} f-⊤ f-abs f-coherence =
+squareᵛ' {X-⊤ = X-⊤} {X-abs = X-abs} {α = α} {Y-⊤ = Y-⊤} {Y-abs = Y-abs} {β = β} f-⊤ f-abs f-coherence =
   squareᵛ
+    {X• = ●ᵛ X-⊤ , ●ᵛ-η•ᵛ-isEquiv {X-⊤}}
+    {X◦ = ◯ᵛ X-abs , ◯ᵛ-ηᵛ-isEquiv}
+    {α = ●.map (η◦ᵛ {X-abs} ∘ α)}
+    {Y• = ●ᵛ Y-⊤ , ●ᵛ-η•ᵛ-isEquiv {Y-⊤}}
+    {Y◦ = ◯ᵛ Y-abs , ◯ᵛ-ηᵛ-isEquiv}
+    {β = ●.map (η◦ᵛ {Y-abs} ∘ β)}
     (●.map f-⊤)
     (◯.map f-abs)
     (λ x• →
