@@ -28,7 +28,7 @@ variable
 ▷'-FRAC c A .α = ●ᶜ.map (CHARGE c ⨾⊸ η◦ᶜ)
 
 ▷'[_] : val ℂ → 𝒞 → 𝒞
-▷'[ c ] A = Glueᶜ (●ᶜ A , ●ᶜ-η•ᶜ-isEquiv {A}) (◯ᶜ A , ◯ᶜ-ηᶜ-isEquiv) (●ᶜ.map (CHARGE c ⨾⊸ η◦ᶜ))
+▷'[ c ] A = Glueᶜ' A A (CHARGE c)
 
 ▷'-FRAC-open : ⟨ ABS ⟩ → (c : val ℂ) (A : 𝒞) → ▷'-FRAC c A ≡ 𝒞-toFRAC A
 ▷'-FRAC-open abs c A i .A• = 𝒞-toFRAC A .A•

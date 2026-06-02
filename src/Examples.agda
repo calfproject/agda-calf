@@ -104,7 +104,7 @@ open import Calf.Value.Open as ◯ᵛ
 open import Calf.Value.Closed as ●ᵛ
 
 BLQ : 𝒞
-BLQ = Glueᶜ (●ᶜ BQ , ●ᶜ-η•ᶜ-isEquiv {BQ}) (◯ᶜ LQ , ◯ᶜ-ηᶜ-isEquiv) (●ᶜ.map (φ ⨾⊸ η◦ᶜ))
+BLQ = Glueᶜ' BQ LQ φ
 
 empty' : cmp BLQ
 empty' .• = η•ᵛ {U BQ} emptyᵗ
