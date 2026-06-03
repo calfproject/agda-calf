@@ -17,13 +17,34 @@ open import Calf.Computation.Glue
 
 open 𝒞-FRAC
 
+▷'[_] : val ℂ → 𝒞 → 𝒞
+▷'[ c ] A = Glueᶜ' A A (CHARGE c)
+
+▷'/0 : ▷'[ 0ℂ ] A ≡ A
+▷'/0 {A} = cong (Glueᶜ' A A) (⊸-path refl refl (funExt λ _ → A .charge/0)) ∙ Glueᶜ'-id
+
+▷'/+ : ▷'[ c₁ +ℂ c₂ ] A ≡ ▷'[ c₁ ] (▷'[ c₂ ] A)
+▷'/+ {c₁} {c₂} {A} =
+    ▷'[ c₁ +ℂ c₂ ] A
+  ≡⟨ refl ⟩
+    Glueᶜ' A A (CHARGE (c₁ +ℂ c₂))
+  ≡⟨ cong (Glueᶜ' A A) (⊸-path refl refl (funExt λ _ → A .charge/+)) ⟩
+    Glueᶜ' A A (CHARGE c₂ ⨾ᶜ CHARGE c₁)
+  ≡⟨ sym Glueᶜ'-Glueᶜ' ⟩
+    Glueᶜ'
+      (Glueᶜ' A A (CHARGE c₂))
+      (Glueᶜ' A A (CHARGE c₂))
+      (squareᶜ' (CHARGE c₁) (CHARGE c₁) (λ a → cong ((_$ a) ∘ U) (CHARGE-comm {A} c₁ c₂)))
+  ≡⟨ cong (Glueᶜ' _ _) {! squareᶜ'-same  !} ⟩
+    Glueᶜ' (Glueᶜ' A A (CHARGE c₂)) (Glueᶜ' A A (CHARGE c₂)) (CHARGE c₁)
+  ≡⟨ refl ⟩
+    ▷'[ c₁ ] (▷'[ c₂ ] A)
+  ∎
+
 ▷'-FRAC : val ℂ → 𝒞 → 𝒞-FRAC
 ▷'-FRAC c A .A• = ●ᶜ A , ●ᶜ.η-isEquiv
 ▷'-FRAC c A .A◦ = ◯ᶜ A , ◯ᶜ.η-isEquiv
 ▷'-FRAC c A .α• = ●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ)
-
-▷'[_] : val ℂ → 𝒞 → 𝒞
-▷'[ c ] A = Glueᶜ' A A (CHARGE c)
 
 ▷'-FRAC-open : ⟨ ABS ⟩ → (c : val ℂ) (A : 𝒞) → ▷'-FRAC c A ≡ 𝒞-toFRAC A
 ▷'-FRAC-open abs c A i .A• = 𝒞-toFRAC A .A•

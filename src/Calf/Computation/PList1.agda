@@ -53,6 +53,18 @@ opaque
       (F.map (x ∷_))
       λ e →
         bind' (λ l → F _ .charge (length l ⊙ c-lin) (ret l)) .U (F.map (x ∷_) .U e)
+      ≡⟨ refl ⟩
+        bind' (λ l → F _ .charge (length l ⊙ c-lin) (ret l)) .U (bind' (ret ∘ (x ∷_)) .U e)
+      ≡⟨ {!   !} ⟩
+        bind' {A = F _} (λ l → F _ .charge (length (x ∷ l) ⊙ c-lin) (ret (x ∷ l))) .U e
+      ≡⟨ refl ⟩
+        bind' {A = F _} (λ l → F _ .charge (suc (length l) ⊙ c-lin) (ret (x ∷ l))) .U e
+      ≡⟨ refl ⟩
+        bind' {A = F _} (λ l → F _ .charge (c-lin +ℂ (length l ⊙ c-lin)) (ret (x ∷ l))) .U e
+      ≡⟨ cong (λ hole → bind' {A = F _} hole .U e) (funExt (λ l → F _ .charge/+)) ⟩
+        bind' {A = F _} (λ l → F _ .charge c-lin (F _ .charge (length l ⊙ c-lin) (ret (x ∷ l)))) .U e
+      ≡⟨ {!   !} ⟩
+        bind' {A = F _} (λ l → F _ .charge (length l ⊙ c-lin) (ret (x ∷ l))) .U (F _ .charge c-lin e)
       ≡⟨ {!   !} ⟩
         F.map (x ∷_) .U (bind' (λ l → F _ .charge (length l ⊙ c-lin) (ret l)) .U (F _ .charge c-lin e))
       ∎

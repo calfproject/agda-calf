@@ -55,6 +55,9 @@ CHARGE {A} c .charge c' a =
     A .charge c' (A .charge c a)
   ∎
 
+CHARGE-comm : ∀ c₁ c₂ → CHARGE {A} c₁ ⨾ᶜ CHARGE c₂ ≡ CHARGE c₂ ⨾ᶜ CHARGE c₁
+CHARGE-comm = {!   !}
+
 isPropCharge/0
   : {U : 𝒱} (charge : val ℂ → val U → val U)
   → isProp (∀ {a} → charge 0ℂ a ≡ a)

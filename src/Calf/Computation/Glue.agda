@@ -233,11 +233,6 @@ opaque
       A
     ∎
 
-  Glueᶜ'-Glueᶜ' : ∀ {A-⊤ A-abs α B-⊤ B-abs β} →  --  f-⊤ f-abs f-coherence} →
-    Glueᶜ' (Glueᶜ' A-⊤ A-abs α) (Glueᶜ' B-⊤ B-abs β) {!    !} -- (squareᶜ' {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence)
-    ≡ Glueᶜ' A-⊤ B-abs {!   !} -- (α ⨾ᶜ f-abs)
-  Glueᶜ'-Glueᶜ' = {!   !}
-
   squareᶜ' : ∀ {A-⊤ A-abs α B-⊤ B-abs β} (f-⊤ : A-⊤ ⊸ B-⊤) (f-abs : A-abs ⊸ B-abs)
     → ((a-⊤ : cmp A-⊤) → U β (U f-⊤ a-⊤) ≡ U f-abs (U α a-⊤))
     → Glueᶜ' A-⊤ A-abs α ⊸ Glueᶜ' B-⊤ B-abs β
@@ -274,6 +269,13 @@ opaque
           f-⊤ f-abs f-coherence .U q) .•→◦)
       i
 
+  squareᶜ'-same : (f : A ⊸ B) →
+    PathP
+      (λ i → Glueᶜ'-id {A} i ⊸ Glueᶜ'-id {B} i)
+      (squareᶜ' f f λ _ → refl)
+      f
+  squareᶜ'-same = {!   !}
+
   triangleᶜ' : ∀ {B-⊤ B-abs β} (b-⊤ : cmp B-⊤) (b-abs : cmp B-abs)
     → β .U b-⊤ ≡ b-abs
     → cmp (Glueᶜ' B-⊤ B-abs β)
@@ -281,3 +283,8 @@ opaque
   triangleᶜ' {B-abs = B-abs} b-⊤ b-abs b-coherence .◦ = η◦ᶜ {A = B-abs} .U b-abs
   triangleᶜ' {B-abs = B-abs} b-⊤ b-abs b-coherence .•→◦ =
     cong (λ b → η• (η◦ᶜ {A = B-abs} .U b)) b-coherence
+
+  Glueᶜ'-Glueᶜ' : ∀ {A-⊤ A-abs α B-⊤ B-abs β f-⊤ f-abs f-coherence} →
+    Glueᶜ' (Glueᶜ' A-⊤ A-abs α) (Glueᶜ' B-⊤ B-abs β) (squareᶜ' {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence)
+    ≡ Glueᶜ' A-⊤ B-abs (α ⨾ᶜ f-abs)
+  Glueᶜ'-Glueᶜ' = {!   !}
