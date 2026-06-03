@@ -120,62 +120,65 @@ empty' = triangle' {B-⊤ = BQ} {B-abs = LQ} {β = φ} emptyᵗ emptyq empty-coh
 enqueue' : val ℕᵛ → BLQ ⊸ BLQ
 enqueue' e = square' (enqueueᵗ e) (enqueue e) (enqueue-coherent e)
 
-dequeue'-fst-glue : cmp BLQ → val (𝒱-fromFRAC (𝒱-toFRAC ℕᵛ))
-dequeue'-fst-glue =
-  squareᵛ'
-    {X-⊤ = U BQ} {X-abs = U LQ} {α = φ .U}
-    {Y-⊤ = ℕᵛ} {Y-abs = ℕᵛ} {β = λ n → n}
-    (λ bq → fst (dequeueᵗ .U bq))
-    (λ lq → fst (dequeue .U lq))
-    (λ q → cong fst (dequeue-coherent q))
+opaque
+  unfolding Glueᶜ'
 
-dequeue'-snd : BLQ ⊸ BLQ
-dequeue'-snd = square' dequeueᵗ-snd dequeue-snd (λ q → cong snd (dequeue-coherent q))
+  dequeue'-fst-glue : cmp BLQ → val (𝒱-fromFRAC (𝒱-toFRAC ℕᵛ))
+  dequeue'-fst-glue =
+    squareᵛ'
+      {X-⊤ = U BQ} {X-abs = U LQ} {α = φ .U}
+      {Y-⊤ = ℕᵛ} {Y-abs = ℕᵛ} {β = λ n → n}
+      (λ bq → fst (dequeueᵗ .U bq))
+      (λ lq → fst (dequeue .U lq))
+      (λ q → cong fst (dequeue-coherent q))
 
-dequeueᵗ-fst-●-charge
-  : (c : val ℂ) (q• : val (●ᶜ BQ .U))
-  → ●ᵛ.map (λ bq → fst (dequeueᵗ .U bq)) (●ᶜ BQ .charge c q•)
-    ≡ ●ᵛ.map (λ bq → fst (dequeueᵗ .U bq)) q•
-dequeueᵗ-fst-●-charge c (η• bq) = cong (η•ᵛ {ℕᵛ}) (cong fst (dequeueᵗ .charge c bq))
-dequeueᵗ-fst-●-charge c (∗ p) = refl
-dequeueᵗ-fst-●-charge c (law bq p i) =
-  isProp→PathP
-    (λ i → ●ᵛ ℕᵛ .is-set
-      (●ᵛ.map (λ bq → fst (dequeueᵗ .U bq)) (●ᶜ BQ .charge c (law bq p i)))
-      (●ᵛ.map (λ bq → fst (dequeueᵗ .U bq)) (law bq p i)))
-    (cong (η•ᵛ {ℕᵛ}) (cong fst (dequeueᵗ .charge c bq)))
-    refl
-    i
+  dequeue'-snd : BLQ ⊸ BLQ
+  dequeue'-snd = square' dequeueᵗ-snd dequeue-snd (λ q → cong snd (dequeue-coherent q))
 
-dequeue-fst-◯-charge
-  : (c : val ℂ) (q◦ : val (◯ᶜ LQ .U))
-  → ◯ᵛ.map (λ lq → fst (dequeue .U lq)) (◯ᶜ LQ .charge c q◦)
-    ≡ ◯ᵛ.map (λ lq → fst (dequeue .U lq)) q◦
-dequeue-fst-◯-charge c q◦ i p = cong fst (dequeue .charge c (q◦ p)) i
+  dequeueᵗ-fst-●-charge
+    : (c : val ℂ) (q• : val (●ᶜ BQ .U))
+    → ●ᵛ.map (λ bq → fst (dequeueᵗ .U bq)) (●ᶜ BQ .charge c q•)
+      ≡ ●ᵛ.map (λ bq → fst (dequeueᵗ .U bq)) q•
+  dequeueᵗ-fst-●-charge c (η• bq) = cong (η•ᵛ {ℕᵛ}) (cong fst (dequeueᵗ .charge c bq))
+  dequeueᵗ-fst-●-charge c (∗ p) = refl
+  dequeueᵗ-fst-●-charge c (law bq p i) =
+    isProp→PathP
+      (λ i → ●ᵛ ℕᵛ .is-set
+        (●ᵛ.map (λ bq → fst (dequeueᵗ .U bq)) (●ᶜ BQ .charge c (law bq p i)))
+        (●ᵛ.map (λ bq → fst (dequeueᵗ .U bq)) (law bq p i)))
+      (cong (η•ᵛ {ℕᵛ}) (cong fst (dequeueᵗ .charge c bq)))
+      refl
+      i
 
-dequeue'-fst-glue-charge
-  : (c : val ℂ) (q : cmp BLQ)
-  → dequeue'-fst-glue (BLQ .charge c q) ≡ dequeue'-fst-glue q
-dequeue'-fst-glue-charge c q i .• = dequeueᵗ-fst-●-charge c (q .•) i
-dequeue'-fst-glue-charge c q i .◦ = dequeue-fst-◯-charge c (q .◦) i
-dequeue'-fst-glue-charge c q i .•→◦ =
-  isProp→PathP
-    (λ i → ●ᵛ (◯ᵛ ℕᵛ) .is-set
-      (●ᵛ.map (η◦ᵛ {ℕᵛ}) (dequeueᵗ-fst-●-charge c (q .•) i))
-      (η•ᵛ {◯ᵛ ℕᵛ} (dequeue-fst-◯-charge c (q .◦) i)))
-    (dequeue'-fst-glue (BLQ .charge c q) .•→◦)
-    (dequeue'-fst-glue q .•→◦)
-    i
+  dequeue-fst-◯-charge
+    : (c : val ℂ) (q◦ : val (◯ᶜ LQ .U))
+    → ◯ᵛ.map (λ lq → fst (dequeue .U lq)) (◯ᶜ LQ .charge c q◦)
+      ≡ ◯ᵛ.map (λ lq → fst (dequeue .U lq)) q◦
+  dequeue-fst-◯-charge c q◦ i p = cong fst (dequeue .charge c (q◦ p)) i
 
-dequeue' : BLQ ⊸ (ℕᵛ ⋊ BLQ)
-dequeue' .U q .fst =
-  invEq (fracture , fracture-isEquiv) (dequeue'-fst-glue q)
-dequeue' .U q .snd = dequeue'-snd .U q
-dequeue' .charge c q =
-  ΣPathP
-    ( cong (invEq (fracture , fracture-isEquiv)) (dequeue'-fst-glue-charge c q)
-    , dequeue'-snd .charge c q
-    )
+  dequeue'-fst-glue-charge
+    : (c : val ℂ) (q : cmp BLQ)
+    → dequeue'-fst-glue (BLQ .charge c q) ≡ dequeue'-fst-glue q
+  dequeue'-fst-glue-charge c q i .• = dequeueᵗ-fst-●-charge c (q .•) i
+  dequeue'-fst-glue-charge c q i .◦ = dequeue-fst-◯-charge c (q .◦) i
+  dequeue'-fst-glue-charge c q i .•→◦ =
+    isProp→PathP
+      (λ i → ●ᵛ (◯ᵛ ℕᵛ) .is-set
+        (●ᵛ.map (η◦ᵛ {ℕᵛ}) (dequeueᵗ-fst-●-charge c (q .•) i))
+        (η•ᵛ {◯ᵛ ℕᵛ} (dequeue-fst-◯-charge c (q .◦) i)))
+      (dequeue'-fst-glue (BLQ .charge c q) .•→◦)
+      (dequeue'-fst-glue q .•→◦)
+      i
+
+  dequeue' : BLQ ⊸ (ℕᵛ ⋊ BLQ)
+  dequeue' .U q .fst =
+    invEq (fracture , fracture-isEquiv) (dequeue'-fst-glue q)
+  dequeue' .U q .snd = dequeue'-snd .U q
+  dequeue' .charge c q =
+    ΣPathP
+      ( cong (invEq (fracture , fracture-isEquiv)) (dequeue'-fst-glue-charge c q)
+      , dequeue'-snd .charge c q
+      )
 
 
 open import Calf.Value.Unit
@@ -198,10 +201,10 @@ open import Cubical.Data.Nat
 opaque
   unfolding ℂ
 
-  foo : F 1ᵛ ⊸ PList2 1 1 1ᵛ
+  foo : F 1ᵛ ⊸ PList₂ 1 1 1ᵛ
   foo = bind' id⊸ (λ _ → pnil) ⨾⊸ pcons' tt ⨾⊸ pcons' tt ⨾⊸ pcons' tt
 
-  id₁ : ∀ c → PList1 (c +ℂ 1) X ⊸ PList1 c X
+  id₁ : ∀ c → PList₁ (c +ℂ 1) X ⊸ PList₁ c X
   id₁ {X} c =
     pfoldr₁
       pnil₁
@@ -210,9 +213,9 @@ opaque
       release-part : ∀ c' → ▷'[ c + c' ] A ⊸ ▷'[ c ] A
       release-part = {!   !}
 
-  id₂ : PList2 0 1 X ⊸ PList1 0 X
-  id₂ {X} =
+  id₂ : ∀ c → PList₂ c 1 X ⊸ PList₁ c X
+  id₂ {X} c =
     pfoldr
-      (λ c-lin → PList1 c-lin X)
+      (λ c-lin → PList₁ c-lin X)
       (λ c-lin → pnil₁)
       (λ c-lin x → ▷'-map (id₁ c-lin) ⨾⊸ pcons₁ x)

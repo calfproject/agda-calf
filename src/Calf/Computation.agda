@@ -113,6 +113,9 @@ isProp⊸charge A B f =
     (f₁ .charge)
     i
 
+id⊸⨾⊸f≡f : (f : A ⊸ B) → id⊸ ⨾⊸ f ≡ f
+id⊸⨾⊸f≡f f = ⊸-path refl refl refl
+
 charge-path-inv
   : {X Y : Type}
   → (e : X ≃ Y)

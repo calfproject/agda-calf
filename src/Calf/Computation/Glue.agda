@@ -212,49 +212,68 @@ fracture-inv-charge A c g =
       𝒞-glue-fracture-section
       𝒞-glue-fracture-retract)
 
-Glueᶜ' : (A-⊤ A-abs : 𝒞) → (A-⊤ ⊸ A-abs) → 𝒞
-Glueᶜ' A-⊤ A-abs α = Glueᶜ (●ᶜ A-⊤ , ●ᶜ-η•ᶜ-isEquiv {A-⊤}) (◯ᶜ A-abs , ◯ᶜ-ηᶜ-isEquiv) (●ᶜ.map (α ⨾⊸ η◦ᶜ))
+opaque
+  Glueᶜ' : (A-⊤ A-abs : 𝒞) → (A-⊤ ⊸ A-abs) → 𝒞
+  Glueᶜ' A-⊤ A-abs α = Glueᶜ (●ᶜ A-⊤ , ●ᶜ-η•ᶜ-isEquiv {A-⊤}) (◯ᶜ A-abs , ◯ᶜ-ηᶜ-isEquiv) (●ᶜ.map (α ⨾⊸ η◦ᶜ))
 
-square' : ∀ {A-⊤ A-abs α B-⊤ B-abs β} (f-⊤ : A-⊤ ⊸ B-⊤) (f-abs : A-abs ⊸ B-abs)
-  → ((a-⊤ : cmp A-⊤) → U β (U f-⊤ a-⊤) ≡ U f-abs (U α a-⊤))
-  → Glueᶜ' A-⊤ A-abs α ⊸ Glueᶜ' B-⊤ B-abs β
-square' {A-abs = A-abs} {α = α} {B-abs = B-abs} {β = β} f-⊤ f-abs f-coherence .U q .• =
-  ●ᶜ.map f-⊤ .U (q .•)
-square' {A-abs = A-abs} {α = α} {B-abs = B-abs} {β = β} f-⊤ f-abs f-coherence .U q .◦ =
-  ◯ᵛ.map (f-abs .U) (q .◦)
-square' {A-abs = A-abs} {α = α} {B-abs = B-abs} {β = β} f-⊤ f-abs f-coherence .U q .•→◦ =
-    ●ᵛ.map (η◦ᶜ {A = B-abs} .U ∘ β .U) (●ᶜ.map f-⊤ .U (q .•))
-  ≡⟨ ●ᵛ.●-map-∘ (f-⊤ .U) (η◦ᶜ {A = B-abs} .U ∘ β .U) (q .•) ⟩
-    ●ᵛ.map (λ a → η◦ᶜ {A = B-abs} .U (β .U (f-⊤ .U a))) (q .•)
-  ≡⟨ cong (λ f → ●ᵛ.map f (q .•)) (funExt λ a → cong (η◦ᶜ {A = B-abs} .U) (f-coherence a)) ⟩
-    ●ᵛ.map (λ a → η◦ᶜ {A = B-abs} .U (f-abs .U (α .U a))) (q .•)
-  ≡⟨ sym (●ᵛ.●-map-∘ (η◦ᶜ {A = A-abs} .U ∘ α .U) (◯ᵛ.map (f-abs .U)) (q .•)) ⟩
-    ●ᵛ.map (◯ᵛ.map (f-abs .U)) (●ᵛ.map (η◦ᶜ {A = A-abs} .U ∘ α .U) (q .•))
-  ≡⟨ cong (●ᵛ.map (◯ᵛ.map (f-abs .U))) (q .•→◦) ⟩
-    ●ᵛ.map (◯ᵛ.map (f-abs .U)) (η• (q .◦))
-  ≡⟨ refl ⟩
-    η• (◯ᵛ.map (f-abs .U) (q .◦))
-  ∎
-square' {A-abs = A-abs} {α = α} {B-abs = B-abs} {β = β} f-⊤ f-abs f-coherence .charge c q i .• =
-  ●ᶜ.map f-⊤ .charge c (q .•) i
-square' {A-abs = A-abs} {α = α} {B-abs = B-abs} {β = β} f-⊤ f-abs f-coherence .charge c q i .◦ p =
-  f-abs .charge c (q .◦ p) i
-square' {A-⊤ = A-⊤} {A-abs = A-abs} {α = α} {B-⊤ = B-⊤} {B-abs = B-abs} {β = β} f-⊤ f-abs f-coherence .charge c q i .•→◦ =
-  isProp→PathP
-    (λ i → ●ᶜ (◯ᶜ B-abs) .U .is-set
-      (●ᶜ.map (β ⨾⊸ η◦ᶜ {A = B-abs}) .U (●ᶜ.map f-⊤ .charge c (q .•) i))
-      (η• (λ p → f-abs .charge c (q .◦ p) i)))
-    (square' {A-⊤ = A-⊤} {A-abs = A-abs} {α = α} {B-⊤ = B-⊤} {B-abs = B-abs} {β = β}
-      f-⊤ f-abs f-coherence .U (Glueᶜ' A-⊤ A-abs α .charge c q) .•→◦)
-    (Glueᶜ' B-⊤ B-abs β .charge c
+  Glueᶜ'-id : Glueᶜ' A A id⊸ ≡ A
+  Glueᶜ'-id {A} =
+      Glueᶜ' A A id⊸
+    ≡⟨ refl ⟩
+      Glueᶜ (●ᶜ A , ●ᶜ-η•ᶜ-isEquiv {A}) (◯ᶜ A , ◯ᶜ-ηᶜ-isEquiv) (●ᶜ.map (id⊸ ⨾⊸ η◦ᶜ))
+    ≡⟨ cong (Glueᶜ (●ᶜ A , ●ᶜ-η•ᶜ-isEquiv {A}) (◯ᶜ A , ◯ᶜ-ηᶜ-isEquiv) ∘ ●ᶜ.map) (id⊸⨾⊸f≡f η◦ᶜ) ⟩
+      Glueᶜ (●ᶜ A , ●ᶜ-η•ᶜ-isEquiv {A}) (◯ᶜ A , ◯ᶜ-ηᶜ-isEquiv) (●ᶜ.map η◦ᶜ)
+    ≡⟨ refl ⟩
+      𝒞-fromFRAC (𝒞-toFRAC A)
+    ≡⟨ 𝒞-glue-fracture-retract A ⟩
+      A
+    ∎
+
+  square' : ∀ {A-⊤ A-abs α B-⊤ B-abs β} (f-⊤ : A-⊤ ⊸ B-⊤) (f-abs : A-abs ⊸ B-abs)
+    → ((a-⊤ : cmp A-⊤) → U β (U f-⊤ a-⊤) ≡ U f-abs (U α a-⊤))
+    → Glueᶜ' A-⊤ A-abs α ⊸ Glueᶜ' B-⊤ B-abs β
+  square' {A-abs = A-abs} {α = α} {B-abs = B-abs} {β = β} f-⊤ f-abs f-coherence .U q .• =
+    ●ᶜ.map f-⊤ .U (q .•)
+  square' {A-abs = A-abs} {α = α} {B-abs = B-abs} {β = β} f-⊤ f-abs f-coherence .U q .◦ =
+    ◯ᵛ.map (f-abs .U) (q .◦)
+  square' {A-abs = A-abs} {α = α} {B-abs = B-abs} {β = β} f-⊤ f-abs f-coherence .U q .•→◦ =
+      ●ᵛ.map (η◦ᶜ {A = B-abs} .U ∘ β .U) (●ᶜ.map f-⊤ .U (q .•))
+    ≡⟨ ●ᵛ.●-map-∘ (f-⊤ .U) (η◦ᶜ {A = B-abs} .U ∘ β .U) (q .•) ⟩
+      ●ᵛ.map (λ a → η◦ᶜ {A = B-abs} .U (β .U (f-⊤ .U a))) (q .•)
+    ≡⟨ cong (λ f → ●ᵛ.map f (q .•)) (funExt λ a → cong (η◦ᶜ {A = B-abs} .U) (f-coherence a)) ⟩
+      ●ᵛ.map (λ a → η◦ᶜ {A = B-abs} .U (f-abs .U (α .U a))) (q .•)
+    ≡⟨ sym (●ᵛ.●-map-∘ (η◦ᶜ {A = A-abs} .U ∘ α .U) (◯ᵛ.map (f-abs .U)) (q .•)) ⟩
+      ●ᵛ.map (◯ᵛ.map (f-abs .U)) (●ᵛ.map (η◦ᶜ {A = A-abs} .U ∘ α .U) (q .•))
+    ≡⟨ cong (●ᵛ.map (◯ᵛ.map (f-abs .U))) (q .•→◦) ⟩
+      ●ᵛ.map (◯ᵛ.map (f-abs .U)) (η• (q .◦))
+    ≡⟨ refl ⟩
+      η• (◯ᵛ.map (f-abs .U) (q .◦))
+    ∎
+  square' {A-abs = A-abs} {α = α} {B-abs = B-abs} {β = β} f-⊤ f-abs f-coherence .charge c q i .• =
+    ●ᶜ.map f-⊤ .charge c (q .•) i
+  square' {A-abs = A-abs} {α = α} {B-abs = B-abs} {β = β} f-⊤ f-abs f-coherence .charge c q i .◦ p =
+    f-abs .charge c (q .◦ p) i
+  square' {A-⊤ = A-⊤} {A-abs = A-abs} {α = α} {B-⊤ = B-⊤} {B-abs = B-abs} {β = β} f-⊤ f-abs f-coherence .charge c q i .•→◦ =
+    isProp→PathP
+      (λ i → ●ᶜ (◯ᶜ B-abs) .U .is-set
+        (●ᶜ.map (β ⨾⊸ η◦ᶜ {A = B-abs}) .U (●ᶜ.map f-⊤ .charge c (q .•) i))
+        (η• (λ p → f-abs .charge c (q .◦ p) i)))
       (square' {A-⊤ = A-⊤} {A-abs = A-abs} {α = α} {B-⊤ = B-⊤} {B-abs = B-abs} {β = β}
-        f-⊤ f-abs f-coherence .U q) .•→◦)
-    i
+        f-⊤ f-abs f-coherence .U (Glueᶜ' A-⊤ A-abs α .charge c q) .•→◦)
+      (Glueᶜ' B-⊤ B-abs β .charge c
+        (square' {A-⊤ = A-⊤} {A-abs = A-abs} {α = α} {B-⊤ = B-⊤} {B-abs = B-abs} {β = β}
+          f-⊤ f-abs f-coherence .U q) .•→◦)
+      i
 
-triangle' : ∀ {B-⊤ B-abs β} (b-⊤ : cmp B-⊤) (b-abs : cmp B-abs)
-  → β .U b-⊤ ≡ b-abs
-  → cmp (Glueᶜ' B-⊤ B-abs β)
-triangle' b-⊤ b-abs b-coherence .• = η• b-⊤
-triangle' {B-abs = B-abs} b-⊤ b-abs b-coherence .◦ = η◦ᶜ {A = B-abs} .U b-abs
-triangle' {B-abs = B-abs} b-⊤ b-abs b-coherence .•→◦ =
-  cong (λ b → η• (η◦ᶜ {A = B-abs} .U b)) b-coherence
+  triangle' : ∀ {B-⊤ B-abs β} (b-⊤ : cmp B-⊤) (b-abs : cmp B-abs)
+    → β .U b-⊤ ≡ b-abs
+    → cmp (Glueᶜ' B-⊤ B-abs β)
+  triangle' b-⊤ b-abs b-coherence .• = η• b-⊤
+  triangle' {B-abs = B-abs} b-⊤ b-abs b-coherence .◦ = η◦ᶜ {A = B-abs} .U b-abs
+  triangle' {B-abs = B-abs} b-⊤ b-abs b-coherence .•→◦ =
+    cong (λ b → η• (η◦ᶜ {A = B-abs} .U b)) b-coherence
+
+  Glueᶜ'-Glueᶜ' : ∀ {A-⊤ A-abs α B-⊤ B-abs β} →  --  f-⊤ f-abs f-coherence} →
+    Glueᶜ' (Glueᶜ' A-⊤ A-abs α) (Glueᶜ' B-⊤ B-abs β) {!    !} -- (square' {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence)
+    ≡ Glueᶜ' A-⊤ B-abs {!   !} -- (α ⨾⊸ f-abs)
+  Glueᶜ'-Glueᶜ' = {!   !}

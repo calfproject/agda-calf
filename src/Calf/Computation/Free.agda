@@ -4,6 +4,7 @@ open import Calf.Core.Monad
 open import Calf.Value
 open import Calf.Computation
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Function
 
 opaque
   unfolding M
@@ -31,26 +32,23 @@ opaque
   variable
     Δ : 𝒞
 
-  bind' : (Δ ⊸ F X) → (val X → cmp A) → (Δ ⊸ A)
-  bind' {A = A} e k .U δ = let (c , x) = e .U δ in A .charge c (k x)
-  bind' {Δ} {A = A} e k .charge c δ =
-      A .charge (e .U (Δ .charge c δ) .fst) (k (e .U (Δ .charge c δ) .snd))
-    ≡⟨ cong (λ hole → A .charge (hole .fst) (k (hole .snd))) (e .charge c δ) ⟩
-      A .charge (c +ℂ e .U δ .fst) (k (e .U δ .snd))
-    ≡⟨ A .charge/+ ⟩
-      A .charge c (A .charge (e .U δ .fst) (k (e .U δ .snd)))
-    ∎
-  syntax bind' e (λ x → k) = bind x ← e ⨾ k
+  bind' : (val X → cmp A) → (F X ⊸ A)
+  bind' {A = A} k .U (c , x) = A .charge c (k x)
+  bind' {A = A} _ .charge _ _ = A .charge/+
 
-  leftF : (val X → cmp (F Y)) → (F X ⊸ F Y)
-  leftF {X} k = bind' {X = X} id⊸ k
+  bind'/β : {x : val X} {k : val X → cmp A} → bind' {A = A} k .U (ret {X} x) ≡ k x
+  bind'/β {A = A} = A .charge/0
 
-  F/η' : ∀ {x k} → leftF {Y = Y} k .U (ret {X} x) ≡ k x
-  F/η' {x = x} {k} = cong (_, k x .snd) (+ℂ-identityˡ (k x .fst))
+  bind'/η : bind' (ret {X}) ≡ id⊸
+  bind'/η = ⊸-path refl refl (funExt λ (c , x) → cong (_, x) (+ℂ-identityʳ c))
 
-  rightF : (F X ⊸ F Y) → val X → cmp (F Y)
-  rightF {X} f a = f .U (ret {X} a)
+ret' : (F X ⊸ A) → (val X → cmp A)
+ret' e x = e .U (ret x)
 
-  right-leftF : (k : val X → cmp (F Y)) (a : val X)
-            → rightF {X} {Y} (leftF k) a ≡ k a
-  right-leftF {Y = Y} k a = F Y .charge/0
+bindᶜ : (Δ ⊸ F X) → (val X → cmp A) → (Δ ⊸ A)
+bindᶜ e k = e ⨾⊸ bind' k
+
+syntax bindᶜ e (λ x → k) = bind x ← e ⨾ k
+
+map : (val X → val Y) → (F X ⊸ F Y)
+map f = bind' (ret ∘ f)
