@@ -6,8 +6,7 @@ module Calf.Computation.Open where
 
 open import Calf.Core.Abstract
 open import Calf.Value
-open import Calf.Value.Open using (η◦ᵛ)
-open import Calf.Value.Open hiding (◯ᵛ; η◦ᵛ; bind) renaming (◯ᵛ-ηᵛ-isEquiv to ◯ᶜ-ηᶜ-isEquiv) public
+open import Calf.Value.Open public
 open import Calf.Computation
 open import Calf.Computation.Power
 

@@ -3,9 +3,9 @@ open import Cubical.Foundations.Prelude
 module Calf.Value.Open where
 
 open import Calf.Core.Abstract
+open import Calf.Phase.Open (ABS .fst) (ABS .snd) as ◯ public
 open import Calf.Value
 open import Calf.Value.Function
-open import Calf.Phase.Open (ABS .fst) (ABS .snd) renaming (◯-η-isEquiv to ◯ᵛ-ηᵛ-isEquiv) public
 open import Cubical.Foundations.Equiv
 
 ◯ᵛ : 𝒱 → 𝒱

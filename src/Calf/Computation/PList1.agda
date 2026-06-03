@@ -35,7 +35,7 @@ opaque
 
   pnil₁ : ∀ {c-lin} → cmp (PList₁ c-lin X)
   pnil₁ {c-lin = c-lin} =
-    triangle'
+    triangleᶜ'
       {F _} {F _} {bind' (λ l → F _ .charge (length l ⊙ c-lin) (ret l))}
       (ret [])
       (ret [])
@@ -48,7 +48,7 @@ opaque
       ≡⟨ {!   !} ⟩
         ▷'[ c-lin ] (PList₁ c-lin X)
       ∎) $
-    square'
+    squareᶜ'
       (F.map (x ∷_))
       (F.map (x ∷_))
       λ e →
@@ -63,7 +63,7 @@ opaque
     → PList₁ c-lin X ⊸ A
   pfoldr₁ {X = X} {c-lin = c-lin} enil econs =
     subst (PList₁ c-lin X ⊸_) Glueᶜ'-id $
-    square'
+    squareᶜ'
       (bind' λ l → {!   !})
       {!   !}
       {!   !}

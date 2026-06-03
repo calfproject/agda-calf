@@ -38,7 +38,7 @@ opaque
 
   pnil : ∀ {c-lin c-quad} → cmp (PList₂ c-lin c-quad X)
   pnil {X} {c-lin} {c-quad} =
-    triangle'
+    triangleᶜ'
       (ret [])
       (ret [])
       $
@@ -53,7 +53,7 @@ opaque
 
   pcons' : ∀ {c-lin c-quad} → val X → PList₂ (c-lin +ℂ c-quad) c-quad X ⊸ PList₂ c-lin c-quad X
   pcons' {X} {c-lin} {c-quad} x =
-    square' {F _} {F _} {_} {F _} {F _} {_}
+    squareᶜ' {F _} {F _} {_} {F _} {F _} {_}
       (bind' (λ l → ret (x ∷ l)))
       (bind' (λ l → F _ .charge c-lin (ret (x ∷ l))))
       λ a-⊤ →

@@ -18,9 +18,9 @@ open import Calf.Computation.Glue
 open 𝒞-FRAC
 
 ▷'-FRAC : val ℂ → 𝒞 → 𝒞-FRAC
-▷'-FRAC c A .A• = ●ᶜ A , ●ᶜ-η•ᶜ-isEquiv {A}
-▷'-FRAC c A .A◦ = ◯ᶜ A , ◯ᶜ-ηᶜ-isEquiv
-▷'-FRAC c A .α = ●ᶜ.map (CHARGE c ⨾⊸ η◦ᶜ)
+▷'-FRAC c A .A• = ●ᶜ A , ●ᶜ.η-isEquiv
+▷'-FRAC c A .A◦ = ◯ᶜ A , ◯ᶜ.η-isEquiv
+▷'-FRAC c A .α• = ●ᶜ.map (CHARGE c ⨾⊸ η◦ᶜ)
 
 ▷'[_] : val ℂ → 𝒞 → 𝒞
 ▷'[ c ] A = Glueᶜ' A A (CHARGE c)
@@ -28,7 +28,7 @@ open 𝒞-FRAC
 ▷'-FRAC-open : ⟨ ABS ⟩ → (c : val ℂ) (A : 𝒞) → ▷'-FRAC c A ≡ 𝒞-toFRAC A
 ▷'-FRAC-open abs c A i .A• = 𝒞-toFRAC A .A•
 ▷'-FRAC-open abs c A i .A◦ = 𝒞-toFRAC A .A◦
-▷'-FRAC-open abs c A i .α =
+▷'-FRAC-open abs c A i .α• =
   ●ᶜ.map-open abs
     (CHARGE c ⨾⊸ η◦ᶜ)
     η◦ᶜ
@@ -43,7 +43,7 @@ opaque
 store' : ∀ {c A} → A ⊸ ▷'[ c ] A
 store' {c} {A} =
   subst (_⊸ ▷'[ c ] A) Glueᶜ'-id $
-  square'
+  squareᶜ'
     {A-⊤ = A} {A-abs = A} {α = id⊸}
     {B-⊤ = A} {B-abs = A} {β = CHARGE c}
     id⊸
@@ -53,7 +53,7 @@ store' {c} {A} =
 release' : ▷'[ c ] A ⊸ A
 release' {c} {A} =
   subst (▷'[ c ] A ⊸_) Glueᶜ'-id $
-  square'
+  squareᶜ'
     {A-⊤ = A} {A-abs = A} {α = CHARGE c}
     {B-⊤ = A} {B-abs = A} {β = id⊸}
     (CHARGE c)
@@ -62,7 +62,7 @@ release' {c} {A} =
 
 ▷'-map : (A ⊸ B) → (▷'[ c ] A ⊸ ▷'[ c ] B)
 ▷'-map {A} {B} {c} f =
-  square'
+  squareᶜ'
     {A-⊤ = A} {A-abs = A} {α = CHARGE c}
     {B-⊤ = B} {B-abs = B} {β = CHARGE c}
     f

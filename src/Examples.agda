@@ -30,10 +30,10 @@ emptyq : cmp LQ
 emptyq = ret []
 
 enqueue : val ℕᵛ → LQ ⊸ LQ
-enqueue e = bind' id⊸ λ l → LQ .charge 1 (ret (l ++ [ e ]))
+enqueue e = bind' λ l → LQ .charge 1 (ret (l ++ [ e ]))
 
 dequeue : LQ ⊸ (ℕᵛ ⋊ LQ)
-dequeue = bind' id⊸ λ
+dequeue = bind' λ
   { []      → 0 , ret []
   ; (x ∷ l) → x , ret l }
 
@@ -41,10 +41,10 @@ emptyᵗ : cmp BQ
 emptyᵗ = ret ([] , [])
 
 enqueueᵗ : val ℕᵛ → BQ ⊸ BQ
-enqueueᵗ e = bind' id⊸ λ (back , front) → ret (e ∷ back , front)
+enqueueᵗ e = bind' λ (back , front) → ret (e ∷ back , front)
 
 dequeueᵗ : BQ ⊸ (ℕᵛ ⋊ BQ)
-dequeueᵗ = bind' id⊸ λ
+dequeueᵗ = bind' λ
   { (back , x ∷ front) → x , ret (back , front)
   ; (back , [])        → reverse-front back }
   where
@@ -115,10 +115,10 @@ BLQ : 𝒞
 BLQ = Glueᶜ' BQ LQ φ
 
 empty' : cmp BLQ
-empty' = triangle' {B-⊤ = BQ} {B-abs = LQ} {β = φ} emptyᵗ emptyq empty-coherent
+empty' = triangleᶜ' {B-⊤ = BQ} {B-abs = LQ} {β = φ} emptyᵗ emptyq empty-coherent
 
 enqueue' : val ℕᵛ → BLQ ⊸ BLQ
-enqueue' e = square' (enqueueᵗ e) (enqueue e) (enqueue-coherent e)
+enqueue' e = squareᶜ' (enqueueᵗ e) (enqueue e) (enqueue-coherent e)
 
 opaque
   unfolding Glueᶜ'
@@ -126,14 +126,14 @@ opaque
   dequeue'-fst-glue : cmp BLQ → val (𝒱-fromFRAC (𝒱-toFRAC ℕᵛ))
   dequeue'-fst-glue =
     squareᵛ'
-      {X-⊤ = U BQ} {X-abs = U LQ} {α = φ .U}
-      {Y-⊤ = ℕᵛ} {Y-abs = ℕᵛ} {β = λ n → n}
+      {X-⊤ = U BQ} {X-abs = U LQ} {χ = φ .U}
+      {Y-⊤ = ℕᵛ} {Y-abs = ℕᵛ} {ψ = λ n → n}
       (λ bq → fst (dequeueᵗ .U bq))
       (λ lq → fst (dequeue .U lq))
       (λ q → cong fst (dequeue-coherent q))
 
   dequeue'-snd : BLQ ⊸ BLQ
-  dequeue'-snd = square' dequeueᵗ-snd dequeue-snd (λ q → cong snd (dequeue-coherent q))
+  dequeue'-snd = squareᶜ' dequeueᵗ-snd dequeue-snd (λ q → cong snd (dequeue-coherent q))
 
   dequeueᵗ-fst-●-charge
     : (c : val ℂ) (q• : val (●ᶜ BQ .U))
@@ -202,7 +202,7 @@ opaque
   unfolding ℂ
 
   foo : F 1ᵛ ⊸ PList₂ 1 1 1ᵛ
-  foo = bind' id⊸ (λ _ → pnil) ⨾⊸ pcons' tt ⨾⊸ pcons' tt ⨾⊸ pcons' tt
+  foo = bind' (λ _ → pnil) ⨾⊸ pcons' tt ⨾⊸ pcons' tt ⨾⊸ pcons' tt
 
   id₁ : ∀ c → PList₁ (c +ℂ 1) X ⊸ PList₁ c X
   id₁ {X} c =
