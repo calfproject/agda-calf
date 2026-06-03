@@ -5,6 +5,7 @@ open import Calf.Computation
 open import Calf.Core.Cost
 open import Calf.Value.Product
 open import Calf.Value.Sigma
+open import Calf.Value.Unit
 open import Calf.Computation.Free public
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels
@@ -158,3 +159,7 @@ opaque
 
 par : cmp (F X) → cmp (F Y) → cmp (F (X ×ᵛ Y))
 par ex ey = F⊗-fwd .U (ex ∥ ey)
+
+
+⊤ : 𝒞
+⊤ = F 1ᵛ

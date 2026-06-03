@@ -182,6 +182,8 @@ opaque
 
 
 open import Calf.Value.Unit
+open import Calf.Computation.Product
+open import Calf.Computation.Cost
 open import Calf.Computation.Potential
 open import Calf.Computation.PList1
 open import Calf.Computation.PList2
@@ -197,6 +199,14 @@ open import Cubical.Data.Nat
 -- _≤ᵛ_ : val ℂ → val ℂ → 𝒱
 -- c ≤ᵛ c' = fromProp ((c ≤ c') , isProp≤)
 
+open import Cubical.Data.Bool
+open import Cubical.Data.Nat.Order
+open import Cubical.Relation.Nullary
+
+_≤ᵇ_ : ℕ → ℕ → Bool
+m ≤ᵇ n with ≤Dec m n
+... | yes p = true
+... | no ¬p = false
 
 opaque
   unfolding ℂ
@@ -204,14 +214,17 @@ opaque
   foo : F 1ᵛ ⊸ PList₂ 1 1 1ᵛ
   foo = bind' (λ _ → pnil) ⨾ᶜ pcons' tt ⨾ᶜ pcons' tt ⨾ᶜ pcons' tt
 
+  release-part : ∀ c c' → ▷'[ c +ℂ c' ] A ⊸ ▷'[ c ] A
+  release-part {A} c c' =
+    subst (_⊸ ▷'[ c ] A)
+      (sym (▷'/+ {c} {c'}))
+      (▷'-map release')
+
   id₁ : ∀ c → PList₁ (c +ℂ 1) X ⊸ PList₁ c X
   id₁ {X} c =
     pfoldr₁
       pnil₁
-      (λ x → release-part 1 ⨾ᶜ pcons₁ x)
-    where
-      release-part : ∀ c' → ▷'[ c + c' ] A ⊸ ▷'[ c ] A
-      release-part = {!   !}
+      (λ x → release-part c 1 ⨾ᶜ pcons₁ x)
 
   id₂ : ∀ c → PList₂ c 1 X ⊸ PList₁ c X
   id₂ {X} c =
@@ -219,3 +232,37 @@ opaque
       (λ c-lin → PList₁ c-lin X)
       (λ c-lin → pnil₁)
       (λ c-lin x → ▷'-map (id₁ c-lin) ⨾ᶜ pcons₁ x)
+
+  snoc : val X → ▷'[ c ] (PList₁ (c +ℂ 1) X) ⊸ PList₁ c X
+  snoc {X} {c} x = transport pot-cost $
+    pfoldr₁
+      (▷'-map (bind' λ _ → pnil₁) ⨾ᶜ pcons₁ x)
+      (λ y → release-part c 1 ⨾ᶜ (pot-cost-counit ⨾ᶜ transport (sym pot-cost) (pcons₁ y)))
+
+  quadratic-reverse : PList₂ 0 1 X ⊸ PList₁ 0 X
+  quadratic-reverse {X} =
+    pfoldr
+      (λ c-lin → PList₁ c-lin X)
+      (λ c-lin → pnil₁)
+      (λ c-lin → snoc)
+
+  insert : val ℕᵛ → ▷'[ c ] (PList₁ (c +ℂ 1) ℕᵛ) ⊸ PList₁ c ℕᵛ
+  insert {c} x = transport pot-cost $
+    pfoldr₁
+      (▷'-map (bind' λ _ → pnil₁) ⨾ᶜ pcons₁ x , pnil₁)
+      (λ y → release-part c 1 ⨾ᶜ
+        pairᶜ
+          (if x ≤ᵇ y
+            then ▷'-map proj₂ᶜ ⨾ᶜ transport (sym pot-cost) (▷'-map (pcons₁ y) ⨾ᶜ pcons₁ x)
+            else ▷'-map (proj₁ᶜ {B = PList₁ c ℕᵛ}) ⨾ᶜ pot-cost-counit ⨾ᶜ transport (sym pot-cost) (pcons₁ y)
+          )
+          (▷'-map proj₂ᶜ ⨾ᶜ pcons₁ y)
+      )
+    ⨾ᶜ proj₁ᶜ
+
+  isort : PList₂ 0 1 ℕᵛ ⊸ PList₁ 0 ℕᵛ
+  isort =
+    pfoldr
+      (λ c-lin → PList₁ c-lin ℕᵛ)
+      (λ c-lin → pnil₁)
+      (λ c-lin → insert)

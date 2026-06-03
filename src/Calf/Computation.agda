@@ -25,6 +25,7 @@ open 𝒞 public
 variable
   A B C : 𝒞
 
+infix 1 _⊸_
 record _⊸_ (A B : 𝒞) : Type where
   field
     U : cmp A → cmp B
