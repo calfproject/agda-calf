@@ -39,14 +39,14 @@ opaque
   bind'/β : {x : val X} {k : val X → cmp A} → bind' {A = A} k .U (ret {X} x) ≡ k x
   bind'/β {A = A} = A .charge/0
 
-  bind'/η : bind' (ret {X}) ≡ id⊸
+  bind'/η : bind' (ret {X}) ≡ idᶜ
   bind'/η = ⊸-path refl refl (funExt λ (c , x) → cong (_, x) (+ℂ-identityʳ c))
 
 ret' : (F X ⊸ A) → (val X → cmp A)
 ret' e x = e .U (ret x)
 
 bindᶜ : (Δ ⊸ F X) → (val X → cmp A) → (Δ ⊸ A)
-bindᶜ e k = e ⨾⊸ bind' k
+bindᶜ e k = e ⨾ᶜ bind' k
 
 syntax bindᶜ e (λ x → k) = bind x ← e ⨾ k
 

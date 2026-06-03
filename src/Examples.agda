@@ -23,7 +23,7 @@ LQ = F (Listᵛ ℕᵛ)
 
 φ : BQ ⊸ LQ
 φ =
-  bind (l₁ , l₂) ← id⊸ ⨾
+  bind (l₁ , l₂) ← idᶜ ⨾
   LQ .charge (` length l₁) (ret (l₂ ++ reverse l₁))
 
 emptyq : cmp LQ
@@ -202,13 +202,13 @@ opaque
   unfolding ℂ
 
   foo : F 1ᵛ ⊸ PList₂ 1 1 1ᵛ
-  foo = bind' (λ _ → pnil) ⨾⊸ pcons' tt ⨾⊸ pcons' tt ⨾⊸ pcons' tt
+  foo = bind' (λ _ → pnil) ⨾ᶜ pcons' tt ⨾ᶜ pcons' tt ⨾ᶜ pcons' tt
 
   id₁ : ∀ c → PList₁ (c +ℂ 1) X ⊸ PList₁ c X
   id₁ {X} c =
     pfoldr₁
       pnil₁
-      (λ x → release-part 1 ⨾⊸ pcons₁ x)
+      (λ x → release-part 1 ⨾ᶜ pcons₁ x)
     where
       release-part : ∀ c' → ▷'[ c + c' ] A ⊸ ▷'[ c ] A
       release-part = {!   !}
@@ -218,4 +218,4 @@ opaque
     pfoldr
       (λ c-lin → PList₁ c-lin X)
       (λ c-lin → pnil₁)
-      (λ c-lin x → ▷'-map (id₁ c-lin) ⨾⊸ pcons₁ x)
+      (λ c-lin x → ▷'-map (id₁ c-lin) ⨾ᶜ pcons₁ x)

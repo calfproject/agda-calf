@@ -218,14 +218,14 @@ opaque
     Glueᶜ
       (●ᶜ A-⊤ , ●ᶜ.η-isEquiv)
       (◯ᶜ A-abs , ◯ᶜ.η-isEquiv)
-      (●ᶜ.map (α ⨾⊸ η◦ᶜ))
+      (●ᶜ.map (α ⨾ᶜ η◦ᶜ))
 
-  Glueᶜ'-id : Glueᶜ' A A id⊸ ≡ A
+  Glueᶜ'-id : Glueᶜ' A A idᶜ ≡ A
   Glueᶜ'-id {A} =
-      Glueᶜ' A A id⊸
+      Glueᶜ' A A idᶜ
     ≡⟨ refl ⟩
-      Glueᶜ (●ᶜ A , ●ᶜ.η-isEquiv) (◯ᶜ A , ◯ᶜ.η-isEquiv) (●ᶜ.map (id⊸ ⨾⊸ η◦ᶜ))
-    ≡⟨ cong (Glueᶜ (●ᶜ A , ●ᶜ.η-isEquiv) (◯ᶜ A , ◯ᶜ.η-isEquiv) ∘ ●ᶜ.map) (id⊸⨾⊸f≡f η◦ᶜ) ⟩
+      Glueᶜ (●ᶜ A , ●ᶜ.η-isEquiv) (◯ᶜ A , ◯ᶜ.η-isEquiv) (●ᶜ.map (idᶜ ⨾ᶜ η◦ᶜ))
+    ≡⟨ cong (Glueᶜ (●ᶜ A , ●ᶜ.η-isEquiv) (◯ᶜ A , ◯ᶜ.η-isEquiv) ∘ ●ᶜ.map) (idᶜ⨾ᶜf≡f η◦ᶜ) ⟩
       Glueᶜ (●ᶜ A , ●ᶜ.η-isEquiv) (◯ᶜ A , ◯ᶜ.η-isEquiv) (●ᶜ.map η◦ᶜ)
     ≡⟨ refl ⟩
       𝒞-fromFRAC (𝒞-toFRAC A)
@@ -235,7 +235,7 @@ opaque
 
   Glueᶜ'-Glueᶜ' : ∀ {A-⊤ A-abs α B-⊤ B-abs β} →  --  f-⊤ f-abs f-coherence} →
     Glueᶜ' (Glueᶜ' A-⊤ A-abs α) (Glueᶜ' B-⊤ B-abs β) {!    !} -- (squareᶜ' {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence)
-    ≡ Glueᶜ' A-⊤ B-abs {!   !} -- (α ⨾⊸ f-abs)
+    ≡ Glueᶜ' A-⊤ B-abs {!   !} -- (α ⨾ᶜ f-abs)
   Glueᶜ'-Glueᶜ' = {!   !}
 
   squareᶜ' : ∀ {A-⊤ A-abs α B-⊤ B-abs β} (f-⊤ : A-⊤ ⊸ B-⊤) (f-abs : A-abs ⊸ B-abs)
@@ -265,7 +265,7 @@ opaque
   squareᶜ' {A-⊤ = A-⊤} {A-abs = A-abs} {α = α} {B-⊤ = B-⊤} {B-abs = B-abs} {β = β} f-⊤ f-abs f-coherence .charge c q i .•→◦ =
     isProp→PathP
       (λ i → ●ᶜ (◯ᶜ B-abs) .U .is-set
-        (●ᶜ.map (β ⨾⊸ η◦ᶜ {A = B-abs}) .U (●ᶜ.map f-⊤ .charge c (q .•) i))
+        (●ᶜ.map (β ⨾ᶜ η◦ᶜ {A = B-abs}) .U (●ᶜ.map f-⊤ .charge c (q .•) i))
         (η• (λ p → f-abs .charge c (q .◦ p) i)))
       (squareᶜ' {A-⊤ = A-⊤} {A-abs = A-abs} {α = α} {B-⊤ = B-⊤} {B-abs = B-abs} {β = β}
         f-⊤ f-abs f-coherence .U (Glueᶜ' A-⊤ A-abs α .charge c q) .•→◦)

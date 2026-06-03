@@ -20,7 +20,7 @@ open 𝒞-FRAC
 ▷'-FRAC : val ℂ → 𝒞 → 𝒞-FRAC
 ▷'-FRAC c A .A• = ●ᶜ A , ●ᶜ.η-isEquiv
 ▷'-FRAC c A .A◦ = ◯ᶜ A , ◯ᶜ.η-isEquiv
-▷'-FRAC c A .α• = ●ᶜ.map (CHARGE c ⨾⊸ η◦ᶜ)
+▷'-FRAC c A .α• = ●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ)
 
 ▷'[_] : val ℂ → 𝒞 → 𝒞
 ▷'[ c ] A = Glueᶜ' A A (CHARGE c)
@@ -30,7 +30,7 @@ open 𝒞-FRAC
 ▷'-FRAC-open abs c A i .A◦ = 𝒞-toFRAC A .A◦
 ▷'-FRAC-open abs c A i .α• =
   ●ᶜ.map-open abs
-    (CHARGE c ⨾⊸ η◦ᶜ)
+    (CHARGE c ⨾ᶜ η◦ᶜ)
     η◦ᶜ
     i
 
@@ -44,9 +44,9 @@ store' : ∀ {c A} → A ⊸ ▷'[ c ] A
 store' {c} {A} =
   subst (_⊸ ▷'[ c ] A) Glueᶜ'-id $
   squareᶜ'
-    {A-⊤ = A} {A-abs = A} {α = id⊸}
+    {A-⊤ = A} {A-abs = A} {α = idᶜ}
     {B-⊤ = A} {B-abs = A} {β = CHARGE c}
-    id⊸
+    idᶜ
     (CHARGE c)
     (λ _ → refl)
 
@@ -55,9 +55,9 @@ release' {c} {A} =
   subst (▷'[ c ] A ⊸_) Glueᶜ'-id $
   squareᶜ'
     {A-⊤ = A} {A-abs = A} {α = CHARGE c}
-    {B-⊤ = A} {B-abs = A} {β = id⊸}
+    {B-⊤ = A} {B-abs = A} {β = idᶜ}
     (CHARGE c)
-    id⊸
+    idᶜ
     (λ _ → refl)
 
 ▷'-map : (A ⊸ B) → (▷'[ c ] A ⊸ ▷'[ c ] B)
@@ -83,5 +83,5 @@ variable
 
 release : ∀ {p A} → ▷[ p ] A ⊸ A
 release {η• c} = release'
-release {∗ p} = id⊸
+release {∗ p} = idᶜ
 release {law c p i} = {!   !}

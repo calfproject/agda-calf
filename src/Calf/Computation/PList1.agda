@@ -44,7 +44,7 @@ opaque
   pcons₁ : ∀ {c-lin} → val X → ▷'[ c-lin ] (PList₁ c-lin X) ⊸ PList₁ c-lin X
   pcons₁ {X} {c-lin = c-lin} x =
     subst (_⊸ PList₁ c-lin X)
-      ( Glueᶜ' (F (Listᵛ X)) (F (Listᵛ X)) (CHARGE c-lin ⨾⊸ bind' (λ l → F _ .charge (length l ⊙ c-lin) (ret l)))
+      ( Glueᶜ' (F (Listᵛ X)) (F (Listᵛ X)) (CHARGE c-lin ⨾ᶜ bind' (λ l → F _ .charge (length l ⊙ c-lin) (ret l)))
       ≡⟨ {!   !} ⟩
         ▷'[ c-lin ] (PList₁ c-lin X)
       ∎) $
