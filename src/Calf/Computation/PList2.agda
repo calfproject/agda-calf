@@ -36,8 +36,8 @@ opaque
       (F (Listᵛ X))
       (bind' (λ l → F _ .charge ((length l ⊙ c-linear) +ℂ (binom (length l) 2 ⊙ c-quadratic)) (ret l)))
 
-  pnil : ∀ {c-lin c-quad} → cmp (PList₂ c-lin c-quad X)
-  pnil {X} {c-lin} {c-quad} =
+  pnil₂ : ∀ {c-lin c-quad} → cmp (PList₂ c-lin c-quad X)
+  pnil₂ {X} {c-lin} {c-quad} =
     triangleᶜ'
       (ret [])
       (ret [])
@@ -51,35 +51,32 @@ opaque
         ret []
       ∎
 
-  pcons' : ∀ {c-lin c-quad} → val X → PList₂ (c-lin +ℂ c-quad) c-quad X ⊸ PList₂ c-lin c-quad X
-  pcons' {X} {c-lin} {c-quad} x =
-    squareᶜ' {F _} {F _} {_} {F _} {F _} {_}
-      (bind' (λ l → ret (x ∷ l)))
-      (bind' (λ l → F _ .charge c-lin (ret (x ∷ l))))
-      λ a-⊤ →
-          bind' (λ l → F _ .charge ((length l ⊙ c-lin) +ℂ (binom (length l) 2 ⊙ c-quad)) (ret l)) .U (bind' (ret ∘ (x ∷_)) .U a-⊤)
-        ≡⟨ {!   !} ⟩
-          bind' (λ l → F _ .charge ((length (x ∷ l) ⊙ c-lin) +ℂ (binom (length l) 2 ⊙ c-quad)) (ret (x ∷ l))) .U a-⊤
-        ≡⟨ {! lemma  !} ⟩
-          bind' (λ l → F _ .charge (((length l ⊙ (c-lin +ℂ c-quad)) +ℂ (binom (length l) 2 ⊙ c-quad)) +ℂ c-lin) (ret (x ∷ l))) .U a-⊤
-        ≡⟨ {! F _ .charge/+  !} ⟩
-          bind' (λ l → F _ .charge ((length l ⊙ (c-lin +ℂ c-quad)) +ℂ (binom (length l) 2 ⊙ c-quad)) (F _ .charge c-lin (ret (x ∷ l)))) .U a-⊤
-        ≡⟨ {!   !} ⟩
-          bind' (λ l → F _ .charge c-lin (ret (x ∷ l))) .U (bind' (λ l → F _ .charge ((length l ⊙ (c-lin +ℂ c-quad)) +ℂ (binom (length l) 2 ⊙ c-quad)) (ret l)) .U a-⊤)
-        ∎
-    where
-      lemma : ∀ n → ((n ⊙ (c-lin +ℂ c-quad)) +ℂ (binom n 2 ⊙ c-quad)) +ℂ c-lin ≡ (suc n ⊙ c-lin) +ℂ (binom n 2 ⊙ c-quad)
-      lemma n = {!   !}
+  -- pcons₂' : ∀ {c-lin c-quad} → val X → PList₂ (c-lin +ℂ c-quad) c-quad X ⊸ PList₂ c-lin c-quad X
+  -- pcons₂' {X} {c-lin} {c-quad} x =
+  --   squareᶜ' {F _} {F _} {_} {F _} {F _} {_}
+  --     (bind' (λ l → ret (x ∷ l)))
+  --     (bind' (λ l → F _ .charge c-lin (ret (x ∷ l))))
+  --     λ a-⊤ →
+  --         bind' (λ l → F _ .charge ((length l ⊙ c-lin) +ℂ (binom (length l) 2 ⊙ c-quad)) (ret l)) .U (bind' (ret ∘ (x ∷_)) .U a-⊤)
+  --       ≡⟨ {!   !} ⟩
+  --         bind' (λ l → F _ .charge ((length (x ∷ l) ⊙ c-lin) +ℂ (binom (length l) 2 ⊙ c-quad)) (ret (x ∷ l))) .U a-⊤
+  --       ≡⟨ {! lemma  !} ⟩
+  --         bind' (λ l → F _ .charge (((length l ⊙ (c-lin +ℂ c-quad)) +ℂ (binom (length l) 2 ⊙ c-quad)) +ℂ c-lin) (ret (x ∷ l))) .U a-⊤
+  --       ≡⟨ {! F _ .charge/+  !} ⟩
+  --         bind' (λ l → F _ .charge ((length l ⊙ (c-lin +ℂ c-quad)) +ℂ (binom (length l) 2 ⊙ c-quad)) (F _ .charge c-lin (ret (x ∷ l)))) .U a-⊤
+  --       ≡⟨ {!   !} ⟩
+  --         bind' (λ l → F _ .charge c-lin (ret (x ∷ l))) .U (bind' (λ l → F _ .charge ((length l ⊙ (c-lin +ℂ c-quad)) +ℂ (binom (length l) 2 ⊙ c-quad)) (ret l)) .U a-⊤)
+  --       ∎
+  --   where
+  --     lemma : ∀ n → ((n ⊙ (c-lin +ℂ c-quad)) +ℂ (binom n 2 ⊙ c-quad)) +ℂ c-lin ≡ (suc n ⊙ c-lin) +ℂ (binom n 2 ⊙ c-quad)
+  --     lemma n = {!   !}
 
-pcons : ∀ {c-lin c-quad} → val X → ▷'[ c-lin ] (PList₂ (c-lin +ℂ c-quad) c-quad X) ⊸ PList₂ c-lin c-quad X
-pcons = {!   !}
+  pcons₂ : ∀ {c-lin c-quad} → val X → ▷'[ c-lin ] (PList₂ (c-quad +ℂ c-lin) c-quad X) ⊸ PList₂ c-lin c-quad X
+  pcons₂ = {!   !}
 
-pcons₀ : val X → PList₂ 0ℂ 0ℂ X ⊸ PList₂ 0ℂ 0ℂ X
-pcons₀ = {!   !}
-
-pfoldr : ∀ {c-lin c-quad} (A : val ℂ → 𝒞)
+pfoldr₂ : ∀ {c-lin c-quad} (A : val ℂ → 𝒞)
   → (∀ c-lin → cmp (A c-lin))
-  → (∀ c-lin → val X → (▷'[ c-lin ] (A (c-lin +ℂ c-quad))) ⊸ A c-lin)
+  → (∀ c-lin → val X → (▷'[ c-lin ] (A (c-quad +ℂ c-lin))) ⊸ A c-lin)
   → PList₂ c-lin c-quad X ⊸ A c-lin
-pfoldr A e-nil e-cons .U g = transport (sym (ua (𝒞-fracture-equiv (A _)))) {!   !}
-pfoldr A e-nil e-cons .charge = {!   !}
+pfoldr₂ A e-nil e-cons .U g = transport (sym (ua (𝒞-fracture-equiv (A _)))) {!   !}
+pfoldr₂ A e-nil e-cons .charge = {!   !}
