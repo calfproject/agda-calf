@@ -42,4 +42,4 @@ instance
   fromNatℂ = record { Constraint = λ _ → ⊤ ; fromNat = λ n → ℕ→ℂ n }
 
 variable
-  c c₁ c₂ : val ℂ
+  c c' c₁ c₂ : val ℂ

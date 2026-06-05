@@ -2,8 +2,11 @@ module Calf.Computation.Lolli where
 
 open import Calf.Value
 open import Calf.Computation
+open import Calf.Computation.Tensor
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
+
+infix 1 _⊸ᶜ_
 
 _⊸ᶜ_ : 𝒞 → 𝒞 → 𝒞
 (A ⊸ᶜ B) .U .val = A ⊸ B
@@ -14,3 +17,6 @@ _⊸ᶜ_ : 𝒞 → 𝒞 → 𝒞
   ∙ cong ((_$ f .U a) ∘ U) (CHARGE-comm {B} c' c)
 (A ⊸ᶜ B) .charge/0 = ⊸-path refl refl (funExt λ a → B .charge/0)
 (A ⊸ᶜ B) .charge/+ = ⊸-path refl refl (funExt λ a → B .charge/+)
+
+lolli-currying : (A ⊗ B ⊸ C) ≡ (A ⊸ (B ⊸ᶜ C))
+lolli-currying = {!   !}

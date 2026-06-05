@@ -17,13 +17,13 @@ open import Calf.Computation.Glue
 
 open 𝒞-FRAC
 
-▷'[_] : val ℂ → 𝒞 → 𝒞
+▷'[_]_ : val ℂ → 𝒞 → 𝒞
 ▷'[ c ] A = Glueᶜ' A A (CHARGE c)
 
 ▷'/0 : ▷'[ 0ℂ ] A ≡ A
 ▷'/0 {A} = cong (Glueᶜ' A A) (⊸-path refl refl (funExt λ _ → A .charge/0)) ∙ Glueᶜ'-id
 
-▷'/+ : ▷'[ c₁ +ℂ c₂ ] A ≡ ▷'[ c₁ ] (▷'[ c₂ ] A)
+▷'/+ : ▷'[ c₁ +ℂ c₂ ] A ≡ ▷'[ c₁ ] ▷'[ c₂ ] A
 ▷'/+ {c₁} {c₂} {A} =
     ▷'[ c₁ +ℂ c₂ ] A
   ≡⟨ refl ⟩
@@ -94,8 +94,8 @@ release' {c} {A} =
 ℙ : 𝒱
 ℙ = ●ᵛ ℂ
 
-variable
-  p q r s : val ℙ
+-- variable
+--   p q r s : val ℙ
 
 ▷[_] : val ℙ → 𝒞 → 𝒞
 ▷[ η• c ] A = ▷'[ c ] A

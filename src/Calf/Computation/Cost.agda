@@ -13,11 +13,11 @@ open import Calf.Computation.Lolli
 open import Calf.Computation.Potential
 open import Calf.Computation.Tensor
 
-◁'[_] : val ℂ → 𝒞 → 𝒞
+◁'[_]_ : val ℂ → 𝒞 → 𝒞
 ◁'[ c ] A = ▷'[ c ] ⊤ ⊸ᶜ A
 
 pot-cost : ∀ {c} → (A ⊸ ◁'[ c ] B) ≡ (▷'[ c ] A ⊸ B)
 pot-cost = {!   !}
 
-pot-cost-counit : ▷'[ c ] (◁'[ c ] A) ⊸ A
+pot-cost-counit : ▷'[ c ] ◁'[ c ] A ⊸ A
 pot-cost-counit = transport pot-cost idᶜ
