@@ -72,19 +72,13 @@ getᴳ : ∀ p
   → q' ⋎₂ (p , q)
   → Δ , q' ⊢ A
   → Δ , q ⊢ ◁'[ p ] A
-getᴳ p split e =
-  transport lolli-currying $
-  transport (cong (_⊸ _) (cong (▷'[_] _) (sym split) ∙ lemma)) $
-  e
-  where
-    lemma : ▷'[ p +ℂ q ] Δ ≡ (▷'[ q ] Δ) ⊗ (▷'[ p ] ⊤)
-    lemma = {!   !}
+getᴳ p split = transport (sym (pot-cost ∙ cong (_⊸ _) (sym ▷'/+ ∙ cong (▷'[_] _) split)))
 
 payᴳ :
   q ⋎₂ (p , q')
   → Δ , q' ⊢ ◁'[ p ] A
   → Δ , q ⊢ A
-payᴳ split e = {!   !}
+payᴳ split = transport (pot-cost ∙ cong (_⊸ _) (sym ▷'/+ ∙ cong (▷'[_] _) split))
 
 nil₁ᴳ : cmpᴳ (PList₁ p X)
 nil₁ᴳ {p} {X} = transport (cong (_⊸ PList₁ p X) (sym ▷'/0)) (bind' λ _ → pnil₁)
