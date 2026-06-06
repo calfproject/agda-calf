@@ -42,6 +42,30 @@ opaque
   bind'/η : bind' (ret {X}) ≡ idᶜ
   bind'/η = ⊸-path refl refl (funExt λ (c , x) → cong (_, x) (+ℂ-identityʳ c))
 
+  bind'-assoc :
+      (h : val X → cmp (F Y))
+    → (k : val Y → cmp A)
+    → (e : cmp (F X))
+    → bind' {A = A} k .U (bind' {A = F Y} h .U e)
+      ≡ bind' {A = A} (λ x → bind' {A = A} k .U (h x)) .U e
+  bind'-assoc {Y = Y} {A = A} h k (c , x) = bind' {X = Y} {A = A} k .charge c (h x)
+
+  bind'-charge :
+      (h : val X → cmp A)
+    → (c : val ℂ)
+    → (e : cmp (F X))
+    → bind' {A = A} (λ x → A .charge c (h x)) .U e
+      ≡ bind' {A = A} h .U (F X .charge c e)
+  bind'-charge {A = A} h c (c' , x) =
+    sym (A .charge/+) ∙ cong (λ d → A .charge d (h x)) (+ℂ-comm c' c)
+
+  bind'-map :
+      (f : A ⊸ B)
+    → (h : val X → cmp A)
+    → (e : cmp (F X))
+    → f .U (bind' {A = A} h .U e) ≡ bind' {A = B} (λ x → f .U (h x)) .U e
+  bind'-map f h (c , x) = f .charge c (h x)
+
 ret' : (F X ⊸ A) → (val X → cmp A)
 ret' e x = e .U (ret x)
 

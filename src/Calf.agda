@@ -23,6 +23,7 @@ import Calf.Value.Unit
 import Calf.Computation
 import Calf.Computation.Closed
 import Calf.Computation.Copower
+import Calf.Computation.Cost
 import Calf.Computation.Empty
 import Calf.Computation.Free
 import Calf.Computation.Glue
@@ -35,5 +36,7 @@ import Calf.Computation.Product
 import Calf.Computation.Sum
 import Calf.Computation.Tensor
 import Calf.Computation.Unit
+
+import Calf.Giralf
 
 import Examples
