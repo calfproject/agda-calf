@@ -56,9 +56,6 @@ CHARGE {A} c .charge c' a =
     A .charge c' (A .charge c a)
   ∎
 
-CHARGE-comm : ∀ c₁ c₂ → CHARGE {A} c₁ ⨾ᶜ CHARGE c₂ ≡ CHARGE c₂ ⨾ᶜ CHARGE c₁
-CHARGE-comm = {!   !}
-
 isPropCharge/0
   : {U : 𝒱} (charge : val ℂ → val U → val U)
   → isProp (∀ {a} → charge 0ℂ a ≡ a)
@@ -116,6 +113,15 @@ isProp⊸charge A B f =
     (f₀ .charge)
     (f₁ .charge)
     i
+
+CHARGE-commute
+  : ∀ c (e : A ⊸ B)
+  → CHARGE c ⨾ᶜ e ≡ e ⨾ᶜ CHARGE c
+CHARGE-commute c e =
+  ⊸-path refl refl (funExt λ a → e .charge c a)
+
+CHARGE-comm : ∀ c₁ c₂ → CHARGE {A} c₁ ⨾ᶜ CHARGE c₂ ≡ CHARGE c₂ ⨾ᶜ CHARGE c₁
+CHARGE-comm c₁ c₂ = CHARGE-commute c₁ (CHARGE c₂)
 
 idᶜ⨾ᶜf≡f : (f : A ⊸ B) → idᶜ ⨾ᶜ f ≡ f
 idᶜ⨾ᶜf≡f f = ⊸-path refl refl refl

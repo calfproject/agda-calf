@@ -35,7 +35,7 @@ open 𝒞-FRAC
       (Glueᶜ' A A (CHARGE c₂))
       (Glueᶜ' A A (CHARGE c₂))
       (squareᶜ' (CHARGE c₁) (CHARGE c₁) (λ a → cong ((_$ a) ∘ U) (CHARGE-comm {A} c₁ c₂)))
-  ≡⟨ cong (Glueᶜ' _ _) {! squareᶜ'-same  !} ⟩
+  ≡⟨ cong (Glueᶜ' _ _) (squareᶜ'-charge (λ a → cong ((_$ a) ∘ U) (CHARGE-comm {A} c₁ c₂))) ⟩
     Glueᶜ' (Glueᶜ' A A (CHARGE c₂)) (Glueᶜ' A A (CHARGE c₂)) (CHARGE c₁)
   ≡⟨ refl ⟩
     ▷'[ c₁ ] (▷'[ c₂ ] A)
