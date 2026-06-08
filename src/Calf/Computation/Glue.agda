@@ -230,6 +230,14 @@ fracture-inv-charge A c g =
       𝒞-glue-fracture-section
       𝒞-glue-fracture-retract)
 
+squareᶜ
+  : ∀ {A• A◦ α B• B◦ β}
+  → (f• : A• .fst ⊸ B• .fst)
+  → (f◦ : A◦ .fst ⊸ B◦ .fst)
+  → f• ⨾ᶜ β ≡ α ⨾ᶜ ●ᶜ.map f◦
+  → Glueᶜ A• A◦ α ⊸ Glueᶜ B• B◦ β
+squareᶜ = {!   !}
+
 opaque
   Glueᶜ' : (A-⊤ A-abs : 𝒞) → (A-⊤ ⊸ A-abs) → 𝒞
   Glueᶜ' A-⊤ A-abs α =

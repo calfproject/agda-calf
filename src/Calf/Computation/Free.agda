@@ -4,7 +4,9 @@ open import Calf.Core.Monad
 open import Calf.Value
 open import Calf.Computation
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Function
+open import Cubical.Foundations.Isomorphism
 
 opaque
   unfolding M
@@ -66,6 +68,17 @@ opaque
     → f .U (bind' {A = A} h .U e) ≡ bind' {A = B} (λ x → f .U (h x)) .U e
   bind'-map f h (c , x) = f .charge c (h x)
 
+bind'-isEquiv : isEquiv (bind' {X} {A})
+bind'-isEquiv {X} {A} = isoToIsEquiv $
+  iso
+    (bind' {X} {A})
+    (λ f → f .U ∘ ret {X})
+    (λ f → ⊸-path refl refl (funExt λ e → sym (bind'-map f ret e) ∙ cong (f .U) (cong ((_$ e) ∘ U) bind'/η)))
+    (λ g → funExt λ x → bind'/β)
+
+F-adjoint : (val X → cmp A) ≃ (F X ⊸ A)
+F-adjoint = bind' , bind'-isEquiv
+
 ret' : (F X ⊸ A) → (val X → cmp A)
 ret' e x = e .U (ret x)
 
@@ -76,3 +89,8 @@ syntax bindᶜ e (λ x → k) = bind x ← e ⨾ k
 
 map : (val X → val Y) → (F X ⊸ F Y)
 map f = bind' (ret ∘ f)
+
+bind'-path : (f g : F X ⊸ A) →
+  (f .U ∘ ret ≡ g .U ∘ ret)
+  → f ≡ g
+bind'-path f g pf-ret = sym (secEq F-adjoint f) ∙ cong bind' pf-ret ∙ secEq F-adjoint g

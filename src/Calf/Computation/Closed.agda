@@ -8,7 +8,7 @@ module Calf.Computation.Closed where
 open import Calf.Core.Abstract
 open import Calf.Core.Cost
 open import Calf.Value
-open import Calf.Value.Closed as ●ᵛ hiding (map) public
+open import Calf.Value.Closed as ●ᵛ hiding (map; map-∘; join; bind) public
 open import Calf.Computation
 
 ●ᶜ : 𝒞 → 𝒞
@@ -64,6 +64,9 @@ map {A} {B} f .charge c (law a p i) =
     refl
     i
 
+map-∘ : (f : A ⊸ B) (g : B ⊸ C) → map f ⨾ᶜ map g ≡ map (f ⨾ᶜ g)
+map-∘ f g = ⊸-path refl refl (funExt (●ᵛ.map-∘ (f .U) (g .U)))
+
 map-open : ⟨ ABS ⟩ → (f g : A ⊸ B) → map f ≡ map g
 map-open {A} {B} p f g =
   ⊸-path
@@ -77,3 +80,12 @@ map-open {A} {B} p f g =
       ●-isProp p
         (map {A = A} {B = B} f .U a•)
         (map {A = A} {B = B} g .U a•))
+
+join : ●ᶜ (●ᶜ A) ⊸ ●ᶜ A
+join .U = ●ᵛ.join
+join .charge c (η• a•) = refl
+join .charge c (∗ abs) = refl
+join .charge c (law a• abs i) = {!   !}
+
+bind : (A ⊸ ●ᶜ B) → (●ᶜ A ⊸ ●ᶜ B)
+bind k = map k ⨾ᶜ join
