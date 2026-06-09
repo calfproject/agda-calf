@@ -8,21 +8,14 @@ module Calf.Computation.Lolli where
 
 open import Calf.Core.Cost
 open import Calf.Value
+open import Calf.Value.Lolli
 open import Calf.Computation
 open import Calf.Computation.Tensor
 
 infix 1 _⊸ᶜ_
 
 _⊸ᶜ_ : 𝒞 → 𝒞 → 𝒞
-(A ⊸ᶜ B) .U .val = A ⊸ B
-(A ⊸ᶜ B) .U .is-set =
-  isSetRetract
-    (λ f → f .U , f .charge)
-    (λ (U , charge) → record { U = U ; charge = charge })
-    (λ _ → refl)
-    (isSetΣSndProp
-      (isSetΠ λ _ → B .U .is-set)
-      (isProp⊸charge A B))
+(A ⊸ᶜ B) .U = A ⊸ᵛ B
 (A ⊸ᶜ B) .charge c f .U a = B .charge c (f .U a)
 (A ⊸ᶜ B) .charge c f .charge c' a =
   cong (B .charge c) (f .charge c' a)
