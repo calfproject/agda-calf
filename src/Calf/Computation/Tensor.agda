@@ -9,6 +9,8 @@ open import Calf.Value.Unit
 open import Calf.Computation.Free public
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels
+open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Univalence using (ua)
 open import Function
 
 data _U⊗_ (A B : 𝒞) : Type where
@@ -163,3 +165,24 @@ par ex ey = F⊗-fwd .U (ex ∥ ey)
 
 ⊤ : 𝒞
 ⊤ = F 1ᵛ
+
+⊗-identityʳ : A ⊗ ⊤ ≡ A
+⊗-identityʳ =
+  𝒞-path
+    (𝒱-path (ua (isoToEquiv (iso fwd bwd fwd-bwd bwd-fwd))))
+    {!   !}
+  where
+    fwd : A U⊗ ⊤ → cmp A
+    fwd {A} (inj a b c) = bind' {A = A} (λ _ → A .charge c a) .U b
+    fwd {A} (law₁ c c' a b i) = cong (λ f → bind' {A = A} f .U b) (funExt λ _ → sym (A .charge/+ {a} {c} {c'})) i
+    fwd {A} (law₂ c c' a b i) = {!   !}
+    fwd {A} (squash e e' h h' i i') = {!   !}
+
+    bwd : cmp A → A U⊗ ⊤
+    bwd a = inj a (ret _) 0ℂ
+
+    fwd-bwd : section fwd bwd
+    fwd-bwd = {!   !}
+
+    bwd-fwd : retract fwd bwd
+    bwd-fwd = {!   !}

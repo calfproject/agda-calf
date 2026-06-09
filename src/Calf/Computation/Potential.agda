@@ -1,7 +1,9 @@
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Function
+open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Structure
+open import Cubical.Foundations.Univalence using (ua)
 open import Cubical.Data.Sigma
 
 module Calf.Computation.Potential where
@@ -89,6 +91,21 @@ release' {c} {A} =
     f
     f
     (sym ∘ f .charge c)
+
+module _ where
+  open import Calf.Computation.Tensor
+
+  pot-tensor : A ⊗ (▷'[ c ] ⊤) ≡ ▷'[ c ] (A ⊗ ⊤)
+  pot-tensor =
+    𝒞-path
+      (𝒱-path (ua (isoToEquiv (iso fwd bwd {!   !} {!   !}))))
+      {!   !}
+    where
+      fwd : A U⊗ (▷'[ c ] ⊤) → cmp (▷'[ c ] (A ⊗ ⊤))
+      fwd = {!   !}
+
+      bwd : cmp (▷'[ c ] (A ⊗ ⊤)) → A U⊗ (▷'[ c ] ⊤)
+      bwd = {!   !}
 
 
 ℙ : 𝒱

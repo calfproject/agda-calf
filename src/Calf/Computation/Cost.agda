@@ -17,7 +17,17 @@ open import Calf.Computation.Tensor
 ◁'[ c ] A = ▷'[ c ] ⊤ ⊸ᶜ A
 
 pot-cost : ∀ {c} → (A ⊸ ◁'[ c ] B) ≡ (▷'[ c ] A ⊸ B)
-pot-cost = {!   !}
+pot-cost {A} {B} {c} =
+    (A ⊸ (◁'[ c ] B))
+  ≡⟨ refl ⟩
+    (A ⊸ (▷'[ c ] ⊤ ⊸ᶜ B))
+  ≡⟨ sym lolli-currying ⟩
+    ((A ⊗ (▷'[ c ] ⊤)) ⊸ B)
+  ≡⟨ cong (_⊸ B) pot-tensor ⟩
+    (▷'[ c ] (A ⊗ ⊤) ⊸ B)
+  ≡⟨ cong (λ C → (▷'[ c ] C) ⊸ B) ⊗-identityʳ ⟩
+    ((▷'[ c ] A) ⊸ B)
+  ∎
 
 pot-cost-counit : ▷'[ c ] ◁'[ c ] A ⊸ A
 pot-cost-counit = transport pot-cost idᶜ
