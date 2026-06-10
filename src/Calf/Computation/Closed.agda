@@ -85,7 +85,47 @@ join : ●ᶜ (●ᶜ A) ⊸ ●ᶜ A
 join .U = ●ᵛ.join
 join .charge c (η• a•) = refl
 join .charge c (∗ abs) = refl
-join .charge c (law a• abs i) = {!   !}
+join {A = A} .charge c (law a• abs i) =
+  isProp→PathP
+    (λ i → ●ᶜ A .U .is-set
+      (join {A = A} .U (●ᶜ (●ᶜ A) .charge c (law a• abs i)))
+      (●ᶜ A .charge c (join {A = A} .U (law a• abs i))))
+    refl
+    refl
+    i
 
 bind : (A ⊸ ●ᶜ B) → (●ᶜ A ⊸ ●ᶜ B)
 bind k = map k ⨾ᶜ join
+
+bind-map : (k : A ⊸ ●ᶜ B) (f : B ⊸ C) → bind k ⨾ᶜ map f ≡ bind (k ⨾ᶜ map f)
+bind-map {A = A} {B = B} {C = C} k f =
+  ⊸-path refl refl (funExt h)
+  where
+    h : (a• : cmp (●ᶜ A)) →
+      (bind k ⨾ᶜ map f) .U a• ≡ bind (k ⨾ᶜ map f) .U a•
+    h (η• a) = refl
+    h (∗ p) = refl
+    h (law a p i) =
+      isProp→PathP
+        (λ i → ●ᶜ C .U .is-set
+          ((bind k ⨾ᶜ map f) .U (law a p i))
+          (bind (k ⨾ᶜ map f) .U (law a p i)))
+        refl
+        refl
+        i
+
+bind-η• : (f : A ⊸ B) → bind (f ⨾ᶜ η•ᶜ) ≡ map f
+bind-η• {A = A} {B = B} f =
+  ⊸-path refl refl (funExt h)
+  where
+    h : (a• : cmp (●ᶜ A)) → bind (f ⨾ᶜ η•ᶜ) .U a• ≡ map f .U a•
+    h (η• a) = refl
+    h (∗ p) = refl
+    h (law a p i) =
+      isProp→PathP
+        (λ i → ●ᶜ B .U .is-set
+          (bind (f ⨾ᶜ η•ᶜ) .U (law a p i))
+          (map f .U (law a p i)))
+        refl
+        refl
+        i

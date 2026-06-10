@@ -236,7 +236,38 @@ squareᶜ
   → (f◦ : A◦ .fst ⊸ B◦ .fst)
   → f• ⨾ᶜ β ≡ α ⨾ᶜ ●ᶜ.map f◦
   → Glueᶜ A• A◦ α ⊸ Glueᶜ B• B◦ β
-squareᶜ = {!   !}
+squareᶜ {A• = A•} {A◦ = A◦} {α = α} {B• = B•} {B◦ = B◦} {β = β} f• f◦ f-coherence .U q =
+  squareᵛ
+    {X• = U• A•}
+    {X◦ = U◦ A◦}
+    {χ = α .U}
+    {Y• = U• B•}
+    {Y◦ = U◦ B◦}
+    {ψ = β .U}
+    (f• .U)
+    (f◦ .U)
+    (λ a• → cong ((_$ a•) ∘ U) f-coherence)
+    q
+squareᶜ {A• = A•} {A◦ = A◦} {α = α} {B• = B•} {B◦ = B◦} {β = β} f• f◦ f-coherence .charge c q i .• =
+  f• .charge c (q .•) i
+squareᶜ {A• = A•} {A◦ = A◦} {α = α} {B• = B•} {B◦ = B◦} {β = β} f• f◦ f-coherence .charge c q i .◦ =
+  f◦ .charge c (q .◦) i
+squareᶜ {A• = A•} {A◦ = A◦} {α = α} {B• = B•} {B◦ = B◦} {β = β} f• f◦ f-coherence .charge c q i .•→◦ =
+  isProp→PathP 
+    (λ i → ●ᶜ (B◦ .fst) .U .is-set
+      (β .U (f• .charge c (q .•) i))
+      (η• (f◦ .charge c (q .◦) i)))
+    (squareᶜ
+      {A• = A•} {A◦ = A◦} {α = α}
+      {B• = B•} {B◦ = B◦} {β = β}
+      f• f◦ f-coherence .U (Glueᶜ A• A◦ α .charge c q) .•→◦)
+    (Glueᶜ B• B◦ β .charge c
+      (squareᶜ
+        {A• = A•} {A◦ = A◦} {α = α}
+        {B• = B•} {B◦ = B◦} {β = β}
+        f• f◦ f-coherence .U q)
+      .•→◦)
+    i
 
 opaque
   Glueᶜ' : (A-⊤ A-abs : 𝒞) → (A-⊤ ⊸ A-abs) → 𝒞
@@ -390,6 +421,18 @@ opaque
       (fracture-map {A} {B} f .U (𝒞-fromFRAC (𝒞-toFRAC A) .charge c q) .•→◦)
       (𝒞-fromFRAC (𝒞-toFRAC B) .charge c (fracture-map f .U q) .•→◦)
       i
+
+  fracture-map-coh
+    : (f : A ⊸ B)
+    → (q• : cmp (●ᶜ A))
+    → (q◦ : cmp (◯ᶜ A))
+    → (qcoh : ●ᶜ.map (η◦ᶜ {A = A}) .U q• ≡ η• q◦)
+    → ●ᵛ.map (η◦ᶜ {A = B} .U) (●ᶜ.map f .U q•)
+      ≡ η• (◯ᵛ.map (f .U) q◦)
+  fracture-map-coh f q• q◦ qcoh =
+    fracture-map f .U
+      (record { • = q• ; ◦ = q◦ ; •→◦ = qcoh })
+      .•→◦
 
   fracture-map-fracture
     : (f : A ⊸ B) (a : cmp A)

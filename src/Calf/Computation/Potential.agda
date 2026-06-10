@@ -4,6 +4,8 @@ open import Cubical.Foundations.Function
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Structure
 open import Cubical.Foundations.Univalence using (ua)
+open import Cubical.Foundations.Path using (fromPathP⁻)
+open import Cubical.Foundations.Transport using (transport⁻-fillerExt⁻)
 open import Cubical.Data.Sigma
 
 module Calf.Computation.Potential where
@@ -62,6 +64,23 @@ opaque
 
   ▷'-open : ⟨ ABS ⟩ → (c : val ℂ) (A : 𝒞) → ▷'[ c ] A ≡ A
   ▷'-open abs c A = cong 𝒞-fromFRAC (▷'-FRAC-open abs c A) ∙ 𝒞-glue-fracture-retract A
+
+  ▷'-●ᶜ : (c : val ℂ) (A : 𝒞) → ●ᶜ (▷'[ c ] A) ≡ ●ᶜ A
+  ▷'-●ᶜ c A = cong (fst ∘ 𝒞-FRAC.A•) (𝒞-glue-fracture-section (▷'-FRAC c A))
+
+  ▷'-◯ᶜ : (c : val ℂ) (A : 𝒞) → ◯ᶜ (▷'[ c ] A) ≡ ◯ᶜ A
+  ▷'-◯ᶜ c A = cong (fst ∘ 𝒞-FRAC.A◦) (𝒞-glue-fracture-section (▷'-FRAC c A))
+
+  transport-▷' : (c : val ℂ) (A : 𝒞) (q : cmp (●ᶜ A)) →
+          ●ᶜ.map (η◦ᶜ {A = ▷'[ c ] A}) .U
+            (transport (cong cmp (sym (▷'-●ᶜ c A))) q)
+          ≡ transport (cong (λ C → cmp (●ᶜ C)) (sym (▷'-◯ᶜ c A)))
+              ((▷'-FRAC c A .𝒞-FRAC.α•) .U q)
+  transport-▷' c A q =
+          fromPathP⁻ $
+            congP₂$
+              (λ i → 𝒞-glue-fracture-section (▷'-FRAC c A) i .𝒞-FRAC.α• .U)
+              (λ i → transport⁻-fillerExt⁻ (cong cmp (▷'-●ᶜ c A)) i q)
 
 store' : ∀ {c A} → A ⊸ ▷'[ c ] A
 store' {c} {A} =

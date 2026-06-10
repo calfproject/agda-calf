@@ -123,6 +123,14 @@ CHARGE-commute c e =
 CHARGE-comm : ∀ c₁ c₂ → CHARGE {A} c₁ ⨾ᶜ CHARGE c₂ ≡ CHARGE c₂ ⨾ᶜ CHARGE c₁
 CHARGE-comm c₁ c₂ = CHARGE-commute c₁ (CHARGE c₂)
 
+CHARGE-0 : CHARGE {A} 0ℂ ≡ idᶜ
+CHARGE-0 {A = A} =
+  ⊸-path refl refl (funExt λ a → A .charge/0)
+
+CHARGE-+ : ∀ c₁ c₂ → CHARGE {A} (c₁ +ℂ c₂) ≡ CHARGE c₂ ⨾ᶜ CHARGE c₁
+CHARGE-+ {A = A} c₁ c₂ =
+  ⊸-path refl refl (funExt λ a → A .charge/+ {a = a} {c₁ = c₁} {c₂ = c₂})
+
 idᶜ⨾ᶜf≡f : (f : A ⊸ B) → idᶜ ⨾ᶜ f ≡ f
 idᶜ⨾ᶜf≡f f = ⊸-path refl refl refl
 
