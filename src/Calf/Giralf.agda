@@ -238,20 +238,31 @@ module Examples where
   variable
     k : ℕ
 
-  split : PList₁ c ℕᵛ ⊸ PList₁ c ℕᵛ ⊗ PList₁ c ℕᵛ
+  split : PList₁ c ℕᵛ , 0ℂ ⊢ PList₁ c ℕᵛ ⊗ PList₁ c ℕᵛ
   split = {!   !}
 
-  merge : PList₁ (` suc k) ℕᵛ ⊗ PList₁ (` suc k) ℕᵛ ⊸ PList₁ (` k) ℕᵛ
+  merge : PList₁ (` suc k) ℕᵛ ⊗ PList₁ (` suc k) ℕᵛ , 0ℂ ⊢ PList₁ (` k) ℕᵛ
   merge = {!   !}
 
-  msort/clocked : (k k' : ℕ) → PList₁ (` (k + k')) ℕᵛ ⊸ PList₁ (` k') ℕᵛ
-  msort/clocked zero k' = idᶜ
+  msort/clocked : (k k' : ℕ) → PList₁ (` (k + k')) ℕᵛ , 0ℂ ⊢ PList₁ (` k') ℕᵛ
+  msort/clocked zero k' = idᴳ
   msort/clocked (suc k) k' =
-    split ⨾ᶜ map₂ ih ih ⨾ᶜ merge
-    where
-      ih : PList₁ (` suc (k + k')) ℕᵛ ⊸ PList₁ (` suc k') ℕᵛ
-      ih =
-        subst
-          (λ n → PList₁ (` n) ℕᵛ ⊸ PList₁ (` suc k') ℕᵛ)
-          (Nat.+-suc k k')
-          (msort/clocked k (suc k'))
+    letᴳ (+ℂ-identityˡ _) split $
+    letᴳ (+ℂ-identityˡ _)
+      (transport
+        (cong (_⊸ _) lemma)
+        (map₂ (msort/clocked k (suc k')) (msort/clocked k (suc k')))) $
+    merge
+      where
+        lemma :
+          (▷'[ 0ℂ ] PList₁ (` (k + suc k')) ℕᵛ) ⊗ (▷'[ 0ℂ ] PList₁ (` (k + suc k')) ℕᵛ)
+          ≡ ▷'[ 0ℂ ] (PList₁ (` suc (k + k')) ℕᵛ ⊗ PList₁ (` suc (k + k')) ℕᵛ)
+        lemma =
+            (▷'[ 0ℂ ] PList₁ (` (k + suc k')) ℕᵛ) ⊗ (▷'[ 0ℂ ] PList₁ (` (k + suc k')) ℕᵛ)
+          ≡⟨ cong₂ _⊗_ ▷'/0 ▷'/0 ⟩
+            PList₁ (` (k + suc k')) ℕᵛ ⊗ PList₁ (` (k + suc k')) ℕᵛ
+          ≡⟨ cong (λ n → PList₁ (` n) ℕᵛ ⊗ PList₁ (` n) ℕᵛ) (Nat.+-suc k k') ⟩
+            PList₁ (` suc (k + k')) ℕᵛ ⊗ PList₁ (` suc (k + k')) ℕᵛ
+          ≡⟨ sym ▷'/0 ⟩
+            ▷'[ 0ℂ ] (PList₁ (` suc (k + k')) ℕᵛ ⊗ PList₁ (` suc (k + k')) ℕᵛ)
+          ∎
