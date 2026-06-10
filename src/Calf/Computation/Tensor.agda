@@ -186,3 +186,25 @@ par ex ey = F⊗-fwd .U (ex ∥ ey)
 
     bwd-fwd : retract fwd bwd
     bwd-fwd = {!   !}
+
+
+map₂ : ∀ {A₁ A₂ B₁ B₂}
+  → (A₁ ⊸ B₁)
+  → (A₂ ⊸ B₂)
+  → (A₁ ⊗ A₂ ⊸ B₁ ⊗ B₂)
+map₂ = {!   !}
+
+module _ where
+  open import Calf.Computation.Potential
+
+  pot-tensor : A ⊗ (▷'[ c ] ⊤) ≡ ▷'[ c ] (A ⊗ ⊤)
+  pot-tensor =
+    𝒞-path
+      (𝒱-path (ua (isoToEquiv (iso fwd bwd {!   !} {!   !}))))
+      {!   !}
+    where
+      fwd : A U⊗ (▷'[ c ] ⊤) → cmp (▷'[ c ] (A ⊗ ⊤))
+      fwd = {!   !}
+
+      bwd : cmp (▷'[ c ] (A ⊗ ⊤)) → A U⊗ (▷'[ c ] ⊤)
+      bwd = {!   !}

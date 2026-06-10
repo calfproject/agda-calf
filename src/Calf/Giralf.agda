@@ -22,13 +22,13 @@ Context : Type₁
 Context = 𝒞 × val ℂ  -- List 𝒞 × val ℙ
 
 variable
-  p p' p₁ p₂ q q' r r' : val ℂ
+  p p' p₁ p₂ q q' q₁ q₂ r r' : val ℂ
 
 
 infix 1 _⊢_
 
 _⊢_ : Context → 𝒞 → Type
-Δ , p ⊢ A = ▷'[ p ] Δ ⊸ A
+Δ , q ⊢ A = ▷'[ q ] Δ ⊸ A
 
 idᴳ : A , 0ℂ ⊢ A
 idᴳ {A} = transport (cong (_⊸ A) (sym ▷'/0)) idᶜ
@@ -42,6 +42,13 @@ module _ where  -- promonoid
 
   -- _⋎_ : val ℂ → List (val ℂ) → Type  -- promonoid
   -- p ⋎ ps = foldr _+ℂ_ 0ℂ ps ≡ p
+
+letᴳ :
+  q ⋎₂ (q₁ , q₂)
+  → A , q₁ ⊢ B
+  → B , q₂ ⊢ C
+  → A , q ⊢ C
+letᴳ = {!   !}
 
 cmpᴳ : 𝒞 → Type
 cmpᴳ = ⊤ , 0ℂ ⊢_
@@ -189,6 +196,7 @@ module Examples where
       idᴳ
 
   open import Cubical.Data.Bool
+  import Cubical.Data.Nat.Properties as Nat
   open import Cubical.Data.Nat.Order
   open import Cubical.Relation.Nullary
 
@@ -226,3 +234,24 @@ module Examples where
       (λ r → nil₁ᴳ)
       insert
       idᴳ
+
+  variable
+    k : ℕ
+
+  split : PList₁ c ℕᵛ ⊸ PList₁ c ℕᵛ ⊗ PList₁ c ℕᵛ
+  split = {!   !}
+
+  merge : PList₁ (` suc k) ℕᵛ ⊗ PList₁ (` suc k) ℕᵛ ⊸ PList₁ (` k) ℕᵛ
+  merge = {!   !}
+
+  msort/clocked : (k k' : ℕ) → PList₁ (` (k + k')) ℕᵛ ⊸ PList₁ (` k') ℕᵛ
+  msort/clocked zero k' = idᶜ
+  msort/clocked (suc k) k' =
+    split ⨾ᶜ map₂ ih ih ⨾ᶜ merge
+    where
+      ih : PList₁ (` suc (k + k')) ℕᵛ ⊸ PList₁ (` suc k') ℕᵛ
+      ih =
+        subst
+          (λ n → PList₁ (` n) ℕᵛ ⊸ PList₁ (` suc k') ℕᵛ)
+          (Nat.+-suc k k')
+          (msort/clocked k (suc k'))

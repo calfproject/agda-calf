@@ -111,21 +111,6 @@ release' {c} {A} =
     f
     (sym ∘ f .charge c)
 
-module _ where
-  open import Calf.Computation.Tensor
-
-  pot-tensor : A ⊗ (▷'[ c ] ⊤) ≡ ▷'[ c ] (A ⊗ ⊤)
-  pot-tensor =
-    𝒞-path
-      (𝒱-path (ua (isoToEquiv (iso fwd bwd {!   !} {!   !}))))
-      {!   !}
-    where
-      fwd : A U⊗ (▷'[ c ] ⊤) → cmp (▷'[ c ] (A ⊗ ⊤))
-      fwd = {!   !}
-
-      bwd : cmp (▷'[ c ] (A ⊗ ⊤)) → A U⊗ (▷'[ c ] ⊤)
-      bwd = {!   !}
-
 
 ℙ : 𝒱
 ℙ = ●ᵛ ℂ
