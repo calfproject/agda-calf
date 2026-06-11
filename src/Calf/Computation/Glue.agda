@@ -258,7 +258,7 @@ squareᶜ {A• = A•} {A◦ = A◦} {α = α} {B• = B•} {B◦ = B◦} {β 
 squareᶜ {A• = A•} {A◦ = A◦} {α = α} {B• = B•} {B◦ = B◦} {β = β} f• f◦ f-coherence .charge c q i .◦ =
   f◦ .charge c (q .◦) i
 squareᶜ {A• = A•} {A◦ = A◦} {α = α} {B• = B•} {B◦ = B◦} {β = β} f• f◦ f-coherence .charge c q i .•→◦ =
-  isProp→PathP 
+  isProp→PathP
     (λ i → ●ᶜ (B◦ .fst) .U .is-set
       (β .U (f• .charge c (q .•) i))
       (η• (f◦ .charge c (q .◦) i)))
@@ -273,6 +273,7 @@ squareᶜ {A• = A•} {A◦ = A◦} {α = α} {B• = B•} {B◦ = B◦} {β 
         f• f◦ f-coherence .U q)
       .•→◦)
     i
+squareᶜ {A• = A•} {A◦ = A◦} {α = α} {B• = B•} {B◦ = B◦} {β = β} f• f◦ f-coherence .seal = ?
 
 opaque
   Glueᶜ' : (A-⊤ A-abs : 𝒞) → (A-⊤ ⊸ A-abs) → 𝒞
@@ -348,6 +349,7 @@ opaque
         (squareᶜ' {A-⊤ = A-⊤} {A-abs = A-abs} {α = α} {B-⊤ = B-⊤} {B-abs = B-abs} {β = β}
           f-⊤ f-abs f-coherence .U q) .•→◦)
       i
+  squareᶜ' {A-abs = A-abs} {α = α} {B-abs = B-abs} {β = β} f-⊤ f-abs f-coherence .seal = ?
 
   ●ᶜ-map-CHARGE
     : (c : val ℂ) (a• : cmp (●ᶜ A))
@@ -426,6 +428,7 @@ opaque
       (fracture-map {A} {B} f .U (𝒞-fromFRAC (𝒞-toFRAC A) .charge c q) .•→◦)
       (𝒞-fromFRAC (𝒞-toFRAC B) .charge c (fracture-map f .U q) .•→◦)
       i
+  fracture-map {A} {B} f .seal = ?
 
   fracture-map-coh
     : (f : A ⊸ B)

@@ -31,10 +31,12 @@ U◦ A◦ .snd = A◦ .snd
 map : (A ⊸ B) → (◯ᶜ A ⊸ ◯ᶜ B)
 map f .U = ◯ᵛ.map (f .U)
 map f .charge c a◦ = funExt λ abs → f .charge c (a◦ abs)
+map f .seal = {!   !}
 
 join : ◯ᶜ (◯ᶜ A) ⊸ ◯ᶜ A
 join .U = ◯ᵛ.join
 join .charge c a◦ = refl
+join .seal = {!   !}
 
 bind : (A ⊸ ◯ᶜ B) → (◯ᶜ A ⊸ ◯ᶜ B)
 bind {B = B} k = map k ⨾ᶜ join {B}

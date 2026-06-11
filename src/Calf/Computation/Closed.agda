@@ -105,6 +105,7 @@ join {A = A} .charge c (law a• abs i) =
     refl
     refl
     i
+join .seal = {!   !}
 
 bind : (A ⊸ ●ᶜ B) → (●ᶜ A ⊸ ●ᶜ B)
 bind k = map k ⨾ᶜ join
