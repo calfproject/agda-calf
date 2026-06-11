@@ -2,6 +2,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Structure
+open import Cubical.Data.Sigma
 
 module Calf.Giralf where
 
@@ -16,7 +17,7 @@ open import Calf.Computation.Potential
 open import Calf.Computation.Cost
 open import Calf.Computation.PList1
 open import Calf.Computation.PList2
-open import Cubical.Data.Sigma
+open import Calf.Computation.Free
 
 Context : Type₁
 Context = 𝒞 × val ℂ  -- List 𝒞 × val ℙ
