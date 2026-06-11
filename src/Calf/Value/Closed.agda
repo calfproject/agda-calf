@@ -18,9 +18,8 @@ opaque
 
 ●ᵛ : 𝒱 → 𝒱
 ●ᵛ X .val = ● (X .val)
-●ᵛ X .is-set = isSet● (X .is-set)
-●ᵛ X .is-preorder = isPreorder● (X .is-preorder)
 ●ᵛ X .is-set = ●-preserves-isSet (X .is-set)
+●ᵛ X .is-preorder = isPreorder● (X .is-preorder)
 
 η•ᵛ : val X → val (●ᵛ X)
 η•ᵛ = η•

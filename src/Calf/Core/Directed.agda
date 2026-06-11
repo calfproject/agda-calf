@@ -91,6 +91,9 @@ opaque
   isPropIsPreorder : isProp (isPreorder X)
   isPropIsPreorder = isPropΠ (λ _ → isPropIsPathSplitEquiv _)
 
+isProp→isPreorder : isProp X → isPreorder X
+isProp→isPreorder = {!   !}
+
 open isPathSplitEquiv public
 
 module _
