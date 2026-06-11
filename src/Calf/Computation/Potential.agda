@@ -1,6 +1,11 @@
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Function
+open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Structure
+open import Cubical.Foundations.Univalence using (ua)
+open import Cubical.Foundations.Path using (fromPathP⁻)
+open import Cubical.Foundations.Transport using (transport⁻-fillerExt⁻)
 open import Cubical.Data.Sigma
 
 module Calf.Computation.Potential where
@@ -16,33 +21,109 @@ open import Calf.Computation.Glue
 
 open 𝒞-FRAC
 
-ℙ : 𝒱
-ℙ = ●ᵛ ℂ
+▷'[_]_ : val ℂ → 𝒞 → 𝒞
+▷'[ c ] A = Glueᶜ' A A (CHARGE c)
 
-variable
-  p q r s : val ℙ
+▷'/0 : ▷'[ 0ℂ ] A ≡ A
+▷'/0 {A} = cong (Glueᶜ' A A) (⊸-path refl refl (funExt λ _ → A .charge/0)) ∙ Glueᶜ'-id
+
+▷'/+ : ▷'[ c₁ +ℂ c₂ ] A ≡ ▷'[ c₁ ] ▷'[ c₂ ] A
+▷'/+ {c₁} {c₂} {A} =
+    ▷'[ c₁ +ℂ c₂ ] A
+  ≡⟨ refl ⟩
+    Glueᶜ' A A (CHARGE (c₁ +ℂ c₂))
+  ≡⟨ cong (Glueᶜ' A A) (⊸-path refl refl (funExt λ _ → A .charge/+)) ⟩
+    Glueᶜ' A A (CHARGE c₂ ⨾ᶜ CHARGE c₁)
+  ≡⟨ sym Glueᶜ'-Glueᶜ' ⟩
+    Glueᶜ'
+      (Glueᶜ' A A (CHARGE c₂))
+      (Glueᶜ' A A (CHARGE c₂))
+      (squareᶜ' (CHARGE c₁) (CHARGE c₁) (λ a → cong ((_$ a) ∘ U) (CHARGE-comm {A} c₁ c₂)))
+  ≡⟨ cong (Glueᶜ' _ _) (squareᶜ'-charge (λ a → cong ((_$ a) ∘ U) (CHARGE-comm {A} c₁ c₂))) ⟩
+    Glueᶜ' (Glueᶜ' A A (CHARGE c₂)) (Glueᶜ' A A (CHARGE c₂)) (CHARGE c₁)
+  ≡⟨ refl ⟩
+    ▷'[ c₁ ] (▷'[ c₂ ] A)
+  ∎
 
 ▷'-FRAC : val ℂ → 𝒞 → 𝒞-FRAC
-▷'-FRAC c A .A• = ●ᶜ A , ●ᶜ-η•ᶜ-isEquiv {A}
-▷'-FRAC c A .A◦ = ◯ᶜ A , ◯ᶜ-ηᶜ-isEquiv
-▷'-FRAC c A .α = ●ᶜ.map (CHARGE c ⨾⊸ η◦ᶜ)
-
-▷'[_] : val ℂ → 𝒞 → 𝒞
-▷'[ c ] A = Glueᶜ (●ᶜ A , ●ᶜ-η•ᶜ-isEquiv {A}) (◯ᶜ A , ◯ᶜ-ηᶜ-isEquiv) (●ᶜ.map (CHARGE c ⨾⊸ η◦ᶜ))
+▷'-FRAC c A .A• = ●ᶜ A , ●ᶜ.η-isEquiv
+▷'-FRAC c A .A◦ = ◯ᶜ A , ◯ᶜ.η-isEquiv
+▷'-FRAC c A .α• = ●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ)
 
 ▷'-FRAC-open : ⟨ ABS ⟩ → (c : val ℂ) (A : 𝒞) → ▷'-FRAC c A ≡ 𝒞-toFRAC A
 ▷'-FRAC-open abs c A i .A• = 𝒞-toFRAC A .A•
 ▷'-FRAC-open abs c A i .A◦ = 𝒞-toFRAC A .A◦
-▷'-FRAC-open abs c A i .α =
+▷'-FRAC-open abs c A i .α• =
   ●ᶜ.map-open abs
-    (CHARGE c ⨾⊸ η◦ᶜ)
+    (CHARGE c ⨾ᶜ η◦ᶜ)
     η◦ᶜ
     i
 
-▷'-open : ⟨ ABS ⟩ → (c : val ℂ) (A : 𝒞) → ▷'[ c ] A ≡ A
-▷'-open abs c A = cong 𝒞-fromFRAC (▷'-FRAC-open abs c A) ∙ 𝒞-glue-fracture-retract A
+opaque
+  unfolding Glueᶜ'
+
+  ▷'-open : ⟨ ABS ⟩ → (c : val ℂ) (A : 𝒞) → ▷'[ c ] A ≡ A
+  ▷'-open abs c A = cong 𝒞-fromFRAC (▷'-FRAC-open abs c A) ∙ 𝒞-glue-fracture-retract A
+
+  ▷'-●ᶜ : (c : val ℂ) (A : 𝒞) → ●ᶜ (▷'[ c ] A) ≡ ●ᶜ A
+  ▷'-●ᶜ c A = cong (fst ∘ 𝒞-FRAC.A•) (𝒞-glue-fracture-section (▷'-FRAC c A))
+
+  ▷'-◯ᶜ : (c : val ℂ) (A : 𝒞) → ◯ᶜ (▷'[ c ] A) ≡ ◯ᶜ A
+  ▷'-◯ᶜ c A = cong (fst ∘ 𝒞-FRAC.A◦) (𝒞-glue-fracture-section (▷'-FRAC c A))
+
+  transport-▷' : (c : val ℂ) (A : 𝒞) (q : cmp (●ᶜ A)) →
+          ●ᶜ.map (η◦ᶜ {A = ▷'[ c ] A}) .U
+            (transport (cong cmp (sym (▷'-●ᶜ c A))) q)
+          ≡ transport (cong (λ C → cmp (●ᶜ C)) (sym (▷'-◯ᶜ c A)))
+              ((▷'-FRAC c A .𝒞-FRAC.α•) .U q)
+  transport-▷' c A q =
+          fromPathP⁻ $
+            congP₂$
+              (λ i → 𝒞-glue-fracture-section (▷'-FRAC c A) i .𝒞-FRAC.α• .U)
+              (λ i → transport⁻-fillerExt⁻ (cong cmp (▷'-●ᶜ c A)) i q)
+
+store' : ∀ {c A} → A ⊸ ▷'[ c ] A
+store' {c} {A} =
+  subst (_⊸ ▷'[ c ] A) Glueᶜ'-id $
+  squareᶜ'
+    {A-⊤ = A} {A-abs = A} {α = idᶜ}
+    {B-⊤ = A} {B-abs = A} {β = CHARGE c}
+    idᶜ
+    (CHARGE c)
+    (λ _ → refl)
+
+release' : ▷'[ c ] A ⊸ A
+release' {c} {A} =
+  subst (▷'[ c ] A ⊸_) Glueᶜ'-id $
+  squareᶜ'
+    {A-⊤ = A} {A-abs = A} {α = CHARGE c}
+    {B-⊤ = A} {B-abs = A} {β = idᶜ}
+    (CHARGE c)
+    idᶜ
+    (λ _ → refl)
+
+▷'-map : (A ⊸ B) → (▷'[ c ] A ⊸ ▷'[ c ] B)
+▷'-map {A} {B} {c} f =
+  squareᶜ'
+    {A-⊤ = A} {A-abs = A} {α = CHARGE c}
+    {B-⊤ = B} {B-abs = B} {β = CHARGE c}
+    f
+    f
+    (sym ∘ f .charge c)
+
+
+ℙ : 𝒱
+ℙ = ●ᵛ ℂ
+
+-- variable
+--   p q r s : val ℙ
 
 ▷[_] : val ℙ → 𝒞 → 𝒞
 ▷[ η• c ] A = ▷'[ c ] A
 ▷[ ∗ p ] A = A
 ▷[ law c p i ] A = ▷'-open p c A i
+
+release : ∀ {p A} → ▷[ p ] A ⊸ A
+release {η• c} = release'
+release {∗ p} = idᶜ
+release {law c p i} = {!   !}

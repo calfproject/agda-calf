@@ -75,6 +75,7 @@ open 𝒞 public
 variable
   A B C : 𝒞
 
+infix 1 _⊸_
 record _⊸_ (A B : 𝒞) : Type where
   field
     U : cmp A → cmp B
@@ -90,6 +91,7 @@ id⊸ .U a = a
 id⊸ .charge _ _ = refl
 id⊸ {A} .seal _ _ _ = refl
 
+infixl 9 _⨾ᶜ_
 _⨾⊸_ : (A ⊸ B) → (B ⊸ C) → (A ⊸ C)
 (f ⨾⊸ g) .U = g .U ∘ f .U
 (f ⨾⊸ g) .charge c a = cong (g .U) (f .charge c a) ∙ g .charge c (f .U a)
@@ -172,6 +174,26 @@ isProp⊸charge A B f =
     i
 ⊸-path A-path B-path {f₀ = f₀} {f₁ = f₁} U-path i .seal = {!   !}
 
+CHARGE-commute
+  : ∀ c (e : A ⊸ B)
+  → CHARGE c ⨾ᶜ e ≡ e ⨾ᶜ CHARGE c
+CHARGE-commute c e =
+  ⊸-path refl refl (funExt λ a → e .charge c a)
+
+CHARGE-comm : ∀ c₁ c₂ → CHARGE {A} c₁ ⨾ᶜ CHARGE c₂ ≡ CHARGE c₂ ⨾ᶜ CHARGE c₁
+CHARGE-comm c₁ c₂ = CHARGE-commute c₁ (CHARGE c₂)
+
+CHARGE-0 : CHARGE {A} 0ℂ ≡ idᶜ
+CHARGE-0 {A = A} =
+  ⊸-path refl refl (funExt λ a → A .charge/0)
+
+CHARGE-+ : ∀ c₁ c₂ → CHARGE {A} (c₁ +ℂ c₂) ≡ CHARGE c₂ ⨾ᶜ CHARGE c₁
+CHARGE-+ {A = A} c₁ c₂ =
+  ⊸-path refl refl (funExt λ a → A .charge/+ {a = a} {c₁ = c₁} {c₂ = c₂})
+
+idᶜ⨾ᶜf≡f : (f : A ⊸ B) → idᶜ ⨾ᶜ f ≡ f
+idᶜ⨾ᶜf≡f f = ⊸-path refl refl refl
+
 charge-path-inv
   : {X Y : Type}
   → (e : X ≃ Y)
@@ -201,3 +223,16 @@ charge-path e chargeX chargeY h =
   funExt λ c →
     ua→ {e = e} λ x →
       ua-gluePath e (h c x)
+
+module _ where
+  -- a very random transport lemma that is unfortunately needed twice
+  transport-charge
+    : (p : B ≡ C) (d : val ℂ) (a : cmp B)
+    → transport (cong cmp p) (B .charge d a)
+    ≡ C .charge d (transport (cong cmp p) a)
+  transport-charge {B = B} =
+    J
+      (λ C p → (d : val ℂ) (a : cmp B) →
+        transport (cong cmp p) (B .charge d a)
+        ≡ C .charge d (transport (cong cmp p) a))
+      (λ d a → transportRefl (B .charge d a) ∙ cong (B .charge d) (sym (transportRefl a)))

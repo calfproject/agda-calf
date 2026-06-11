@@ -1,6 +1,7 @@
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Function
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Structure
 open import Cubical.Foundations.CartesianKanOps
@@ -10,6 +11,7 @@ module Calf.Phase.Closed (φ : Type) (φ-isProp : isProp φ) where
 
 open import Calf.Phase.Open φ φ-isProp using (◯)
 
+-- The following two proofs are imported from the 1Lab: https://1lab.dev/1Lab.Type.Pi.html
 funext-dep
   : ∀ {A : I → Type} {B : (i : I) → A i → Type} {f g}
   → ( ∀ {x₀ x₁} (p : PathP A x₀ x₁)
@@ -88,6 +90,29 @@ Type• = TypeWithStr _ λ X → isEquiv (η• {X})
     (law x p ∙ sym (law x' p))
     i
 
+●-unlex' : ∀ {X} {x : X} {y : ● X} → ●-encode x y → η• x ≡ y
+●-unlex' {X} {x} {y} e =
+  ind R η•-case ∗-case law-case y e
+  where
+  R : ● X → Type
+  R y = ●-encode x y → η• x ≡ y
+
+  η•-case : (x' : X) → R (η• x')
+  η•-case x' e = ●-unlex e
+
+  ∗-case : (p : φ) → R (∗ p)
+  ∗-case p _ = law x p
+
+  law-case : (x' : X) (p : φ) → PathP (λ i → R (law x' p i)) (η•-case x') (∗-case p)
+  law-case x' p =
+    funext-dep-i0 λ e →
+      isProp→PathP
+        (λ i → isProp→isSet (●-isProp p)
+          (η• x)
+          (law x' p i))
+        (η•-case x' e)
+        (∗-case p (coe0→1 (λ i → ●-encode x (law x' p i)) e))
+
 ●-lex-unlex : ∀ {X} {x x' : X} (e : ● (x ≡ x')) → ●-lex (●-unlex e) ≡ e
 ●-lex-unlex {x = x} (η• h) =
   J
@@ -107,18 +132,30 @@ Type• = TypeWithStr _ λ X → isEquiv (η• {X})
     (●-lex-unlex (∗ p))
     i
 
-●-join : {X : Type} → ● (● X) → ● X
-●-join (η• x) = x
-●-join (∗ p) = ∗ p
-●-join (law x p i) = ●-path-to-star p x i
+●-unlex-lex : ∀ {X} {x x' : X} (h : η• x ≡ η• x') → ●-unlex (●-lex h) ≡ h
+●-unlex-lex {X} {x} h =
+  J
+    (λ y h → ●-unlex' (●-lex h) ≡ h)
+    (cong
+      (λ e → ●-unlex' {X = X} {x = x} {y = η• x} e)
+      (JRefl {x = η• x} (λ y _ → ●-encode x y) (η• {X = x ≡ x} refl)))
+    h
 
-●-η-isEquiv : {X : Type} → isEquiv (η• {● X})
-●-η-isEquiv = isoToIsEquiv (iso η• ●-join sec ret)
+join : {X : Type} → ● (● X) → ● X
+join (η• x) = x
+join (∗ p) = ∗ p
+join (law x p i) = ●-path-to-star p x i
+
+bind : {X Y : Type} → ● X → (X → ● Y) → ● Y
+bind x• k = join (map k x•)
+
+η-isEquiv : {X : Type} → isEquiv (η• {● X})
+η-isEquiv = isoToIsEquiv (iso η• join sec ret)
   where
-  ret : {X : Type} → (x : ● X) → ●-join (η• x) ≡ x
+  ret : {X : Type} → (x : ● X) → join (η• x) ≡ x
   ret x = refl
 
-  sec : {X : Type} → (x : ● (● X)) → η• (●-join x) ≡ x
+  sec : {X : Type} → (x : ● (● X)) → η• (join x) ≡ x
   sec (η• x) = refl
   sec (∗ p) = law (∗ p) p
   sec (law x p i) =
@@ -130,74 +167,74 @@ Type• = TypeWithStr _ λ X → isEquiv (η• {X})
       (law (∗ p) p)
       i
 
-●-η-fiber : {X : Type} (x• : ● X) → ● (Σ[ x ∈ X ] η• x ≡ x•)
-●-η-fiber (η• x) = η• (x , refl)
-●-η-fiber (∗ p) = ∗ p
-●-η-fiber (law x p i) = law (x , λ j → law x p (i ∧ j)) p i
+η-fiber : {X : Type} (x• : ● X) → ● (Σ[ x ∈ X ] η• x ≡ x•)
+η-fiber (η• x) = η• (x , refl)
+η-fiber (∗ p) = ∗ p
+η-fiber (law x p i) = law (x , λ j → law x p (i ∧ j)) p i
 
-●-η-fiber-point
+η-fiber-point
   : {X : Type} (x• : ● X) (u : Σ[ x ∈ X ] η• x ≡ x•)
-  → ●-η-fiber x• ≡ η• u
-●-η-fiber-point x• (x , p) =
-  J (λ y q → ●-η-fiber y ≡ η• (x , q)) refl p
+  → η-fiber x• ≡ η• u
+η-fiber-point x• (x , p) =
+  J (λ y q → η-fiber y ≡ η• (x , q)) refl p
 
-●-modal : Type → Type
-●-modal X = isEquiv (η• {X})
+isModal : Type → Type
+isModal X = isEquiv (η• {X})
 
-●-connected : Type → Type
-●-connected X = isContr (● X)
+isConnected : Type → Type
+isConnected X = isContr (● X)
 
-●-modal-map : {X Y : Type} → (X → Y) → Type
-●-modal-map {Y = Y} f = (y : Y) → ●-modal (fiber f y)
+isModalMap : {X Y : Type} → (X → Y) → Type
+isModalMap {Y = Y} f = (y : Y) → isModal (fiber f y)
 
-●-connected-map : {X Y : Type} → (X → Y) → Type
-●-connected-map {Y = Y} f = (y : Y) → ●-connected (fiber f y)
+isConnectedMap : {X Y : Type} → (X → Y) → Type
+isConnectedMap {Y = Y} f = (y : Y) → isConnected (fiber f y)
 
-●-modal+connected→contr : {X : Type} → ●-modal X → ●-connected X → isContr X
-●-modal+connected→contr X-modal X-connected =
+isModal+isConnected→isContr : {X : Type} → isModal X → isConnected X → isContr X
+isModal+isConnected→isContr X-modal X-connected =
   isOfHLevelRespectEquiv 0 (invEquiv (η• , X-modal)) X-connected
 
-●-modal+connected→isEquiv
+isModal+isConnected→isEquiv
   : {X Y : Type} {f : X → Y}
-  → ●-modal-map f
-  → ●-connected-map f
+  → isModalMap f
+  → isConnectedMap f
   → isEquiv f
-●-modal+connected→isEquiv f-modal f-connected .equiv-proof y =
-  ●-modal+connected→contr (f-modal y) (f-connected y)
+isModal+isConnected→isEquiv f-modal f-connected .equiv-proof y =
+  isModal+isConnected→isContr (f-modal y) (f-connected y)
 
-◯-isContr→●-modal : {X : Type} → ◯ (isContr X) → ●-modal X
-◯-isContr→●-modal c = isoToIsEquiv (iso η• (out c) (sec c) (ret c))
+◯-isContr→isModal : {X : Type} → ◯ (isContr X) → isModal X
+◯-isContr→isModal c = isoToIsEquiv (iso η• (out c) (sec c) (ret c))
   where
-  out : {X : Type} → ◯ (isContr X) → ● X → X
-  out c (η• x) = x
-  out c (∗ p) = c p .fst
-  out c (law x p i) = c p .snd x (~ i)
+    out : {X : Type} → ◯ (isContr X) → ● X → X
+    out c (η• x) = x
+    out c (∗ p) = c p .fst
+    out c (law x p i) = c p .snd x (~ i)
 
-  sec : {X : Type} (c : ◯ (isContr X)) → section η• (out c)
-  sec c (η• x) = refl
-  sec c (∗ p) = law (c p .fst) p
-  sec c (law x p i) =
-    isProp→PathP
-      (λ i → isProp→isSet (●-isProp p)
-        (η• (c p .snd x (~ i)))
-        (law x p i))
-      refl
-      (law (c p .fst) p)
-      i
+    sec : {X : Type} (c : ◯ (isContr X)) → section η• (out c)
+    sec c (η• x) = refl
+    sec c (∗ p) = law (c p .fst) p
+    sec c (law x p i) =
+      isProp→PathP
+        (λ i → isProp→isSet (●-isProp p)
+          (η• (c p .snd x (~ i)))
+          (law x p i))
+        refl
+        (law (c p .fst) p)
+        i
 
-  ret : {X : Type} (c : ◯ (isContr X)) → retract η• (out c)
-  ret c x = refl
+    ret : {X : Type} (c : ◯ (isContr X)) → retract η• (out c)
+    ret c x = refl
 
 ●-map-const : {X Y : Type} (x : X) (y• : ● Y) → map (λ _ → x) y• ≡ η• x
 ●-map-const x (η• y) = refl
 ●-map-const x (∗ p) = sym (law x p)
 ●-map-const x (law y p i) j = law x p (i ∧ ~ j)
 
-●-map-∘ : {X Y Z : Type} (f : X → Y) (g : Y → Z) (x• : ● X) →
-  map g (map f x•) ≡ map (λ x → g (f x)) x•
-●-map-∘ f g (η• x) = refl
-●-map-∘ f g (∗ p) = refl
-●-map-∘ f g (law x p i) = refl
+map-∘ : {X Y Z : Type} (f : X → Y) (g : Y → Z) (x• : ● X) →
+  map g (map f x•) ≡ map (g ∘ f) x•
+map-∘ f g (η• x) = refl
+map-∘ f g (∗ p) = refl
+map-∘ f g (law x p i) = refl
 
 ●-fiber-map-isProp-at
   : {X Y : Type} (f : X → Y) (y : Y) (p : φ)
@@ -212,18 +249,18 @@ Type• = TypeWithStr _ λ X → isEquiv (η• {X})
 ●-fiber-out f y =
   ind R η•-case ∗-case law-case
   where
-  R : ● (fiber f y) → Type
-  R _ = fiber (map f) (η• y)
+    R : ● (fiber f y) → Type
+    R _ = fiber (map f) (η• y)
 
-  η•-case : (u : fiber f y) → R (η• u)
-  η•-case (x , q) = η• x , cong η• q
+    η•-case : (u : fiber f y) → R (η• u)
+    η•-case (x , q) = η• x , cong η• q
 
-  ∗-case : (p : φ) → R (∗ p)
-  ∗-case p = ∗ p , sym (law y p)
+    ∗-case : (p : φ) → R (∗ p)
+    ∗-case p = ∗ p , sym (law y p)
 
-  law-case : (u : fiber f y) (p : φ) → PathP (λ i → R (law u p i)) (η•-case u) (∗-case p)
-  law-case u p =
-    isProp→PathP (λ _ → ●-fiber-map-isProp-at f y p) (η•-case u) (∗-case p)
+    law-case : (u : fiber f y) (p : φ) → PathP (λ i → R (law u p i)) (η•-case u) (∗-case p)
+    law-case u p =
+      isProp→PathP (λ _ → ●-fiber-map-isProp-at f y p) (η•-case u) (∗-case p)
 
 ●-fiber-in
   : {X Y : Type} (f : X → Y) (y : Y)
@@ -231,22 +268,22 @@ Type• = TypeWithStr _ λ X → isEquiv (η• {X})
 ●-fiber-in f y (x• , q) =
   ind R η•-case ∗-case law-case x• q
   where
-  R : ● _ → Type
-  R x• = map f x• ≡ η• y → ● (fiber f y)
+    R : ● _ → Type
+    R x• = map f x• ≡ η• y → ● (fiber f y)
 
-  η•-case : (x : _) → R (η• x)
-  η•-case x q = map (λ r → x , r) (●-lex q)
+    η•-case : (x : _) → R (η• x)
+    η•-case x q = map (λ r → x , r) (●-lex q)
 
-  ∗-case : (p : φ) → R (∗ p)
-  ∗-case p q = ∗ p
+    ∗-case : (p : φ) → R (∗ p)
+    ∗-case p q = ∗ p
 
-  law-case : (x : _) (p : φ) → PathP (λ i → R (law x p i)) (η•-case x) (∗-case p)
-  law-case x p =
-    funext-dep-i0 λ q →
-      isProp→PathP
-        (λ _ → ●-isProp p)
-        (η•-case x q)
-        (∗-case p (coe0→1 (λ i → map f (law x p i) ≡ η• y) q))
+    law-case : (x : _) (p : φ) → PathP (λ i → R (law x p i)) (η•-case x) (∗-case p)
+    law-case x p =
+      funext-dep-i0 λ q →
+        isProp→PathP
+          (λ _ → ●-isProp p)
+          (η•-case x q)
+          (∗-case p (coe0→1 (λ i → map f (law x p i) ≡ η• y) q))
 
 ●-fiber-in-out
   : {X Y : Type} (f : X → Y) (y : Y) (u• : ● (fiber f y))
@@ -254,29 +291,29 @@ Type• = TypeWithStr _ λ X → isEquiv (η• {X})
 ●-fiber-in-out f y =
   ind R η•-case ∗-case law-case
   where
-  R : ● (fiber f y) → Type
-  R u• = ●-fiber-in f y (●-fiber-out f y u•) ≡ u•
+    R : ● (fiber f y) → Type
+    R u• = ●-fiber-in f y (●-fiber-out f y u•) ≡ u•
 
-  η•-case : (u : fiber f y) → R (η• u)
-  η•-case (x , q) =
-    cong (map (λ r → x , r)) (●-lex-unlex (η• q))
+    η•-case : (u : fiber f y) → R (η• u)
+    η•-case (x , q) =
+      cong (map (λ r → x , r)) (●-lex-unlex (η• q))
 
-  ∗-case : (p : φ) → R (∗ p)
-  ∗-case p = refl
+    ∗-case : (p : φ) → R (∗ p)
+    ∗-case p = refl
 
-  law-case : (u : fiber f y) (p : φ) → PathP (λ i → R (law u p i)) (η•-case u) (∗-case p)
-  law-case u p =
-    isProp→PathP
-      (λ i → isProp→isSet (●-isProp p)
-        (●-fiber-in f y (●-fiber-out f y (law u p i)))
-        (law u p i))
-      (η•-case u)
-      (∗-case p)
+    law-case : (u : fiber f y) (p : φ) → PathP (λ i → R (law u p i)) (η•-case u) (∗-case p)
+    law-case u p =
+      isProp→PathP
+        (λ i → isProp→isSet (●-isProp p)
+          (●-fiber-in f y (●-fiber-out f y (law u p i)))
+          (law u p i))
+        (η•-case u)
+        (∗-case p)
 
 ●-map-isEquiv→connected-map
   : {X Y : Type} (f : X → Y)
   → isEquiv (map f)
-  → ●-connected-map f
+  → isConnectedMap f
 ●-map-isEquiv→connected-map f f•-isEquiv y .fst =
   ●-fiber-in f y (f•-isEquiv .equiv-proof (η• y) .fst)
 ●-map-isEquiv→connected-map f f•-isEquiv y .snd u• =
@@ -288,5 +325,89 @@ Type•-at-open-isContr X• p .fst = invIsEq (X• .snd) (∗ p)
 Type•-at-open-isContr X• p .snd x =
   cong (invIsEq (X• .snd)) (sym (law x p)) ∙ retIsEq (X• .snd) x
 
-isSet● : ∀ {X} → isSet X → isSet (● X)
-isSet● isSetX = {!   !}
+●-path-to-point : ∀ {X} → isProp X → (x : X) (x• : ● X) → x• ≡ η• x
+●-path-to-point {X} X-isProp x =
+  ind R η•-case ∗-case law-case
+  where
+    R : ● X → Type
+    R x• = x• ≡ η• x
+
+    η•-case : (y : X) → R (η• y)
+    η•-case y = cong η• (X-isProp y x)
+
+    ∗-case : (p : φ) → R (∗ p)
+    ∗-case p = sym (law x p)
+
+    law-case : (y : X) (p : φ) → PathP (λ i → R (law y p i)) (η•-case y) (∗-case p)
+    law-case y p =
+      isProp→PathP
+        (λ i → isProp→isSet (●-isProp p) (law y p i) (η• x))
+        (η•-case y)
+        (∗-case p)
+
+●-preserves-isProp : ∀ {X} → isProp X → isProp (● X)
+●-preserves-isProp {X} X-isProp =
+  ind R η•-case ∗-case law-case
+  where
+  R : ● X → Type
+  R x• = (y• : ● X) → x• ≡ y•
+
+  η•-case : (x : X) → R (η• x)
+  η•-case x y• = sym (●-path-to-point X-isProp x y•)
+
+  ∗-case : (p : φ) → R (∗ p)
+  ∗-case p y• = ●-isProp p (∗ p) y•
+
+  law-case : (x : X) (p : φ) → PathP (λ i → R (law x p i)) (η•-case x) (∗-case p)
+  law-case x p i y• =
+    isProp→PathP
+      (λ i → isProp→isSet (●-isProp p) (law x p i) y•)
+      (η•-case x y•)
+      (∗-case p y•)
+      i
+
+●-isPropPath : ∀ {X} → isSet X → (x• y• : ● X) → isProp (x• ≡ y•)
+●-isPropPath {X} X-isSet = ind R η•-case ∗-case law-case
+  where
+    R : ● X → Type
+    R x• = (y• : ● X) → isProp (x• ≡ y•)
+
+    η•η•-case : (x y : X) → isProp (η• x ≡ η• y)
+    η•η•-case x y h h' =
+      sym (●-unlex-lex h)
+      ∙ cong ●-unlex (●-preserves-isProp (X-isSet x y) (●-lex h) (●-lex h'))
+      ∙ ●-unlex-lex h'
+
+    η•-case : (x : X) → R (η• x)
+    η•-case x = ind S η•η•-case' ∗-case' law-case'
+      where
+        S : ● X → Type
+        S y• = isProp (η• x ≡ y•)
+
+        η•η•-case' : (y : X) → S (η• y)
+        η•η•-case' y = η•η•-case x y
+
+        ∗-case' : (p : φ) → S (∗ p)
+        ∗-case' p = isProp→isSet (●-isProp p) (η• x) (∗ p)
+
+        law-case' : (y : X) (p : φ) → PathP (λ i → S (law y p i)) (η•η•-case' y) (∗-case' p)
+        law-case' y p =
+          isProp→PathP
+            (λ _ → isPropIsProp)
+            (η•η•-case' y)
+            (∗-case' p)
+
+    ∗-case : (p : φ) → R (∗ p)
+    ∗-case p y• = isProp→isSet (●-isProp p) (∗ p) y•
+
+    law-case : (x : X) (p : φ) → PathP (λ i → R (law x p i)) (η•-case x) (∗-case p)
+    law-case x p i y• =
+      isProp→PathP
+        (λ j → isPropIsProp {A = law x p j ≡ y•})
+        (η•-case x y•)
+        (∗-case p y•)
+        i
+
+opaque
+  ●-preserves-isSet : ∀ {X} → isSet X → isSet (● X)
+  ●-preserves-isSet X-isSet x• y• = ●-isPropPath X-isSet x• y•

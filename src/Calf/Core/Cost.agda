@@ -23,7 +23,10 @@ opaque
   _+ℂ_ = _+_
 
   +ℂ-identityˡ : LeftIdentity 0ℂ _+ℂ_
-  +ℂ-identityˡ c = refl
+  +ℂ-identityˡ _ = refl
+
+  +ℂ-identityʳ : RightIdentity 0ℂ _+ℂ_
+  +ℂ-identityʳ = Nat.+-zero
 
   +ℂ-assoc : Associative _+ℂ_
   +ℂ-assoc c₁ c₂ c₃ = sym (Nat.+-assoc c₁ c₂ c₃)
@@ -39,4 +42,4 @@ instance
   fromNatℂ = record { Constraint = λ _ → ⊤ ; fromNat = λ n → ℕ→ℂ n }
 
 variable
-  c c₁ c₂ : val ℂ
+  c c' c₁ c₂ : val ℂ

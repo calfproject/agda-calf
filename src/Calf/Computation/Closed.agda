@@ -8,8 +8,7 @@ module Calf.Computation.Closed where
 open import Calf.Core.Abstract
 open import Calf.Core.Cost
 open import Calf.Value
-open import Calf.Value.Closed as ●ᵛ using (●ᵛ; 𝒱•)
-open import Calf.Value.Closed using (η•; ∗; law; ●-isProp; ●-map-∘) public
+open import Calf.Value.Closed as ●ᵛ hiding (map; map-∘; join; bind) public
 open import Calf.Computation
 
 ●ᶜ : 𝒞 → 𝒞
@@ -70,6 +69,16 @@ map {A} {B} f .charge c (law a p i) =
     i
 map f .seal = {!   !}
 
+●ᶜ-charge-map
+  : (c : val ℂ) (a• : cmp (●ᶜ A))
+  → ●ᶜ A .charge c a• ≡ ●ᵛ.map (A .charge c) a•
+●ᶜ-charge-map c (η• a) = refl
+●ᶜ-charge-map c (∗ p) = refl
+●ᶜ-charge-map c (law a p i) = refl
+
+map-∘ : (f : A ⊸ B) (g : B ⊸ C) → map f ⨾ᶜ map g ≡ map (f ⨾ᶜ g)
+map-∘ f g = ⊸-path refl refl (funExt (●ᵛ.map-∘ (f .U) (g .U)))
+
 map-open : ⟨ ABS ⟩ → (f g : A ⊸ B) → map f ≡ map g
 map-open {A} {B} p f g =
   ⊸-path
@@ -84,5 +93,51 @@ map-open {A} {B} p f g =
         (map {A = A} {B = B} f .U a•)
         (map {A = A} {B = B} g .U a•))
 
-●ᶜ-η•ᶜ-isEquiv : isEquivᶜ (η•ᶜ {●ᶜ A})
-●ᶜ-η•ᶜ-isEquiv {A} = ●ᵛ.●ᵛ-η•ᵛ-isEquiv {U A}
+join : ●ᶜ (●ᶜ A) ⊸ ●ᶜ A
+join .U = ●ᵛ.join
+join .charge c (η• a•) = refl
+join .charge c (∗ abs) = refl
+join {A = A} .charge c (law a• abs i) =
+  isProp→PathP
+    (λ i → ●ᶜ A .U .is-set
+      (join {A = A} .U (●ᶜ (●ᶜ A) .charge c (law a• abs i)))
+      (●ᶜ A .charge c (join {A = A} .U (law a• abs i))))
+    refl
+    refl
+    i
+
+bind : (A ⊸ ●ᶜ B) → (●ᶜ A ⊸ ●ᶜ B)
+bind k = map k ⨾ᶜ join
+
+bind-map : (k : A ⊸ ●ᶜ B) (f : B ⊸ C) → bind k ⨾ᶜ map f ≡ bind (k ⨾ᶜ map f)
+bind-map {A = A} {B = B} {C = C} k f =
+  ⊸-path refl refl (funExt h)
+  where
+    h : (a• : cmp (●ᶜ A)) →
+      (bind k ⨾ᶜ map f) .U a• ≡ bind (k ⨾ᶜ map f) .U a•
+    h (η• a) = refl
+    h (∗ p) = refl
+    h (law a p i) =
+      isProp→PathP
+        (λ i → ●ᶜ C .U .is-set
+          ((bind k ⨾ᶜ map f) .U (law a p i))
+          (bind (k ⨾ᶜ map f) .U (law a p i)))
+        refl
+        refl
+        i
+
+bind-η• : (f : A ⊸ B) → bind (f ⨾ᶜ η•ᶜ) ≡ map f
+bind-η• {A = A} {B = B} f =
+  ⊸-path refl refl (funExt h)
+  where
+    h : (a• : cmp (●ᶜ A)) → bind (f ⨾ᶜ η•ᶜ) .U a• ≡ map f .U a•
+    h (η• a) = refl
+    h (∗ p) = refl
+    h (law a p i) =
+      isProp→PathP
+        (λ i → ●ᶜ B .U .is-set
+          (bind (f ⨾ᶜ η•ᶜ) .U (law a p i))
+          (map f .U (law a p i)))
+        refl
+        refl
+        i

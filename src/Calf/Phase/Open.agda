@@ -24,14 +24,17 @@ map f x◦ p = f (x◦ p)
 Type◦ : Type₁
 Type◦ = TypeWithStr _ λ X → isEquiv (η◦ {X})
 
-◯-join : {X : Type} → ◯ (◯ X) → ◯ X
-◯-join x p = x p p
+join : {X : Type} → ◯ (◯ X) → ◯ X
+join x p = x p p
 
-◯-η-isEquiv : {X : Type} → isEquiv (η◦ {◯ X})
-◯-η-isEquiv = isoToIsEquiv (iso η◦ ◯-join sec ret)
+bind : {X Y : Type} → ◯ X → (X → ◯ Y) → ◯ Y
+bind x◦ k = join (map k x◦)
+
+η-isEquiv : {X : Type} → isEquiv (η◦ {◯ X})
+η-isEquiv = isoToIsEquiv (iso η◦ join sec ret)
   where
-  sec : {X : Type} → (x : ◯ (◯ X)) → η◦ (◯-join x) ≡ x
-  sec x = funExt λ p → funExt λ q → cong (λ r → x r q) (φ-isProp q p)
+    sec : {X : Type} → (x : ◯ (◯ X)) → η◦ (join x) ≡ x
+    sec x = funExt λ p → funExt λ q → cong (λ r → x r q) (φ-isProp q p)
 
-  ret : {X : Type} → (x : ◯ X) → ◯-join (η◦ x) ≡ x
-  ret x = refl
+    ret : {X : Type} → (x : ◯ X) → join (η◦ x) ≡ x
+    ret x = refl
