@@ -78,4 +78,4 @@ isDiscreteᵛ X = isDiscrete (val X)
 fromProp : hProp ℓ-zero → 𝒱
 fromProp P .val = ⟨ P ⟩
 fromProp P .is-set = isProp→isSet (P .snd)
-fromProp P .is-preorder = {!   !}
+fromProp P .is-preorder = isProp→isPreorder (P .snd)

@@ -86,16 +86,16 @@ open _⊸_ public
 isEquivᶜ : (A ⊸ B) → Type
 isEquivᶜ f = isEquiv (U f)
 
-id⊸ : A ⊸ A
-id⊸ .U a = a
-id⊸ .charge _ _ = refl
-id⊸ {A} .seal _ _ _ = refl
+idᶜ : A ⊸ A
+idᶜ .U a = a
+idᶜ .charge _ _ = refl
+idᶜ {A} .seal _ _ _ = refl
 
 infixl 9 _⨾ᶜ_
-_⨾⊸_ : (A ⊸ B) → (B ⊸ C) → (A ⊸ C)
-(f ⨾⊸ g) .U = g .U ∘ f .U
-(f ⨾⊸ g) .charge c a = cong (g .U) (f .charge c a) ∙ g .charge c (f .U a)
-_⨾⊸_ {A} {B} f g .seal a a◦ h =
+_⨾ᶜ_ : (A ⊸ B) → (B ⊸ C) → (A ⊸ C)
+(f ⨾ᶜ g) .U = g .U ∘ f .U
+(f ⨾ᶜ g) .charge c a = cong (g .U) (f .charge c a) ∙ g .charge c (f .U a)
+_⨾ᶜ_ {A} {B} f g .seal a a◦ h =
   cong (g .U) (f .seal a a◦ h)
   ∙ g .seal (f .U a) (f .U ∘ a◦) (⊑ᵛ-mono {U A} {U B} (f .U) ∘ h)
 
