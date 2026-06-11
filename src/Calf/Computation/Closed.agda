@@ -63,6 +63,13 @@ map {A} {B} f .charge c (law a p i) =
     (cong η• (f .charge c a))
     refl
     i
+  
+●ᶜ-charge-map
+  : (c : val ℂ) (a• : cmp (●ᶜ A))
+  → ●ᶜ A .charge c a• ≡ ●ᵛ.map (A .charge c) a•
+●ᶜ-charge-map c (η• a) = refl
+●ᶜ-charge-map c (∗ p) = refl
+●ᶜ-charge-map c (law a p i) = refl
 
 map-∘ : (f : A ⊸ B) (g : B ⊸ C) → map f ⨾ᶜ map g ≡ map (f ⨾ᶜ g)
 map-∘ f g = ⊸-path refl refl (funExt (●ᵛ.map-∘ (f .U) (g .U)))

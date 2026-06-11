@@ -167,7 +167,7 @@ charge-path e chargeX chargeY h =
 module _ where 
   -- a very random transport lemma that is unfortunately needed twice
   transport-charge
-    : {B C : 𝒞} (p : B ≡ C) (d : val ℂ) (a : cmp B)
+    : (p : B ≡ C) (d : val ℂ) (a : cmp B)
     → transport (cong cmp p) (B .charge d a)
     ≡ C .charge d (transport (cong cmp p) a)
   transport-charge {B = B} = 
