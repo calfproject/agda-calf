@@ -3,6 +3,8 @@ open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.Structure
 open import Cubical.Data.Sigma
+open import Cubical.Data.Nat
+open import Cubical.Data.List
 
 module Calf.Computation.PList1 where
 
@@ -19,20 +21,6 @@ open import Calf.Computation.Open as ◯ᶜ
 open import Calf.Computation.Closed as ●ᶜ
 open import Calf.Computation.Glue
 open import Calf.Computation.Potential
-open import Cubical.Data.Nat
-open import Cubical.Data.List
-
-module _ where 
-  transport-charge
-    : {B C : 𝒞} (p : B ≡ C) (d : val ℂ) (a : cmp B)
-    → transport (cong cmp p) (B .charge d a)
-    ≡ C .charge d (transport (cong cmp p) a)
-  transport-charge {B = B} = 
-    J
-      (λ C p → (d : val ℂ) (a : cmp B) →
-        transport (cong cmp p) (B .charge d a)
-        ≡ C .charge d (transport (cong cmp p) a))
-      (λ d a → transportRefl (B .charge d a) ∙ cong (B .charge d) (sym (transportRefl a)))
 
 _⊙_ : ℕ → val ℂ → val ℂ
 zero ⊙ c = 0ℂ
