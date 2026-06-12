@@ -45,8 +45,22 @@ Glueᶜ A• A◦ α• .charge/+ {a} {c₁} {c₂} i .•→◦ =
       ∙ cong (●ᶜ (A◦ .fst) .charge c₁)
         (α• .charge c₂ (a .•) ∙ cong (●ᶜ (A◦ .fst) .charge c₂) (a .•→◦)))
     i
-Glueᶜ A• A◦ α .seal = {!   !}
-Glueᶜ A• A◦ α .seal/abs = {!   !}
+Glueᶜ A• A◦ α• .seal a a◦ a⊑a◦ .• = A• .fst .seal (a .•) (λ abs → a◦ abs .•) λ abs → ⊑ᵛ-mono {Glueᵛ (U• A•) (U◦ A◦) _} {U (A• .fst)} • (a⊑a◦ abs)
+Glueᶜ A• A◦ α• .seal a a◦ a⊑a◦ .◦ = A◦ .fst .seal (a .◦) (λ abs → a◦ abs .◦) λ abs → ⊑ᵛ-mono {Glueᵛ (U• A•) (U◦ A◦) _} {U (A◦ .fst)} ◦ (a⊑a◦ abs)
+Glueᶜ A• A◦ α• .seal a a◦ a⊑a◦ .•→◦ =
+    α• .U (A• .fst .seal (a .•) (λ abs → a◦ abs .•) λ abs → ⊑ᵛ-mono {Glueᵛ (U• A•) (U◦ A◦) _} {U (A• .fst)} • (a⊑a◦ abs))
+  ≡⟨ α• .seal _ _ _ ⟩
+    α• .U (a .•)
+  ≡⟨ a .•→◦ ⟩
+    η• (a .◦)
+  ≡⟨ {!   !} ⟩
+    η• (a◦ {!   !} .◦)
+  ≡⟨ cong η• (sym (A◦ .fst .seal/abs {!   !})) ⟩
+    η• (A◦ .fst .seal (a .◦) (λ abs → a◦ abs .◦) λ abs → ⊑ᵛ-mono {Glueᵛ (U• A•) (U◦ A◦) _} {U (A◦ .fst)} ◦ (a⊑a◦ abs))
+  ∎
+Glueᶜ A• A◦ α• .seal/abs abs i .• = {!   !}
+Glueᶜ A• A◦ α• .seal/abs abs i .◦ = {!   !}
+Glueᶜ A• A◦ α• .seal/abs abs i .•→◦ = {!   !}
 Glueᶜ A• A◦ α .seal/charge = {!   !}
 
 record 𝒞-FRAC : Type₁ where

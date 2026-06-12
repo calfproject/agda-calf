@@ -36,14 +36,14 @@ open import Calf.Computation
     (cong η• (A .charge/+))
     refl
     i
-●ᶜ A .seal = {!   !}
-●ᶜ A .seal/abs = {!   !}
-●ᶜ A .seal/charge = {!   !}
+●ᶜ A .seal a _ _ = a
+●ᶜ A .seal/abs abs = ●-isProp abs _ _
+●ᶜ A .seal/charge = refl
 
 η•ᶜ : A ⊸ ●ᶜ A
 η•ᶜ .U = η•
 η•ᶜ .charge _ _ = refl
-η•ᶜ .seal = {!   !}
+η•ᶜ .seal a a◦ h = {!   !}
 
 𝒞• : Type₁
 𝒞• = Σ[ A ∈ 𝒞 ] isEquiv (η•ᶜ {A} .U)
@@ -67,7 +67,9 @@ map {A} {B} f .charge c (law a p i) =
     (cong η• (f .charge c a))
     refl
     i
-map f .seal = {!   !}
+map f .seal (η• a) a◦ a⊑a◦ = refl
+map f .seal (∗ abs) a◦ a⊑a◦ = refl
+map f .seal (law a abs i) a◦ a⊑a◦ = refl
 
 ●ᶜ-charge-map
   : (c : val ℂ) (a• : cmp (●ᶜ A))
