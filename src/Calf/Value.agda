@@ -1,7 +1,7 @@
 module Calf.Value where
 
 open import Calf.Core.Directed
-open import Calf.Core.Directed using (BEH) public
+open import Calf.Core.Directed using (⊑-mono; ⊑-funext; BEH) public
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Equiv.PathSplit
@@ -46,21 +46,21 @@ module _ {X : 𝒱} where
   _⊑ᵛ_ : val X → val X → Type
   x ⊑ᵛ x' = x ⊑ x'
 
-  ≡⇒⊑ᵛ : _≡_ ⇒ _⊑ᵛ_
-  ≡⇒⊑ᵛ = ≡⇒⊑
-
-  ⊑ᵛ-refl : Reflexive _⊑ᵛ_
-  ⊑ᵛ-refl = ⊑-refl
-
   ⊑ᵛ-trans : Transitive _⊑ᵛ_
   ⊑ᵛ-trans = ⊑-trans (X .is-preorder)
+
+-- ≡⇒⊑ᵛ : _≡_ ⇒ _⊑ᵛ_
+≡⇒⊑ᵛ = ≡⇒⊑
+
+-- ⊑ᵛ-refl : Reflexive _⊑ᵛ_
+⊑ᵛ-refl = ⊑-refl
 
 ⊑ᵛ-syntax : val X → val X → Type
 ⊑ᵛ-syntax {X} = _⊑ᵛ_ {X}
 
 syntax ⊑ᵛ-syntax {X} x x' = x ⊑[ X ] x'
 
-⊑ᵛ-mono : (f : val X → val Y) {x x' : val X} → x ⊑[ X ] x' → f x ⊑[ Y ] f x'
+-- ⊑ᵛ-mono : (f : val X → val Y) {x x' : val X} → x ⊑[ X ] x' → f x ⊑[ Y ] f x'
 ⊑ᵛ-mono = ⊑-mono
 
 ⊑ᵛ-isProp : {x x' : val X} → isProp (x ⊑[ X ] x')
@@ -72,7 +72,7 @@ syntax ⊑ᵛ-syntax {X} x x' = x ⊑[ X ] x'
 isDiscreteᵛ : 𝒱 → Type
 isDiscreteᵛ X = isDiscrete (val X)
 
-⊑ᵛ-beh : BEH → isDiscreteᵛ X
+-- ⊑ᵛ-beh : BEH → isDiscreteᵛ X
 ⊑ᵛ-beh = ⊑-beh
 
 fromProp : hProp ℓ-zero → 𝒱
@@ -94,7 +94,7 @@ module ⊑ᵛ-Reasoning (X : 𝒱) where
   ⊑ᵛ-preorder ._≈_ = _≡_
   ⊑ᵛ-preorder ._≲_ = _⊑ᵛ_ {X}
   ⊑ᵛ-preorder .Preorder.isPreorder .isEquivalence = ≡-isEquivalence
-  ⊑ᵛ-preorder .Preorder.isPreorder .reflexive = ≡⇒⊑ᵛ {X}
+  ⊑ᵛ-preorder .Preorder.isPreorder .reflexive = ≡⇒⊑ᵛ
   ⊑ᵛ-preorder .Preorder.isPreorder .trans = ⊑ᵛ-trans {X}
 
   open import Relation.Binary.Reasoning.Preorder ⊑ᵛ-preorder as P public

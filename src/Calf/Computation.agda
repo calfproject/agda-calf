@@ -30,13 +30,13 @@ record 𝒞 : Type₁ where
       seal (seal a a◦ a⊑a◦) a◦' a◦⊑a◦' ≡ seal a a◦' a⊑a◦'
     seal/charge : ∀ {a a◦ a⊑a◦ c} →
       charge c (seal a a◦ a⊑a◦) ≡
-      seal (charge c a) (charge c ∘ a◦) (⊑ᵛ-mono {U} {U} (charge c) ∘ a⊑a◦)
+      seal (charge c a) (charge c ∘ a◦) (⊑ᵛ-mono (charge c) ∘ a⊑a◦)
 
-  seal/unit' : ∀ {a} → seal a (λ _ → a) (λ _ → ⊑ᵛ-refl {U}) ≡ a
+  seal/unit' : ∀ {a} → seal a (λ _ → a) (λ _ → ⊑ᵛ-refl) ≡ a
   seal/unit' = seal/unit
 
   seal/mult' : ∀ {a a◦ a◦' a⊑a◦} {a◦⊑a◦' : (abs : ⟨ ABS ⟩) → a◦ abs ⊑[ U ] a◦' abs} →
-    seal (seal a a◦ a⊑a◦) a◦' (λ abs → ⊑ᵛ-trans {U} (≡⇒⊑ᵛ {U} (seal/abs abs)) (a◦⊑a◦' abs)) ≡
+    seal (seal a a◦ a⊑a◦) a◦' (λ abs → ⊑ᵛ-trans {U} (≡⇒⊑ᵛ (seal/abs abs)) (a◦⊑a◦' abs)) ≡
     seal a a◦' (λ abs → ⊑ᵛ-trans {U} (a⊑a◦ abs) (a◦⊑a◦' abs))
   seal/mult' = seal/mult
 
@@ -50,24 +50,49 @@ record _⊸_ (A B : 𝒞) : Type where
   field
     U : cmp A → cmp B
     charge : ∀ c a → U (A .charge c a) ≡ B .charge c (U a)
-    seal : ∀ a a◦ h → B .seal (U a) (U ∘ a◦) (⊑ᵛ-mono {𝒞.U A} {𝒞.U B} U ∘ h) ⊑[ 𝒞.U B ] U (A .seal a a◦ h)
+    -- seal : ∀ a a◦ h → B .seal (U a) (U ∘ a◦) (⊑ᵛ-mono {𝒞.U A} {𝒞.U B} U ∘ h) ⊑[ 𝒞.U B ] U (A .seal a a◦ h)
 open _⊸_ public
 
 isEquivᶜ : (A ⊸ B) → Type
 isEquivᶜ f = isEquiv (U f)
 
+lax-idempotent : (f : A ⊸ B) →
+  ∀ a a◦ h h' → B .seal (f .U a) (f .U ∘ a◦) h ⊑[ U B ] f .U (A .seal a a◦ h')
+lax-idempotent {A} {B} f a a◦ h h' =
+  let open ⊑ᵛ-Reasoning (U B) in
+  begin
+    B .seal (f .U a) (f .U ∘ a◦) h
+  ⊑ᵛ⟨ ⊑-mono (λ e → B .seal (f .U e) (f .U ∘ a◦) {!   !}) lemma ⟩
+    B .seal (f .U (A .seal a a◦ h')) (f .U ∘ a◦) {!   !}
+  ⊑ᵛ⟨
+    ⊑-mono
+      (λ e → B .seal (f .U (A .seal a a◦ h')) e {!   !})
+      (⊑-funext (λ abs → ⊑-mono (f .U) (≡⇒⊑ᵛ (sym (A .seal/abs abs)))))
+  ⟩
+    B .seal (f .U (A .seal a a◦ h')) (λ _ → f .U (A .seal a a◦ h')) (λ _ → ⊑ᵛ-refl)
+  ≡ᵛ⟨ B .seal/unit ⟩
+    f .U (A .seal a a◦ h')
+  ∎ᵛ
+    where
+      lemma : a ⊑[ U A ] A .seal a a◦ h'
+      lemma =
+        let open ⊑ᵛ-Reasoning (U A) in
+        begin
+          a
+        ≡ᵛ⟨ sym (A .seal/unit) ⟩
+          A .seal a (λ _ → a) (λ _ → ⊑ᵛ-refl)
+        ⊑ᵛ⟨ ⊑-mono (λ e → A .seal a e {!   !}) (⊑-funext h') ⟩
+          A .seal a a◦ h'
+        ∎ᵛ
+
 idᶜ : A ⊸ A
 idᶜ .U a = a
 idᶜ .charge _ _ = refl
-idᶜ {A} .seal _ _ _ = {!   !}
 
 infixl 9 _⨾ᶜ_
 _⨾ᶜ_ : (A ⊸ B) → (B ⊸ C) → (A ⊸ C)
 (f ⨾ᶜ g) .U = g .U ∘ f .U
 (f ⨾ᶜ g) .charge c a = cong (g .U) (f .charge c a) ∙ g .charge c (f .U a)
-_⨾ᶜ_ {A} {B} f g .seal a a◦ h = {!   !}
-  -- cong (g .U) (f .seal a a◦ h)
-  -- ∙ g .seal (f .U a) (f .U ∘ a◦) (⊑ᵛ-mono {U A} {U B} (f .U) ∘ h)
 
 CHARGE : val ℂ → A ⊸ A
 CHARGE {A} c .U = charge A c
@@ -80,7 +105,6 @@ CHARGE {A} c .charge c' a =
   ≡⟨ A .charge/+ {a = a} {c₁ = c'} {c₂ = c} ⟩
     A .charge c' (A .charge c a)
   ∎
-CHARGE {A} c .seal a a◦ h = {!   !} -- A .seal/charge
 
 isPropCharge/0
   : {U : 𝒱} (charge : val ℂ → val U → val U)
@@ -144,7 +168,6 @@ isProp⊸charge A B f =
     (f₀ .charge)
     (f₁ .charge)
     i
-⊸-path A-path B-path {f₀ = f₀} {f₁ = f₁} U-path i .seal = {!   !}
 
 CHARGE-commute
   : ∀ c (e : A ⊸ B)
