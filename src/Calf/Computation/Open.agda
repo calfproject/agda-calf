@@ -16,7 +16,7 @@ open import Calf.Computation.Power
 η◦ᶜ : A ⊸ ◯ᶜ A
 η◦ᶜ {A} .U = η◦ᵛ {A .U}
 η◦ᶜ .charge _ _ = refl
-η◦ᶜ .seal a a◦ a⊑a◦ = refl
+η◦ᶜ {A} .seal a a◦ a⊑a◦ = ⊑ᵛ-refl {U (◯ᶜ A)}
 
 𝒞◦ : Type₁
 𝒞◦ = Σ[ A ∈ 𝒞 ] isEquiv (η◦ᶜ {A} .U)
@@ -31,12 +31,12 @@ U◦ A◦ .snd = A◦ .snd
 map : (A ⊸ B) → (◯ᶜ A ⊸ ◯ᶜ B)
 map f .U = ◯ᵛ.map (f .U)
 map f .charge c a◦ = funExt λ abs → f .charge c (a◦ abs)
-map f .seal _ _ _ = funExt λ abs → f .seal _ _ _
+map {A} {B} f .seal _ _ _ = ⊑ᵛ-funext {fromProp ABS} {λ _ → U B} λ abs → f .seal _ _ _
 
 join : ◯ᶜ (◯ᶜ A) ⊸ ◯ᶜ A
 join .U = ◯ᵛ.join
 join .charge c a◦ = refl
-join .seal _ _ _ = refl
+join {A} .seal _ _ _ = ⊑ᵛ-refl {U (◯ᶜ A)}
 
 bind : (A ⊸ ◯ᶜ B) → (◯ᶜ A ⊸ ◯ᶜ B)
 bind {B = B} k = map k ⨾ᶜ join {B}

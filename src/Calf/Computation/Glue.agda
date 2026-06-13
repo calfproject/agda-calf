@@ -14,6 +14,8 @@ open import Calf.Computation
 open import Calf.Value
 import Calf.Value.Closed as ●ᵛ
 import Calf.Value.Open as ◯ᵛ
+open import Calf.Value.Glue
+open import Calf.Computation.Power
 open import Calf.Computation.Open as ◯ᶜ
 open import Calf.Computation.Closed as ●ᶜ
 
@@ -22,7 +24,7 @@ record DGlue (X• : Type•) (X◦ : Type◦) (χ• : ⟨ X• ⟩ → ● ⟨
     • : ⟨ X• ⟩
     ◦ : ⟨ X◦ ⟩
     •→◦ : χ• • ⊑ η• ◦
-open DGlue
+open DGlue public
 
 DGlueᵛ : (X• : 𝒱•) (X◦ : 𝒱◦) (χ• : val (X• .fst) → val (●ᵛ (X◦ .fst))) → 𝒱
 DGlueᵛ X• X◦ χ• .val = DGlue (𝒱•→Type• X•) (𝒱◦→Type◦ X◦) χ•
@@ -34,20 +36,37 @@ Glueᶜ A• A◦ α• .U = DGlueᵛ (U• A•) (U◦ A◦) (α• .U)
 Glueᶜ A• A◦ α• .charge c a .• = A• .fst .charge c (a .•)
 Glueᶜ A• A◦ α• .charge c a .◦ = A◦ .fst .charge c (a .◦)
 Glueᶜ A• A◦ α• .charge c a .•→◦ =
-  ⊑ᵛ-trans {U (●ᶜ (A◦ .fst))}
-    (≡⇒⊑ᵛ {U (●ᶜ (A◦ .fst))} (α• .charge c (a .•)))
-    (⊑ᵛ-mono {U (●ᶜ (A◦ .fst))} {U (●ᶜ (A◦ .fst))} (●ᶜ (A◦ .fst) .charge c) (a .•→◦))
+  let open ⊑ᵛ-Reasoning (U (●ᶜ (A◦ .fst))) in
+  begin
+    α• .U (A• .fst .charge c (a .•))
+  ≡ᵛ⟨ α• .charge c (a .•) ⟩
+    ●ᶜ (A◦ .fst) .charge c (α• .U (a .•))
+  ⊑ᵛ⟨ ⊑ᵛ-mono {U (●ᶜ (A◦ .fst))} {U (●ᶜ (A◦ .fst))} (●ᶜ (A◦ .fst) .charge c) (a .•→◦) ⟩
+    η• (A◦ .fst .charge c (a .◦))
+  ∎ᵛ
 Glueᶜ A• A◦ α• .charge/0 {a} i .• = A• .fst .charge/0 {a .•} i
 Glueᶜ A• A◦ α• .charge/0 {a} i .◦ = A◦ .fst .charge/0 {a .◦} i
 Glueᶜ A• A◦ α• .charge/0 {a} i .•→◦ = {! ⊑ᵛ-isProp  !}
-Glueᶜ A• A◦ α• .charge/+ = {! same?  !}
+Glueᶜ A• A◦ α• .charge/+ = {! same   !}
 Glueᶜ A• A◦ α• .seal a a◦ a⊑a◦ .• = a .•
 Glueᶜ A• A◦ α• .seal a a◦ a⊑a◦ .◦ = invIsEq (A◦ .snd) (λ abs → a◦ abs .◦)
-Glueᶜ A• A◦ α• .seal a a◦ a⊑a◦ .•→◦ = ⊑ᵛ-trans (a .•→◦) {!   !}
+Glueᶜ A• A◦ α• .seal a a◦ a⊑a◦ .•→◦ =
+  let open ⊑ᵛ-Reasoning (U (●ᶜ (A◦ .fst))) in
+  begin
+    α• .U (a .•)
+  ⊑ᵛ⟨ a .•→◦ ⟩
+    η• (a .◦)
+  ≡ᵛ⟨ {!   !} ⟩
+    η• (invIsEq (A◦ .snd) (λ abs → a .◦))
+  ⊑ᵛ⟨ ⊑ᵛ-mono (η• ∘ invIsEq (A◦ .snd)) (⊑ᵛ-funext (λ abs → ⊑ᵛ-mono ◦ (a⊑a◦ abs))) ⟩
+    η• (invIsEq (A◦ .snd) (λ abs → a◦ abs .◦))
+  ∎ᵛ
 Glueᶜ A• A◦ α• .seal/abs abs i .• = {! no problem, is contractible  !}
 Glueᶜ A• A◦ α• .seal/abs abs i .◦ = {! no problem, ABS isProp  !}
-Glueᶜ A• A◦ α• .seal/abs abs i .•→◦ = {! ⊑ᵛ-isProp  !}
-Glueᶜ A• A◦ α• .seal/charge i .• = refl i
+Glueᶜ A• A◦ α• .seal/abs {a◦ = a◦} abs i .•→◦ = {!   !} -- ⊑ᵛ-isProp {!   !} {!   !} i
+Glueᶜ A• A◦ α• .seal/unit = {!   !}
+Glueᶜ A• A◦ α• .seal/mult = {!   !}
+Glueᶜ A• A◦ α• .seal/charge {a} {c = c} i .• = A• .fst .charge c (a .•)
 Glueᶜ A• A◦ α• .seal/charge i .◦ = {! true  !}
 Glueᶜ A• A◦ α• .seal/charge i .•→◦ = {! ⊑ᵛ-isProp  !}
 
@@ -277,13 +296,13 @@ proj◦ᶜ F .seal = {!   !}
 --     i
 -- squareᶜ {A• = A•} {A◦ = A◦} {α = α} {B• = B•} {B◦ = B◦} {β = β} f• f◦ f-coherence .seal = ?
 
--- opaque
---   Glueᶜ' : (A-⊤ A-abs : 𝒞) → (A-⊤ ⊸ A-abs) → 𝒞
---   Glueᶜ' A-⊤ A-abs α =
---     Glueᶜ
---       (●ᶜ A-⊤ , ●ᶜ.η-isEquiv {X = cmp A-⊤})
---       (◯ᶜ A-abs , ◯ᶜ.η-isEquiv {X = cmp A-abs})
---       (●ᶜ.map (α ⨾ᶜ η◦ᶜ {A = A-abs}))
+opaque
+  Glueᶜ' : (A-⊤ A-abs : 𝒞) → (A-⊤ ⊸ A-abs) → 𝒞
+  Glueᶜ' A-⊤ A-abs α =
+    Glueᶜ
+      (●ᶜ A-⊤ , ●ᶜ.η-isEquiv {X = cmp A-⊤})
+      (◯ᶜ A-abs , ◯ᶜ.η-isEquiv {X = cmp A-abs})
+      (●ᶜ.map (α ⨾ᶜ η◦ᶜ {A = A-abs}))
 
 -- Glueᶜ'-FRAC : (A-⊤ A-abs : 𝒞) → (A-⊤ ⊸ A-abs) → 𝒞-FRAC
 -- Glueᶜ'-FRAC A-⊤ A-abs α .A• =

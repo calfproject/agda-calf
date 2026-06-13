@@ -63,8 +63,8 @@ syntax ⊑ᵛ-syntax {X} x x' = x ⊑[ X ] x'
 ⊑ᵛ-mono : (f : val X → val Y) {x x' : val X} → x ⊑[ X ] x' → f x ⊑[ Y ] f x'
 ⊑ᵛ-mono = ⊑-mono
 
--- ⊑ᵛ-isProp : {x x' : val X} → isProp (x ⊑[ X ] x')
--- ⊑ᵛ-isProp {X} = isPreorder→isProp[⊑] (X .is-preorder) _ _
+⊑ᵛ-isProp : {x x' : val X} → isProp (x ⊑[ X ] x')
+⊑ᵛ-isProp {X} = isPreorder→isProp⊑ (X .is-preorder) _ _
 
 -- ⊑-antisym : Antisymmetric _≡_ (_⊑_ {X})
 -- ⊑-antisym {X} x⊑x' x'⊑x = {!    !}
@@ -79,3 +79,31 @@ fromProp : hProp ℓ-zero → 𝒱
 fromProp P .val = ⟨ P ⟩
 fromProp P .is-set = isProp→isSet (P .snd)
 fromProp P .is-preorder = isProp→isPreorder (P .snd)
+
+module ⊑ᵛ-Reasoning (X : 𝒱) where
+  open import Relation.Binary
+
+  ≡-isEquivalence : IsEquivalence (_≡_ {A = val X})
+  ≡-isEquivalence = record { refl = refl ; sym = sym ; trans = _∙_ }
+
+  open Preorder hiding (refl)
+  open IsPreorder hiding (refl)
+
+  ⊑ᵛ-preorder : Preorder _ _ _
+  ⊑ᵛ-preorder .Carrier = val X
+  ⊑ᵛ-preorder ._≈_ = _≡_
+  ⊑ᵛ-preorder ._≲_ = _⊑ᵛ_ {X}
+  ⊑ᵛ-preorder .Preorder.isPreorder .isEquivalence = ≡-isEquivalence
+  ⊑ᵛ-preorder .Preorder.isPreorder .reflexive = ≡⇒⊑ᵛ {X}
+  ⊑ᵛ-preorder .Preorder.isPreorder .trans = ⊑ᵛ-trans {X}
+
+  open import Relation.Binary.Reasoning.Preorder ⊑ᵛ-preorder as P public
+    renaming (_∎ to _∎ᵛ)
+
+  infixr 2 step-⊑ᵛ
+  step-⊑ᵛ = step-≲
+  syntax step-⊑ᵛ x yRz x⊑ᵛy = x ⊑ᵛ⟨ x⊑ᵛy ⟩ yRz
+
+  infixr 2 step-≡ᵛ
+  step-≡ᵛ = step-≈
+  syntax step-≡ᵛ x yRz x⊑ᵛy = x ≡ᵛ⟨ x⊑ᵛy ⟩ yRz

@@ -32,7 +32,7 @@ open 𝒞-FRAC
     ▷'[ c₁ +ℂ c₂ ] A
   ≡⟨ refl ⟩
     Glueᶜ' A A (CHARGE (c₁ +ℂ c₂))
-  ≡⟨ cong (Glueᶜ' A A) (⊸-path refl refl (funExt λ _ → A .charge/+)) ⟩
+  ≡⟨ cong (Glueᶜ' A A) CHARGE-+ ⟩
     Glueᶜ' A A (CHARGE c₂ ⨾ᶜ CHARGE c₁)
   ≡⟨ sym Glueᶜ'-Glueᶜ' ⟩
     Glueᶜ'

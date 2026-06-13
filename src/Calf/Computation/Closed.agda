@@ -1,5 +1,6 @@
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Function
 open import Cubical.Foundations.Structure
 open import Cubical.Data.Sigma
 
@@ -38,12 +39,18 @@ open import Calf.Computation
     i
 ●ᶜ A .seal a _ _ = a
 ●ᶜ A .seal/abs abs = ●-isProp abs _ _
+●ᶜ A .seal/unit = refl
+●ᶜ A .seal/mult = refl
 ●ᶜ A .seal/charge = refl
 
 η•ᶜ : A ⊸ ●ᶜ A
 η•ᶜ .U = η•
 η•ᶜ .charge _ _ = refl
-η•ᶜ .seal a a◦ h = {!   !}
+η•ᶜ {A} .seal a a◦ h =
+  ⊑ᵛ-mono {U A} {U (●ᶜ A)} η• $
+  ⊑ᵛ-trans {U A}
+    (≡⇒⊑ᵛ {U A} (sym (A .seal/unit {_} {λ _ → ⊑ᵛ-refl {U A}})))
+    {! ⊑ᵛ-mono (A .seal a) (⊑ᵛ-funext h) ...  !}
 
 𝒞• : Type₁
 𝒞• = Σ[ A ∈ 𝒞 ] isEquiv (η•ᶜ {A} .U)
@@ -67,9 +74,9 @@ map {A} {B} f .charge c (law a p i) =
     (cong η• (f .charge c a))
     refl
     i
-map f .seal (η• a) a◦ a⊑a◦ = refl
-map f .seal (∗ abs) a◦ a⊑a◦ = refl
-map f .seal (law a abs i) a◦ a⊑a◦ = refl
+map f .seal = {!   !} -- (η• a) a◦ a⊑a◦ = refl
+-- map f .seal (∗ abs) a◦ a⊑a◦ = refl
+-- map f .seal (law a abs i) a◦ a⊑a◦ = refl
 
 ●ᶜ-charge-map
   : (c : val ℂ) (a• : cmp (●ᶜ A))
