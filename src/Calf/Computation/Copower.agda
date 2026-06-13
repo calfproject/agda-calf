@@ -1,6 +1,5 @@
 module Calf.Computation.Copower where
 
-open import Calf.Core.Directed
 open import Calf.Value
 open import Calf.Computation
 open import Calf.Value.Sigma public
@@ -15,5 +14,5 @@ open import Function
 
 syntax Σᶜ X (λ x → A) = [ x ∈ X ] ⋊ A
 
-_⋊_ : (X : 𝒱) ⦃ _ : isDiscrete (val X) ⦄ → 𝒞 → 𝒞
+_⋊_ : (X : 𝒱) ⦃ _ : isDiscreteᵛ X ⦄ → 𝒞 → 𝒞
 X ⋊ A = Σᶜ X (const A)

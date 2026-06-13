@@ -1,6 +1,5 @@
 module Calf.Computation.Free where
 
-open import Calf.Core.Abstract
 open import Calf.Core.Monad
 open import Calf.Value
 open import Calf.Computation
