@@ -25,14 +25,14 @@ open 𝒞-FRAC
 ▷'[ c ] A = Glueᶜ' A A (CHARGE c)
 
 ▷'/0 : ▷'[ 0ℂ ] A ≡ A
-▷'/0 {A} = cong (Glueᶜ' A A) (⊸-path refl refl (funExt λ _ → A .charge/0)) ∙ Glueᶜ'-id
+▷'/0 {A} = cong (Glueᶜ' A A) CHARGE-0 ∙ Glueᶜ'-id
 
 ▷'/+ : ▷'[ c₁ +ℂ c₂ ] A ≡ ▷'[ c₁ ] ▷'[ c₂ ] A
 ▷'/+ {c₁} {c₂} {A} =
     ▷'[ c₁ +ℂ c₂ ] A
   ≡⟨ refl ⟩
     Glueᶜ' A A (CHARGE (c₁ +ℂ c₂))
-  ≡⟨ cong (Glueᶜ' A A) CHARGE-+ ⟩
+  ≡⟨ cong (Glueᶜ' A A) (CHARGE-+ c₁ c₂) ⟩
     Glueᶜ' A A (CHARGE c₂ ⨾ᶜ CHARGE c₁)
   ≡⟨ sym Glueᶜ'-Glueᶜ' ⟩
     Glueᶜ'

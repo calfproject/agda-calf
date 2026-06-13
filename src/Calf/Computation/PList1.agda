@@ -22,10 +22,6 @@ open import Calf.Computation.Closed as ●ᶜ
 open import Calf.Computation.Glue
 open import Calf.Computation.Potential
 
-_⊙_ : ℕ → val ℂ → val ℂ
-zero ⊙ c = 0ℂ
-suc n ⊙ c = c +ℂ (n ⊙ c)
-
 opaque
   PList₁ : val ℂ → 𝒱 → 𝒞
   PList₁ c X =
@@ -200,7 +196,7 @@ opaque
                     (CHARGE {A = F _} (length l ⊙ c) .U (ret l)))
               ≡⟨ cong (CHARGE {A = F _} c .U)
                     (cong ((_$ ret l) ∘ U)
-                      (CHARGE-commute 
+                      (CHARGE-commute
                         (length l ⊙ c) (F.map (x ∷_)))) ⟩
                 CHARGE {A = F _} c .U
                   (CHARGE {A = F _} (length l ⊙ c) .U
@@ -222,12 +218,12 @@ opaque
               ≡⟨ refl ⟩
                 bind' fold◦ .U (F.map (x ∷_) .U e)
               ≡⟨ bind'-assoc _ _ _ ⟩
-                bind' (λ l → 
-                  bind' fold◦ .U (ret (x ∷ l))) 
+                bind' (λ l →
+                  bind' fold◦ .U (ret (x ∷ l)))
                 .U e
               ≡⟨ cong (λ h → bind' {A = ◯ᶜ A} h .U e) (funExt λ l → bind'/β) ⟩
-                bind' (λ l → 
-                  open-econs x .U (fold◦ l)) 
+                bind' (λ l →
+                  open-econs x .U (fold◦ l))
                 .U e
               ≡⟨ sym (bind'-map (open-econs x) _ _) ⟩
                 open-econs x .U (bind' fold◦ .U e)
@@ -285,7 +281,7 @@ opaque
                       (go◦ .U (η◦ᶜ {A = F _} .U e)))
                     (sym bind'/β) ⟩
                 η•ᶜ {A = ◯ᶜ A} .U
-                  (go◦ .U (η◦ᶜ {A = F _} .U 
+                  (go◦ .U (η◦ᶜ {A = F _} .U
                     (costᶜ .U (ret []))))
               ≡⟨ refl ⟩
                 (costᶜ ⨾ᶜ η◦ᶜ ⨾ᶜ go◦ ⨾ᶜ η•ᶜ) .U (ret [])
