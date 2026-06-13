@@ -16,12 +16,6 @@ _×ᶜ_ : 𝒞 → 𝒞 → 𝒞
 (A ×ᶜ B) .charge/0 {e} i .snd = B .charge/0 {e .snd} i
 (A ×ᶜ B) .charge/+ {e} {c₁} {c₂} i .fst = A .charge/+ {e .fst} {c₁} {c₂} i
 (A ×ᶜ B) .charge/+ {e} {c₁} {c₂} i .snd = B .charge/+ {e .snd} {c₁} {c₂} i
-(A ×ᶜ B) .seal e e◦ h .fst = A .seal (e .fst) (fst ∘ e◦) (⊑ᵛ-mono fst ∘ h)
-(A ×ᶜ B) .seal e e◦ h .snd = B .seal (e .snd) (snd ∘ e◦) (⊑ᵛ-mono snd ∘ h)
-(A ×ᶜ B) .seal/abs = {!   !}
-(A ×ᶜ B) .seal/unit = {!   !}
-(A ×ᶜ B) .seal/mult = {!   !}
-(A ×ᶜ B) .seal/charge = {!   !}
 
 pairᶜ : (A ⊸ B) → (A ⊸ C) → (A ⊸ B ×ᶜ C)
 pairᶜ f g .U a = f .U a , g .U a

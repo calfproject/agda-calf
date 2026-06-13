@@ -12,7 +12,3 @@ _+ᶜ_ : 𝒞 → 𝒞 → 𝒞
 (A +ᶜ B) .charge/0 {inj₂ b} = cong inj₂ (B .charge/0)
 (A +ᶜ B) .charge/+ {inj₁ a} = cong inj₁ (A .charge/+)
 (A +ᶜ B) .charge/+ {inj₂ b} = cong inj₂ (B .charge/+)
-(A +ᶜ B) .seal (inj₁ a) e◦ h = inj₁ (A .seal a {!   !} {!   !})
-(A +ᶜ B) .seal (inj₂ b) e◦ h = {!   !}
-(A +ᶜ B) .seal/abs = {!   !}
-(A +ᶜ B) .seal/charge = {!   !}

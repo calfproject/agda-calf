@@ -11,16 +11,12 @@ open import Cubical.Foundations.Isomorphism
 
 opaque
   unfolding M
-  unfolding ABS  -- NOTE: revealing that ABS is true to (temporarily) avoid sealing monad
 
   F : 𝒱 → 𝒞
   F X .U = M X
   F X .charge c (c' , x) = c +ℂ c' , x
   F X .charge/0 {c , x} = cong (_, x) (+ℂ-identityˡ c)
   F X .charge/+ {c , x} {c₁} {c₂} = cong (_, x) (+ℂ-assoc c₁ c₂ c)
-  F X .seal _ e _ = e _
-  F X .seal/abs _ = refl
-  F X .seal/charge = refl
 
   ret : val X → cmp (F X)
   ret {X} = retᴹ {X}
@@ -42,7 +38,6 @@ opaque
   bind' : (val X → cmp A) → (F X ⊸ A)
   bind' {A = A} k .U (c , x) = A .charge c (k x)
   bind' {A = A} _ .charge _ _ = A .charge/+
-  bind' {A = A} _ .seal _ _ _ = sym (A .seal/abs _)
 
   bind'/β : {x : val X} {k : val X → cmp A} → bind' {A = A} k .U (ret {X} x) ≡ k x
   bind'/β {A = A} = A .charge/0

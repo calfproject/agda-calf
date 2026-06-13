@@ -21,25 +21,6 @@ record 𝒞 : Type₁ where
     charge/0 : ∀ {a} → charge 0ℂ a ≡ a
     charge/+ : ∀ {a c₁ c₂} → charge (c₁ +ℂ c₂) a ≡ charge c₁ (charge c₂ a)
 
-  field
-    seal : (a : cmp) (a◦ : ⟨ ABS ⟩ → cmp) (a⊑a◦ : (abs : ⟨ ABS ⟩) → a ⊑[ U ] a◦ abs) → cmp
-    seal/abs : ∀ {a a◦ a⊑a◦} (abs : ⟨ ABS ⟩) → seal a a◦ a⊑a◦ ≡ a◦ abs
-    seal/unit : ∀ {a a⊑a} →
-      seal a (λ _ → a) a⊑a ≡ a
-    seal/mult : ∀ {a a◦ a◦' a⊑a◦ a◦⊑a◦' a⊑a◦'} →
-      seal (seal a a◦ a⊑a◦) a◦' a◦⊑a◦' ≡ seal a a◦' a⊑a◦'
-    seal/charge : ∀ {a a◦ a⊑a◦ c} →
-      charge c (seal a a◦ a⊑a◦) ≡
-      seal (charge c a) (charge c ∘ a◦) (⊑ᵛ-mono (charge c) ∘ a⊑a◦)
-
-  seal/unit' : ∀ {a} → seal a (λ _ → a) (λ _ → ⊑ᵛ-refl) ≡ a
-  seal/unit' = seal/unit
-
-  seal/mult' : ∀ {a a◦ a◦' a⊑a◦} {a◦⊑a◦' : (abs : ⟨ ABS ⟩) → a◦ abs ⊑[ U ] a◦' abs} →
-    seal (seal a a◦ a⊑a◦) a◦' (λ abs → ⊑ᵛ-trans {U} (≡⇒⊑ᵛ (seal/abs abs)) (a◦⊑a◦' abs)) ≡
-    seal a a◦' (λ abs → ⊑ᵛ-trans {U} (a⊑a◦ abs) (a◦⊑a◦' abs))
-  seal/mult' = seal/mult
-
 open 𝒞 public
 
 variable
@@ -50,40 +31,10 @@ record _⊸_ (A B : 𝒞) : Type where
   field
     U : cmp A → cmp B
     charge : ∀ c a → U (A .charge c a) ≡ B .charge c (U a)
-    -- seal : ∀ a a◦ h → B .seal (U a) (U ∘ a◦) (⊑ᵛ-mono {𝒞.U A} {𝒞.U B} U ∘ h) ⊑[ 𝒞.U B ] U (A .seal a a◦ h)
 open _⊸_ public
 
 isEquivᶜ : (A ⊸ B) → Type
 isEquivᶜ f = isEquiv (U f)
-
-lax-idempotent : (f : A ⊸ B) →
-  ∀ a a◦ h h' → B .seal (f .U a) (f .U ∘ a◦) h ⊑[ U B ] f .U (A .seal a a◦ h')
-lax-idempotent {A} {B} f a a◦ h h' =
-  let open ⊑ᵛ-Reasoning (U B) in
-  begin
-    B .seal (f .U a) (f .U ∘ a◦) h
-  ⊑ᵛ⟨ ⊑-mono (λ e → B .seal (f .U e) (f .U ∘ a◦) {!   !}) lemma ⟩
-    B .seal (f .U (A .seal a a◦ h')) (f .U ∘ a◦) {!   !}
-  ⊑ᵛ⟨
-    ⊑-mono
-      (λ e → B .seal (f .U (A .seal a a◦ h')) e {!   !})
-      (⊑-funext (λ abs → ⊑-mono (f .U) (≡⇒⊑ᵛ (sym (A .seal/abs abs)))))
-  ⟩
-    B .seal (f .U (A .seal a a◦ h')) (λ _ → f .U (A .seal a a◦ h')) (λ _ → ⊑ᵛ-refl)
-  ≡ᵛ⟨ B .seal/unit ⟩
-    f .U (A .seal a a◦ h')
-  ∎ᵛ
-    where
-      lemma : a ⊑[ U A ] A .seal a a◦ h'
-      lemma =
-        let open ⊑ᵛ-Reasoning (U A) in
-        begin
-          a
-        ≡ᵛ⟨ sym (A .seal/unit) ⟩
-          A .seal a (λ _ → a) (λ _ → ⊑ᵛ-refl)
-        ⊑ᵛ⟨ ⊑-mono (λ e → A .seal a e {!   !}) (⊑-funext h') ⟩
-          A .seal a a◦ h'
-        ∎ᵛ
 
 idᶜ : A ⊸ A
 idᶜ .U a = a
@@ -141,11 +92,6 @@ isPropCharge/+ {U} charge =
     (A .charge/+)
     (B .charge/+)
     i
-𝒞-path {A} {B} U-path charge-path i .seal = {!   !}
-𝒞-path {A} {B} U-path charge-path i .seal/abs = {!   !}
-𝒞-path {A} {B} U-path charge-path i .seal/unit = {!   !}
-𝒞-path {A} {B} U-path charge-path i .seal/mult = {!   !}
-𝒞-path {A} {B} U-path charge-path i .seal/charge = {!   !}
 
 isProp⊸charge
   : (A B : 𝒞) (f : cmp A → cmp B)

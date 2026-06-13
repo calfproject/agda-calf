@@ -90,7 +90,6 @@ mapφ : (ℕᵛ ⋊ BQ) ⊸ (ℕᵛ ⋊ LQ)
 mapφ .U (x , q) = x , φ .U q
 mapφ .charge c (x , q) i .fst = x
 mapφ .charge c (x , q) i .snd = φ .charge c q i
-mapφ .seal = {!   !}
 
 dequeueᵗ-snd : BQ ⊸ BQ
 dequeueᵗ-snd .U q = snd (dequeueᵗ .U q)
@@ -206,10 +205,10 @@ opaque
 
   dequeue' : BLQ ⊸ (ℕᵛ ⋊ BLQ)
   dequeue' .U q .fst =
-    invEq (fracture , fracture-isEquiv) (dequeue'-fst-glue q)
+    invIsEq fracture-isEquiv (dequeue'-fst-glue q)
   dequeue' .U q .snd = dequeue'-snd .U q
   dequeue' .charge c q =
     ΣPathP
-      ( cong (invEq (fracture , fracture-isEquiv)) (dequeue'-fst-glue-charge c q)
+      ( cong (invIsEq fracture-isEquiv) (dequeue'-fst-glue-charge c q)
       , dequeue'-snd .charge c q
       )

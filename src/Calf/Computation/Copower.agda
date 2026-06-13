@@ -12,9 +12,6 @@ open import Function
 Σᶜ X A .charge c (x , a) = x , A x .charge c a
 Σᶜ X A .charge/0 {x , a} = cong (x ,_) (A x .charge/0)
 Σᶜ X A .charge/+ {x , a} = cong (x ,_) (A x .charge/+)
-Σᶜ X A .seal = {!   !}
-Σᶜ X A .seal/abs = {!   !}
-Σᶜ X A .seal/charge = {!   !}
 
 syntax Σᶜ X (λ x → A) = [ x ∈ X ] ⋊ A
 

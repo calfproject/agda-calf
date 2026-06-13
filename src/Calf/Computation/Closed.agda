@@ -37,11 +37,6 @@ open import Calf.Computation
     (cong η• (A .charge/+))
     refl
     i
-●ᶜ A .seal a _ _ = a
-●ᶜ A .seal/abs abs = ●-isProp abs _ _
-●ᶜ A .seal/unit = refl
-●ᶜ A .seal/mult = refl
-●ᶜ A .seal/charge = refl
 
 η•ᶜ : A ⊸ ●ᶜ A
 η•ᶜ .U = η•
