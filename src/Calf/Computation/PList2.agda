@@ -6,7 +6,6 @@ open import Cubical.Data.Equality.Conversion using (eqToPath)
 open import Cubical.Data.Sigma
 open import Cubical.Data.Nat
 open import Cubical.Data.List
-open import Data.Nat.Combinatorics using (_C_; nC1≡n; nCk+nC[k+1]≡[n+1]C[k+1])
 
 module Calf.Computation.PList2 where
 
@@ -23,89 +22,47 @@ open import Calf.Computation.Closed as ●ᶜ
 open import Calf.Computation.Glue
 open import Calf.Computation.Potential
 
-_⊙_ : ℕ → val ℂ → val ℂ
-zero ⊙ c = 0ℂ
-suc n ⊙ c = c +ℂ (n ⊙ c)
-
-binom : ℕ → ℕ → ℕ
-binom n k = _C_ n k
+binom2 : ℕ → ℕ
+binom2 zero = zero
+binom2 (suc n) = n + binom2 n
 
 plist₂-potential : val ℂ → val ℂ → ℕ → val ℂ
 plist₂-potential c-linear c-quadratic n =
-  (n ⊙ c-linear) +ℂ (binom n 2 ⊙ c-quadratic)
+  (n ⊙ c-linear) +ℂ (binom2 n ⊙ c-quadratic)
 
-module _ where 
-  binom-suc-2 : ∀ n → binom (suc n) 2 ≡ n + binom n 2
-  binom-suc-2 n =
-      binom (suc n) 2
-    ≡⟨ sym (eqToPath (nCk+nC[k+1]≡[n+1]C[k+1] n 1)) ⟩
-      binom n 1 + binom n 2
-    ≡⟨ cong (_+ binom n 2) (eqToPath (nC1≡n n)) ⟩
-      n + binom n 2
-    ∎
-  
-  ⊙-+ : ∀ n c₁ c₂ → n ⊙ (c₁ +ℂ c₂) ≡ (n ⊙ c₁) +ℂ (n ⊙ c₂)
-  ⊙-+ zero c₁ c₂ = sym (+ℂ-identityˡ 0ℂ)
-  ⊙-+ (suc n) c₁ c₂ =
-      suc n ⊙ (c₁ +ℂ c₂)
-    ≡⟨ cong ((c₁ +ℂ c₂) +ℂ_) (⊙-+ n c₁ c₂) ⟩
-      (c₁ +ℂ c₂) +ℂ ((n ⊙ c₁) +ℂ (n ⊙ c₂))
-    ≡⟨ +ℂ-assoc c₁ c₂ ((n ⊙ c₁) +ℂ (n ⊙ c₂)) ⟩
-      c₁ +ℂ (c₂ +ℂ ((n ⊙ c₁) +ℂ (n ⊙ c₂)))
-    ≡⟨ cong (c₁ +ℂ_) (sym (+ℂ-assoc c₂ (n ⊙ c₁) (n ⊙ c₂))) ⟩
-      c₁ +ℂ ((c₂ +ℂ (n ⊙ c₁)) +ℂ (n ⊙ c₂))
-    ≡⟨ cong (λ c → c₁ +ℂ (c +ℂ (n ⊙ c₂))) (+ℂ-comm c₂ (n ⊙ c₁)) ⟩
-      c₁ +ℂ (((n ⊙ c₁) +ℂ c₂) +ℂ (n ⊙ c₂))
-    ≡⟨ cong (c₁ +ℂ_) (+ℂ-assoc (n ⊙ c₁) c₂ (n ⊙ c₂)) ⟩
-      c₁ +ℂ ((n ⊙ c₁) +ℂ (c₂ +ℂ (n ⊙ c₂)))
-    ≡⟨ sym (+ℂ-assoc c₁ (n ⊙ c₁) (c₂ +ℂ (n ⊙ c₂))) ⟩
-      (suc n ⊙ c₁) +ℂ (suc n ⊙ c₂)
-    ∎
-  
-  ⊙-+-left : ∀ n m c → (n + m) ⊙ c ≡ (n ⊙ c) +ℂ (m ⊙ c)
-  ⊙-+-left zero m c = sym (+ℂ-identityˡ (m ⊙ c))
-  ⊙-+-left (suc n) m c =
-      (suc n + m) ⊙ c
-    ≡⟨ cong (c +ℂ_) (⊙-+-left n m c) ⟩
-      c +ℂ ((n ⊙ c) +ℂ (m ⊙ c))
-    ≡⟨ sym (+ℂ-assoc c (n ⊙ c) (m ⊙ c)) ⟩
-      (suc n ⊙ c) +ℂ (m ⊙ c)
-    ∎
-  
+module _ where
   plist₂-potential-suc
     : ∀ n c-linear c-quadratic
     → plist₂-potential c-linear c-quadratic (suc n)
       ≡ c-linear +ℂ plist₂-potential (c-quadratic +ℂ c-linear) c-quadratic n
   plist₂-potential-suc n c-linear c-quadratic =
       plist₂-potential c-linear c-quadratic (suc n)
-    ≡⟨ cong
-        (λ b → (c-linear +ℂ (n ⊙ c-linear)) +ℂ (b ⊙ c-quadratic))
-        (binom-suc-2 n) ⟩
+    ≡⟨ refl ⟩
       (c-linear +ℂ (n ⊙ c-linear))
-        +ℂ ((n + binom n 2) ⊙ c-quadratic)
+        +ℂ ((n + binom2 n) ⊙ c-quadratic)
     ≡⟨ cong
         ((c-linear +ℂ (n ⊙ c-linear)) +ℂ_)
-        (⊙-+-left n (binom n 2) c-quadratic) ⟩
+        (⊙-+-left n (binom2 n) c-quadratic) ⟩
       (c-linear +ℂ (n ⊙ c-linear))
-        +ℂ ((n ⊙ c-quadratic) +ℂ (binom n 2 ⊙ c-quadratic))
+        +ℂ ((n ⊙ c-quadratic) +ℂ (binom2 n ⊙ c-quadratic))
     ≡⟨ +ℂ-assoc c-linear (n ⊙ c-linear)
-        ((n ⊙ c-quadratic) +ℂ (binom n 2 ⊙ c-quadratic)) ⟩
+        ((n ⊙ c-quadratic) +ℂ (binom2 n ⊙ c-quadratic)) ⟩
       c-linear +ℂ
         ((n ⊙ c-linear)
-          +ℂ ((n ⊙ c-quadratic) +ℂ (binom n 2 ⊙ c-quadratic)))
+          +ℂ ((n ⊙ c-quadratic) +ℂ (binom2 n ⊙ c-quadratic)))
     ≡⟨ cong (c-linear +ℂ_)
-        (sym (+ℂ-assoc (n ⊙ c-linear) (n ⊙ c-quadratic) (binom n 2 ⊙ c-quadratic))) ⟩
+        (sym (+ℂ-assoc (n ⊙ c-linear) (n ⊙ c-quadratic) (binom2 n ⊙ c-quadratic))) ⟩
       c-linear +ℂ
         (((n ⊙ c-linear) +ℂ (n ⊙ c-quadratic))
-          +ℂ (binom n 2 ⊙ c-quadratic))
+          +ℂ (binom2 n ⊙ c-quadratic))
     ≡⟨ cong
-        (λ c → c-linear +ℂ (c +ℂ (binom n 2 ⊙ c-quadratic)))
+        (λ c → c-linear +ℂ (c +ℂ (binom2 n ⊙ c-quadratic)))
         (+ℂ-comm (n ⊙ c-linear) (n ⊙ c-quadratic)) ⟩
       c-linear +ℂ
         (((n ⊙ c-quadratic) +ℂ (n ⊙ c-linear))
-          +ℂ (binom n 2 ⊙ c-quadratic))
+          +ℂ (binom2 n ⊙ c-quadratic))
     ≡⟨ cong (c-linear +ℂ_)
-        (cong (_+ℂ (binom n 2 ⊙ c-quadratic))
+        (cong (_+ℂ (binom2 n ⊙ c-quadratic))
           (sym (⊙-+ n c-quadratic c-linear))) ⟩
       c-linear +ℂ plist₂-potential (c-quadratic +ℂ c-linear) c-quadratic n
     ∎

@@ -172,10 +172,10 @@ opaque
 
   dequeue' : BLQ ⊸ (ℕᵛ ⋊ BLQ)
   dequeue' .U q .fst =
-    invEq (fracture , fracture-isEquiv) (dequeue'-fst-glue q)
+    invIsEq fracture-isEquiv (dequeue'-fst-glue q)
   dequeue' .U q .snd = dequeue'-snd .U q
   dequeue' .charge c q =
     ΣPathP
-      ( cong (invEq (fracture , fracture-isEquiv)) (dequeue'-fst-glue-charge c q)
+      ( cong (invIsEq fracture-isEquiv) (dequeue'-fst-glue-charge c q)
       , dequeue'-snd .charge c q
       )
