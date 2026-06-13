@@ -63,6 +63,12 @@ syntax ⊑ᵛ-syntax {X} x x' = x ⊑[ X ] x'
 -- ⊑ᵛ-mono : (f : val X → val Y) {x x' : val X} → x ⊑[ X ] x' → f x ⊑[ Y ] f x'
 ⊑ᵛ-mono = ⊑-mono
 
+-- ⊑ᵛ-funext : {Y : val X → 𝒱}
+--   → {f f' : (x : val X) → val (Y x)}
+--   → ((x : val X) → f x ⊑[ Y x ] f' x)
+--   → f ⊑[ Πᵛ X Y ] f'
+⊑ᵛ-funext = ⊑-funext
+
 ⊑ᵛ-isProp : {x x' : val X} → isProp (x ⊑[ X ] x')
 ⊑ᵛ-isProp {X} = isPreorder→isProp⊑ (X .is-preorder) _ _
 

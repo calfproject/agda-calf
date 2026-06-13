@@ -41,7 +41,7 @@ Glueᶜ A• A◦ α• .charge c a .•→◦ =
     α• .U (A• .fst .charge c (a .•))
   ≡ᵛ⟨ α• .charge c (a .•) ⟩
     ●ᶜ (A◦ .fst) .charge c (α• .U (a .•))
-  ⊑ᵛ⟨ ⊑ᵛ-mono {U (●ᶜ (A◦ .fst))} {U (●ᶜ (A◦ .fst))} (●ᶜ (A◦ .fst) .charge c) (a .•→◦) ⟩
+  ⊑ᵛ⟨ ⊑ᵛ-mono (●ᶜ (A◦ .fst) .charge c) (a .•→◦) ⟩
     η• (A◦ .fst .charge c (a .◦))
   ∎ᵛ
 Glueᶜ A• A◦ α• .charge/0 {a} i .• = A• .fst .charge/0 {a .•} i
@@ -109,12 +109,10 @@ open 𝒞-FRAC
 proj•ᶜ : (F : 𝒞-FRAC) → 𝒞-fromFRAC F ⊸ F .A• .fst
 proj•ᶜ F .U g = g .•
 proj•ᶜ F .charge c g = refl
-proj•ᶜ F .seal = {!   !}
 
 proj◦ᶜ : (F : 𝒞-FRAC) → 𝒞-fromFRAC F ⊸ F .A◦ .fst
 proj◦ᶜ F .U g = g .◦
 proj◦ᶜ F .charge c g = refl
-proj◦ᶜ F .seal = {!   !}
 
 -- glue•-out-charge
 --   : (F : 𝒞-FRAC) (c : val ℂ) (g• : cmp (●ᶜ (𝒞-fromFRAC F)))

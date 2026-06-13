@@ -14,9 +14,3 @@ open import Cubical.Foundations.HLevels
 Πᵛ X Y .is-preorder α .secCong = {!   !}
 
 syntax Πᵛ X (λ x → Y) = [ x ∈ X ] →ᵛ Y
-
-⊑ᵛ-funext : {Y : val X → 𝒱}
-  → {f f' : (x : val X) → val (Y x)}
-  → ((x : val X) → f x ⊑[ Y x ] f' x)
-  → f ⊑[ Πᵛ X Y ] f'
-⊑ᵛ-funext = ⊑-funext

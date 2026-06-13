@@ -46,11 +46,6 @@ open import Calf.Computation
 η•ᶜ : A ⊸ ●ᶜ A
 η•ᶜ .U = η•
 η•ᶜ .charge _ _ = refl
-η•ᶜ {A} .seal a a◦ h =
-  ⊑ᵛ-mono {U A} {U (●ᶜ A)} η• $
-  ⊑ᵛ-trans {U A}
-    (≡⇒⊑ᵛ {U A} (sym (A .seal/unit {_} {λ _ → ⊑ᵛ-refl {U A}})))
-    {! ⊑ᵛ-mono (A .seal a) (⊑ᵛ-funext h) ...  !}
 
 𝒞• : Type₁
 𝒞• = Σ[ A ∈ 𝒞 ] isEquiv (η•ᶜ {A} .U)
@@ -74,9 +69,6 @@ map {A} {B} f .charge c (law a p i) =
     (cong η• (f .charge c a))
     refl
     i
-map f .seal = {!   !} -- (η• a) a◦ a⊑a◦ = refl
--- map f .seal (∗ abs) a◦ a⊑a◦ = refl
--- map f .seal (law a abs i) a◦ a⊑a◦ = refl
 
 ●ᶜ-charge-map
   : (c : val ℂ) (a• : cmp (●ᶜ A))
@@ -114,7 +106,6 @@ join {A = A} .charge c (law a• abs i) =
     refl
     refl
     i
-join .seal = {!   !}
 
 bind : (A ⊸ ●ᶜ B) → (●ᶜ A ⊸ ●ᶜ B)
 bind k = map k ⨾ᶜ join
