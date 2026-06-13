@@ -45,3 +45,53 @@ DGlueᶜ A• A◦ α• .charge/0 {a} i .• = A• .fst .charge/0 {a .•} i
 DGlueᶜ A• A◦ α• .charge/0 {a} i .◦ = A◦ .fst .charge/0 {a .◦} i
 DGlueᶜ A• A◦ α• .charge/0 {a} i .•→◦ = {! ⊑ᵛ-isProp  !}
 DGlueᶜ A• A◦ α• .charge/+ = {! same   !}
+
+DGlueᶜ' : (A-⊤ A-abs : 𝒞) → (A-⊤ ⊸ A-abs) → 𝒞
+DGlueᶜ' A-⊤ A-abs α =
+  DGlueᶜ
+    (●ᶜ A-⊤ , ●ᶜ.η-isEquiv {X = cmp A-⊤})
+    (◯ᶜ A-abs , ◯ᶜ.η-isEquiv {X = cmp A-abs})
+    (●ᶜ.map (α ⨾ᶜ η◦ᶜ {A = A-abs}))
+
+squareᶜ'≤ : ∀ {A-⊤ A-abs α B-⊤ B-abs β} (f-⊤ : A-⊤ ⊸ B-⊤) (f-abs : A-abs ⊸ B-abs)
+  → ((a-⊤ : cmp A-⊤) → U β (U f-⊤ a-⊤) ⊑[ U B-abs ] U f-abs (U α a-⊤))
+  → DGlueᶜ' A-⊤ A-abs α ⊸ DGlueᶜ' B-⊤ B-abs β
+squareᶜ'≤ {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence .U a .• = ●ᶜ.map f-⊤ .U (a .•)
+squareᶜ'≤ {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence .U a .◦ = ◯ᶜ.map f-abs .U (a .◦)
+squareᶜ'≤ {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence .U a .•→◦ = {! a .•→◦  !}
+squareᶜ'≤ {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence .charge = {!   !}
+
+-- squareᶜ'≤ {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence .U a with a .•
+-- ... | η• a-⊤ =
+--       Glueᶜ' B-⊤ B-abs β .seal
+--         (record { • = η• (f-⊤ .U a-⊤) ; ◦ = η◦ (β .U (f-⊤ .U a-⊤)) ; •→◦ = {! refl !} })
+--         (λ abs → record { • = ∗ abs ; ◦ = η◦ (f-abs .U (a .◦ abs)) ; •→◦ = {! sym (law _ abs) !} })
+--         (λ abs → record
+--           { path = λ 𝕚 → record
+--             { • = ≡⇒⊑ (●-path-to-star abs (η• (f-⊤ .U a-⊤))) .path 𝕚
+--             ; ◦ = η◦ (f-coherence a-⊤ .path 𝕚)
+--             ; •→◦ = {!   !}
+--             }
+--           ; path₀ = λ i → record
+--             { • = η• (f-⊤ .U a-⊤)
+--             ; ◦ = η◦ (f-coherence a-⊤ .path₀ i)
+--             ; •→◦ = {!   !}
+--             }
+--           ; path₁ = λ i → record
+--             { • = law (f-⊤ .U a-⊤) abs i
+--             ; ◦ = η◦ ((f-coherence a-⊤ .path₁ ∙ cong (f-abs .U) (lemma abs)) i)
+--             ; •→◦ = {!   !}
+--             }
+--           })
+--         where
+--           lemma : ∀ abs → α .U a-⊤ ≡ a .◦ abs  -- really, need to merge with a .•→◦
+--           lemma = {!   !}
+-- ... | ∗ abs = record { • = ∗ abs ; ◦ = η◦ (f-abs .U (a .◦ abs)) ; •→◦ = {! sym (law _ abs) !} }
+-- ... | law a-⊤ abs i =
+--         Glueᶜ' B-⊤ B-abs β .seal/abs
+--           {record { • = η• (f-⊤ .U a-⊤) ; ◦ = η◦ (β .U (f-⊤ .U a-⊤)) ; •→◦ = {! refl !} }}
+--           {λ abs → record { • = ∗ abs ; ◦ = η◦ (f-abs .U (a .◦ abs)) ; •→◦ = {! sym (law _ abs) !} }}
+--           {{! ^ same proof as above  !}}
+--           abs
+--           i
+-- squareᶜ'≤ {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence .charge = {!   !}
