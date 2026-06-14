@@ -13,8 +13,8 @@ open import Calf.Computation
 open import Calf.Computation.Product
 open import Calf.Computation.Tensor
 open import Calf.Computation.Lolli
-open import Calf.Computation.Potential
-open import Calf.Computation.Cost
+open import Calf.Computation.Credit
+open import Calf.Computation.Debit
 open import Calf.Computation.PList1
 open import Calf.Computation.PList2
 open import Calf.Computation.Free

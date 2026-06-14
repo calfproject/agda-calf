@@ -8,7 +8,7 @@ open import Cubical.Foundations.Path using (fromPathP⁻)
 open import Cubical.Foundations.Transport using (transport⁻-fillerExt⁻)
 open import Cubical.Data.Sigma
 
-module Calf.Computation.Potential where
+module Calf.Computation.Credit where
 
 open import Calf.Core.Abstract
 open import Calf.Core.Cost

@@ -20,7 +20,7 @@ open import Calf.Computation.Copower
 open import Calf.Computation.Open as ◯ᶜ
 open import Calf.Computation.Closed as ●ᶜ
 open import Calf.Computation.Glue
-open import Calf.Computation.Potential
+open import Calf.Computation.Credit
 
 opaque
   PList₁ : val ℂ → 𝒱 → 𝒞

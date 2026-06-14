@@ -21,7 +21,7 @@ open import Calf.Computation.Free
 open import Calf.Computation.Open as ◯ᶜ
 open import Calf.Computation.Closed as ●ᶜ
 open import Calf.Computation.Glue
-open import Calf.Computation.Potential
+open import Calf.Computation.Credit
 
 data _U⊗_ (A B : 𝒞) : Type where
   inj : (a : cmp A) (b : cmp B) (c : val ℂ) → A U⊗ B
