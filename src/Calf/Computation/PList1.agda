@@ -24,11 +24,7 @@ open import Calf.Computation.Potential
 
 opaque
   PList₁ : val ℂ → 𝒱 → 𝒞
-  PList₁ c X =
-    Glueᶜ'
-      (F (Listᵛ X))
-      (F (Listᵛ X))
-      (bind' λ l → F _ .charge (length l ⊙ c) (ret l))
+  PList₁ c X = PotentialFunction {Listᵛ X} (λ l → length l ⊙ c)
 
   pnil₁ : cmp (PList₁ c X)
   pnil₁ {c} =

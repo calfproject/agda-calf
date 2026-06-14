@@ -70,10 +70,7 @@ module _ where
 opaque
   PList₂ : val ℂ → val ℂ → 𝒱 → 𝒞
   PList₂ c-linear c-quadratic X =
-    Glueᶜ'
-      (F (Listᵛ X))
-      (F (Listᵛ X))
-      (bind' (λ l → F _ .charge (plist₂-potential c-linear c-quadratic (length l)) (ret l)))
+    PotentialFunction {Listᵛ X} (plist₂-potential c-linear c-quadratic ∘ length)
 
   pnil₂ : ∀ {c-lin c-quad} → cmp (PList₂ c-lin c-quad X)
   pnil₂ {X} {c-lin} {c-quad} =

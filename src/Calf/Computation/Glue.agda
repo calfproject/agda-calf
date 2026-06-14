@@ -253,7 +253,7 @@ squareᶜ {A• = A•} {A◦ = A◦} {α = α} {B• = B•} {B◦ = B◦} {β 
 squareᶜ {A• = A•} {A◦ = A◦} {α = α} {B• = B•} {B◦ = B◦} {β = β} f• f◦ f-coherence .charge c q i .◦ =
   f◦ .charge c (q .◦) i
 squareᶜ {A• = A•} {A◦ = A◦} {α = α} {B• = B•} {B◦ = B◦} {β = β} f• f◦ f-coherence .charge c q i .•→◦ =
-  isProp→PathP 
+  isProp→PathP
     (λ i → ●ᶜ (B◦ .fst) .U .is-set
       (β .U (f• .charge c (q .•) i))
       (η• (f◦ .charge c (q .◦) i)))
@@ -658,3 +658,9 @@ opaque
       cong 𝒞-fromFRAC
         (Glueᶜ'-Glueᶜ'-FRAC
           {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} {f-⊤} {f-abs} {f-coherence})
+
+module _ where
+  open import Calf.Computation.Free
+
+  PotentialFunction : (val X → val ℂ) → 𝒞
+  PotentialFunction {X} Φ = Glueᶜ' (F X) (F X) (bind' λ x → F _ .charge (Φ x) (ret x))
