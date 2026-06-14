@@ -92,8 +92,8 @@ store' {c} {A} =
     (CHARGE c)
     (λ _ → refl)
 
-release' : ▷'[ c ] A ⊸ A
-release' {c} {A} =
+spend : ▷'[ c ] A ⊸ A
+spend {c} {A} =
   subst (▷'[ c ] A ⊸_) Glueᶜ'-id $
   squareᶜ'
     {A-⊤ = A} {A-abs = A} {α = CHARGE c}
@@ -120,10 +120,10 @@ release' {c} {A} =
 
 ▷[_] : val ℙ → 𝒞 → 𝒞
 ▷[ η• c ] A = ▷'[ c ] A
-▷[ ∗ p ] A = A
-▷[ law c p i ] A = ▷'-open p c A i
+▷[ ∗ abs ] A = A
+▷[ law c abs i ] A = ▷'-open abs c A i
 
-release : ∀ {p A} → ▷[ p ] A ⊸ A
-release {η• c} = release'
-release {∗ p} = idᶜ
-release {law c p i} = {!   !}
+store : ∀ {p A} → A ⊸ ▷[ p ] A
+store {η• c} = store'
+store {∗ abs} = idᶜ
+store {law x abs i} = {!   !}

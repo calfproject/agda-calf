@@ -81,7 +81,7 @@ chargeᴳ : ∀ p
   → Δ , q' ⊢ A
   → Δ , q ⊢ A
 chargeᴳ p split e =
-  releaseᴳ (storeᴳ p split e) release'
+  releaseᴳ (storeᴳ p split e) spend
 
 module _ where
   getᴳ : ∀ p
