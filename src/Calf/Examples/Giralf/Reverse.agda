@@ -20,10 +20,10 @@ snoc p x =
       chargeᴳ 1 refl $
       getᴳ p refl $
       cons₁ᴳ refl y $
-      payᴳ (+ℂ-identityʳ p)
-      idᴳ
+      payᴳ (+ℂ-identityʳ p) $
+      idᴳ refl
     )
-    idᴳ
+    (idᴳ refl)
 
 qreverse : PList₂ 0 1 X , 0ℂ ⊢ PList₁ 0 X
 qreverse {X} =
@@ -31,4 +31,4 @@ qreverse {X} =
     (λ r → PList₁ r X)
     (λ r → nil₁ᴳ)
     snoc
-    idᴳ
+    (idᴳ refl)

@@ -15,9 +15,9 @@ id₁ =
     (λ x →
       chargeᴳ 1 refl $
       cons₁ᴳ (+ℂ-identityʳ _) x $
-      idᴳ
+      idᴳ refl
     )
-    idᴳ
+    (idᴳ refl)
 
 id₂ : ∀ p → PList₂ p 1 X , 0ℂ ⊢ PList₁ p X
 id₂ {X} p =
@@ -25,4 +25,4 @@ id₂ {X} p =
     (λ r → PList₁ r X)
     (λ r → nil₁ᴳ)
     (λ r x → cons₁ᴳ (+ℂ-identityʳ r) x id₁)
-    idᴳ
+    (idᴳ refl)

@@ -39,12 +39,12 @@ insert p x =
       pairᴳ
         ( getᴳ p refl $
           if x ≤ᵇ y
-            then cons₁ᴳ refl x (cons₁ᴳ (+ℂ-identityʳ p) y (proj₂ᴳ idᴳ))
-            else cons₁ᴳ refl y (payᴳ (+ℂ-identityʳ p) (proj₁ᴳ {B = PList₁ p ℕᵛ} idᴳ))
+            then cons₁ᴳ refl x (cons₁ᴳ (+ℂ-identityʳ p) y (proj₂ᴳ (idᴳ refl)))
+            else cons₁ᴳ refl y (payᴳ (+ℂ-identityʳ p) (proj₁ᴳ {B = PList₁ p ℕᵛ} (idᴳ refl)))
         )
-        (cons₁ᴳ (+ℂ-identityʳ p) y (proj₂ᴳ {A = ◁'[ p ] PList₁ p ℕᵛ} idᴳ))
+        (cons₁ᴳ (+ℂ-identityʳ p) y (proj₂ᴳ {A = ◁'[ p ] PList₁ p ℕᵛ} (idᴳ refl)))
     )
-    idᴳ
+    (idᴳ refl)
 
 isort : PList₂ 0 1 ℕᵛ , 0ℂ ⊢ PList₁ 0 ℕᵛ
 isort =
@@ -52,7 +52,7 @@ isort =
     (λ r → PList₁ r ℕᵛ)
     (λ r → nil₁ᴳ)
     insert
-    idᴳ
+    (idᴳ refl)
 
 
 variable
@@ -65,7 +65,7 @@ merge : PList₁ (` suc k) ℕᵛ ⊗ PList₁ (` suc k) ℕᵛ , 0ℂ ⊢ PList
 merge = {!   !}
 
 msort/clocked : (k k' : ℕ) → PList₁ (` (k + k')) ℕᵛ , 0ℂ ⊢ PList₁ (` k') ℕᵛ
-msort/clocked zero k' = idᴳ
+msort/clocked zero k' = idᴳ refl
 msort/clocked (suc k) k' =
   letᴳ (+ℂ-identityˡ _) split $
   letᴳ (+ℂ-identityˡ _)
