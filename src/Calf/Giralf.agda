@@ -22,18 +22,6 @@ open import Calf.Computation.Free
 Context : Type₁
 Context = 𝒞 × val ℂ  -- List 𝒞 × val ℙ
 
-variable
-  p p' p₁ p₂ q q' q₁ q₂ r r' : val ℂ
-
-
-infix 1 _⊢_
-
-_⊢_ : Context → 𝒞 → Type
-Δ , q ⊢ A = ▷'[ q ] Δ ⊸ A
-
-idᴳ : A , 0ℂ ⊢ A
-idᴳ {A} = transport (cong (_⊸ A) (sym ▷'/0)) idᶜ
-
 module _ where  -- promonoid
   _⋎₀ : val ℂ → Type
   q ⋎₀ = 0ℂ ≡ q
@@ -43,6 +31,21 @@ module _ where  -- promonoid
 
   -- _⋎_ : val ℂ → List (val ℂ) → Type  -- promonoid
   -- p ⋎ ps = foldr _+ℂ_ 0ℂ ps ≡ p
+
+
+variable
+  p p' p₁ p₂ q q' q₁ q₂ r r' : val ℂ
+
+
+infix 1 _⊢_
+
+_⊢_ : Context → 𝒞 → Type
+Δ , q ⊢ A = ▷'[ q ] Δ ⊸ A
+
+idᴳ :
+  q ⋎₀
+  → A , q ⊢ A
+idᴳ {q} {A} split = transport (cong (_⊸ A) (sym ▷'/0 ∙ cong (▷'[_] _) split)) idᶜ
 
 letᴳ :
   q ⋎₂ (q₁ , q₂)
@@ -120,10 +123,13 @@ module _ where
 
   cons₂ᴳ :
     q ⋎₂ (p₁ , q')
+    → p ⋎₂ (p₂ , p₁)
     → val X
-    → Δ , q' ⊢ PList₂ (p₂ +ℂ p₁) p₂ X
+    → Δ , q' ⊢ PList₂ p p₂ X
     → Δ , q ⊢ PList₂ p₁ p₂ X
-  cons₂ᴳ split x e = storeᴳ _ split e ⨾ᶜ pcons₂ x
+  cons₂ᴳ split-q split-p x e =
+    storeᴳ _ split-q e ⨾ᶜ
+    transport (cong (λ p → (▷'[ _ ] PList₂ p _ _) ⊸ _) split-p) (pcons₂ x)
 
   foldr₂ᴳ :
     (A : val ℂ → 𝒞)
