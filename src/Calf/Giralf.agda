@@ -123,13 +123,11 @@ module _ where
 
   cons₂ᴳ :
     q ⋎₂ (p₁ , q')
-    → p ⋎₂ (p₂ , p₁)
     → val X
-    → Δ , q' ⊢ PList₂ p p₂ X
+    → Δ , q' ⊢ PList₂ (p₂ +ℂ p₁) p₂ X
     → Δ , q ⊢ PList₂ p₁ p₂ X
-  cons₂ᴳ split-q split-p x e =
-    storeᴳ _ split-q e ⨾ᶜ
-    transport (cong (λ p → (▷'[ _ ] PList₂ p _ _) ⊸ _) split-p) (pcons₂ x)
+  cons₂ᴳ split-q x e =
+    storeᴳ _ split-q e ⨾ᶜ pcons₂ x
 
   foldr₂ᴳ :
     (A : val ℂ → 𝒞)
