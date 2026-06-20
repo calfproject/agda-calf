@@ -52,8 +52,8 @@ letᴳ :
   → A , q₁ ⊢ B
   → B , q₂ ⊢ C
   → A , q ⊢ C
-letᴳ {q₁ = q₁} {q₂ = q₂} {A = A} split e1 e2 =
-  transport (cong (_⊸ _) (sym ▷'/+ ∙ cong (▷'[_] A) (+ℂ-comm q₂ q₁ ∙ split))) ((▷'-map {c = q₂} e1) ⨾ᶜ e2)
+letᴳ split e1 e2 =
+  transport (cong (_⊸ _) (sym ▷'/+ ∙ cong (▷'[_] _) (+ℂ-comm _ _ ∙ split))) ((▷'-map e1) ⨾ᶜ e2)
 
 cmpᴳ : 𝒞 → Type
 cmpᴳ = ⊤ , 0ℂ ⊢_
