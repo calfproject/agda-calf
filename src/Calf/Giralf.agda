@@ -18,6 +18,7 @@ open import Calf.Computation.Debit
 open import Calf.Computation.PList1
 open import Calf.Computation.PList2
 open import Calf.Computation.Free
+open import Calf.Computation.Power
 
 Context : Type₁
 Context = 𝒞 × val ℂ  -- List 𝒞 × val ℙ
@@ -156,3 +157,14 @@ module _ where
       Δ , q ⊢ A ×ᶜ B
     → Δ , q ⊢ B
   proj₂ᴳ {A = A} = _⨾ᶜ proj₂ᶜ {A = A}
+
+module _ where
+  powlamᴳ :
+    (val X → Δ , q ⊢ A)
+    → Δ , q ⊢ X ⇀ A
+  powlamᴳ {X = X} e = powlam {X = X} e
+
+  powappᴳ :
+    Δ , q ⊢ X ⇀ A
+    → val X → Δ , q ⊢ A
+  powappᴳ {X = X} e = powapp {X = X} e

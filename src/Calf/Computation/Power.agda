@@ -16,3 +16,12 @@ syntax Πᶜ X (λ x → A) = [ x ∈ X ] ⇀ A
 
 _⇀_ : 𝒱 → 𝒞 → 𝒞
 X ⇀ A = Πᶜ X (const A)
+
+opaque
+  powlam : (val X → A ⊸ B) → A ⊸ (X ⇀ B)
+  powlam e .U a x = e x .U a
+  powlam e .charge c a = funExt (λ x → e x .charge c a)
+
+  powapp : A ⊸ (X ⇀ B) → val X → A ⊸ B
+  powapp e x .U a = e .U a x
+  powapp e x .charge c a = cong (λ f → f x) (e .charge c a)
