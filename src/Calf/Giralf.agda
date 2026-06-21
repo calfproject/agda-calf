@@ -162,9 +162,9 @@ module _ where
   powlamᴳ :
     (val X → Δ , q ⊢ A)
     → Δ , q ⊢ X ⇀ A
-  powlamᴳ {X = X} e = powlam {X = X} e
+  powlamᴳ {X = X} = powlam {X = X}
 
   powappᴳ :
-    Δ , q ⊢ X ⇀ A
-    → val X → Δ , q ⊢ A
-  powappᴳ {X = X} e = powapp {X = X} e
+    val X → Δ , q ⊢ X ⇀ A
+    → Δ , q ⊢ A
+  powappᴳ {X = X} x e = powapp {X = X} e x
