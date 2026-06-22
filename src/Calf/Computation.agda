@@ -11,7 +11,7 @@ open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.Univalence using (ua; ua→; ua-gluePath)
 
-record 𝒞 : Type₁ where
+record 𝒞 : 𝒱₁ where
   field
     U : 𝒱
     is-set : isSet U
@@ -26,13 +26,13 @@ variable
   A B C : 𝒞
 
 infix 1 _⊸_
-record _⊸_ (A B : 𝒞) : Type where
+record _⊸_ (A B : 𝒞) : 𝒱 where
   field
     U : U A → U B
     charge : ∀ c a → U (A .charge c a) ≡ B .charge c (U a)
 open _⊸_ public
 
-isEquivᶜ : (A ⊸ B) → Type
+isEquivᶜ : (A ⊸ B) → 𝒱
 isEquivᶜ f = isEquiv (U f)
 
 idᶜ : A ⊸ A
@@ -136,7 +136,7 @@ idᶜ⨾ᶜf≡f : (f : A ⊸ B) → idᶜ ⨾ᶜ f ≡ f
 idᶜ⨾ᶜf≡f f = ⊸-path refl refl refl
 
 charge-path-inv
-  : {X Y : Type}
+  : {X Y : 𝒱}
   → (e : X ≃ Y)
   → (chargeX : ℂ → X → X)
   → (chargeY : ℂ → Y → Y)
@@ -151,7 +151,7 @@ charge-path-inv e chargeX chargeY h =
       ua-gluePath (invEquiv e) (h c y)
 
 charge-path
-  : {X Y : Type}
+  : {X Y : 𝒱}
   → (e : X ≃ Y)
   → (chargeX : ℂ → X → X)
   → (chargeY : ℂ → Y → Y)
