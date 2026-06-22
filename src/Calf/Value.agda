@@ -15,24 +15,27 @@ open import Relation.Binary using (_⇒_)
 open import Relation.Binary.Definitions
 
 
-record 𝒱 : Type₁ where
-  field
-    val : Type
-    is-set : isSet val
-open 𝒱 public
+𝒱 = Type
 
-𝒱-path : {X Y : 𝒱} → val X ≡ val Y → X ≡ Y
-𝒱-path {X} {Y} p i .val = p i
-𝒱-path {X} {Y} p i .is-set =
-  isProp→PathP
-    (λ i → isPropIsSet {_} {p i})
-    (X .is-set)
-    (Y .is-set)
-    i
+
+-- record 𝒱 : Type₁ where
+--   field
+--     val : Type
+--     is-set : isSet val
+-- open 𝒱 public
+
+-- 𝒱-path : {X Y : 𝒱} → val X ≡ val Y → X ≡ Y
+-- 𝒱-path {X} {Y} p i .val = p i
+-- 𝒱-path {X} {Y} p i .is-set =
+--   isProp→PathP
+--     (λ i → isPropIsSet {_} {p i})
+--     (X .is-set)
+--     (Y .is-set)
+--     i
 
 variable
   X Y Z : 𝒱
 
-fromProp : hProp ℓ-zero → 𝒱
-fromProp P .val = ⟨ P ⟩
-fromProp P .is-set = isProp→isSet (P .snd)
+-- fromProp : hProp ℓ-zero → 𝒱
+-- fromProp P .val = ⟨ P ⟩
+-- fromProp P .is-set = isProp→isSet (P .snd)

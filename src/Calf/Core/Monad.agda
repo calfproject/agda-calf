@@ -13,5 +13,5 @@ opaque
   M : 𝒱 → 𝒱
   M X = ℂ ×ᵛ X
 
-  retᴹ : val X → val (M X)
+  retᴹ : X → M X
   retᴹ x = 0ℂ , x

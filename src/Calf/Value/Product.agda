@@ -6,5 +6,5 @@ open import Cubical.Foundations.HLevels
 
 infixr 2 _×ᵛ_
 _×ᵛ_ : 𝒱 → 𝒱 → 𝒱
-(X ×ᵛ Y) .val = val X × val Y
-(X ×ᵛ Y) .is-set = isSet× (X .is-set) (Y .is-set)
+(X ×ᵛ Y) = X × Y
+-- (X ×ᵛ Y) .is-set = isSet× (X .is-set) (Y .is-set)
