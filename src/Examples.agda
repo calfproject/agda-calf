@@ -2,9 +2,9 @@ module Examples where
 
 open import Calf.Core.Cost
 open import Calf.Value
-open import Calf.Value.List
-open import Calf.Value.Nat
-open import Calf.Value.Product
+open import Cubical.Data.List renaming (rev to reverse)
+open import Cubical.Data.Nat
+open import Cubical.Data.Sigma
 open import Calf.Computation
 open import Calf.Computation.Copower
 open import Calf.Computation.Free
@@ -16,44 +16,44 @@ open import Function
 
 
 BQ : 𝒞
-BQ = F (Listᵛ ℕᵛ ×ᵛ Listᵛ ℕᵛ)
+BQ = F (List ℕ × List ℕ)
 
 LQ : 𝒞
-LQ = F (Listᵛ ℕᵛ)
+LQ = F (List ℕ)
 
 φ : BQ ⊸ LQ
 φ =
   bind (l₁ , l₂) ← idᶜ ⨾
   LQ .charge (` length l₁) (ret (l₂ ++ reverse l₁))
 
-emptyq : cmp LQ
+emptyq : U LQ
 emptyq = ret []
 
-enqueue : val ℕᵛ → LQ ⊸ LQ
+enqueue : ℕ → LQ ⊸ LQ
 enqueue e = bind' λ l → LQ .charge 1 (ret (l ++ [ e ]))
 
-dequeue : LQ ⊸ (ℕᵛ ⋊ LQ)
+dequeue : LQ ⊸ (ℕ ⋊ LQ)
 dequeue = bind' λ
   { []      → 0 , ret []
   ; (x ∷ l) → x , ret l }
 
-emptyᵗ : cmp BQ
+emptyᵗ : U BQ
 emptyᵗ = ret ([] , [])
 
-enqueueᵗ : val ℕᵛ → BQ ⊸ BQ
+enqueueᵗ : ℕ → BQ ⊸ BQ
 enqueueᵗ e = bind' λ (back , front) → ret (e ∷ back , front)
 
-dequeueᵗ : BQ ⊸ (ℕᵛ ⋊ BQ)
+dequeueᵗ : BQ ⊸ (ℕ ⋊ BQ)
 dequeueᵗ = bind' λ
   { (back , x ∷ front) → x , ret (back , front)
   ; (back , [])        → reverse-front back }
   where
-    reverse-front : List ℕ → cmp (ℕᵛ ⋊ BQ)
+    reverse-front : List ℕ → U (ℕ ⋊ BQ)
     reverse-front back with reverse back
     ... | []     = 0 , BQ .charge (` length back) (ret ([] , []))
     ... | x ∷ l  = x , BQ .charge (` length back) (ret ([] , l))
 
-mapφ : (ℕᵛ ⋊ BQ) ⊸ (ℕᵛ ⋊ LQ)
+mapφ : (ℕ ⋊ BQ) ⊸ (ℕ ⋊ LQ)
 mapφ .U (x , q) = x , φ .U q
 mapφ .charge c (x , q) i .fst = x
 mapφ .charge c (x , q) i .snd = φ .charge c q i
@@ -83,51 +83,51 @@ opaque
     ∙ sym (Nat.+-zero (c + (n + 0)))
 
   empty-coherent : φ .U emptyᵗ ≡ emptyq
-  empty-coherent = refl
+  empty-coherent = {!   !} -- refl
 
   enqueue-coherent :
-    (e : val ℕᵛ) (q : cmp BQ)
+    (e : ℕ) (q : U BQ)
     → φ .U (enqueueᵗ e .U q) ≡ enqueue e .U (φ .U q)
-  enqueue-coherent e (c , back , front) =
-    cong₂ _,_
-      (enqueue-cost c (length back))
-      (sym (List.++-assoc front (reverse back) [ e ]))
+  enqueue-coherent = {!   !}
+  -- enqueue-coherent e (c , back , front) =
+  --   cong₂ _,_
+  --     (enqueue-cost c (length back))
+  --     (sym (List.++-assoc front (reverse back) [ e ]))
 
   dequeue-coherent :
-    (q : cmp BQ)
+    (q : U BQ)
     → mapφ .U (dequeueᵗ .U q) ≡ dequeue .U (φ .U q)
-  dequeue-coherent (c , back , []) with reverse back
-  ... | [] = refl
-  ... | x ∷ front =
-    λ i → x , c + (length back + 0) + 0 , List.++-unit-r front i
-  dequeue-coherent (c , back , x ∷ front) =
-    λ i → x , dequeue-front-cost c (length back) i , front ++ reverse back
+  dequeue-coherent = {!   !}
+  -- dequeue-coherent (c , back , []) with reverse back
+  -- ... | [] = refl
+  -- ... | x ∷ front =
+  --   λ i → x , c + (length back + 0) + 0 , List.++-unit-r front i
+  -- dequeue-coherent (c , back , x ∷ front) =
+  --   λ i → x , dequeue-front-cost c (length back) i , front ++ reverse back
 
 
 open import Cubical.Foundations.Equiv
 open import Calf.Computation.Open as ◯ᶜ
 open import Calf.Computation.Closed as ●ᶜ hiding (law)
 open import Calf.Computation.Glue
-open import Calf.Value.Open as ◯ᵛ
-open import Calf.Value.Closed as ●ᵛ
+open import Calf.Value.Open as ◯
+open import Calf.Value.Closed as ●
 
 BLQ : 𝒞
 BLQ = Glueᶜ' BQ LQ φ
 
-empty' : cmp BLQ
-empty' = triangleᶜ' {B-⊤ = BQ} {B-abs = LQ} {β = φ} emptyᵗ emptyq empty-coherent
+empty' : U BLQ
+empty' = triangleᶜ' emptyᵗ emptyq empty-coherent
 
-enqueue' : val ℕᵛ → BLQ ⊸ BLQ
+enqueue' : ℕ → BLQ ⊸ BLQ
 enqueue' e = squareᶜ' (enqueueᵗ e) (enqueue e) (enqueue-coherent e)
 
 opaque
   unfolding Glueᶜ'
 
-  dequeue'-fst-glue : cmp BLQ → val (𝒱-fromFRAC (𝒱-toFRAC ℕᵛ))
+  dequeue'-fst-glue : U BLQ → fromFRAC (toFRAC ℕ)
   dequeue'-fst-glue =
-    squareᵛ'
-      {X-⊤ = U BQ} {X-abs = U LQ} {χ = φ .U}
-      {Y-⊤ = ℕᵛ} {Y-abs = ℕᵛ} {ψ = λ n → n}
+    square'
       (λ bq → fst (dequeueᵗ .U bq))
       (λ lq → fst (dequeue .U lq))
       (λ q → cong fst (dequeue-coherent q))
@@ -136,41 +136,41 @@ opaque
   dequeue'-snd = squareᶜ' dequeueᵗ-snd dequeue-snd (λ q → cong snd (dequeue-coherent q))
 
   dequeueᵗ-fst-●-charge
-    : (c : val ℂ) (q• : val (●ᶜ BQ .U))
-    → ●ᵛ.map (λ bq → fst (dequeueᵗ .U bq)) (●ᶜ BQ .charge c q•)
-      ≡ ●ᵛ.map (λ bq → fst (dequeueᵗ .U bq)) q•
-  dequeueᵗ-fst-●-charge c (η• bq) = cong (η•ᵛ {ℕᵛ}) (cong fst (dequeueᵗ .charge c bq))
+    : (c : ℂ) (q• : (●ᶜ BQ .U))
+    → ●.map (λ bq → fst (dequeueᵗ .U bq)) (●ᶜ BQ .charge c q•)
+      ≡ ●.map (λ bq → fst (dequeueᵗ .U bq)) q•
+  dequeueᵗ-fst-●-charge c (η• bq) = cong η• (cong fst (dequeueᵗ .charge c bq))
   dequeueᵗ-fst-●-charge c (∗ p) = refl
   dequeueᵗ-fst-●-charge c (law bq p i) =
     isProp→PathP
-      (λ i → ●ᵛ ℕᵛ .is-set
-        (●ᵛ.map (λ bq → fst (dequeueᵗ .U bq)) (●ᶜ BQ .charge c (law bq p i)))
-        (●ᵛ.map (λ bq → fst (dequeueᵗ .U bq)) (law bq p i)))
-      (cong (η•ᵛ {ℕᵛ}) (cong fst (dequeueᵗ .charge c bq)))
+      (λ i → ●-preserves-isSet isSetℕ
+        (●.map (λ bq → fst (dequeueᵗ .U bq)) (●ᶜ BQ .charge c (law bq p i)))
+        (●.map (λ bq → fst (dequeueᵗ .U bq)) (law bq p i)))
+      (cong η• (cong fst (dequeueᵗ .charge c bq)))
       refl
       i
 
   dequeue-fst-◯-charge
-    : (c : val ℂ) (q◦ : val (◯ᶜ LQ .U))
-    → ◯ᵛ.map (λ lq → fst (dequeue .U lq)) (◯ᶜ LQ .charge c q◦)
-      ≡ ◯ᵛ.map (λ lq → fst (dequeue .U lq)) q◦
+    : (c : ℂ) (q◦ : (◯ᶜ LQ .U))
+    → ◯.map (λ lq → fst (dequeue .U lq)) (◯ᶜ LQ .charge c q◦)
+      ≡ ◯.map (λ lq → fst (dequeue .U lq)) q◦
   dequeue-fst-◯-charge c q◦ i p = cong fst (dequeue .charge c (q◦ p)) i
 
   dequeue'-fst-glue-charge
-    : (c : val ℂ) (q : cmp BLQ)
+    : (c : ℂ) (q : U BLQ)
     → dequeue'-fst-glue (BLQ .charge c q) ≡ dequeue'-fst-glue q
   dequeue'-fst-glue-charge c q i .• = dequeueᵗ-fst-●-charge c (q .•) i
   dequeue'-fst-glue-charge c q i .◦ = dequeue-fst-◯-charge c (q .◦) i
   dequeue'-fst-glue-charge c q i .•→◦ =
     isProp→PathP
-      (λ i → ●ᵛ (◯ᵛ ℕᵛ) .is-set
-        (●ᵛ.map (η◦ᵛ {ℕᵛ}) (dequeueᵗ-fst-●-charge c (q .•) i))
-        (η•ᵛ {◯ᵛ ℕᵛ} (dequeue-fst-◯-charge c (q .◦) i)))
+      (λ i → ●-preserves-isSet (◯-preserves-isSet isSetℕ)
+        (●.map η◦ (dequeueᵗ-fst-●-charge c (q .•) i))
+        (η• (dequeue-fst-◯-charge c (q .◦) i)))
       (dequeue'-fst-glue (BLQ .charge c q) .•→◦)
       (dequeue'-fst-glue q .•→◦)
       i
 
-  dequeue' : BLQ ⊸ (ℕᵛ ⋊ BLQ)
+  dequeue' : BLQ ⊸ (ℕ ⋊ BLQ)
   dequeue' .U q .fst =
     invIsEq fracture-isEquiv (dequeue'-fst-glue q)
   dequeue' .U q .snd = dequeue'-snd .U q

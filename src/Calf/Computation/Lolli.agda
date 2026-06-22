@@ -8,14 +8,21 @@ module Calf.Computation.Lolli where
 
 open import Calf.Core.Cost
 open import Calf.Value
-open import Calf.Value.Lolli
 open import Calf.Computation
 open import Calf.Computation.Tensor
 
 infix 1 _⊸ᶜ_
 
 _⊸ᶜ_ : 𝒞 → 𝒞 → 𝒞
-(A ⊸ᶜ B) .U = A ⊸ᵛ B
+(A ⊸ᶜ B) .U = A ⊸ B
+(A ⊸ᶜ B) .is-set =
+  isSetRetract
+    (λ f → f .U , f .charge)
+    (λ (U , charge) → record { U = U ; charge = charge })
+    (λ _ → refl)
+    (isSetΣSndProp
+      (isSetΠ λ _ → B .is-set)
+      (isProp⊸charge A B))
 (A ⊸ᶜ B) .charge c f .U a = B .charge c (f .U a)
 (A ⊸ᶜ B) .charge c f .charge c' a =
   cong (B .charge c) (f .charge c' a)
@@ -53,7 +60,7 @@ lolli-currying {A} {B} {C} =
           C .charge c (f .U (inj a b 0ℂ))
         ∎)
 
-    uncurryᶜ-U : (A ⊸ (B ⊸ᶜ C)) → A U⊗ B → cmp C
+    uncurryᶜ-U : (A ⊸ (B ⊸ᶜ C)) → A U⊗ B → U C
     uncurryᶜ-U f (inj a b c) = C .charge c (f .U a .U b)
     uncurryᶜ-U f (law₁ c c' a b i) =
       (  C .charge c (f .U (A .charge c' a) .U b)
@@ -70,7 +77,7 @@ lolli-currying {A} {B} {C} =
          C .charge (c +ℂ c') (f .U a .U b)
        ∎) i
     uncurryᶜ-U f (squash x y p q i j) =
-      C .U .is-set
+      C .is-set
         (uncurryᶜ-U f x)
         (uncurryᶜ-U f y)
         (cong (uncurryᶜ-U f) p)
@@ -78,13 +85,13 @@ lolli-currying {A} {B} {C} =
         i j
 
     uncurryᶜ-charge
-      : (f : A ⊸ (B ⊸ᶜ C)) (c : val ℂ) (x : cmp (A ⊗ B))
+      : (f : A ⊸ (B ⊸ᶜ C)) (c : ℂ) (x : U (A ⊗ B))
       → uncurryᶜ-U f ((A ⊗ B) .charge c x) ≡ C .charge c (uncurryᶜ-U f x)
     uncurryᶜ-charge f c (inj a b c') =
       C .charge/+ {a = f .U a .U b} {c₁ = c} {c₂ = c'}
     uncurryᶜ-charge f c (law₁ c₁ c' a b i) =
       isSet→isSet'
-        (C .U .is-set)
+        (C .is-set)
         (C .charge/+ {a = f .U (A .charge c' a) .U b} {c₁ = c} {c₂ = c₁})
         (C .charge/+ {a = f .U a .U b} {c₁ = c} {c₂ = c₁ +ℂ c'})
         (λ k → uncurryᶜ-U f ((A ⊗ B) .charge c (law₁ c₁ c' a b k)))
@@ -92,7 +99,7 @@ lolli-currying {A} {B} {C} =
         i
     uncurryᶜ-charge f c (law₂ c₁ c' a b i) =
       isSet→isSet'
-        (C .U .is-set)
+        (C .is-set)
         (C .charge/+ {a = f .U a .U (B .charge c' b)} {c₁ = c} {c₂ = c₁})
         (C .charge/+ {a = f .U a .U b} {c₁ = c} {c₂ = c₁ +ℂ c'})
         (λ k → uncurryᶜ-U f ((A ⊗ B) .charge c (law₂ c₁ c' a b k)))
@@ -101,7 +108,7 @@ lolli-currying {A} {B} {C} =
     uncurryᶜ-charge f c (squash x y p q i j) =
       isSet→SquareP
         (λ k l → isProp→isSet
-          (C .U .is-set
+          (C .is-set
             (uncurryᶜ-U f ((A ⊗ B) .charge c (squash x y p q k l)))
             (C .charge c (uncurryᶜ-U f (squash x y p q k l)))))
         (cong (uncurryᶜ-charge f c) p)
@@ -119,7 +126,7 @@ lolli-currying {A} {B} {C} =
       ⊸-path refl refl (funExt λ a →
         ⊸-path refl refl (funExt λ b → C .charge/0))
 
-    uncurryᶜ-curryᶜ-U : (f : A ⊗ B ⊸ C) (x : cmp (A ⊗ B))
+    uncurryᶜ-curryᶜ-U : (f : A ⊗ B ⊸ C) (x : U (A ⊗ B))
       → uncurryᶜ-U (curryᶜ f) x ≡ f .U x
     uncurryᶜ-curryᶜ-U f (inj a b c) =
         C .charge c (f .U (inj a b 0ℂ))
@@ -130,7 +137,7 @@ lolli-currying {A} {B} {C} =
       ∎
     uncurryᶜ-curryᶜ-U f (law₁ c c' a b i) =
       isSet→isSet'
-        (C .U .is-set)
+        (C .is-set)
         (uncurryᶜ-curryᶜ-U f (inj (A .charge c' a) b c))
         (uncurryᶜ-curryᶜ-U f (inj a b (c +ℂ c')))
         (λ k → uncurryᶜ-U (curryᶜ f) (law₁ c c' a b k))
@@ -138,7 +145,7 @@ lolli-currying {A} {B} {C} =
         i
     uncurryᶜ-curryᶜ-U f (law₂ c c' a b i) =
       isSet→isSet'
-        (C .U .is-set)
+        (C .is-set)
         (uncurryᶜ-curryᶜ-U f (inj a (B .charge c' b) c))
         (uncurryᶜ-curryᶜ-U f (inj a b (c +ℂ c')))
         (λ k → uncurryᶜ-U (curryᶜ f) (law₂ c c' a b k))
@@ -147,7 +154,7 @@ lolli-currying {A} {B} {C} =
     uncurryᶜ-curryᶜ-U f (squash x y p q i j) =
       isSet→SquareP
         (λ k l → isProp→isSet
-          (C .U .is-set
+          (C .is-set
             (uncurryᶜ-U (curryᶜ f) (squash x y p q k l))
             (f .U (squash x y p q k l))))
         (cong (uncurryᶜ-curryᶜ-U f) p)

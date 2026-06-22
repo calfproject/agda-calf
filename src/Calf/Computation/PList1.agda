@@ -11,7 +11,6 @@ module Calf.Computation.PList1 where
 open import Calf.Core.Abstract
 open import Calf.Core.Cost
 open import Calf.Value
-open import Calf.Value.List
 import Calf.Value.Closed as ●ᵛ
 import Calf.Value.Open as ◯ᵛ
 open import Calf.Computation
@@ -23,10 +22,10 @@ open import Calf.Computation.Glue
 open import Calf.Computation.Credit
 
 opaque
-  PList₁ : val ℂ → 𝒱 → 𝒞
-  PList₁ c X = PotentialFunction {Listᵛ X} (λ l → length l ⊙ c)
+  PList₁ : ℂ → 𝒱 → 𝒞
+  PList₁ c X = PotentialFunction {List X} (λ l → length l ⊙ c)
 
-  pnil₁ : cmp (PList₁ c X)
+  pnil₁ : U (PList₁ c X)
   pnil₁ {c} =
     triangleᶜ'
       {F _} {F _} {bind' (λ l → F _ .charge (length l ⊙ c) (ret l))}
@@ -34,12 +33,12 @@ opaque
       (ret [])
       (bind'/β ∙ F _ .charge/0)
 
-  pcons₁ : val X → ▷'[ c ] (PList₁ c X) ⊸ PList₁ c X
+  pcons₁ : X → ▷'[ c ] (PList₁ c X) ⊸ PList₁ c X
   pcons₁ {X} {c} x =
     subst (_⊸ PList₁ c X)
-      ( Glueᶜ' (F (Listᵛ X)) (F (Listᵛ X)) (CHARGE c ⨾ᶜ bind' (λ l → F _ .charge (length l ⊙ c) (ret l)))
+      ( Glueᶜ' (F (List X)) (F (List X)) (CHARGE c ⨾ᶜ bind' (λ l → F _ .charge (length l ⊙ c) (ret l)))
       ≡⟨ cong (Glueᶜ' _ _) (CHARGE-commute _ _) ⟩
-        Glueᶜ' (F (Listᵛ X)) (F (Listᵛ X)) (bind' (λ l → F _ .charge (length l ⊙ c) (ret l)) ⨾ᶜ CHARGE c)
+        Glueᶜ' (F (List X)) (F (List X)) (bind' (λ l → F _ .charge (length l ⊙ c) (ret l)) ⨾ᶜ CHARGE c)
       ≡⟨ sym Glueᶜ'-Glueᶜ' ⟩
         Glueᶜ'
           (PList₁ c X)
@@ -109,60 +108,60 @@ opaque
     unfolding Glueᶜ'
 
     pfoldr₁ :
-        cmp A
-      → (val X → (▷'[ c ] A ⊸ A))
+        U A
+      → (X → (▷'[ c ] A ⊸ A))
       → PList₁ c X ⊸ A
     pfoldr₁ {A = A} {X = X} {c} enil econs =
       subst (PList₁ c X ⊸_) (𝒞-glue-fracture-retract A) $
       squareᶜ go• go◦ go-•⊸◦
       where
-        costᶜ : F (Listᵛ X) ⊸ F (Listᵛ X)
+        costᶜ : F (List X) ⊸ F (List X)
         costᶜ =
           bind' {A = F _} λ l →
           CHARGE {A = F _} (length l ⊙ c) .U (ret l)
 
-        fold• : val (Listᵛ X) → cmp (●ᶜ A)
+        fold• : (List X) → U (●ᶜ A)
         fold• =
           foldr
-            (λ x → ●ᵛ.map (econs x .U) ∘ transport (cong cmp (sym (▷'-●ᶜ c A))))
+            (λ x → ●ᵛ.map (econs x .U) ∘ transport (cong U (sym (▷'-●ᶜ c A))))
             (η• enil)
 
-        go• : ●ᶜ (F (Listᵛ X)) ⊸ ●ᶜ A
+        go• : ●ᶜ (F (List X)) ⊸ ●ᶜ A
         go• =
           ●ᶜ.bind $
           bind' fold•
 
-        open-econs : val X → ◯ᶜ A ⊸ ◯ᶜ A
+        open-econs : X → ◯ᶜ A ⊸ ◯ᶜ A
         open-econs x .U a◦ =
-          ◯ᵛ.map (econs x .U) (transport (cong cmp (sym (▷'-◯ᶜ c A))) a◦)
+          ◯ᵛ.map (econs x .U) (transport (cong U (sym (▷'-◯ᶜ c A))) a◦)
         open-econs x .charge d a◦ = funExt λ abs →
             econs x .U
-              (transport (cong cmp (sym (▷'-◯ᶜ c A)))
+              (transport (cong U (sym (▷'-◯ᶜ c A)))
                 (◯ᶜ A .charge d a◦)
                 abs)
           ≡⟨ cong (λ q → econs x .U (q abs))
                 (transport-charge (sym (▷'-◯ᶜ c A)) d a◦) ⟩
             econs x .U
               ((◯ᶜ (▷'[ c ] A) .charge d
-                (transport (cong cmp (sym (▷'-◯ᶜ c A))) a◦)) abs)
+                (transport (cong U (sym (▷'-◯ᶜ c A))) a◦)) abs)
           ≡⟨ econs x .charge d
-                (transport (cong cmp (sym (▷'-◯ᶜ c A))) a◦ abs) ⟩
+                (transport (cong U (sym (▷'-◯ᶜ c A))) a◦ abs) ⟩
             A .charge d
-              (econs x .U (transport (cong cmp (sym (▷'-◯ᶜ c A))) a◦ abs))
+              (econs x .U (transport (cong U (sym (▷'-◯ᶜ c A))) a◦ abs))
           ∎
 
-        fold◦ : val (Listᵛ X) → cmp (◯ᶜ A)
+        fold◦ : (List X) → U (◯ᶜ A)
         fold◦ =
           foldr
             (λ x → open-econs x .U)
             (η◦ enil)
 
-        go◦ : ◯ᶜ (F (Listᵛ X)) ⊸ ◯ᶜ A
+        go◦ : ◯ᶜ (F (List X)) ⊸ ◯ᶜ A
         go◦ =
           ◯ᶜ.bind {A = F _} {B = A} $
           bind' fold◦
 
-        fold•ᶜ : F (Listᵛ X) ⊸ ●ᶜ A
+        fold•ᶜ : F (List X) ⊸ ●ᶜ A
         fold•ᶜ = bind' fold•
 
         go-•⊸◦ :
@@ -206,7 +205,7 @@ opaque
                 costᶜ .U (ret (x ∷ l))
               ∎
 
-            go◦-cons : ∀ x (e : cmp (F (Listᵛ X))) →
+            go◦-cons : ∀ x (e : U (F (List X))) →
               go◦ .U (η◦ᶜ {A = F _} .U (F.map (x ∷_) .U e))
               ≡ open-econs x .U (go◦ .U (η◦ᶜ {A = F _} .U e))
             go◦-cons x e =
@@ -229,7 +228,7 @@ opaque
 
             open-cons-charge : ∀ x l →
               ◯ᵛ.map (econs x .U)
-                (transport (cong cmp (sym (▷'-◯ᶜ c A)))
+                (transport (cong U (sym (▷'-◯ᶜ c A)))
                   (CHARGE {A = ◯ᶜ A} c .U
                     ((costᶜ ⨾ᶜ η◦ᶜ ⨾ᶜ go◦) .U (ret l))))
               ≡ (costᶜ ⨾ᶜ η◦ᶜ ⨾ᶜ go◦) .U (ret (x ∷ l))
@@ -287,36 +286,36 @@ opaque
               ≡⟨ cong (●ᵛ.map (η◦ᶜ {A = A} .U)) bind'/β ⟩
                 ●ᵛ.map (η◦ᶜ {A = A} .U)
                   (●ᵛ.map (econs x .U)
-                    (transport (cong cmp (sym (▷'-●ᶜ c A)))
+                    (transport (cong U (sym (▷'-●ᶜ c A)))
                       (fold• l)))
               ≡⟨ cong
                   (λ q → ●ᵛ.map (η◦ᶜ {A = A} .U)
                     (●ᵛ.map (econs x .U)
-                      (transport (cong cmp (sym (▷'-●ᶜ c A))) q)))
+                      (transport (cong U (sym (▷'-●ᶜ c A))) q)))
                   (sym bind'/β) ⟩
                 ●ᵛ.map (η◦ᶜ {A = A} .U)
                   (●ᵛ.map (econs x .U)
-                    (transport (cong cmp (sym (▷'-●ᶜ c A)))
+                    (transport (cong U (sym (▷'-●ᶜ c A)))
                       (fold•ᶜ .U (ret l))))
               ≡⟨ (
                 let
-                    q▷• = transport (cong cmp (sym (▷'-●ᶜ c A))) (fold•ᶜ .U (ret l))
-                    q▷◦ = transport (cong cmp (sym (▷'-◯ᶜ c A))) (CHARGE {A = ◯ᶜ A} c .U ((costᶜ ⨾ᶜ η◦ᶜ ⨾ᶜ go◦) .U (ret l)))
+                    q▷• = transport (cong U (sym (▷'-●ᶜ c A))) (fold•ᶜ .U (ret l))
+                    q▷◦ = transport (cong U (sym (▷'-◯ᶜ c A))) (CHARGE {A = ◯ᶜ A} c .U ((costᶜ ⨾ᶜ η◦ᶜ ⨾ᶜ go◦) .U (ret l)))
 
                     q▷-coh : ●ᶜ.map (η◦ᶜ {A = ▷'[ c ] A}) .U q▷• ≡ η• q▷◦
                     q▷-coh =
                         ●ᶜ.map (η◦ᶜ {A = ▷'[ c ] A}) .U q▷•
                       ≡⟨ transport-▷' c A (fold•ᶜ .U (ret l)) ⟩
-                        transport (cong (λ C → cmp (●ᶜ C)) (sym (▷'-◯ᶜ c A)))
+                        transport (cong (λ C → U (●ᶜ C)) (sym (▷'-◯ᶜ c A)))
                           ((▷'-FRAC c A .𝒞-FRAC.α•) .U (fold•ᶜ .U (ret l)))
                       ≡⟨ cong
-                          (transport (cong (λ C → cmp (●ᶜ C)) (sym (▷'-◯ᶜ c A))))
+                          (transport (cong (λ C → U (●ᶜ C)) (sym (▷'-◯ᶜ c A))))
                           (sym (●ᵛ.map-∘ (η◦ᶜ {A = A} .U) (◯ᶜ A .charge c) (fold•ᶜ .U (ret l))) ) ⟩
-                        transport (cong (λ C → cmp (●ᶜ C)) (sym (▷'-◯ᶜ c A)))
+                        transport (cong (λ C → U (●ᶜ C)) (sym (▷'-◯ᶜ c A)))
                           (●ᵛ.map (CHARGE {A = ◯ᶜ A} c .U)
                             ((fold•ᶜ ⨾ᶜ ●ᶜ.map η◦ᶜ) .U (ret l)))
                       ≡⟨ cong
-                          (transport (cong (λ C → cmp (●ᶜ C)) (sym (▷'-◯ᶜ c A))))
+                          (transport (cong (λ C → U (●ᶜ C)) (sym (▷'-◯ᶜ c A))))
                           (cong (●ᵛ.map (CHARGE {A = ◯ᶜ A} c .U)) (fold•-coherence l)) ⟩
                         η• q▷◦
                       ∎
@@ -324,7 +323,7 @@ opaque
                   fracture-map-coh (econs x) q▷• q▷◦ q▷-coh
               ) ⟩
                 η•ᶜ {A = ◯ᶜ A} .U (◯ᵛ.map (econs x .U)
-                  (transport (cong cmp (sym (▷'-◯ᶜ c A)))
+                  (transport (cong U (sym (▷'-◯ᶜ c A)))
                     (CHARGE {A = ◯ᶜ A} c .U ((costᶜ ⨾ᶜ η◦ᶜ ⨾ᶜ go◦) .U (ret l)))))
               ≡⟨ cong (η•ᶜ {A = ◯ᶜ A} .U) (open-cons-charge x l) ⟩
                 (costᶜ ⨾ᶜ η◦ᶜ ⨾ᶜ go◦ ⨾ᶜ η•ᶜ) .U (ret (x ∷ l))

@@ -1,4 +1,4 @@
-module Calf.Examples.Giralf.Reverse where
+module Examples.Giralf.Reverse where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
@@ -8,7 +8,7 @@ open import Calf.Computation.PList1
 open import Calf.Computation.PList2
 open import Calf.Giralf
 
-snoc : ∀ p → val X → PList₁ (1 +ℂ p) X , p ⊢ PList₁ p X
+snoc : ∀ p → X → PList₁ (1 +ℂ p) X , p ⊢ PList₁ p X
 snoc p x =
   payᴳ (+ℂ-identityʳ _) $
   foldr₁ᴳ

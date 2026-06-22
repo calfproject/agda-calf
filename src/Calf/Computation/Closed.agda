@@ -12,7 +12,8 @@ open import Calf.Value.Closed as ●ᵛ hiding (map; map-∘; join; bind) public
 open import Calf.Computation
 
 ●ᶜ : 𝒞 → 𝒞
-●ᶜ A .U = ●ᵛ (A .U)
+●ᶜ A .U = ● (A .U)
+●ᶜ A .is-set = ●-preserves-isSet (A .is-set)
 ●ᶜ A .charge c (η• a) = η• (A .charge c a)
 ●ᶜ A .charge c (∗ p) = ∗ p
 ●ᶜ A .charge c (law a p i) = law (A .charge c a) p i
@@ -20,7 +21,7 @@ open import Calf.Computation
 ●ᶜ A .charge/0 {∗ p} = refl
 ●ᶜ A .charge/0 {law a p i} =
   isProp→PathP
-    (λ i → ●ᶜ A .U .is-set
+    (λ i → ●ᶜ A .is-set
       (●ᶜ A .charge 0ℂ (law a p i))
       (law a p i))
     (cong η• (A .charge/0))
@@ -30,7 +31,7 @@ open import Calf.Computation
 ●ᶜ A .charge/+ {∗ p} = refl
 ●ᶜ A .charge/+ {law a p i} {c₁} {c₂} =
   isProp→PathP
-    (λ i → ●ᶜ A .U .is-set
+    (λ i → ●ᶜ A .is-set
       (●ᶜ A .charge (c₁ +ℂ c₂) (law a p i))
       (●ᶜ A .charge c₁ (●ᶜ A .charge c₂ (law a p i))))
     (cong η• (A .charge/+))
@@ -41,14 +42,14 @@ open import Calf.Computation
 η•ᶜ .U = η•
 η•ᶜ .charge _ _ = refl
 
-𝒞• : Type₁
-𝒞• = Σ[ A ∈ 𝒞 ] isEquiv (η•ᶜ {A} .U)
+𝒞• : 𝒱₁
+𝒞• = 𝒞WithStr λ A → isEquiv (η•ᶜ {A} .U)
 
-𝒞•-path : {A• B• : 𝒞•} → A• .fst ≡ B• .fst → A• ≡ B•
+𝒞•-path : {A• B• : 𝒞•} → ⟨ A• ⟩ᶜ ≡ ⟨ B• ⟩ᶜ → A• ≡ B•
 𝒞•-path p = Σ≡Prop (λ A → isPropIsEquiv (η•ᶜ {A} .U)) p
 
 U• : 𝒞• → 𝒱•
-U• A• .fst = A• .fst .U
+U• A• .fst = ⟨ A• ⟩ᶜ .U
 U• A• .snd = A• .snd
 
 map : (A ⊸ B) → (●ᶜ A ⊸ ●ᶜ B)
@@ -57,15 +58,15 @@ map f .charge c (η• a) = cong η• (f .charge c a)
 map f .charge c (∗ p) = refl
 map {A} {B} f .charge c (law a p i) =
   isProp→PathP
-    (λ i → ●ᶜ B .U .is-set
+    (λ i → ●ᶜ B .is-set
       (map f .U (●ᶜ A .charge c (law a p i)))
       (●ᶜ B .charge c (map f .U (law a p i))))
     (cong η• (f .charge c a))
     refl
     i
-  
+
 ●ᶜ-charge-map
-  : (c : val ℂ) (a• : cmp (●ᶜ A))
+  : (c : ℂ) (a• : U (●ᶜ A))
   → ●ᶜ A .charge c a• ≡ ●ᵛ.map (A .charge c) a•
 ●ᶜ-charge-map c (η• a) = refl
 ●ᶜ-charge-map c (∗ p) = refl
@@ -94,7 +95,7 @@ join .charge c (η• a•) = refl
 join .charge c (∗ abs) = refl
 join {A = A} .charge c (law a• abs i) =
   isProp→PathP
-    (λ i → ●ᶜ A .U .is-set
+    (λ i → ●ᶜ A .is-set
       (join {A = A} .U (●ᶜ (●ᶜ A) .charge c (law a• abs i)))
       (●ᶜ A .charge c (join {A = A} .U (law a• abs i))))
     refl
@@ -108,13 +109,13 @@ bind-map : (k : A ⊸ ●ᶜ B) (f : B ⊸ C) → bind k ⨾ᶜ map f ≡ bind (
 bind-map {A = A} {B = B} {C = C} k f =
   ⊸-path refl refl (funExt h)
   where
-    h : (a• : cmp (●ᶜ A)) →
+    h : (a• : U (●ᶜ A)) →
       (bind k ⨾ᶜ map f) .U a• ≡ bind (k ⨾ᶜ map f) .U a•
     h (η• a) = refl
     h (∗ p) = refl
     h (law a p i) =
       isProp→PathP
-        (λ i → ●ᶜ C .U .is-set
+        (λ i → ●ᶜ C .is-set
           ((bind k ⨾ᶜ map f) .U (law a p i))
           (bind (k ⨾ᶜ map f) .U (law a p i)))
         refl
@@ -125,12 +126,12 @@ bind-η• : (f : A ⊸ B) → bind (f ⨾ᶜ η•ᶜ) ≡ map f
 bind-η• {A = A} {B = B} f =
   ⊸-path refl refl (funExt h)
   where
-    h : (a• : cmp (●ᶜ A)) → bind (f ⨾ᶜ η•ᶜ) .U a• ≡ map f .U a•
+    h : (a• : U (●ᶜ A)) → bind (f ⨾ᶜ η•ᶜ) .U a• ≡ map f .U a•
     h (η• a) = refl
     h (∗ p) = refl
     h (law a p i) =
       isProp→PathP
-        (λ i → ●ᶜ B .U .is-set
+        (λ i → ●ᶜ B .is-set
           (bind (f ⨾ᶜ η•ᶜ) .U (law a p i))
           (map f .U (law a p i)))
         refl

@@ -78,7 +78,7 @@ isPropCharge/+ {U} {isSetU} charge =
       (charge B)
   → A ≡ B
 𝒞-path {A} {B} U-path charge-path i .U = U-path i
-𝒞-path {A} {B} U-path charge-path i .is-set = {!   !}
+𝒞-path {A} {B} U-path charge-path i .is-set = isPropIsSet {!   !} {!   !} i
 𝒞-path {A} {B} U-path charge-path i .charge = charge-path i
 𝒞-path {A} {B} U-path charge-path i .charge/0 =
   isProp→PathP
@@ -97,7 +97,7 @@ isProp⊸charge
   : (A B : 𝒞) (f : U A → U B)
   → isProp ((c : ℂ) (a : U A) → f (A .charge c a) ≡ B .charge c (f a))
 isProp⊸charge A B f =
-  isPropΠ2 λ c a → {!   !} -- B .U .is-set (f (A .charge c a)) (B .charge c (f a))
+  isPropΠ2 λ c a → B .is-set (f (A .charge c a)) (B .charge c (f a))
 
 ⊸-path
   : {A₀ A₁ B₀ B₁ : 𝒞}
@@ -177,3 +177,12 @@ module _ where
         transport (cong U p) (B .charge d a)
         ≡ C .charge d (transport (cong U p) a))
       (λ d a → transportRefl (B .charge d a) ∙ cong (B .charge d) (sym (transportRefl a)))
+
+𝒞WithStr : (B : 𝒞 → 𝒱) → 𝒱₁
+𝒞WithStr B = Σ[ A ∈ 𝒞 ] B A
+
+⟨_⟩ᶜ : ∀ {B} → 𝒞WithStr B → 𝒞
+⟨_⟩ᶜ = fst
+
+strᶜ : ∀ {B} → (A : 𝒞WithStr B) → B ⟨ A ⟩ᶜ
+strᶜ = snd

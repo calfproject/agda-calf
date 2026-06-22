@@ -14,7 +14,7 @@ open import Calf.Computation.Credit
 open import Calf.Computation.Tensor
 
 opaque
-  ◁'[_]_ : val ℂ → 𝒞 → 𝒞
+  ◁'[_]_ : ℂ → 𝒞 → 𝒞
   ◁'[ c ] A = ▷'[ c ] ⊤ ⊸ᶜ A
 
   pot-cost : ∀ {c} → (A ⊸ ◁'[ c ] B) ≡ (▷'[ c ] A ⊸ B)

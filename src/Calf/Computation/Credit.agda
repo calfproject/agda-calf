@@ -21,7 +21,7 @@ open import Calf.Computation.Glue
 
 open 𝒞-FRAC
 
-▷'[_]_ : val ℂ → 𝒞 → 𝒞
+▷'[_]_ : ℂ → 𝒞 → 𝒞
 ▷'[ c ] A = Glueᶜ' A A (CHARGE c)
 
 ▷'/0 : ▷'[ 0ℂ ] A ≡ A
@@ -45,12 +45,12 @@ open 𝒞-FRAC
     ▷'[ c₁ ] (▷'[ c₂ ] A)
   ∎
 
-▷'-FRAC : val ℂ → 𝒞 → 𝒞-FRAC
+▷'-FRAC : ℂ → 𝒞 → 𝒞-FRAC
 ▷'-FRAC c A .A• = ●ᶜ A , ●ᶜ.η-isEquiv
 ▷'-FRAC c A .A◦ = ◯ᶜ A , ◯ᶜ.η-isEquiv
 ▷'-FRAC c A .α• = ●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ)
 
-▷'-FRAC-open : ⟨ ABS ⟩ → (c : val ℂ) (A : 𝒞) → ▷'-FRAC c A ≡ 𝒞-toFRAC A
+▷'-FRAC-open : ⟨ ABS ⟩ → (c : ℂ) (A : 𝒞) → ▷'-FRAC c A ≡ 𝒞-toFRAC A
 ▷'-FRAC-open abs c A i .A• = 𝒞-toFRAC A .A•
 ▷'-FRAC-open abs c A i .A◦ = 𝒞-toFRAC A .A◦
 ▷'-FRAC-open abs c A i .α• =
@@ -62,25 +62,25 @@ open 𝒞-FRAC
 opaque
   unfolding Glueᶜ'
 
-  ▷'-open : ⟨ ABS ⟩ → (c : val ℂ) (A : 𝒞) → ▷'[ c ] A ≡ A
+  ▷'-open : ⟨ ABS ⟩ → (c : ℂ) (A : 𝒞) → ▷'[ c ] A ≡ A
   ▷'-open abs c A = cong 𝒞-fromFRAC (▷'-FRAC-open abs c A) ∙ 𝒞-glue-fracture-retract A
 
-  ▷'-●ᶜ : (c : val ℂ) (A : 𝒞) → ●ᶜ (▷'[ c ] A) ≡ ●ᶜ A
+  ▷'-●ᶜ : (c : ℂ) (A : 𝒞) → ●ᶜ (▷'[ c ] A) ≡ ●ᶜ A
   ▷'-●ᶜ c A = cong (fst ∘ 𝒞-FRAC.A•) (𝒞-glue-fracture-section (▷'-FRAC c A))
 
-  ▷'-◯ᶜ : (c : val ℂ) (A : 𝒞) → ◯ᶜ (▷'[ c ] A) ≡ ◯ᶜ A
+  ▷'-◯ᶜ : (c : ℂ) (A : 𝒞) → ◯ᶜ (▷'[ c ] A) ≡ ◯ᶜ A
   ▷'-◯ᶜ c A = cong (fst ∘ 𝒞-FRAC.A◦) (𝒞-glue-fracture-section (▷'-FRAC c A))
 
-  transport-▷' : (c : val ℂ) (A : 𝒞) (q : cmp (●ᶜ A)) →
+  transport-▷' : (c : ℂ) (A : 𝒞) (q : U (●ᶜ A)) →
           ●ᶜ.map (η◦ᶜ {A = ▷'[ c ] A}) .U
-            (transport (cong cmp (sym (▷'-●ᶜ c A))) q)
-          ≡ transport (cong (λ C → cmp (●ᶜ C)) (sym (▷'-◯ᶜ c A)))
+            (transport (cong U (sym (▷'-●ᶜ c A))) q)
+          ≡ transport (cong (λ C → U (●ᶜ C)) (sym (▷'-◯ᶜ c A)))
               ((▷'-FRAC c A .𝒞-FRAC.α•) .U q)
   transport-▷' c A q =
           fromPathP⁻ $
             congP₂$
               (λ i → 𝒞-glue-fracture-section (▷'-FRAC c A) i .𝒞-FRAC.α• .U)
-              (λ i → transport⁻-fillerExt⁻ (cong cmp (▷'-●ᶜ c A)) i q)
+              (λ i → transport⁻-fillerExt⁻ (cong U (▷'-●ᶜ c A)) i q)
 
 store' : ∀ {c A} → A ⊸ ▷'[ c ] A
 store' {c} {A} =
@@ -113,12 +113,12 @@ spend {c} {A} =
 
 
 ℙ : 𝒱
-ℙ = ●ᵛ ℂ
+ℙ = ● ℂ
 
 -- variable
---   p q r s : val ℙ
+--   p q r s : ℙ
 
-▷[_] : val ℙ → 𝒞 → 𝒞
+▷[_] : ℙ → 𝒞 → 𝒞
 ▷[ η• c ] A = ▷'[ c ] A
 ▷[ ∗ abs ] A = A
 ▷[ law c abs i ] A = ▷'-open abs c A i
