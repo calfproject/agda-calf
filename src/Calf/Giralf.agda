@@ -66,14 +66,35 @@ cmpᴳ→cmp e = e .U (transport (cong cmp (sym ▷'/0)) (ret _))
 cmp→cmpᴳ : cmp A → cmpᴳ A
 cmp→cmpᴳ {A} e = transport (cong (_⊸ A) (sym ▷'/0)) (bind' λ _ → e)
 
+module _ where
+  substᴳ :
+    (A : val ℂ → 𝒞)
+    → p ≡ p'
+    → Δ , q ⊢ A p
+    → Δ , q ⊢ A p'
+  substᴳ {Δ = Δ} {q = q} A = subst (λ p → Δ , q ⊢ A p)
+
+  subst2ᴳ : ∀ {p1 p1' p2 p2'} →
+    (A : val ℂ → val ℂ → 𝒞)
+    → p1 ≡ p1' → p2 ≡ p2'
+    → Δ , q ⊢ A p1 p2
+    → Δ , q ⊢ A p1' p2'
+  subst2ᴳ {Δ = Δ} {q = q} A = subst2 λ p1 p2 → Δ , q ⊢ A p1 p2
+
+  subst3ᴳ : ∀ {p1 p1' p2 p2' p3 p3'} →
+    (A : val ℂ → val ℂ → val ℂ → 𝒞)
+    → p1 ≡ p1' → p2 ≡ p2' → p3 ≡ p3'
+    → Δ , q ⊢ A p1 p2 p3
+    → Δ , q ⊢ A p1' p2' p3'
+  subst3ᴳ {p1 = p1} {p2' = p2'} {p3' = p3'} A ≡1 ≡2 ≡3 e = substᴳ (λ v → A v p2' p3') ≡1 (subst2ᴳ (A p1) ≡2 ≡3 e)
 
 module _ where
   storeᴳ : ∀ p
     → q ⋎₂ (p , q')
     → Δ , q' ⊢ A
     → Δ , q ⊢ ▷'[ p ] A
-  storeᴳ p split e =
-    transport (cong (_⊸ _) (sym ▷'/+ ∙ cong (▷'[_] _) split)) (▷'-map e)
+  storeᴳ p split e = subst (_⊸ _) (sym ▷'/+ ∙ cong (▷'[_] _) split) (▷'-map e)
+  -- TODO: use subst instead of transport if possible
 
   releaseᴳ :
     Δ , q ⊢ ▷'[ p ] B
@@ -125,13 +146,11 @@ module _ where
 
   cons₂ᴳ :
     q ⋎₂ (p₁ , q')
-    → p ⋎₂ (p₂ , p₁)
     → val X
-    → Δ , q' ⊢ PList₂ p p₂ X
+    → Δ , q' ⊢ PList₂ (p₂ +ℂ p₁) p₂ X
     → Δ , q ⊢ PList₂ p₁ p₂ X
-  cons₂ᴳ split-q split-p x e =
-    storeᴳ _ split-q e ⨾ᶜ
-    transport (cong (λ p → (▷'[ _ ] PList₂ p _ _) ⊸ _) split-p) (pcons₂ x)
+  cons₂ᴳ split-q x e =
+    storeᴳ _ split-q e ⨾ᶜ pcons₂ x
 
   foldr₂ᴳ :
     (A : val ℂ → 𝒞)
