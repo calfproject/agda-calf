@@ -55,6 +55,19 @@ polynomial-square :
   → (m + n) · (m + n) ≡ m · m + 2 · m · n + n · n
 polynomial-square = solveNat0
 
+polynomial-crazy :
+  ∀ {a b c d e : ℕ}
+  → ((2 · (a + b) + 3 · (c + d) + suc e)
+      · (suc (a + c) + 4 · (b + d))
+      + (a + b + c + d + e) · (a + c + e)
+      + 7 · (b + d))
+    ≡
+    ((1 + e + 3 · d + 3 · c + 2 · b + 2 · a)
+      · (4 · d + 4 · b + 1 + c + a)
+      + 7 · d + 7 · b
+      + (e + d + c + b + a) · (e + c + a))
+polynomial-crazy = solveNat0
+
 ∸-zeroʳ : ∀ {n : ℕ} → n ∸ 0 ≡ n
 ∸-zeroʳ = solveNat0
 
@@ -96,6 +109,25 @@ guarded-sub-split :
   → 1 + q ≤ p
   → (p ∸ (1 + q)) + (p ∸ 1) ≡ 2 · p ∸ (2 + q)
 guarded-sub-split h = solveNat h
+
+guarded-sub-crazy :
+  ∀ {a b c d e f x y : ℕ}
+  → a ≤ b
+  → c ≤ d
+  → e ≤ f
+  → suc
+      (5 · ((b + d + f) ∸ (a + c + e))
+       + 3 · ((b ∸ a) + (d ∸ c))
+       + ((f ∸ e) + x) · (y + 2)
+       + (a + c + e)
+       + 7 · x)
+    ≡
+      (5 · ((b ∸ a) + ((d ∸ c) + (f ∸ e)))
+       + 3 · ((d + b) ∸ (c + a))
+       + ((f + x) ∸ e) · (2 + y)
+       + e + c + a
+       + x + 6 · x) + 1
+guarded-sub-crazy h₁ h₂ h₃ = solveNat (h₁ , h₂ , h₃)
 
 ≤-refl-regression : ∀ {n : ℕ} → n ≤ n
 ≤-refl-regression = solveNat0
@@ -144,6 +176,41 @@ guarded-sub-split h = solveNat h
   → m ≤ n
   → m + k ≤ n + (k + l)
 ≤-+-with-extra h = solveNat h
+
+≤-crazy :
+  ∀ {a b c d e f g x y z : ℕ}
+  → a ≤ b
+  → b ≤ c
+  → d ≤ e
+  → f ≤ g
+  → suc (suc ((a + (d + f)) + ((x + y) + z)))
+    ≤ suc (suc ((c + (e + g)) + (3 · (x + y) + z)))
+≤-crazy h₁ h₂ h₃ h₄ = solveNat (h₁ , h₂ , h₃ , h₄)
+
+≤-subtraction-crazy :
+  ∀ {a b c d e f g h x y z : ℕ}
+  → a ≤ b
+  → h ≤ g
+  → c ≤ d
+  → e ≤ f
+  → x ≤ y
+  → suc
+      (suc
+        (((b ∸ a) + (c + e))
+         + ((g ∸ h) + x)))
+    ≤ suc
+      (suc
+        (((b ∸ a) + (d + f))
+         + ((g ∸ h) + (y + z))))
+≤-subtraction-crazy h₁ h₂ h₃ h₄ h₅ =
+  solveNat (h₁ , h₂ , h₃ , h₄ , h₅)
+
+≤-subtraction-nontrivial :
+  ∀ {a b c d x : ℕ}
+  → a ≤ b
+  → c ≤ d
+  → (b + d) ∸ (a + c) ≤ (b ∸ a) + (d ∸ c) + x
+≤-subtraction-nontrivial h₁ h₂ = solveNat (h₁ , h₂)
 
 ≤-suc-with-extra :
   ∀ {k m n : ℕ}

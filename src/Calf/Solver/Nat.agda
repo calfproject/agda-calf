@@ -78,6 +78,16 @@ finishNatExplicit :
 finishNatExplicit lhs lhs′ rhs rhs′ lhs-step middle rhs-step =
   lhs-step ∙ middle ∙ sym rhs-step
 
+finishLeExplicit :
+  (lower lower′ upper upper′ : ℕ)
+  → lower ≡ lower′
+  → lower′ ≤ upper′
+  → upper ≡ upper′
+  → lower ≤ upper
+finishLeExplicit lower lower′ upper upper′ lower-step middle upper-step =
+  subst (λ n → lower ≤ n) (sym upper-step)
+    (subst (λ n → n ≤ upper′) (sym lower-step) middle)
+
 leRefl : (m : ℕ) → m ≤ m
 leRefl m = ≤-refl
 
@@ -652,12 +662,39 @@ private
                     (just proof) →
                       checkType proof goal
                     nothing →
-                      typeError
-                        (strErr "Could not synthesize a checked ≤ proof: "
-                        ∷ termErr lower
-                        ∷ strErr " ≤ "
-                        ∷ termErr upper
-                        ∷ [])
+                      do lowerRewrite ← rewriteTerm rewriteFuel leFacts lower
+                         upperRewrite ← rewriteTerm rewriteFuel leFacts upper
+                         lowerAfter∸ ← normalise (Rewrite.term lowerRewrite)
+                         upperAfter∸ ← normalise (Rewrite.term upperRewrite)
+                         lower≤Rewrite ← rewriteBy≤Facts rewriteFuel leFacts lowerAfter∸
+                         upper≤Rewrite ← rewriteBy≤Facts rewriteFuel leFacts upperAfter∸
+                         lower′ ← normalise (Rewrite.term lower≤Rewrite)
+                         upper′ ← normalise (Rewrite.term upper≤Rewrite)
+                         proof? ← synth≤ synthFuel leFacts lower′ upper′
+                         case proof? of λ where
+                           (just middle) →
+                             let lowerStep =
+                                   compTerm lower lowerAfter∸ lower′
+                                     (Rewrite.step lowerRewrite)
+                                     (Rewrite.step lower≤Rewrite)
+                             in
+                             let upperStep =
+                                   compTerm upper upperAfter∸ upper′
+                                     (Rewrite.step upperRewrite)
+                                     (Rewrite.step upper≤Rewrite)
+                             in
+                             checkType
+                               (def (quote finishLeExplicit)
+                                 (lower v∷ lower′ v∷ upper v∷ upper′ v∷
+                                  lowerStep v∷ middle v∷ upperStep v∷ []))
+                               goal
+                           nothing →
+                             typeError
+                               (strErr "Could not synthesize a checked ≤ proof: "
+                               ∷ termErr lower′
+                               ∷ strErr " ≤ "
+                               ∷ termErr upper′
+                               ∷ [])
              nothing →
                typeError (strErr "Expected a Cubical Nat path or ≤ goal, got: "
                  ∷ termErr goal ∷ [])
