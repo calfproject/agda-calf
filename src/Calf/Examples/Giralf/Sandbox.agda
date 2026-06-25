@@ -51,13 +51,13 @@ opaque
         powappᴳ {X = 1 + q2 ≤ᵛ q2 + p5} {!   !} $ idᴳ refl)
       (idᴳ refl)
 
-  insert : ∀ {l1 q2 : ℕ} → (val (1 + q2 ≤ᵛ l1)) → val ℕᵛ → PList₂ (` (l1)) (` (q2)) (ℕᵛ) , (` (((l1 ∸ 1) ∸ q2) + 0)) ⊢ PList₂ (` ((l1 ∸ 1) ∸ q2)) (` (q2)) (ℕᵛ)
+  insert : ∀ {l1 q2 : ℕ} → (val (1 ≤ᵛ l1 ×ᵛ 1 + q2 ≤ᵛ l1)) → val ℕᵛ → PList₂ (` (l1)) (` (q2)) (ℕᵛ) , (` (((l1 ∸ 1) ∸ q2) + 0)) ⊢ PList₂ (` ((l1 ∸ 1) ∸ q2)) (` (q2)) (ℕᵛ)
   insert {l1} {q2} cs x1 =
-    payᴳ {p = (l1 ∸ 1) ∸ q2} {q' = 0} refl $ proj₁ᴳ {B = ◁'[ 0 ] (PList₂ (l1) (q2) (ℕᵛ))} $
-    powappᴳ {X = 1 + q2 ≤ᵛ l1} {!   !} $
-    foldr₂ᴳ (λ p5 → (1 + q2 ≤ᵛ p5) ⇀ ((◁'[ (p5 ∸ 1) ∸ q2 ] (PList₂ ((p5 ∸ 1) ∸ q2) (q2) (ℕᵛ))) ×ᶜ (◁'[ 0 ] (PList₂ (p5) (q2) (ℕᵛ)))))
+    payᴳ {p = (l1 ∸ 1) ∸ q2} {q' = 0} refl $ proj₁ᴳ {B = ◁'[ 0 ] (PList₂ (l1 ∸ 1) (q2) (ℕᵛ))} $
+    powappᴳ {X = 1 ≤ᵛ l1 ×ᵛ 1 + q2 ≤ᵛ l1} {!   !} $
+    foldr₂ᴳ (λ p5 → (1 ≤ᵛ p5 ×ᵛ 1 + q2 ≤ᵛ p5) ⇀ ((◁'[ (p5 ∸ 1) ∸ q2 ] (PList₂ ((p5 ∸ 1) ∸ q2) (q2) (ℕᵛ))) ×ᶜ (◁'[ 0 ] (PList₂ (p5 ∸ 1) (q2) (ℕᵛ)))))
       (λ p5 →
-        powlamᴳ {X = 1 + q2 ≤ᵛ p5} $ λ cs6 →
+        powlamᴳ {X = 1 ≤ᵛ p5 ×ᵛ 1 + q2 ≤ᵛ p5} $ λ cs6 →
         pairᴳ
         (
           getᴳ {q' = ((p5 ∸ 1) ∸ q2) + 0} ((p5 ∸ 1) ∸ q2) refl $
@@ -68,31 +68,30 @@ opaque
         )
       )
       (λ p5 → λ xh3 →
-        powlamᴳ {X = 1 + q2 ≤ᵛ p5} $ λ cs5 →
+        powlamᴳ {X = 1 ≤ᵛ p5 ×ᵛ 1 + q2 ≤ᵛ p5} $ λ cs5 →
+        chargeᴳ {q' = p5 ∸ 1} 1 {!   !} $
         pairᴳ
         (
-          getᴳ {q' = ((p5 ∸ 1) ∸ q2) + p5} ((p5 ∸ 1) ∸ q2) refl $
-          chargeᴳ {q' = (((p5 ∸ 1) ∸ q2) + p5) ∸ 1} 1 {!   !} $
-          if (x1) ≤ᵇ (xh3)
-          then
-            cons₂ᴳ {q' = ((((p5 ∸ 1) ∸ q2) + p5) ∸ 1) ∸ ((p5 ∸ 1) ∸ q2)} {!   !} (x1) $
-            cons₂ᴳ {q' = (((((p5 ∸ 1) ∸ q2) + p5) ∸ 1) ∸ ((p5 ∸ 1) ∸ q2)) ∸ (((p5 ∸ 1) ∸ q2) + q2)} {!   !} (xh3) $
+          getᴳ {q' = ((p5 ∸ 1) ∸ q2) + (p5 ∸ 1)} ((p5 ∸ 1) ∸ q2) refl $
+          if ((x1) ≤ᵇ (xh3)) then (
+            cons₂ᴳ {q' = (((p5 ∸ 1) ∸ q2) + (p5 ∸ 1)) ∸ ((p5 ∸ 1) ∸ q2)} {!   !} (x1) $
+            cons₂ᴳ {q' = ((((p5 ∸ 1) ∸ q2) + (p5 ∸ 1)) ∸ ((p5 ∸ 1) ∸ q2)) ∸ (((p5 ∸ 1) ∸ q2) + q2)} {!   !} (xh3) $
             substᵐᴳ {!   !} $ subst2ᴳ (λ l q → PList₂ l q ℕᵛ) {!   !} {!   !} $
             payᴳ {p = 0} {q' = 0} refl $ proj₂ᴳ {A = ◁'[ ((q2 + p5) ∸ 1) ∸ q2 ] (PList₂ (((q2 + p5) ∸ 1) ∸ q2) (q2) (ℕᵛ))} $
-            powappᴳ {X = 1 + q2 ≤ᵛ q2 + p5} {!   !} $ idᴳ refl
-          else (
-            cons₂ᴳ {q' = ((((p5 ∸ 1) ∸ q2) + p5) ∸ 1) ∸ ((p5 ∸ 1) ∸ q2)} {!   !} (xh3) $
+            powappᴳ {X = 1 ≤ᵛ q2 + p5 ×ᵛ 1 + q2 ≤ᵛ q2 + p5} {!   !} $ idᴳ refl
+          ) else (
+            cons₂ᴳ {q' = (((p5 ∸ 1) ∸ q2) + (p5 ∸ 1)) ∸ ((p5 ∸ 1) ∸ q2)} {!   !} (xh3) $
             substᵐᴳ {!   !} $ subst2ᴳ (λ l q → PList₂ l q ℕᵛ) {!   !} {!   !} $
-            payᴳ {p = ((q2 + p5) ∸ 1) ∸ q2} {q' = 0} refl $ proj₁ᴳ {B = ◁'[ 0 ] (PList₂ (q2 + p5) (q2) (ℕᵛ))} $
-            powappᴳ {X = 1 + q2 ≤ᵛ q2 + p5} {!   !} $ idᴳ refl
+            payᴳ {p = ((q2 + p5) ∸ 1) ∸ q2} {q' = 0} refl $ proj₁ᴳ {B = ◁'[ 0 ] (PList₂ ((q2 + p5) ∸ 1) (q2) (ℕᵛ))} $
+            powappᴳ {X = 1 ≤ᵛ q2 + p5 ×ᵛ 1 + q2 ≤ᵛ q2 + p5} {!   !} $ idᴳ refl
           )
         )
         (
-          getᴳ {q' = 0 + p5} (0) refl $
-          cons₂ᴳ {q' = (0 + p5) ∸ p5} {!   !} (xh3) $
+          getᴳ {q' = 0 + (p5 ∸ 1)} (0) refl $
+          cons₂ᴳ {q' = (0 + (p5 ∸ 1)) ∸ (p5 ∸ 1)} {!   !} (xh3) $
           substᵐᴳ {!   !} $ subst2ᴳ (λ l q → PList₂ l q ℕᵛ) {!   !} {!   !} $
           payᴳ {p = 0} {q' = 0} refl $ proj₂ᴳ {A = ◁'[ ((q2 + p5) ∸ 1) ∸ q2 ] (PList₂ (((q2 + p5) ∸ 1) ∸ q2) (q2) (ℕᵛ))} $
-          powappᴳ {X = 1 + q2 ≤ᵛ q2 + p5} {!   !} $ idᴳ refl
+          powappᴳ {X = 1 ≤ᵛ q2 + p5 ×ᵛ 1 + q2 ≤ᵛ q2 + p5} {!   !} $ idᴳ refl
         )
       )
       (idᴳ refl)
