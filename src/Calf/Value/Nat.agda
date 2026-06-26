@@ -7,3 +7,6 @@ open import Cubical.Data.Nat.Order using (_≤_; isProp≤) public
 
 isPreorderℕ : isPreorder ℕ
 isPreorderℕ = isDiscrete→isPreorder
+
+ℕₚ : 𝒱ₚ
+ℕₚ = ℕ , isPreorderℕ

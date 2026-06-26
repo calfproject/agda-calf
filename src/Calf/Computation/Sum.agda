@@ -6,7 +6,7 @@ open import Calf.Computation
 
 _+ᶜ_ : 𝒞 → 𝒞 → 𝒞
 (A +ᶜ B) .U = A .U ⊎ B .U
-(A +ᶜ B) .is-set = isSet⊎ (A .is-set) (B .is-set)
+(A +ᶜ B) .is-preorder = isPreorder⊎ (A .is-preorder) (B .is-preorder)
 (A +ᶜ B) .charge c (inj₁ a) = inj₁ (A .charge c a)
 (A +ᶜ B) .charge c (inj₂ b) = inj₂ (B .charge c b)
 (A +ᶜ B) .charge/0 {inj₁ a} = cong inj₁ (A .charge/0)

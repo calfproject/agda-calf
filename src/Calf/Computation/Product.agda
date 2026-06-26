@@ -8,7 +8,7 @@ infixr 2 _×ᶜ_
 
 _×ᶜ_ : 𝒞 → 𝒞 → 𝒞
 (A ×ᶜ B) .U = A .U × B .U
-(A ×ᶜ B) .is-set = isSet× (A .is-set) (B .is-set)
+(A ×ᶜ B) .is-preorder = isPreorder× (A .is-preorder) (B .is-preorder)
 (A ×ᶜ B) .charge c e .fst = A .charge c (e .fst)
 (A ×ᶜ B) .charge c e .snd = B .charge c (e .snd)
 (A ×ᶜ B) .charge/0 {e} i .fst = A .charge/0 {e .fst} i

@@ -55,7 +55,7 @@ opaque
         ; ◦ = λ p → A-abs .charge c (q .◦ p)
         ; •→◦ =
             isProp→PathP
-              (λ i → ●ᶜ (◯ᶜ A-abs) .is-set
+              (λ i → is-set (●ᶜ (◯ᶜ A-abs))
                 (●ᶜ.map (α ⨾ᶜ η◦ᶜ) .U
                   (●ᶜ-map-CHARGE {A = A-⊤} c (q .•) i))
                 (η• (λ p → A-abs .charge c (q .◦ p))))

@@ -51,11 +51,6 @@ isSetList {X} isSetX = subst isSet (ua ΣVec≃List) (isSetΣ isSetℕ isSetVec)
     ΣVec≃List : Σ ℕ Vec ≃ List X
     ΣVec≃List .fst = fwd
     ΣVec≃List .snd = isoToIsEquiv (iso fwd bwd fwd-bwd bwd-fwd)
-Listᵛ X .is-preorder = subst isPreorder lemma (Σᵛ ℕᵛ Vec .is-preorder)
-  where
-    Vec : ℕ → 𝒱
-    Vec zero = 1ᵛ
-    Vec (suc n) = X ×ᵛ Vec n
 
-    lemma : Σ ℕ (val ∘ Vec) ≡ List (X .val)
-    lemma = {!   !}
+isPreorderList : isPreorder X → isPreorder (List X)
+isPreorderList = {!   !}

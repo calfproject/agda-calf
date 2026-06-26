@@ -5,3 +5,4 @@ open import Calf.Computation
 
 0ᶜ : 𝒞
 0ᶜ .U = ⊥
+0ᶜ .is-preorder = isPreorder⊥

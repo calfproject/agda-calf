@@ -13,7 +13,7 @@ open import Calf.Computation
 
 ●ᶜ : 𝒞 → 𝒞
 ●ᶜ A .U = ● (A .U)
-●ᶜ A .is-set = isSet● (A .is-set)
+●ᶜ A .is-preorder = isPreorder● (A .is-preorder)
 ●ᶜ A .charge c (η• a) = η• (A .charge c a)
 ●ᶜ A .charge c (∗ p) = ∗ p
 ●ᶜ A .charge c (law a p i) = law (A .charge c a) p i
@@ -21,7 +21,7 @@ open import Calf.Computation
 ●ᶜ A .charge/0 {∗ p} = refl
 ●ᶜ A .charge/0 {law a p i} =
   isProp→PathP
-    (λ i → ●ᶜ A .is-set
+    (λ i → isSet● (is-set A)
       (●ᶜ A .charge 0ℂ (law a p i))
       (law a p i))
     (cong η• (A .charge/0))
@@ -31,7 +31,7 @@ open import Calf.Computation
 ●ᶜ A .charge/+ {∗ p} = refl
 ●ᶜ A .charge/+ {law a p i} {c₁} {c₂} =
   isProp→PathP
-    (λ i → ●ᶜ A .is-set
+    (λ i → isSet● (is-set A)
       (●ᶜ A .charge (c₁ +ℂ c₂) (law a p i))
       (●ᶜ A .charge c₁ (●ᶜ A .charge c₂ (law a p i))))
     (cong η• (A .charge/+))
@@ -58,7 +58,7 @@ map f .charge c (η• a) = cong η• (f .charge c a)
 map f .charge c (∗ p) = refl
 map {A} {B} f .charge c (law a p i) =
   isProp→PathP
-    (λ i → ●ᶜ B .is-set
+    (λ i → is-set (●ᶜ B)
       (map f .U (●ᶜ A .charge c (law a p i)))
       (●ᶜ B .charge c (map f .U (law a p i))))
     (cong η• (f .charge c a))
@@ -95,7 +95,7 @@ join .charge c (η• a•) = refl
 join .charge c (∗ abs) = refl
 join {A = A} .charge c (law a• abs i) =
   isProp→PathP
-    (λ i → ●ᶜ A .is-set
+    (λ i → is-set (●ᶜ A)
       (join {A = A} .U (●ᶜ (●ᶜ A) .charge c (law a• abs i)))
       (●ᶜ A .charge c (join {A = A} .U (law a• abs i))))
     refl
@@ -115,7 +115,7 @@ bind-map {A = A} {B = B} {C = C} k f =
     h (∗ p) = refl
     h (law a p i) =
       isProp→PathP
-        (λ i → ●ᶜ C .is-set
+        (λ i → is-set (●ᶜ C)
           ((bind k ⨾ᶜ map f) .U (law a p i))
           (bind (k ⨾ᶜ map f) .U (law a p i)))
         refl
@@ -131,7 +131,7 @@ bind-η• {A = A} {B = B} f =
     h (∗ p) = refl
     h (law a p i) =
       isProp→PathP
-        (λ i → ●ᶜ B .is-set
+        (λ i → is-set (●ᶜ B)
           (bind (f ⨾ᶜ η•ᶜ) .U (law a p i))
           (map f .U (law a p i)))
         refl
@@ -145,7 +145,7 @@ bind-η• {A = A} {B = B} f =
 ●ᶜ-map-CHARGE c (∗ p) = refl
 ●ᶜ-map-CHARGE {A = A} c (law a p i) =
   isProp→PathP
-    (λ i → ●ᶜ A .is-set
+    (λ i → is-set (●ᶜ A)
       (map (CHARGE {A = A} c) .U (law a p i))
       (●ᶜ A .charge c (law a p i)))
     refl

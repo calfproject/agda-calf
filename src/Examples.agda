@@ -12,11 +12,11 @@ open import Calf.Computation.Power
 import Cubical.Data.List.Properties as List
 import Cubical.Data.Nat.Properties as Nat
 
-double : cmp (ℕᵛ ⇀ F ℕᵛ)
+double : U (ℕ ⇀ F ℕ)
 double zero = ret 0
 double (suc n) =
-  F ℕᵛ .charge 1 $
-  bind[ F ℕᵛ ] n' ← double n ⨾
+  F _ .charge 1 $
+  bind[ F ℕ ] n' ← double n ⨾
   ret (suc (suc n'))
 
 opaque
@@ -26,24 +26,28 @@ opaque
   DOUBLE zero = 0
   DOUBLE (suc n) = suc (suc (DOUBLE n))
 
-  foo : double ⊑[ U (ℕᵛ ⇀ F ℕᵛ) ] (λ n → F ℕᵛ .charge (` n) (ret (DOUBLE n)))
-  foo = ⊑ᵛ-funext {X = ℕᵛ} {Y = λ _ → U (F ℕᵛ)} lemma
+  double/bound : double ⊑[ ℕ ⇀ F ℕ ] (λ n → F _ .charge (` n) (ret (DOUBLE n)))
+  double/bound = ⊑-funext lemma
     where
-      lemma : ∀ n → double n ⊑[ U (F ℕᵛ) ] F ℕᵛ .charge (` n) (ret (DOUBLE n))
-      lemma zero = ≡⇒⊑ᵛ {X = U (F ℕᵛ)} (sym (F ℕᵛ .charge/0))
+      lemma : ∀ n → double n ⊑[ F ℕ ] F _ .charge (` n) (ret (DOUBLE n))
+      lemma zero = ≡⇒⊑ (sym (F _ .charge/0))
       lemma (suc n) =
-        ⊑ᵛ-trans {X = U (F ℕᵛ)}
-          (⊑ᵛ-mono {X = U (F ℕᵛ)} {Y = U (F ℕᵛ)}
-            (λ e → F ℕᵛ .charge 1 (bind e _)) (lemma n)) $
-        ⊑ᵛ-trans {X = U (F ℕᵛ)}
-          (⊑ᵛ-mono {X = U (F ℕᵛ)} {Y = U (F ℕᵛ)}
-            (F ℕᵛ .charge 1)
-            (⊑ᵛ-trans {X = U (F ℕᵛ)}
-              (≡⇒⊑ᵛ {X = U (F ℕᵛ)} bind/charge)
-              (⊑ᵛ-mono {X = U (F ℕᵛ)} {Y = U (F ℕᵛ)}
-                (F ℕᵛ .charge n)
-                (≡⇒⊑ᵛ {X = U (F ℕᵛ)} F/η)))) $
-        ≡⇒⊑ᵛ {X = U (F ℕᵛ)} (sym (F ℕᵛ .charge/+ {c₁ = 1}))
+        let open ⊑-Reasoning (F ℕ) in
+        begin
+          double (suc n)
+        ≡ᴾ⟨ refl ⟩
+          F _ .charge 1 (bind (double n) (λ n' → ret (suc (suc n'))))
+        ⊑⟨ ⊑-mono (λ e → F _ .charge 1 (bind e (λ n' → ret (suc (suc n'))))) (lemma n) ⟩
+          F _ .charge 1 (bind (F _ .charge n (ret (DOUBLE n))) (λ n' → ret (suc (suc n'))))
+        ≡ᴾ⟨ cong (F _ .charge 1) bind/charge ⟩
+          F _ .charge 1 (F _ .charge n (bind {A = F _} (ret (DOUBLE n)) (λ n' → ret (suc (suc n')))))
+        ≡ᴾ⟨ sym (F _ .charge/+) ⟩
+          F _ .charge (suc n) (bind {A = F _} (ret (DOUBLE n)) (λ n' → ret (suc (suc n'))))
+        ≡ᴾ⟨ cong (F _ .charge (suc n)) bind/β ⟩
+          F _ .charge (suc n) (ret (suc (suc (DOUBLE n))))
+        ≡ᴾ⟨ refl ⟩
+          F _ .charge (suc n) (ret (DOUBLE (suc n)))
+        ∎ᴾ
 
 BQ : 𝒞
 BQ = F (List ℕ × List ℕ)
@@ -60,7 +64,7 @@ emptyq = ret []
 enqueue : ℕ → LQ ⊸ LQ
 enqueue e = bind' λ l → LQ .charge 1 (ret (l ++ [ e ]))
 
-dequeue : LQ ⊸ (ℕₛ ⋊ LQ)
+dequeue : LQ ⊸ (ℕₚ ⋊ LQ)
 dequeue = bind' λ
   { []      → 0 , ret []
   ; (x ∷ l) → x , ret l }
@@ -71,17 +75,17 @@ emptyᵗ = ret ([] , [])
 enqueueᵗ : ℕ → BQ ⊸ BQ
 enqueueᵗ e = bind' λ (back , front) → ret (e ∷ back , front)
 
-dequeueᵗ : BQ ⊸ (ℕₛ ⋊ BQ)
+dequeueᵗ : BQ ⊸ (ℕₚ ⋊ BQ)
 dequeueᵗ = bind' λ
   { (back , x ∷ front) → x , ret (back , front)
   ; (back , [])        → reverse-front back }
   where
-    reverse-front : List ℕ → U (ℕₛ ⋊ BQ)
+    reverse-front : List ℕ → U (ℕₚ ⋊ BQ)
     reverse-front back with reverse back
     ... | []     = 0 , BQ .charge (` length back) (ret ([] , []))
     ... | x ∷ l  = x , BQ .charge (` length back) (ret ([] , l))
 
-mapφ : (ℕₛ ⋊ BQ) ⊸ (ℕₛ ⋊ LQ)
+mapφ : (ℕₚ ⋊ BQ) ⊸ (ℕₚ ⋊ LQ)
 mapφ .U (x , q) = x , φ .U q
 mapφ .charge c (x , q) i .fst = x
 mapφ .charge c (x , q) i .snd = φ .charge c q i
@@ -205,7 +209,7 @@ opaque
 
   open import Cubical.Data.Sigma using (ΣPathP)
 
-  dequeue' : BLQ ⊸ (ℕₛ ⋊ BLQ)
+  dequeue' : BLQ ⊸ (ℕₚ ⋊ BLQ)
   dequeue' .U q .fst =
     invIsEq fracture-isEquiv (dequeue'-fst-glue q)
   dequeue' .U q .snd = dequeue'-snd .U q

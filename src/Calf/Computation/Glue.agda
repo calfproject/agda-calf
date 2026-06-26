@@ -18,7 +18,7 @@ open import Calf.Computation.Closed as ●ᶜ
 
 Glueᶜ : (A• : 𝒞•) (A◦ : 𝒞◦) (α• : ⟨ A• ⟩ᶜ ⊸ ●ᶜ ⟨ A◦ ⟩ᶜ) → 𝒞
 Glueᶜ A• A◦ α• .U = Glue (U• A•) (U◦ A◦) (α• .U)
-Glueᶜ A• A◦ α• .is-set = isSetGlue (⟨ A• ⟩ᶜ .is-set) (⟨ A◦ ⟩ᶜ .is-set)
+Glueᶜ A• A◦ α• .is-preorder = isPreorderGlue (⟨ A• ⟩ᶜ .is-preorder) (⟨ A◦ ⟩ᶜ .is-preorder)
 Glueᶜ A• A◦ α• .charge c a .• = ⟨ A• ⟩ᶜ .charge c (a .•)
 Glueᶜ A• A◦ α• .charge c a .◦ = ⟨ A◦ ⟩ᶜ .charge c (a .◦)
 Glueᶜ A• A◦ α• .charge c a .•→◦ = α• .charge c (a .•) ∙ cong (●ᶜ ⟨ A◦ ⟩ᶜ .charge c) (a .•→◦)
@@ -26,7 +26,7 @@ Glueᶜ A• A◦ α• .charge/0 i .• = ⟨ A• ⟩ᶜ .charge/0 i
 Glueᶜ A• A◦ α• .charge/0 i .◦ = ⟨ A◦ ⟩ᶜ .charge/0 i
 Glueᶜ A• A◦ α• .charge/0 {a} i .•→◦ =
   isProp→PathP
-    (λ i → ●ᶜ ⟨ A◦ ⟩ᶜ .is-set
+    (λ i → is-set (●ᶜ ⟨ A◦ ⟩ᶜ)
       (α• .U (⟨ A• ⟩ᶜ .charge/0 {a .•} i))
       (η• (⟨ A◦ ⟩ᶜ .charge/0 {a .◦} i)))
     (α• .charge 0ℂ (a .•) ∙ cong (●ᶜ ⟨ A◦ ⟩ᶜ .charge 0ℂ) (a .•→◦))
@@ -36,7 +36,7 @@ Glueᶜ A• A◦ α• .charge/+ i .• = ⟨ A• ⟩ᶜ .charge/+ i
 Glueᶜ A• A◦ α• .charge/+ i .◦ = ⟨ A◦ ⟩ᶜ .charge/+ i
 Glueᶜ A• A◦ α• .charge/+ {a} {c₁} {c₂} i .•→◦ =
   isProp→PathP
-    (λ i → ●ᶜ ⟨ A◦ ⟩ᶜ .is-set
+    (λ i → is-set (●ᶜ ⟨ A◦ ⟩ᶜ)
       (α• .U (⟨ A• ⟩ᶜ .charge/+ {a .•} {c₁} {c₂} i))
       (η• (⟨ A◦ ⟩ᶜ .charge/+ {a .◦} {c₁} {c₂} i)))
     (α• .charge (c₁ +ℂ c₂) (a .•) ∙ cong (●ᶜ ⟨ A◦ ⟩ᶜ .charge (c₁ +ℂ c₂)) (a .•→◦))
@@ -57,7 +57,7 @@ open 𝒞-FRAC
   → (A•-path : F .A• ≡ G .A•)
   → (A◦-path : F .A◦ ≡ G .A◦)
   → PathP
-      (λ i → A•-path i .fst ⊸ ●ᶜ (A◦-path i .fst))
+      (λ i → ⟨ A•-path i ⟩ᶜ ⊸ ●ᶜ ⟨ A◦-path i ⟩ᶜ)
       (F .α•)
       (G .α•)
   → F ≡ G
@@ -148,8 +148,8 @@ glue◦-out-charge F c g◦ =
 𝒞-glue-fracture-section F i .A◦ = 𝒞-glue◦-path F i
 𝒞-glue-fracture-section F i .α• =
   ⊸-path
-    (λ i → 𝒞-glue•-path F i .fst)
-    (λ i → ●ᶜ (𝒞-glue◦-path F i .fst))
+    (λ i → ⟨ 𝒞-glue•-path F i ⟩ᶜ)
+    (λ i → ●ᶜ ⟨ 𝒞-glue◦-path F i ⟩ᶜ)
     {f₀ = ●ᶜ.map η◦ᶜ}
     {f₁ = F .α•}
     (λ i → 𝒱-FRAC.χ• (glue-fracture-section (𝒞-FRAC→𝒱-FRAC F) i))
@@ -161,7 +161,7 @@ glue◦-out-charge F c g◦ =
 𝒞-fracture {A} .charge c a i .◦ = η◦ (A .charge c a)
 𝒞-fracture {A} .charge c a i .•→◦ =
   isProp→PathP
-    (λ i → ●ᶜ (◯ᶜ A) .is-set
+    (λ i → is-set (●ᶜ (◯ᶜ A))
       (𝒞-fromFRAC (𝒞-toFRAC A) .charge c (fracture a) .•→◦ i0)
       (η• (η◦ (A .charge c a))))
     refl
@@ -183,8 +183,8 @@ glue◦-out-charge F c g◦ =
 
 squareᶜ
   : ∀ {A• A◦ α B• B◦ β}
-  → (f• : ⟨ A• ⟩ᶜ ⊸ B• .fst)
-  → (f◦ : ⟨ A◦ ⟩ᶜ ⊸ B◦ .fst)
+  → (f• : ⟨ A• ⟩ᶜ ⊸ ⟨ B• ⟩ᶜ)
+  → (f◦ : ⟨ A◦ ⟩ᶜ ⊸ ⟨ B◦ ⟩ᶜ)
   → f• ⨾ᶜ β ≡ α ⨾ᶜ ●ᶜ.map f◦
   → Glueᶜ A• A◦ α ⊸ Glueᶜ B• B◦ β
 squareᶜ f• f◦ f-coherence .U q =
@@ -199,7 +199,7 @@ squareᶜ f• f◦ f-coherence .charge c q i .◦ =
   f◦ .charge c (q .◦) i
 squareᶜ {A• = A•} {A◦ = A◦} {α = α} {B• = B•} {B◦ = B◦} {β = β} f• f◦ f-coherence .charge c q i .•→◦ =
   isProp→PathP
-    (λ i → ●ᶜ (B◦ .fst) .is-set
+    (λ i → is-set (●ᶜ (B◦ .fst))
       (β .U (f• .charge c (q .•) i))
       (η• (f◦ .charge c (q .◦) i)))
     (squareᶜ
@@ -236,7 +236,7 @@ fracture-map {A} {B} f .charge c q i .◦ p =
   f .charge c (q .◦ p) i
 fracture-map {A} {B} f .charge c q i .•→◦ =
   isProp→PathP
-    (λ i → ●ᶜ (◯ᶜ B) .is-set
+    (λ i → is-set (●ᶜ (◯ᶜ B))
       (●ᶜ.map (η◦ᶜ {A = B}) .U (●ᶜ.map f .charge c (q .•) i))
       (η• (λ p → f .charge c (q .◦ p) i)))
     (fracture-map {A} {B} f .U (𝒞-fromFRAC (𝒞-toFRAC A) .charge c q) .•→◦)
@@ -262,7 +262,7 @@ fracture-map-fracture {A} {B} f a i .• = η• (f .U a)
 fracture-map-fracture {A} {B} f a i .◦ = η◦ᶜ {A = B} .U (f .U a)
 fracture-map-fracture {A} {B} f a i .•→◦ =
   isProp→PathP
-    (λ i → ●ᶜ (◯ᶜ B) .is-set
+    (λ i → is-set (●ᶜ (◯ᶜ B))
       (η• (η◦ᶜ {A = B} .U (f .U a)))
       (η• (η◦ᶜ {A = B} .U (f .U a))))
     (fracture-map f .U (fracture {X = U A} a) .•→◦)

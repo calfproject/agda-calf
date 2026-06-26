@@ -14,7 +14,10 @@ open import Cubical.Foundations.Univalence using (ua; ua→; ua-gluePath)
 record 𝒞 : 𝒱₁ where
   field
     U : 𝒱
-    is-set : isSet U
+    is-preorder : isPreorder U
+
+  is-set : isSet U
+  is-set = isPreorder→isSet is-preorder
 
   field
     charge : ℂ → U → U
@@ -25,6 +28,44 @@ open 𝒞 public
 
 variable
   A B C : 𝒞
+
+Uₚ : 𝒞 → 𝒱ₚ
+Uₚ A = U A , A .is-preorder
+
+⊑-syntax : U A → U A → 𝒱
+⊑-syntax {A} = _⊑_ {U A}
+
+syntax ⊑-syntax {A} a a' = a ⊑[ A ] a'
+
+module ⊑-Reasoning (A : 𝒞) where
+  open import Relation.Binary
+
+  ≡-isEquivalence : IsEquivalence (_≡_ {A = U A})
+  ≡-isEquivalence = record { refl = refl ; sym = sym ; trans = _∙_ }
+
+  open Preorder hiding (refl)
+  open IsPreorder hiding (refl)
+
+  ⊑-preorder : Preorder _ _ _
+  ⊑-preorder .Carrier = U A
+  ⊑-preorder ._≈_ = _≡_
+  ⊑-preorder ._≲_ = _⊑_ {U A}
+  ⊑-preorder .Preorder.isPreorder .isEquivalence = ≡-isEquivalence
+  ⊑-preorder .Preorder.isPreorder .reflexive = ≡⇒⊑
+  ⊑-preorder .Preorder.isPreorder .trans = ⊑-trans (A .is-preorder)
+
+  open import Relation.Binary.Reasoning.Preorder ⊑-preorder as P public
+    renaming (_∎ to _∎ᴾ)
+
+  infixr 2 step-⊑
+  step-⊑ = step-≲
+  syntax step-⊑ x yRz x⊑ᵛy = x ⊑⟨ x⊑ᵛy ⟩ yRz
+
+  infixr 2 step-≡'
+  step-≡' = step-≈
+  syntax step-≡' x yRz x⊑ᵛy = x ≡ᴾ⟨ x⊑ᵛy ⟩ yRz
+
+
 
 infix 1 _⊸_
 record _⊸_ (A B : 𝒞) : 𝒱 where
@@ -81,7 +122,12 @@ isPropCharge/+ {U} {isSetU} charge =
 𝒞-path {A} {B} U-path charge-path i =
   record
     { U = U-path i
-    ; is-set = isSetUi i
+    ; is-preorder =
+      isProp→PathP
+        (λ i → isPropIsPreorder {X = U-path i})
+        (A .is-preorder)
+        (B .is-preorder)
+        i
     ; charge = charge-path i
     ; charge/0 =
         isProp→PathP
@@ -97,18 +143,18 @@ isPropCharge/+ {U} {isSetU} charge =
           i
     }
   where
-    isSetUi : PathP (λ i → isSet (U-path i)) (A .is-set) (B .is-set)
+    isSetUi : PathP (λ i → isSet (U-path i)) (is-set A) (is-set B)
     isSetUi =
       isProp→PathP
         (λ i → isPropIsSet {A = U-path i})
-        (A .is-set)
-        (B .is-set)
+        (is-set A)
+        (is-set B)
 
 isProp⊸charge
   : (A B : 𝒞) (f : U A → U B)
   → isProp ((c : ℂ) (a : U A) → f (A .charge c a) ≡ B .charge c (f a))
 isProp⊸charge A B f =
-  isPropΠ2 λ c a → B .is-set (f (A .charge c a)) (B .charge c (f a))
+  isPropΠ2 λ c a → is-set B (f (A .charge c a)) (B .charge c (f a))
 
 ⊸-path
   : {A₀ A₁ B₀ B₁ : 𝒞}

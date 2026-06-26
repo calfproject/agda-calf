@@ -85,14 +85,17 @@ opaque
   ηᴾ : X → P X
   ηᴾ = ∣_∣
 
-  isPreorder-P : isPreorder (P X)
-  isPreorder-P = isLocal-Localize 𝒱-family _
+  isPreorderP : isPreorder (P X)
+  isPreorderP = isLocal-Localize 𝒱-family _
 
   isPropIsPreorder : isProp (isPreorder X)
   isPropIsPreorder = isPropΠ (λ _ → isPropIsPathSplitEquiv _)
 
 isProp→isPreorder : isProp X → isPreorder X
 isProp→isPreorder = {!   !}
+
+isPreorder→isSet : isPreorder X → isSet X
+isPreorder→isSet = {!   !}
 
 open isPathSplitEquiv public
 

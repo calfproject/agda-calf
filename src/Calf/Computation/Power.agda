@@ -6,7 +6,7 @@ open import Calf.Computation
 
 Πᶜ : (X : 𝒱) → (X → 𝒞) → 𝒞
 Πᶜ X A .U = (x : X) → U (A x)
-Πᶜ X A .is-set = isSetΠ λ x → A x .is-set
+Πᶜ X A .is-preorder = isPreorderΠ λ x → A x .is-preorder
 Πᶜ X A .charge c e x = A x .charge c (e x)
 Πᶜ X A .charge/0 {e} = funExt λ x → A x .charge/0 {e x}
 Πᶜ X A .charge/+ {e} {c₁} {c₂} = funExt λ x → A x .charge/+ {e x} {c₁} {c₂}

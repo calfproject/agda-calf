@@ -304,6 +304,9 @@ isSetGlue {χ• = χ•} isSetX• isSetX◦ x x' h h' i j .•→◦ =
     (λ _ → x' .•→◦)
     i j
 
+isPreorderGlue : ∀ {X• X◦ χ•} → isPreorder ⟨ X• ⟩ → isPreorder ⟨ X◦ ⟩ → isPreorder (Glue X• X◦ χ•)
+isPreorderGlue = {!   !}
+
 square
   : ∀ {X• X◦ χ Y• Y◦ ψ}
   → (f• : X• .fst → Y• .fst)

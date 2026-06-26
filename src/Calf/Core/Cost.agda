@@ -20,6 +20,9 @@ opaque
   isSetℂ : isSet ℂ
   isSetℂ = isSetℕ
 
+  isPreorderℂ : isPreorder ℂ
+  isPreorderℂ = {!   !}
+
   0ℂ : ℂ
   0ℂ = 0
 

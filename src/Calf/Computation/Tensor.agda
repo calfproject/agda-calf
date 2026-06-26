@@ -46,7 +46,7 @@ chargeU⊗ A B c (squash x y p q i j) =
 
 _⊗_ : 𝒞 → 𝒞 → 𝒞
 (A ⊗ B) .U = A U⊗ B
-(A ⊗ B) .is-set = squash
+(A ⊗ B) .is-preorder = {!   !}
 (A ⊗ B) .charge c x = chargeU⊗ A B c x
 (A ⊗ B) .charge/0 {x} = chargeU⊗/0 A B x
   where
@@ -180,7 +180,7 @@ a ∥ b = inj a b 0ℂ
 
 ⊤ : 𝒞
 ⊤ .U = ℂ
-⊤ .is-set = isSetℂ
+⊤ .is-preorder = isPreorderℂ
 ⊤ .charge = _+ℂ_
 ⊤ .charge/0 = +ℂ-identityˡ _
 ⊤ .charge/+ = +ℂ-assoc _ _ _
@@ -259,7 +259,7 @@ map₂ {A₁} {A₂} {B₁} {B₂} f g =
         (cong (_+ℂ c) (+ℂ-comm c' _) ∙ +ℂ-assoc _ _ _ ∙ cong (b +ℂ_) (+ℂ-comm _ _))
         i
     fwdU (squash e e' h h' i j) =
-      A .is-set (fwdU e) (fwdU e') (cong fwdU h) (cong fwdU h') i j
+      is-set A (fwdU e) (fwdU e') (cong fwdU h) (cong fwdU h') i j
 
     fwd-charge : ∀ c a → fwdU (chargeU⊗ A ⊤ c a) ≡ A .charge c (fwdU a)
     fwd-charge c (inj a b c₁) =
@@ -269,7 +269,7 @@ map₂ {A₁} {A₂} {B₁} {B₂} f g =
       ∙ A .charge/+
     fwd-charge c (law₁ c₁ c' a b i) =
       isSet→isSet'
-        (A .is-set)
+        (is-set A)
         (fwd-charge c (inj (A .charge c' a) b c₁))
         (fwd-charge c (inj a b (c₁ +ℂ c')))
         (λ k → fwdU ((A ⊗ ⊤) .charge c (law₁ c₁ c' a b k)))
@@ -277,7 +277,7 @@ map₂ {A₁} {A₂} {B₁} {B₂} f g =
         i
     fwd-charge c (law₂ c₁ c' a b i) =
       isSet→isSet'
-        (A .is-set)
+        (is-set A)
         (fwd-charge c (inj a (⊤ .charge c' b) c₁))
         (fwd-charge c (inj a b (c₁ +ℂ c')))
         (λ k → fwdU ((A ⊗ ⊤) .charge c (law₂ c₁ c' a b k)))
@@ -286,7 +286,7 @@ map₂ {A₁} {A₂} {B₁} {B₂} f g =
     fwd-charge c (squash x y p q i j) =
       isSet→SquareP
         (λ k l → isProp→isSet
-          (A .is-set
+          (is-set A
             (fwdU ((A ⊗ ⊤) .charge c (squash x y p q k l)))
             (A .charge c (fwdU (squash x y p q k l)))))
         (cong (fwd-charge c) p)
@@ -385,7 +385,7 @@ module _ where
         unit▷-path b q◦ r i .◦ = r i
         unit▷-path b q◦ r i .•→◦ =
           isProp→PathP
-            (λ i → ●ᶜ (◯ᶜ B) .is-set
+            (λ i → is-set (●ᶜ (◯ᶜ B))
               (●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ {A = B}) .U (unit▷-path b q◦ r i .•))
               (η• (unit▷-path b q◦ r i .◦)))
             (unit▷ b .•→◦)
@@ -399,7 +399,7 @@ module _ where
         unit▷-charge e b i .◦ _ = CHARGE {A = B} c .charge e b i
         unit▷-charge e b i .•→◦ =
           isProp→PathP
-            (λ i → ●ᶜ (◯ᶜ B) .is-set
+            (λ i → is-set (●ᶜ (◯ᶜ B))
               (●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ {A = B}) .U (unit▷-charge e b i .•))
               (η• (unit▷-charge e b i .◦)))
             (unit▷ (B .charge e b) .•→◦)
@@ -440,7 +440,7 @@ module _ where
           (funExt λ abs → cong q◦ (ABS .snd p abs)) i
         unit▷∗-path p q◦ qcoh i .•→◦ =
           isProp→PathP
-            (λ i → ●ᶜ (◯ᶜ B) .is-set
+            (λ i → is-set (●ᶜ (◯ᶜ B))
               (●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ {A = B}) .U (unit▷∗-path p q◦ qcoh i .•))
               (η• (unit▷∗-path p q◦ qcoh i .◦)))
             (unit▷∗ p (q◦ p) .•→◦)
@@ -464,7 +464,7 @@ module _ where
           (funExt λ abs → cong q◦ (ABS .snd p abs)) i
         unit▷∗-η-path b p q◦ i .•→◦ =
           isProp→PathP
-            (λ i → ●ᶜ (◯ᶜ B) .is-set
+            (λ i → is-set (●ᶜ (◯ᶜ B))
               (●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ {A = B}) .U (unit▷∗-η-path b p q◦ i .•))
               (η• (unit▷∗-η-path b p q◦ i .◦)))
             (unit▷∗ p (q◦ p) .•→◦)
@@ -478,7 +478,7 @@ module _ where
         unit▷∗-charge p e b i .◦ _ = B .charge e b
         unit▷∗-charge p e b i .•→◦ =
           isProp→PathP
-            (λ i → ●ᶜ (◯ᶜ B) .is-set
+            (λ i → is-set (●ᶜ (◯ᶜ B))
               (●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ {A = B}) .U (unit▷∗-charge p e b i .•))
               (η• (unit▷∗-charge p e b i .◦)))
             (unit▷∗ p (B .charge e b) .•→◦)
@@ -511,7 +511,7 @@ module _ where
         unit▷-star p b i .◦ _ = B .charge c b
         unit▷-star p b i .•→◦ =
           isProp→PathP
-            (λ i → ●ᶜ (◯ᶜ B) .is-set
+            (λ i → is-set (●ᶜ (◯ᶜ B))
               (●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ {A = B}) .U (unit▷-star p b i .•))
               (η• (unit▷-star p b i .◦)))
             (unit▷ b .•→◦)
@@ -641,7 +641,7 @@ module _ where
           fwd-law₁-◦ d e a q i abs
         fwd (law₁ d e a q i) .•→◦ =
           isProp→PathP
-            (λ i → ●ᶜ (◯ᶜ (A ⊗ B)) .is-set
+            (λ i → is-set (●ᶜ (◯ᶜ (A ⊗ B)))
               (●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ {A = A ⊗ B}) .U (fwd-law₁-• d e a q i))
               (η• (fwd-law₁-◦ d e a q i)))
             (fwd (inj (A .charge e a) q d) .•→◦)
@@ -653,14 +653,14 @@ module _ where
           fwd-law₂-◦ d e a q i abs
         fwd (law₂ d e a q i) .•→◦ =
           isProp→PathP
-            (λ i → ●ᶜ (◯ᶜ (A ⊗ B)) .is-set
+            (λ i → is-set (●ᶜ (◯ᶜ (A ⊗ B)))
               (●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ {A = A ⊗ B}) .U (fwd-law₂-• d e a q i))
               (η• (fwd-law₂-◦ d e a q i)))
             (fwd (inj a ((▷'[ c ] B) .charge e q) d) .•→◦)
             (fwd (inj a q (d +ℂ e)) .•→◦)
             i
         fwd (squash x y p q i j) =
-          (▷'[ c ] (A ⊗ B)) .is-set
+          is-set (▷'[ c ] (A ⊗ B))
             (fwd x)
             (fwd y)
             (cong fwd p)
@@ -747,7 +747,7 @@ module _ where
         fwd-tensor-unit▷-• (inj a b d) = refl
         fwd-tensor-unit▷-• (law₁ d e a b i) =
           isSet→isSet'
-            (●ᶜ (A ⊗ B) .is-set)
+            (is-set (●ᶜ (A ⊗ B)))
             (fwd-tensor-unit▷-• (injAB (A .charge e a) b d))
             (fwd-tensor-unit▷-• (injAB a b (d +ℂ e)))
             (λ k → fwd (tensor-unit▷ (law₁ d e a b k)) .•)
@@ -755,7 +755,7 @@ module _ where
             i
         fwd-tensor-unit▷-• (law₂ d e a b i) =
           isSet→isSet'
-            (●ᶜ (A ⊗ B) .is-set)
+            (is-set (●ᶜ (A ⊗ B)))
             (fwd-tensor-unit▷-• (injAB a (B .charge e b) d))
             (fwd-tensor-unit▷-• (injAB a b (d +ℂ e)))
             (λ k → fwd (tensor-unit▷ (law₂ d e a b k)) .•)
@@ -764,7 +764,7 @@ module _ where
         fwd-tensor-unit▷-• (squash x y p q i j) =
           isSet→SquareP
             (λ k l → isProp→isSet
-              (●ᶜ (A ⊗ B) .is-set
+              (is-set (●ᶜ (A ⊗ B))
                 (fwd (tensor-unit▷ (squash x y p q k l)) .•)
                 (η• (squash x y p q k l))))
             (cong fwd-tensor-unit▷-• p)
@@ -786,7 +786,7 @@ module _ where
             ∎
         fwd-tensor-unit▷-◦ (law₁ d e a b i) =
           isSet→isSet'
-            (◯ᶜ (A ⊗ B) .is-set)
+            (is-set (◯ᶜ (A ⊗ B)))
             (fwd-tensor-unit▷-◦ (injAB (A .charge e a) b d))
             (fwd-tensor-unit▷-◦ (injAB a b (d +ℂ e)))
             (λ k → fwd (tensor-unit▷ (law₁ d e a b k)) .◦)
@@ -794,7 +794,7 @@ module _ where
             i
         fwd-tensor-unit▷-◦ (law₂ d e a b i) =
           isSet→isSet'
-            (◯ᶜ (A ⊗ B) .is-set)
+            (is-set (◯ᶜ (A ⊗ B)))
             (fwd-tensor-unit▷-◦ (injAB a (B .charge e b) d))
             (fwd-tensor-unit▷-◦ (injAB a b (d +ℂ e)))
             (λ k → fwd (tensor-unit▷ (law₂ d e a b k)) .◦)
@@ -803,7 +803,7 @@ module _ where
         fwd-tensor-unit▷-◦ (squash x y p q i j) =
           isSet→SquareP
             (λ k l → isProp→isSet
-              (◯ᶜ (A ⊗ B) .is-set
+              (is-set (◯ᶜ (A ⊗ B))
                 (fwd (tensor-unit▷ (squash x y p q k l)) .◦)
                 (rhs◦ (squash x y p q k l))))
             (cong fwd-tensor-unit▷-◦ p)
@@ -818,7 +818,7 @@ module _ where
         fwd-tensor-star▷-• p (inj a b d) = refl
         fwd-tensor-star▷-• p (law₁ d e a b i) =
           isSet→isSet'
-            (●ᶜ (A ⊗ B) .is-set)
+            (is-set (●ᶜ (A ⊗ B)))
             (fwd-tensor-star▷-• p (injAB (A .charge e a) b d))
             (fwd-tensor-star▷-• p (injAB a b (d +ℂ e)))
             (λ k → fwd (tensor-star▷ p (law₁ d e a b k)) .•)
@@ -826,7 +826,7 @@ module _ where
             i
         fwd-tensor-star▷-• p (law₂ d e a b i) =
           isSet→isSet'
-            (●ᶜ (A ⊗ B) .is-set)
+            (is-set (●ᶜ (A ⊗ B)))
             (fwd-tensor-star▷-• p (injAB a (B .charge e b) d))
             (fwd-tensor-star▷-• p (injAB a b (d +ℂ e)))
             (λ k → fwd (tensor-star▷ p (law₂ d e a b k)) .•)
@@ -835,7 +835,7 @@ module _ where
         fwd-tensor-star▷-• p (squash x y r s i j) =
           isSet→SquareP
             (λ k l → isProp→isSet
-              (●ᶜ (A ⊗ B) .is-set
+              (is-set (●ᶜ (A ⊗ B))
                 (fwd (tensor-star▷ p (squash x y r s k l)) .•)
                 (∗ p)))
             (cong (fwd-tensor-star▷-• p) r)
@@ -850,7 +850,7 @@ module _ where
         fwd-tensor-star▷-◦ p (inj a b d) = refl
         fwd-tensor-star▷-◦ p (law₁ d e a b i) =
           isSet→isSet'
-            (◯ᶜ (A ⊗ B) .is-set)
+            (is-set (◯ᶜ (A ⊗ B)))
             (fwd-tensor-star▷-◦ p (injAB (A .charge e a) b d))
             (fwd-tensor-star▷-◦ p (injAB a b (d +ℂ e)))
             (λ k → fwd (tensor-star▷ p (law₁ d e a b k)) .◦)
@@ -858,7 +858,7 @@ module _ where
             i
         fwd-tensor-star▷-◦ p (law₂ d e a b i) =
           isSet→isSet'
-            (◯ᶜ (A ⊗ B) .is-set)
+            (is-set (◯ᶜ (A ⊗ B)))
             (fwd-tensor-star▷-◦ p (injAB a (B .charge e b) d))
             (fwd-tensor-star▷-◦ p (injAB a b (d +ℂ e)))
             (λ k → fwd (tensor-star▷ p (law₂ d e a b k)) .◦)
@@ -867,7 +867,7 @@ module _ where
         fwd-tensor-star▷-◦ p (squash x y r s i j) =
           isSet→SquareP
             (λ k l → isProp→isSet
-              (◯ᶜ (A ⊗ B) .is-set
+              (is-set (◯ᶜ (A ⊗ B))
                 (fwd (tensor-star▷ p (squash x y r s k l)) .◦)
                 (η◦ᶜ {A = A ⊗ B} .U (squash x y r s k l))))
             (cong (fwd-tensor-star▷-◦ p) r)
@@ -884,7 +884,7 @@ module _ where
         fwd-bwd-fiber-• q◦ (∗ p) = fwd-tensor-star▷-• p (q◦ p)
         fwd-bwd-fiber-• q◦ (law (x , x-coh) p i) =
           isSet→isSet'
-            (●ᶜ (A ⊗ B) .is-set)
+            (is-set (●ᶜ (A ⊗ B)))
             (fwd-bwd-fiber-• q◦ (η• (x , x-coh)))
             (fwd-bwd-fiber-• q◦ (∗ p))
             (λ k → fwd (bwd-from-fiber q◦ (law (x , x-coh) p k)) .•)
@@ -910,7 +910,7 @@ module _ where
           ∎
         fwd-bwd-fiber-◦ q◦ (law (x , x-coh) p i) =
           isSet→isSet'
-            (◯ᶜ (A ⊗ B) .is-set)
+            (is-set (◯ᶜ (A ⊗ B)))
             (fwd-bwd-fiber-◦ q◦ (η• (x , x-coh)))
             (fwd-bwd-fiber-◦ q◦ (∗ p))
             (λ k → fwd (bwd-from-fiber q◦ (law (x , x-coh) p k)) .◦)
@@ -949,7 +949,7 @@ module _ where
         fwd-charge-inj e a q d i .◦ = fwd-charge-inj-◦ e a q d i
         fwd-charge-inj e a q d i .•→◦ =
           isProp→PathP
-            (λ i → ●ᶜ (◯ᶜ (A ⊗ B)) .is-set
+            (λ i → is-set (●ᶜ (◯ᶜ (A ⊗ B)))
               (●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ {A = A ⊗ B}) .U (fwd-charge-inj-• e a q d i))
               (η• (fwd-charge-inj-◦ e a q d i)))
             (fwd ((A ⊗ (▷'[ c ] B)) .charge e (inj a q d)) .•→◦)
@@ -963,7 +963,7 @@ module _ where
         fwd-charge e (inj a q d) = fwd-charge-inj e a q d
         fwd-charge e (law₁ d e' a q i) =
           isSet→isSet'
-            ((▷'[ c ] (A ⊗ B)) .is-set)
+            (is-set (▷'[ c ] (A ⊗ B)))
             (fwd-charge-inj e (A .charge e' a) q d)
             (fwd-charge-inj e a q (d +ℂ e'))
             (λ k → fwd ((A ⊗ (▷'[ c ] B)) .charge e (law₁ d e' a q k)))
@@ -971,7 +971,7 @@ module _ where
             i
         fwd-charge e (law₂ d e' a q i) =
           isSet→isSet'
-            ((▷'[ c ] (A ⊗ B)) .is-set)
+            (is-set (▷'[ c ] (A ⊗ B)))
             (fwd-charge-inj e a ((▷'[ c ] B) .charge e' q) d)
             (fwd-charge-inj e a q (d +ℂ e'))
             (λ k → fwd ((A ⊗ (▷'[ c ] B)) .charge e (law₂ d e' a q k)))
@@ -980,7 +980,7 @@ module _ where
         fwd-charge e (squash x y p q i j) =
           isSet→SquareP
             (λ k l → isProp→isSet
-              ((▷'[ c ] (A ⊗ B)) .is-set
+              (is-set (▷'[ c ] (A ⊗ B))
                 (fwd ((A ⊗ (▷'[ c ] B)) .charge e (squash x y p q k l)))
                 ((▷'[ c ] (A ⊗ B)) .charge e (fwd (squash x y p q k l)))))
             (cong (fwd-charge e) p)
@@ -1001,7 +1001,7 @@ module _ where
           fwd-bwd-fiber-◦ (q .◦) (bwd-fiber q) i
         fwd-bwd q i .•→◦ =
           isProp→PathP
-            (λ i → ●ᶜ (◯ᶜ (A ⊗ B)) .is-set
+            (λ i → is-set (●ᶜ (◯ᶜ (A ⊗ B)))
               (rhsα (fwd-bwd q i .•))
               (η• (fwd-bwd q i .◦)))
             (fwd (bwd q) .•→◦)
