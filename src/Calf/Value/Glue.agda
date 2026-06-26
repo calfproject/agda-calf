@@ -24,18 +24,18 @@ record Glue (X• : 𝒱•) (X◦ : 𝒱◦) (χ• : ⟨ X• ⟩ → ● ⟨ 
     •→◦ : χ• • ≡ η• ◦
 open Glue public
 
-record FRAC : 𝒱₁ where
+record 𝒱-FRAC : 𝒱₁ where
   field
     X• : 𝒱•
     X◦ : 𝒱◦
     χ• : ⟨ X• ⟩ → ● ⟨ X◦ ⟩
-open FRAC
+open 𝒱-FRAC
 
-fromFRAC : FRAC → 𝒱
+fromFRAC : 𝒱-FRAC → 𝒱
 fromFRAC F = Glue (F .X•) (F .X◦) (F .χ•)
 
 module _ where
-  glue•-in : (F : FRAC) → ⟨ F .X• ⟩ → ● (fromFRAC F)
+  glue•-in : (F : 𝒱-FRAC) → ⟨ F .X• ⟩ → ● (fromFRAC F)
   glue•-in F x• =
     ●.map
       (λ (x◦ , p) →
@@ -46,10 +46,10 @@ module _ where
           })
       (η-fiber (F .χ• x•))
 
-  glue•-out : (F : FRAC) → ● (fromFRAC F) → ⟨ F .X• ⟩
+  glue•-out : (F : 𝒱-FRAC) → ● (fromFRAC F) → ⟨ F .X• ⟩
   glue•-out F g• = invIsEq (F .X• .snd) (●.map (λ g → g .•) g•)
 
-  glue•-in-proj : (F : FRAC) (x• : ⟨ F .X• ⟩) →
+  glue•-in-proj : (F : 𝒱-FRAC) (x• : ⟨ F .X• ⟩) →
     ●.map (λ g → g .•) (glue•-in F x•) ≡ η• x•
   glue•-in-proj F x• =
     ●.map-∘
@@ -63,12 +63,12 @@ module _ where
       (η-fiber (F .χ• x•))
     ∙ ●-map-const x• (η-fiber (F .χ• x•))
 
-  glue•-rightInv : (F : FRAC) → section (glue•-out F) (glue•-in F)
+  glue•-rightInv : (F : 𝒱-FRAC) → section (glue•-out F) (glue•-in F)
   glue•-rightInv F x• =
     cong (invIsEq (F .X• .snd)) (glue•-in-proj F x•)
     ∙ retIsEq (F .X• .snd) x•
 
-  glue•-in-point : (F : FRAC) (x• : ⟨ F .X• ⟩) (x◦ : ⟨ F .X◦ ⟩)
+  glue•-in-point : (F : 𝒱-FRAC) (x• : ⟨ F .X• ⟩) (x◦ : ⟨ F .X◦ ⟩)
     (h : F .χ• x• ≡ η• x◦) →
     glue•-in F x• ≡
       η• (record { • = x• ; ◦ = x◦ ; •→◦ = h })
@@ -84,7 +84,7 @@ module _ where
       (η-fiber-point (F .χ• x•) (x◦ , sym h))
     ∙ cong η• (λ i → record { • = x• ; ◦ = x◦ ; •→◦ = symInvo h (~ i) })
 
-  glue•-leftInv : (F : FRAC) → retract (glue•-out F) (glue•-in F)
+  glue•-leftInv : (F : 𝒱-FRAC) → retract (glue•-out F) (glue•-in F)
   glue•-leftInv F = ind R η•-case ∗-case law-case
     where
       R : ● (fromFRAC F) → 𝒱
@@ -107,19 +107,19 @@ module _ where
           (η•-case g)
           (∗-case abs)
 
-  glue•-equiv : (F : FRAC) → ● (fromFRAC F) ≃ ⟨ F .X• ⟩
+  glue•-equiv : (F : 𝒱-FRAC) → ● (fromFRAC F) ≃ ⟨ F .X• ⟩
   glue•-equiv F = isoToEquiv (iso (glue•-out F) (glue•-in F) (glue•-rightInv F) (glue•-leftInv F))
 
-  glue•-in-isEquiv : (F : FRAC) → isEquiv (glue•-in F)
+  glue•-in-isEquiv : (F : 𝒱-FRAC) → isEquiv (glue•-in F)
   glue•-in-isEquiv F =
     isoToIsEquiv (iso (glue•-in F) (glue•-out F) (glue•-leftInv F) (glue•-rightInv F))
 
-  glue•-path : (F : FRAC) → (● (fromFRAC F) , ●.η-isEquiv) ≡ F .X•
+  glue•-path : (F : 𝒱-FRAC) → (● (fromFRAC F) , ●.η-isEquiv) ≡ F .X•
   glue•-path F = Σ≡Prop (λ X → isPropIsEquiv (η• {X})) (ua (glue•-equiv F))
 
 
 module _ where
-  glue◦-fiber : (F : FRAC) (x◦ : ⟨ F .X◦ ⟩) →
+  glue◦-fiber : (F : 𝒱-FRAC) (x◦ : ⟨ F .X◦ ⟩) →
     ◯ (Σ[ g ∈ fromFRAC F ] g .◦ ≡ x◦)
   glue◦-fiber F x◦ p =
     (record
@@ -129,16 +129,16 @@ module _ where
       })
     , refl
 
-  glue◦-in : (F : FRAC) → ⟨ F .X◦ ⟩ → ◯ (fromFRAC F)
+  glue◦-in : (F : 𝒱-FRAC) → ⟨ F .X◦ ⟩ → ◯ (fromFRAC F)
   glue◦-in F x◦ p = glue◦-fiber F x◦ p .fst
 
-  glue◦-out : (F : FRAC) → ◯ (fromFRAC F) → ⟨ F .X◦ ⟩
+  glue◦-out : (F : 𝒱-FRAC) → ◯ (fromFRAC F) → ⟨ F .X◦ ⟩
   glue◦-out F g◦ = invIsEq (F .X◦ .snd) (◯.map (λ g → g .◦) g◦)
 
-  glue◦-rightInv : (F : FRAC) → section (glue◦-out F) (glue◦-in F)
+  glue◦-rightInv : (F : 𝒱-FRAC) → section (glue◦-out F) (glue◦-in F)
   glue◦-rightInv F x◦ = retIsEq (F .X◦ .snd) x◦
 
-  glue◦-leftInv : (F : FRAC) → retract (glue◦-out F) (glue◦-in F)
+  glue◦-leftInv : (F : 𝒱-FRAC) → retract (glue◦-out F) (glue◦-in F)
   glue◦-leftInv F g◦ = funExt λ p → λ i →
     record
       { • = closed-path p i
@@ -166,13 +166,13 @@ module _ where
           (●-isProp p (F .χ• (𝒱•-at-open-isContr (F .X•) p .fst)) (η• (glue◦-out F g◦)))
           (g◦ p .•→◦)
 
-  glue◦-equiv : (F : FRAC) → ◯ (fromFRAC F) ≃ ⟨ F .X◦ ⟩
+  glue◦-equiv : (F : 𝒱-FRAC) → ◯ (fromFRAC F) ≃ ⟨ F .X◦ ⟩
   glue◦-equiv F = isoToEquiv (iso (glue◦-out F) (glue◦-in F) (glue◦-rightInv F) (glue◦-leftInv F))
 
-  glue◦-path : (F : FRAC) → (◯ (fromFRAC F) , ◯.η-isEquiv) ≡ F .X◦
+  glue◦-path : (F : 𝒱-FRAC) → (◯ (fromFRAC F) , ◯.η-isEquiv) ≡ F .X◦
   glue◦-path F = Σ≡Prop (λ X → isPropIsEquiv (η◦ {X})) (ua (glue◦-equiv F))
 
-glue-χ-path-base : (F : FRAC) (g• : ● (fromFRAC F)) →
+glue-χ-path-base : (F : 𝒱-FRAC) (g• : ● (fromFRAC F)) →
   PathP
     (λ i → ● ⟨ glue◦-path F i ⟩)
     (●.map η◦ g•)
@@ -213,7 +213,7 @@ glue-χ-path-base F = ind R η•-case ∗-case law-case
         (η•-case g)
         (∗-case abs)
 
-toFRAC : 𝒱 → FRAC
+toFRAC : 𝒱 → 𝒱-FRAC
 toFRAC X .X• = ● X , ●.η-isEquiv
 toFRAC X .X◦ = ◯ X , ◯.η-isEquiv
 toFRAC X .χ• = ●.map η◦
@@ -285,7 +285,7 @@ glue-fracture-section F i .χ• =
 glue-fracture-retract : retract toFRAC fromFRAC
 glue-fracture-retract X = sym (ua (fracture , fracture-isEquiv))
 
-fracture-and-gluing : 𝒱 ≃ FRAC
+fracture-and-gluing : 𝒱 ≃ 𝒱-FRAC
 fracture-and-gluing .fst = toFRAC
 fracture-and-gluing .snd = isoToIsEquiv (iso toFRAC fromFRAC glue-fracture-section glue-fracture-retract)
 

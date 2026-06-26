@@ -18,11 +18,13 @@ open import Calf.Computation.Copower
 open import Calf.Computation.Open as ◯ᶜ
 open import Calf.Computation.Closed as ●ᶜ
 open import Calf.Computation.Glue
+open import Calf.Computation.Abstraction
+open import Calf.Computation.Potential
 open import Calf.Computation.Credit
 
 opaque
   PList₁ : ℂ → 𝒱 → 𝒞
-  PList₁ c X = PotentialFunction {List X} (λ l → length l ⊙ c)
+  PList₁ c X = Potential {List X} (λ l → length l ⊙ c)
 
   pnil₁ : U (PList₁ c X)
   pnil₁ {c} =
@@ -35,18 +37,18 @@ opaque
   pcons₁ : X → ▷'[ c ] (PList₁ c X) ⊸ PList₁ c X
   pcons₁ {X} {c} x =
     subst (_⊸ PList₁ c X)
-      ( Glueᶜ' (F (List X)) (F (List X)) (CHARGE c ⨾ᶜ bind' (λ l → F _ .charge (length l ⊙ c) (ret l)))
-      ≡⟨ cong (Glueᶜ' _ _) (CHARGE-commute _ _) ⟩
-        Glueᶜ' (F (List X)) (F (List X)) (bind' (λ l → F _ .charge (length l ⊙ c) (ret l)) ⨾ᶜ CHARGE c)
-      ≡⟨ sym Glueᶜ'-Glueᶜ' ⟩
-        Glueᶜ'
+      ( Abstractionᶜ (F (List X)) (F (List X)) (CHARGE c ⨾ᶜ bind' (λ l → F _ .charge (length l ⊙ c) (ret l)))
+      ≡⟨ cong (Abstractionᶜ _ _) (CHARGE-commute _ _) ⟩
+        Abstractionᶜ (F (List X)) (F (List X)) (bind' (λ l → F _ .charge (length l ⊙ c) (ret l)) ⨾ᶜ CHARGE c)
+      ≡⟨ sym Abstractionᶜ-Abstractionᶜ ⟩
+        Abstractionᶜ
           (PList₁ c X)
           (PList₁ c X)
           (squareᶜ'
             (CHARGE c)
             (CHARGE c)
             (λ e → bind' (λ l → F _ .charge (length l ⊙ c) (ret l)) .charge c e))
-      ≡⟨ cong (Glueᶜ' _ _) (squareᶜ'-charge _) ⟩
+      ≡⟨ cong (Abstractionᶜ _ _) (squareᶜ'-charge _) ⟩
         ▷'[ c ] (PList₁ c X)
       ∎) $
     squareᶜ'
@@ -104,7 +106,7 @@ opaque
       ∎
 
   opaque
-    unfolding Glueᶜ'
+    unfolding Abstractionᶜ
 
     pfoldr₁ :
         U A

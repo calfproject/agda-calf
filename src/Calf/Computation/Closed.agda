@@ -137,3 +137,17 @@ bind-η• {A = A} {B = B} f =
         refl
         refl
         i
+
+●ᶜ-map-CHARGE
+  : (c : ℂ) (a• : U (●ᶜ A))
+  → map (CHARGE {A = A} c) .U a• ≡ ●ᶜ A .charge c a•
+●ᶜ-map-CHARGE c (η• a) = refl
+●ᶜ-map-CHARGE c (∗ p) = refl
+●ᶜ-map-CHARGE {A = A} c (law a p i) =
+  isProp→PathP
+    (λ i → ●ᶜ A .is-set
+      (map (CHARGE {A = A} c) .U (law a p i))
+      (●ᶜ A .charge c (law a p i)))
+    refl
+    refl
+    i

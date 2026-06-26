@@ -60,19 +60,48 @@ cmpᴳ = ⊤ , 0ℂ ⊢_
 -- cmpᴳ A = ∀ {q} → q ⋎₀ → (⊤ , q ⊢ A)
 
 cmpᴳ→cmp : cmpᴳ A → U A
-cmpᴳ→cmp e = e .U (transport (cong U (sym ▷'/0)) (ret _))
+cmpᴳ→cmp e = e .U (subst U (sym ▷'/0) 0ℂ)
 
 cmp→cmpᴳ : U A → cmpᴳ A
-cmp→cmpᴳ {A} e = transport (cong (_⊸ A) (sym ▷'/0)) (bind' λ _ → e)
+cmp→cmpᴳ {A} e =
+  subst (_⊸ A) (sym ▷'/0) $
+  record { U = flip (A .charge) e ; charge = λ _ _ → A .charge/+ }
 
+module _ where
+  substᵐᴳ :
+    q ≡ q'
+    → Δ , q ⊢ A
+    → Δ , q' ⊢ A
+  substᵐᴳ qq = subst (_⊸ _) (cong (▷'[_] _) qq)
+
+  substᴳ :
+    (A : ℂ → 𝒞)
+    → p ≡ p'
+    → Δ , q ⊢ A p
+    → Δ , q ⊢ A p'
+  substᴳ {Δ = Δ} {q = q} A = subst (λ p → Δ , q ⊢ A p)
+
+  subst2ᴳ : ∀ {p1 p1' p2 p2'} →
+    (A : ℂ → ℂ → 𝒞)
+    → p1 ≡ p1' → p2 ≡ p2'
+    → Δ , q ⊢ A p1 p2
+    → Δ , q ⊢ A p1' p2'
+  subst2ᴳ {Δ = Δ} {q = q} A = subst2 λ p1 p2 → Δ , q ⊢ A p1 p2
+
+  subst3ᴳ : ∀ {p1 p1' p2 p2' p3 p3'} →
+    (A : ℂ → ℂ → ℂ → 𝒞)
+    → p1 ≡ p1' → p2 ≡ p2' → p3 ≡ p3'
+    → Δ , q ⊢ A p1 p2 p3
+    → Δ , q ⊢ A p1' p2' p3'
+  subst3ᴳ {p1 = p1} {p2' = p2'} {p3' = p3'} A ≡1 ≡2 ≡3 e = substᴳ (λ v → A v p2' p3') ≡1 (subst2ᴳ (A p1) ≡2 ≡3 e)
 
 module _ where
   storeᴳ : ∀ p
     → q ⋎₂ (p , q')
     → Δ , q' ⊢ A
     → Δ , q ⊢ ▷'[ p ] A
-  storeᴳ p split e =
-    transport (cong (_⊸ _) (sym ▷'/+ ∙ cong (▷'[_] _) split)) (▷'-map e)
+  storeᴳ p split e = subst (_⊸ _) (sym ▷'/+ ∙ cong (▷'[_] _) split) (▷'-map e)
+  -- TODO: use subst instead of transport if possible
 
   releaseᴳ :
     Δ , q ⊢ ▷'[ p ] B
@@ -119,18 +148,16 @@ module _ where
   foldr₁ᴳ e-nil e-cons e = e ⨾ᶜ pfoldr₁ (cmpᴳ→cmp e-nil) e-cons
 
 module _ where
-  nil₂ᴳ : cmpᴳ (PList₂ p₁ p₂ X)
-  nil₂ᴳ = cmp→cmpᴳ pnil₂
+  nil₂ᴳ : q ⋎₀ → ⊤ , q ⊢ (PList₂ p₁ p₂ X)
+  nil₂ᴳ split = subst (λ x → ▷'[ x ] _ ⊸ _) split (cmp→cmpᴳ pnil₂)
 
   cons₂ᴳ :
     q ⋎₂ (p₁ , q')
-    → p ⋎₂ (p₂ , p₁)
     → X
-    → Δ , q' ⊢ PList₂ p p₂ X
+    → Δ , q' ⊢ PList₂ (p₂ +ℂ p₁) p₂ X
     → Δ , q ⊢ PList₂ p₁ p₂ X
-  cons₂ᴳ split-q split-p x e =
-    storeᴳ _ split-q e ⨾ᶜ
-    transport (cong (λ p → (▷'[ _ ] PList₂ p _ _) ⊸ _) split-p) (pcons₂ x)
+  cons₂ᴳ split-q x e =
+    storeᴳ _ split-q e ⨾ᶜ pcons₂ x
 
   foldr₂ᴳ :
     (A : ℂ → 𝒞)

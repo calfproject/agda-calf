@@ -349,10 +349,11 @@ module _ where
   open import Calf.Computation.Open as ◯ᶜ
   open import Calf.Computation.Closed as ●ᶜ
   open import Calf.Computation.Glue
+  open import Calf.Computation.Abstraction
   open import Calf.Computation.Credit
 
   opaque
-    unfolding Glueᶜ'
+    unfolding Abstractionᶜ
 
     pot-tensor : (A ⊗ (▷'[ c ] B)) ≡ (▷'[ c ] (A ⊗ B))
     pot-tensor {A = A} {c = c} {B = B} =

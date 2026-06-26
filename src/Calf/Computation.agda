@@ -145,6 +145,9 @@ CHARGE-+ {A = A} c₁ c₂ =
 idᶜ⨾ᶜf≡f : (f : A ⊸ B) → idᶜ ⨾ᶜ f ≡ f
 idᶜ⨾ᶜf≡f f = ⊸-path refl refl refl
 
+f⨾ᶜidᶜ≡f : (f : A ⊸ B) → f ⨾ᶜ idᶜ ≡ f
+f⨾ᶜidᶜ≡f f = {!   !}
+
 charge-path-inv
   : {X Y : 𝒱}
   → (e : X ≃ Y)
