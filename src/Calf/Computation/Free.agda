@@ -27,7 +27,7 @@ opaque
   bind {A = A} (c , x) k = rec (A .is-set) (A .charge c ∘ k) x
 
   bind/charge : ∀ {c e k} → bind {A = A} (F X .charge c e) k ≡ A .charge c (bind {A = A} e k)
-  bind/charge {A = A} = {!   !} -- A .charge/+
+  bind/charge {A = A} = {!    !} -- A .charge/+
 
   F/η : ∀ {x k} → bind {A = A} (ret {X} x) k ≡ k x
   F/η {A = A} = {!   !} -- A .charge/0

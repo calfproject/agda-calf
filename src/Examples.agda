@@ -2,17 +2,15 @@ module Examples where
 
 open import Calf.Core.Cost
 open import Calf.Value
-open import Cubical.Data.List renaming (rev to reverse)
-open import Cubical.Data.Nat
-open import Cubical.Data.Sigma
+open import Calf.Value.List
+open import Calf.Value.Nat
+open import Calf.Value.Product
 open import Calf.Computation
 open import Calf.Computation.Copower
 open import Calf.Computation.Free
 open import Calf.Computation.Power
-open import Cubical.Foundations.Prelude
 import Cubical.Data.List.Properties as List
 import Cubical.Data.Nat.Properties as Nat
-open import Function
 
 
 BQ : 𝒞
@@ -32,7 +30,7 @@ emptyq = ret []
 enqueue : ℕ → LQ ⊸ LQ
 enqueue e = bind' λ l → LQ .charge 1 (ret (l ++ [ e ]))
 
-dequeue : LQ ⊸ (ℕ ⋊ LQ)
+dequeue : LQ ⊸ (ℕₛ ⋊ LQ)
 dequeue = bind' λ
   { []      → 0 , ret []
   ; (x ∷ l) → x , ret l }
@@ -43,17 +41,17 @@ emptyᵗ = ret ([] , [])
 enqueueᵗ : ℕ → BQ ⊸ BQ
 enqueueᵗ e = bind' λ (back , front) → ret (e ∷ back , front)
 
-dequeueᵗ : BQ ⊸ (ℕ ⋊ BQ)
+dequeueᵗ : BQ ⊸ (ℕₛ ⋊ BQ)
 dequeueᵗ = bind' λ
   { (back , x ∷ front) → x , ret (back , front)
   ; (back , [])        → reverse-front back }
   where
-    reverse-front : List ℕ → U (ℕ ⋊ BQ)
+    reverse-front : List ℕ → U (ℕₛ ⋊ BQ)
     reverse-front back with reverse back
     ... | []     = 0 , BQ .charge (` length back) (ret ([] , []))
     ... | x ∷ l  = x , BQ .charge (` length back) (ret ([] , l))
 
-mapφ : (ℕ ⋊ BQ) ⊸ (ℕ ⋊ LQ)
+mapφ : (ℕₛ ⋊ BQ) ⊸ (ℕₛ ⋊ LQ)
 mapφ .U (x , q) = x , φ .U q
 mapφ .charge c (x , q) i .fst = x
 mapφ .charge c (x , q) i .snd = φ .charge c q i
@@ -170,7 +168,9 @@ opaque
       (dequeue'-fst-glue q .•→◦)
       i
 
-  dequeue' : BLQ ⊸ (ℕ ⋊ BLQ)
+  open import Cubical.Data.Sigma using (ΣPathP)
+
+  dequeue' : BLQ ⊸ (ℕₛ ⋊ BLQ)
   dequeue' .U q .fst =
     invIsEq fracture-isEquiv (dequeue'-fst-glue q)
   dequeue' .U q .snd = dequeue'-snd .U q

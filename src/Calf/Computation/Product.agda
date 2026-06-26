@@ -1,11 +1,8 @@
 module Calf.Computation.Product where
 
 open import Calf.Value
+open import Calf.Value.Product public
 open import Calf.Computation
-open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.Function
-open import Cubical.Foundations.HLevels
-open import Cubical.Data.Sigma public
 
 infixr 2 _×ᶜ_
 

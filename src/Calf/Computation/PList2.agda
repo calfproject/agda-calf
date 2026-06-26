@@ -3,14 +3,14 @@ open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.Univalence using (ua)
 open import Cubical.Data.Equality.Conversion using (eqToPath)
-open import Cubical.Data.Sigma
 open import Cubical.Data.Nat
-open import Cubical.Data.List
 
 module Calf.Computation.PList2 where
 
 open import Calf.Core.Cost
 open import Calf.Value
+open import Calf.Value.List
+open import Calf.Value.Nat
 import Calf.Value.Closed as ●ᵛ
 import Calf.Value.Open as ◯ᵛ
 open import Calf.Computation

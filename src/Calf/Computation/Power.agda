@@ -1,10 +1,8 @@
 module Calf.Computation.Power where
 
 open import Calf.Value
+open import Calf.Value.Pi
 open import Calf.Computation
-open import Function
-open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.HLevels
 
 Πᶜ : (X : 𝒱) → (X → 𝒞) → 𝒞
 Πᶜ X A .U = (x : X) → U (A x)
@@ -16,7 +14,7 @@ open import Cubical.Foundations.HLevels
 syntax Πᶜ X (λ x → A) = [ x ∈ X ] ⇀ A
 
 _⇀_ : 𝒱 → 𝒞 → 𝒞
-X ⇀ A = Πᶜ X (const A)
+X ⇀ A = [ _ ∈ X ] ⇀ A
 
 opaque
   powlam : (X → A ⊸ B) → A ⊸ (X ⇀ B)
