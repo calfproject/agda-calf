@@ -1,9 +1,7 @@
 module Calf.Value.Empty where
 
 open import Calf.Value
-open import Cubical.Data.Empty
-open import Cubical.Foundations.Prelude
+open import Cubical.Data.Empty public
 
-0ᵛ : 𝒱
-0ᵛ .val = ⊥
-0ᵛ .is-set = isProp→isSet isProp⊥
+isSet⊥ : isSet ⊥
+isSet⊥ = isProp→isSet isProp⊥

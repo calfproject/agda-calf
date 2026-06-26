@@ -8,7 +8,7 @@ open import Calf.Computation
 open import Calf.Computation.Abstraction
 open import Calf.Computation.Free
 
-Potential : (val X → val ℂ) → 𝒞
+Potential : (X → ℂ) → 𝒞
 Potential {X} Φ = Abstractionᶜ (F X) (F X) (bind' λ x → F _ .charge (Φ x) (ret x))
 
 Potential-0ℂ : Potential {X} (λ _ → 0ℂ) ≡ F X
@@ -16,11 +16,11 @@ Potential-0ℂ =
   cong (Abstractionᶜ _ _) (cong bind' (funExt λ _ → F _ .charge/0) ∙ bind'/η)
   ∙ Abstractionᶜ-id
 
-square : {ΦX : val X → val ℂ} {ΦY : val Y → val ℂ}
-  → (f : val X → val Y)
-  → (c-⊤ c-abs : val X → val ℂ)
+square : {ΦX : X → ℂ} {ΦY : Y → ℂ}
+  → (f : X → Y)
+  → (c-⊤ c-abs : X → ℂ)
   → (∀ x → c-⊤ x +ℂ ΦY (f x) ≡ ΦX x +ℂ c-abs x)
-  → Potential {X} ΦX ⊸ Potential {Y} ΦY
+  → Potential ΦX ⊸ Potential ΦY
 square {ΦX = ΦX} {ΦY = ΦY} f c-⊤ c-abs amortization =
   squareᶜ'
     (bind' λ x → F _ .charge (c-⊤ x) (ret (f x)))

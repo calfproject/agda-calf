@@ -7,7 +7,6 @@ open import Cubical.Data.Sigma
 module Calf.Giralf where
 
 open import Calf.Value
-open import Calf.Value.Nat
 open import Calf.Core.Cost
 open import Calf.Computation
 open import Calf.Computation.Product
@@ -21,21 +20,21 @@ open import Calf.Computation.Free
 open import Calf.Computation.Power
 
 Context : Type₁
-Context = 𝒞 × val ℂ  -- List 𝒞 × val ℙ
+Context = 𝒞 × ℂ  -- List 𝒞 × ℙ
 
 module _ where  -- promonoid
-  _⋎₀ : val ℂ → Type
+  _⋎₀ : ℂ → Type
   q ⋎₀ = 0ℂ ≡ q
 
-  _⋎₂_ : val ℂ → (val ℂ × val ℂ) → Type  -- promonoid
+  _⋎₂_ : ℂ → (ℂ × ℂ) → Type  -- promonoid
   q ⋎₂ (q₁ , q₂) = q₁ +ℂ q₂ ≡ q
 
-  -- _⋎_ : val ℂ → List (val ℂ) → Type  -- promonoid
+  -- _⋎_ : ℂ → List (ℂ) → Type  -- promonoid
   -- p ⋎ ps = foldr _+ℂ_ 0ℂ ps ≡ p
 
 
 variable
-  p p' p₁ p₂ q q' q₁ q₂ r r' : val ℂ
+  p p' p₁ p₂ q q' q₁ q₂ r r' : ℂ
 
 
 infix 1 _⊢_
@@ -60,11 +59,13 @@ cmpᴳ : 𝒞 → Type
 cmpᴳ = ⊤ , 0ℂ ⊢_
 -- cmpᴳ A = ∀ {q} → q ⋎₀ → (⊤ , q ⊢ A)
 
-cmpᴳ→cmp : cmpᴳ A → cmp A
-cmpᴳ→cmp e = e .U (transport (cong cmp (sym ▷'/0)) (ret _))
+cmpᴳ→cmp : cmpᴳ A → U A
+cmpᴳ→cmp e = e .U (subst U (sym ▷'/0) 0ℂ)
 
-cmp→cmpᴳ : cmp A → cmpᴳ A
-cmp→cmpᴳ {A} e = transport (cong (_⊸ A) (sym ▷'/0)) (bind' λ _ → e)
+cmp→cmpᴳ : U A → cmpᴳ A
+cmp→cmpᴳ {A} e =
+  subst (_⊸ A) (sym ▷'/0) $
+  record { U = flip (A .charge) e ; charge = λ _ _ → A .charge/+ }
 
 module _ where
   substᵐᴳ :
@@ -74,21 +75,21 @@ module _ where
   substᵐᴳ qq = subst (_⊸ _) (cong (▷'[_] _) qq)
 
   substᴳ :
-    (A : val ℂ → 𝒞)
+    (A : ℂ → 𝒞)
     → p ≡ p'
     → Δ , q ⊢ A p
     → Δ , q ⊢ A p'
   substᴳ {Δ = Δ} {q = q} A = subst (λ p → Δ , q ⊢ A p)
 
   subst2ᴳ : ∀ {p1 p1' p2 p2'} →
-    (A : val ℂ → val ℂ → 𝒞)
+    (A : ℂ → ℂ → 𝒞)
     → p1 ≡ p1' → p2 ≡ p2'
     → Δ , q ⊢ A p1 p2
     → Δ , q ⊢ A p1' p2'
   subst2ᴳ {Δ = Δ} {q = q} A = subst2 λ p1 p2 → Δ , q ⊢ A p1 p2
 
   subst3ᴳ : ∀ {p1 p1' p2 p2' p3 p3'} →
-    (A : val ℂ → val ℂ → val ℂ → 𝒞)
+    (A : ℂ → ℂ → ℂ → 𝒞)
     → p1 ≡ p1' → p2 ≡ p2' → p3 ≡ p3'
     → Δ , q ⊢ A p1 p2 p3
     → Δ , q ⊢ A p1' p2' p3'
@@ -134,14 +135,14 @@ module _ where
 
   cons₁ᴳ :
     q ⋎₂ (p , q')
-    → val X
+    → X
     → Δ , q' ⊢ PList₁ p X
     → Δ , q ⊢ PList₁ p X
   cons₁ᴳ split x e = storeᴳ _ split e ⨾ᶜ pcons₁ x
 
   foldr₁ᴳ :
     cmpᴳ A
-    → (val X → A , p ⊢ A)
+    → (X → A , p ⊢ A)
     → Δ , q ⊢ PList₁ p X
     → Δ , q ⊢ A
   foldr₁ᴳ e-nil e-cons e = e ⨾ᶜ pfoldr₁ (cmpᴳ→cmp e-nil) e-cons
@@ -152,16 +153,16 @@ module _ where
 
   cons₂ᴳ :
     q ⋎₂ (p₁ , q')
-    → val X
+    → X
     → Δ , q' ⊢ PList₂ (p₂ +ℂ p₁) p₂ X
     → Δ , q ⊢ PList₂ p₁ p₂ X
   cons₂ᴳ split-q x e =
     storeᴳ _ split-q e ⨾ᶜ pcons₂ x
 
   foldr₂ᴳ :
-    (A : val ℂ → 𝒞)
+    (A : ℂ → 𝒞)
     → (∀ r → cmpᴳ (A r))
-    → (∀ r → val X → A (p₂ +ℂ r) , r ⊢ A r)
+    → (∀ r → X → A (p₂ +ℂ r) , r ⊢ A r)
     → Δ , q ⊢ PList₂ p₁ p₂ X
     → Δ , q ⊢ A p₁
   foldr₂ᴳ A e-nil e-cons e = e ⨾ᶜ pfoldr₂ A (cmpᴳ→cmp ∘ e-nil) e-cons
@@ -185,11 +186,11 @@ module _ where
 
 module _ where
   powlamᴳ :
-    (val X → Δ , q ⊢ A)
+    (X → Δ , q ⊢ A)
     → Δ , q ⊢ X ⇀ A
   powlamᴳ {X = X} = powlam {X = X}
 
   powappᴳ :
-    val X → Δ , q ⊢ X ⇀ A
+    X → Δ , q ⊢ X ⇀ A
     → Δ , q ⊢ A
   powappᴳ {X = X} x e = powapp {X = X} e x

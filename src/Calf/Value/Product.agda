@@ -1,10 +1,7 @@
 module Calf.Value.Product where
 
-open import Calf.Value
-open import Cubical.Data.Sigma public
-open import Cubical.Foundations.HLevels
-
-infixr 2 _×ᵛ_
-_×ᵛ_ : 𝒱 → 𝒱 → 𝒱
-(X ×ᵛ Y) .val = val X × val Y
-(X ×ᵛ Y) .is-set = isSet× (X .is-set) (Y .is-set)
+open import Cubical.Data.Sigma
+  using (_×_; _,_)
+  renaming (fst to proj₁; snd to proj₂)
+  public
+open import Cubical.Foundations.HLevels using (isSet×) public

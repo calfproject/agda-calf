@@ -1,10 +1,9 @@
-module Calf.Examples.Giralf.Sort where
+module Examples.Giralf.Sort where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
 open import Calf.Core.Cost
 open import Calf.Value
-open import Calf.Value.Nat
 open import Calf.Computation
 open import Calf.Computation.Product
 open import Calf.Computation.Tensor
@@ -15,6 +14,7 @@ open import Calf.Computation.PList2
 open import Calf.Giralf
 
 open import Cubical.Data.Bool
+open import Cubical.Data.Nat
 import Cubical.Data.Nat.Properties as Nat
 open import Cubical.Data.Nat.Order
 open import Cubical.Relation.Nullary
@@ -24,12 +24,12 @@ m ≤ᵇ n with ≤Dec m n
 ... | yes p = true
 ... | no ¬p = false
 
-insert : ∀ p → val ℕᵛ → PList₁ (1 +ℂ p) ℕᵛ , p ⊢ PList₁ p ℕᵛ
+insert : ∀ p → ℕ → PList₁ (1 +ℂ p) ℕ , p ⊢ PList₁ p ℕ
 insert p x =
   payᴳ (+ℂ-identityʳ p) $
-  proj₁ᴳ {B = PList₁ p ℕᵛ} $
+  proj₁ᴳ {B = PList₁ p ℕ} $
   foldr₁ᴳ
-    {A = (◁'[ p ] PList₁ p ℕᵛ) ×ᶜ PList₁ p ℕᵛ}
+    {A = (◁'[ p ] PList₁ p ℕ) ×ᶜ PList₁ p ℕ}
     (pairᴳ
       (getᴳ p (+ℂ-identityʳ p) (cons₁ᴳ (+ℂ-identityʳ p) x nil₁ᴳ))
       nil₁ᴳ
@@ -40,16 +40,16 @@ insert p x =
         ( getᴳ p refl $
           if x ≤ᵇ y
             then cons₁ᴳ refl x (cons₁ᴳ (+ℂ-identityʳ p) y (proj₂ᴳ (idᴳ refl)))
-            else cons₁ᴳ refl y (payᴳ (+ℂ-identityʳ p) (proj₁ᴳ {B = PList₁ p ℕᵛ} (idᴳ refl)))
+            else cons₁ᴳ refl y (payᴳ (+ℂ-identityʳ p) (proj₁ᴳ {B = PList₁ p ℕ} (idᴳ refl)))
         )
-        (cons₁ᴳ (+ℂ-identityʳ p) y (proj₂ᴳ {A = ◁'[ p ] PList₁ p ℕᵛ} (idᴳ refl)))
+        (cons₁ᴳ (+ℂ-identityʳ p) y (proj₂ᴳ {A = ◁'[ p ] PList₁ p ℕ} (idᴳ refl)))
     )
     (idᴳ refl)
 
-isort : PList₂ 0 1 ℕᵛ , 0ℂ ⊢ PList₁ 0 ℕᵛ
+isort : PList₂ 0 1 ℕ , 0ℂ ⊢ PList₁ 0 ℕ
 isort =
   foldr₂ᴳ
-    (λ r → PList₁ r ℕᵛ)
+    (λ r → PList₁ r ℕ)
     (λ r → nil₁ᴳ)
     insert
     (idᴳ refl)
@@ -58,13 +58,13 @@ isort =
 variable
   k : ℕ
 
-split : PList₁ c ℕᵛ , 0ℂ ⊢ PList₁ c ℕᵛ ⊗ PList₁ c ℕᵛ
+split : PList₁ c ℕ , 0ℂ ⊢ PList₁ c ℕ ⊗ PList₁ c ℕ
 split = {!   !}
 
-merge : PList₁ (` suc k) ℕᵛ ⊗ PList₁ (` suc k) ℕᵛ , 0ℂ ⊢ PList₁ (` k) ℕᵛ
+merge : PList₁ (` suc k) ℕ ⊗ PList₁ (` suc k) ℕ , 0ℂ ⊢ PList₁ (` k) ℕ
 merge = {!   !}
 
-msort/clocked : (k k' : ℕ) → PList₁ (` (k + k')) ℕᵛ , 0ℂ ⊢ PList₁ (` k') ℕᵛ
+msort/clocked : (k k' : ℕ) → PList₁ (` (k + k')) ℕ , 0ℂ ⊢ PList₁ (` k') ℕ
 msort/clocked zero k' = idᴳ refl
 msort/clocked (suc k) k' =
   letᴳ (+ℂ-identityˡ _) split $
@@ -75,14 +75,14 @@ msort/clocked (suc k) k' =
   merge
     where
       lemma :
-        (▷'[ 0ℂ ] PList₁ (` (k + suc k')) ℕᵛ) ⊗ (▷'[ 0ℂ ] PList₁ (` (k + suc k')) ℕᵛ)
-        ≡ ▷'[ 0ℂ ] (PList₁ (` suc (k + k')) ℕᵛ ⊗ PList₁ (` suc (k + k')) ℕᵛ)
+        (▷'[ 0ℂ ] PList₁ (` (k + suc k')) ℕ) ⊗ (▷'[ 0ℂ ] PList₁ (` (k + suc k')) ℕ)
+        ≡ ▷'[ 0ℂ ] (PList₁ (` suc (k + k')) ℕ ⊗ PList₁ (` suc (k + k')) ℕ)
       lemma =
-          (▷'[ 0ℂ ] PList₁ (` (k + suc k')) ℕᵛ) ⊗ (▷'[ 0ℂ ] PList₁ (` (k + suc k')) ℕᵛ)
+          (▷'[ 0ℂ ] PList₁ (` (k + suc k')) ℕ) ⊗ (▷'[ 0ℂ ] PList₁ (` (k + suc k')) ℕ)
         ≡⟨ cong₂ _⊗_ ▷'/0 ▷'/0 ⟩
-          PList₁ (` (k + suc k')) ℕᵛ ⊗ PList₁ (` (k + suc k')) ℕᵛ
-        ≡⟨ cong (λ n → PList₁ (` n) ℕᵛ ⊗ PList₁ (` n) ℕᵛ) (Nat.+-suc k k') ⟩
-          PList₁ (` suc (k + k')) ℕᵛ ⊗ PList₁ (` suc (k + k')) ℕᵛ
+          PList₁ (` (k + suc k')) ℕ ⊗ PList₁ (` (k + suc k')) ℕ
+        ≡⟨ cong (λ n → PList₁ (` n) ℕ ⊗ PList₁ (` n) ℕ) (Nat.+-suc k k') ⟩
+          PList₁ (` suc (k + k')) ℕ ⊗ PList₁ (` suc (k + k')) ℕ
         ≡⟨ sym ▷'/0 ⟩
-          ▷'[ 0ℂ ] (PList₁ (` suc (k + k')) ℕᵛ ⊗ PList₁ (` suc (k + k')) ℕᵛ)
+          ▷'[ 0ℂ ] (PList₁ (` suc (k + k')) ℕ ⊗ PList₁ (` suc (k + k')) ℕ)
         ∎

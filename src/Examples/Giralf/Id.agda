@@ -1,4 +1,4 @@
-module Calf.Examples.Giralf.Id where
+module Examples.Giralf.Id where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function

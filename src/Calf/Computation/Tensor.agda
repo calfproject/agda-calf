@@ -10,27 +10,21 @@ open import Cubical.Foundations.Univalence using (ua)
 module Calf.Computation.Tensor where
 
 open import Calf.Value
+open import Cubical.Data.Sigma
+open import Cubical.Data.Unit
 open import Calf.Computation
 open import Calf.Core.Cost
 open import Calf.Core.Abstract
-open import Calf.Value.Product
-open import Calf.Value.Sigma
-open import Calf.Value.Unit
-open import Calf.Value.Closed as ●ᵛ
+open import Calf.Value.Closed as ●
 open import Calf.Computation.Free
-open import Calf.Computation.Open as ◯ᶜ
-open import Calf.Computation.Closed as ●ᶜ
-open import Calf.Computation.Glue
-open import Calf.Computation.Abstraction
-open import Calf.Computation.Credit
 
 data _U⊗_ (A B : 𝒞) : Type where
-  inj : (a : cmp A) (b : cmp B) (c : val ℂ) → A U⊗ B
+  inj : (a : U A) (b : U B) (c : ℂ) → A U⊗ B
   law₁ : ∀ c c' a b → inj (A .charge c' a) b c ≡ inj a b (c +ℂ c')
   law₂ : ∀ c c' a b → inj a (B .charge c' b) c ≡ inj a b (c +ℂ c')
   squash : isSet (A U⊗ B)
 
-chargeU⊗ : (A B : 𝒞) (c : val ℂ) → A U⊗ B → A U⊗ B
+chargeU⊗ : (A B : 𝒞) (c : ℂ) → A U⊗ B → A U⊗ B
 chargeU⊗ A B c (inj a b c') = inj a b (c +ℂ c')
 chargeU⊗ A B c (law₁ c₁ c' a b i) =
     ( inj (A .charge c' a) b (c +ℂ c₁)
@@ -51,8 +45,8 @@ chargeU⊗ A B c (squash x y p q i j) =
     (cong (chargeU⊗ A B c) p) (cong (chargeU⊗ A B c) q) i j
 
 _⊗_ : 𝒞 → 𝒞 → 𝒞
-(A ⊗ B) .U .val = A U⊗ B
-(A ⊗ B) .U .is-set = squash
+(A ⊗ B) .U = A U⊗ B
+(A ⊗ B) .is-set = squash
 (A ⊗ B) .charge c x = chargeU⊗ A B c x
 (A ⊗ B) .charge/0 {x} = chargeU⊗/0 A B x
   where
@@ -83,7 +77,7 @@ _⊗_ : 𝒞 → 𝒞 → 𝒞
         i j
 (A ⊗ B) .charge/+ {x} {c₁} {c₂} = chargeU⊗/+ A B c₁ c₂ x
   where
-    chargeU⊗/+ : ∀ (A B : 𝒞) (c₁ c₂ : val ℂ) (x : A U⊗ B)
+    chargeU⊗/+ : ∀ (A B : 𝒞) (c₁ c₂ : ℂ) (x : A U⊗ B)
                → chargeU⊗ A B (c₁ +ℂ c₂) x ≡ chargeU⊗ A B c₁ (chargeU⊗ A B c₂ x)
     chargeU⊗/+ A B c₁ c₂ (inj a b c) = cong (inj a b) (+ℂ-assoc c₁ c₂ c)
     chargeU⊗/+ A B c₁ c₂ (law₁ c c' a b i) =
@@ -111,81 +105,85 @@ _⊗_ : 𝒞 → 𝒞 → 𝒞
         (λ _ → chargeU⊗/+ A B c₁ c₂ y)
         i j
 
-_∥_ : cmp A → cmp B → cmp (A ⊗ B)
+_∥_ : U A → U B → U (A ⊗ B)
 a ∥ b = inj a b 0ℂ
 
-opaque
-  unfolding F
+-- opaque
+--   unfolding F
 
-  F⊗-fwd : (F X ⊗ F Y) ⊸ F (X ×ᵛ Y)
-  F⊗-fwd {X} {Y} = record { U = f ; charge = chargeF }
-    where
-      f : cmp (F X ⊗ F Y) → cmp (F (X ×ᵛ Y))
-      f (inj (cx , x) (cy , y) c) = c +ℂ (cx +ℂ cy) , x , y
-      f (law₁ c c' (cx , x) (cy , y) i) =
-        ( c +ℂ ((c' +ℂ cx) +ℂ cy)
-        ≡⟨ cong (c +ℂ_) (+ℂ-assoc c' cx cy) ⟩
-          c +ℂ (c' +ℂ (cx +ℂ cy))
-        ≡⟨ sym (+ℂ-assoc c c' (cx +ℂ cy)) ⟩
-          (c +ℂ c') +ℂ (cx +ℂ cy)
-        ∎) i
-        , x , y
-      f (law₂ c c' (cx , x) (cy , y) i) =
-        ( c +ℂ (cx +ℂ (c' +ℂ cy))
-        ≡⟨ cong (c +ℂ_) (sym (+ℂ-assoc cx c' cy)) ⟩
-          c +ℂ ((cx +ℂ c') +ℂ cy)
-        ≡⟨ cong (λ z → c +ℂ (z +ℂ cy)) (+ℂ-comm cx c') ⟩
-          c +ℂ ((c' +ℂ cx) +ℂ cy)
-        ≡⟨ cong (c +ℂ_) (+ℂ-assoc c' cx cy) ⟩
-          c +ℂ (c' +ℂ (cx +ℂ cy))
-        ≡⟨ sym (+ℂ-assoc c c' (cx +ℂ cy)) ⟩
-          (c +ℂ c') +ℂ (cx +ℂ cy)
-        ∎) i
-        , x , y
-      f (squash e e₁ p q i j) =
-        isSet→SquareP (λ _ _ → isSet× (ℂ .is-set) (isSet× (X .is-set) (Y .is-set)))
-          (cong f p) (cong f q)
-          (λ _ → f e) (λ _ → f e₁)
-          i j
+--   F⊗-fwd : (F X ⊗ F Y) ⊸ F (X × Y)
+--   F⊗-fwd {X} {Y} = record { U = f ; charge = chargeF }
+--     where
+--       f : U (F X ⊗ F Y) → U (F (X × Y))
+--       f (inj (cx , x) (cy , y) c) = c +ℂ (cx +ℂ cy) , x , y
+--       f (law₁ c c' (cx , x) (cy , y) i) =
+--         ( c +ℂ ((c' +ℂ cx) +ℂ cy)
+--         ≡⟨ cong (c +ℂ_) (+ℂ-assoc c' cx cy) ⟩
+--           c +ℂ (c' +ℂ (cx +ℂ cy))
+--         ≡⟨ sym (+ℂ-assoc c c' (cx +ℂ cy)) ⟩
+--           (c +ℂ c') +ℂ (cx +ℂ cy)
+--         ∎) i
+--         , x , y
+--       f (law₂ c c' (cx , x) (cy , y) i) =
+--         ( c +ℂ (cx +ℂ (c' +ℂ cy))
+--         ≡⟨ cong (c +ℂ_) (sym (+ℂ-assoc cx c' cy)) ⟩
+--           c +ℂ ((cx +ℂ c') +ℂ cy)
+--         ≡⟨ cong (λ z → c +ℂ (z +ℂ cy)) (+ℂ-comm cx c') ⟩
+--           c +ℂ ((c' +ℂ cx) +ℂ cy)
+--         ≡⟨ cong (c +ℂ_) (+ℂ-assoc c' cx cy) ⟩
+--           c +ℂ (c' +ℂ (cx +ℂ cy))
+--         ≡⟨ sym (+ℂ-assoc c c' (cx +ℂ cy)) ⟩
+--           (c +ℂ c') +ℂ (cx +ℂ cy)
+--         ∎) i
+--         , x , y
+--       f (squash e e₁ p q i j) =
+--         isSet→SquareP (λ _ _ → isSet× (ℂ .is-set) (isSet× (X .is-set) (Y .is-set)))
+--           (cong f p) (cong f q)
+--           (λ _ → f e) (λ _ → f e₁)
+--           i j
 
-      chargeF : (c : val ℂ) (a : cmp (F X ⊗ F Y))
-        → f ((F X ⊗ F Y) .charge c a) ≡ F (X ×ᵛ Y) .charge c (f a)
-      chargeF c (inj (cx , x) (cy , y) c') =
-        cong (_, x , y) (+ℂ-assoc c c' (cx +ℂ cy))
-      chargeF c (law₁ c' c'' (cx , x) (cy , y) i) =
-        isSet→isSet' (isSet× (ℂ .is-set) (isSet× (X .is-set) (Y .is-set)))
-          (cong (_, x , y) (+ℂ-assoc c c' ((c'' +ℂ cx) +ℂ cy)))
-          (cong (_, x , y) (+ℂ-assoc c (c' +ℂ c'') (cx +ℂ cy)))
-          (λ k → f (chargeU⊗ (F X) (F Y) c (law₁ c' c'' (cx , x) (cy , y) k)))
-          (λ k → F (X ×ᵛ Y) .charge c (f (law₁ c' c'' (cx , x) (cy , y) k)))
-          i
-      chargeF c (law₂ c' c'' (cx , x) (cy , y) i) =
-        isSet→isSet' (isSet× (ℂ .is-set) (isSet× (X .is-set) (Y .is-set)))
-          (cong (_, x , y) (+ℂ-assoc c c' (cx +ℂ (c'' +ℂ cy))))
-          (cong (_, x , y) (+ℂ-assoc c (c' +ℂ c'') (cx +ℂ cy)))
-          (λ k → f (chargeU⊗ (F X) (F Y) c (law₂ c' c'' (cx , x) (cy , y) k)))
-          (λ k → F (X ×ᵛ Y) .charge c (f (law₂ c' c'' (cx , x) (cy , y) k)))
-          i
-      chargeF c (squash x y p q i j) =
-        isSet→SquareP
-          (λ k l → isProp→isSet
-            (isSet× (ℂ .is-set) (isSet× (X .is-set) (Y .is-set))
-              (f ((F X ⊗ F Y) .charge c (squash x y p q k l)))
-              (F (X ×ᵛ Y) .charge c (f (squash x y p q k l)))))
-          (cong (chargeF c) p) (cong (chargeF c) q)
-          (λ _ → chargeF c x) (λ _ → chargeF c y)
-          i j
+--       chargeF : (c : ℂ) (a : U (F X ⊗ F Y))
+--         → f ((F X ⊗ F Y) .charge c a) ≡ F (X × Y) .charge c (f a)
+--       chargeF c (inj (cx , x) (cy , y) c') =
+--         cong (_, x , y) (+ℂ-assoc c c' (cx +ℂ cy))
+--       chargeF c (law₁ c' c'' (cx , x) (cy , y) i) =
+--         isSet→isSet' (isSet× (ℂ .is-set) (isSet× (X .is-set) (Y .is-set)))
+--           (cong (_, x , y) (+ℂ-assoc c c' ((c'' +ℂ cx) +ℂ cy)))
+--           (cong (_, x , y) (+ℂ-assoc c (c' +ℂ c'') (cx +ℂ cy)))
+--           (λ k → f (chargeU⊗ (F X) (F Y) c (law₁ c' c'' (cx , x) (cy , y) k)))
+--           (λ k → F (X × Y) .charge c (f (law₁ c' c'' (cx , x) (cy , y) k)))
+--           i
+--       chargeF c (law₂ c' c'' (cx , x) (cy , y) i) =
+--         isSet→isSet' (isSet× (ℂ .is-set) (isSet× (X .is-set) (Y .is-set)))
+--           (cong (_, x , y) (+ℂ-assoc c c' (cx +ℂ (c'' +ℂ cy))))
+--           (cong (_, x , y) (+ℂ-assoc c (c' +ℂ c'') (cx +ℂ cy)))
+--           (λ k → f (chargeU⊗ (F X) (F Y) c (law₂ c' c'' (cx , x) (cy , y) k)))
+--           (λ k → F (X × Y) .charge c (f (law₂ c' c'' (cx , x) (cy , y) k)))
+--           i
+--       chargeF c (squash x y p q i j) =
+--         isSet→SquareP
+--           (λ k l → isProp→isSet
+--             (isSet× (ℂ .is-set) (isSet× (X .is-set) (Y .is-set))
+--               (f ((F X ⊗ F Y) .charge c (squash x y p q k l)))
+--               (F (X × Y) .charge c (f (squash x y p q k l)))))
+--           (cong (chargeF c) p) (cong (chargeF c) q)
+--           (λ _ → chargeF c x) (λ _ → chargeF c y)
+--           i j
 
-  F⊗-bwd : F (X ×ᵛ Y) ⊸ (F X ⊗ F Y)
-  F⊗-bwd .U (c , x , y) = inj (0ℂ , x) (0ℂ , y) c
-  F⊗-bwd .charge c (c' , x , y) = refl
+--   F⊗-bwd : F (X × Y) ⊸ (F X ⊗ F Y)
+--   F⊗-bwd .U (c , x , y) = inj (0ℂ , x) (0ℂ , y) c
+--   F⊗-bwd .charge c (c' , x , y) = refl
 
-par : cmp (F X) → cmp (F Y) → cmp (F (X ×ᵛ Y))
-par ex ey = F⊗-fwd .U (ex ∥ ey)
+-- par : U (F X) → U (F Y) → U (F (X × Y))
+-- par ex ey = F⊗-fwd .U (ex ∥ ey)
 
 
 ⊤ : 𝒞
-⊤ = F 1ᵛ
+⊤ .U = ℂ
+⊤ .is-set = isSetℂ
+⊤ .charge = _+ℂ_
+⊤ .charge/0 = +ℂ-identityˡ _
+⊤ .charge/+ = +ℂ-assoc _ _ _
 
 map₂ : ∀ {A₁ A₂ B₁ B₂}
   → (A₁ ⊸ B₁)
@@ -214,7 +212,7 @@ map₂ {A₁} {A₂} {B₁} {B₂} f g =
       squash (h x) (h y) (cong h p) (cong h q) i j
 
     h-charge
-      : (c : val ℂ) (x : A₁ U⊗ A₂)
+      : (c : ℂ) (x : A₁ U⊗ A₂)
       → h ((A₁ ⊗ A₂) .charge c x) ≡ (B₁ ⊗ B₂) .charge c (h x)
     h-charge c (inj a b c') = refl
     h-charge c (law₁ c₁ c' a b i) =
@@ -245,178 +243,141 @@ map₂ {A₁} {A₂} {B₁} {B₂} f g =
         (λ _ → h-charge c y)
         i j
 
-opaque
-  unfolding F  -- TODO: remove?
+⊗-identityʳ : A ⊗ ⊤ ≡ A
+⊗-identityʳ {A = A} =
+  conservativity
+    fwd
+    (isoToIsEquiv (iso fwdU bwd fwd-bwd bwd-fwd))
+  where
+    fwdU : A U⊗ ⊤ → U A
+    fwdU (inj a b c) = A .charge (b +ℂ c) a
+    fwdU (law₁ c c' a b i) =
+      (sym (A .charge/+) ∙ cong (flip (A .charge) a) (+ℂ-assoc b c c')) i
+    fwdU (law₂ c c' a b i) =
+      cong
+        (flip (A .charge) a)
+        (cong (_+ℂ c) (+ℂ-comm c' _) ∙ +ℂ-assoc _ _ _ ∙ cong (b +ℂ_) (+ℂ-comm _ _))
+        i
+    fwdU (squash e e' h h' i j) =
+      A .is-set (fwdU e) (fwdU e') (cong fwdU h) (cong fwdU h') i j
 
-  ⊗-identityʳ : A ⊗ ⊤ ≡ A
-  ⊗-identityʳ {A = A} =
-    𝒞-path
-      (𝒱-path (ua tensor⊤≃))
-      (charge-path tensor⊤≃ ((A ⊗ ⊤) .charge) (A .charge) fwd-charge)
-    where
-      fwd : A U⊗ ⊤ → cmp A
-      fwd (inj a b c) = bind' {X = 1ᵛ} {A = A} (λ _ → A .charge c a) .U b
-      fwd (law₁ c c' a b i) =
-        ( bind' {X = 1ᵛ} {A = A} (λ _ → A .charge c (A .charge c' a)) .U b
-        ≡⟨ cong (λ f → bind' {X = 1ᵛ} {A = A} f .U b)
-              (funExt λ _ → sym (A .charge/+ {a = a} {c₁ = c} {c₂ = c'})) ⟩
-          bind' {X = 1ᵛ} {A = A} (λ _ → A .charge (c +ℂ c') a) .U b
-        ∎) i
-      fwd (law₂ c c' a b i) =
-        ( bind' {X = 1ᵛ} {A = A} (λ _ → A .charge c a) .U (⊤ .charge c' b)
-        ≡⟨ sym (bind'-charge {X = 1ᵛ} {A = A} (λ _ → A .charge c a) c' b) ⟩
-          bind' {X = 1ᵛ} {A = A} (λ _ → A .charge c' (A .charge c a)) .U b
-        ≡⟨ cong (λ f → bind' {X = 1ᵛ} {A = A} f .U b)
-              (funExt λ _ → sym (A .charge/+ {a = a} {c₁ = c'} {c₂ = c})) ⟩
-          bind' {X = 1ᵛ} {A = A} (λ _ → A .charge (c' +ℂ c) a) .U b
-        ≡⟨ cong (λ d → bind' {X = 1ᵛ} {A = A} (λ _ → A .charge d a) .U b)
-              (+ℂ-comm c' c) ⟩
-          bind' {X = 1ᵛ} {A = A} (λ _ → A .charge (c +ℂ c') a) .U b
-        ∎) i
-      fwd (squash e e' h h' i j) =
-        A .U .is-set (fwd e) (fwd e') (cong fwd h) (cong fwd h') i j
+    fwd-charge : ∀ c a → fwdU (chargeU⊗ A ⊤ c a) ≡ A .charge c (fwdU a)
+    fwd-charge c (inj a b c₁) =
+      cong
+        (flip (A .charge) a)
+        (sym (+ℂ-assoc _ _ _) ∙ cong (_+ℂ _) (+ℂ-comm _ _) ∙ +ℂ-assoc _ _ _)
+      ∙ A .charge/+
+    fwd-charge c (law₁ c₁ c' a b i) =
+      isSet→isSet'
+        (A .is-set)
+        (fwd-charge c (inj (A .charge c' a) b c₁))
+        (fwd-charge c (inj a b (c₁ +ℂ c')))
+        (λ k → fwdU ((A ⊗ ⊤) .charge c (law₁ c₁ c' a b k)))
+        (λ k → A .charge c (fwdU (law₁ c₁ c' a b k)))
+        i
+    fwd-charge c (law₂ c₁ c' a b i) =
+      isSet→isSet'
+        (A .is-set)
+        (fwd-charge c (inj a (⊤ .charge c' b) c₁))
+        (fwd-charge c (inj a b (c₁ +ℂ c')))
+        (λ k → fwdU ((A ⊗ ⊤) .charge c (law₂ c₁ c' a b k)))
+        (λ k → A .charge c (fwdU (law₂ c₁ c' a b k)))
+        i
+    fwd-charge c (squash x y p q i j) =
+      isSet→SquareP
+        (λ k l → isProp→isSet
+          (A .is-set
+            (fwdU ((A ⊗ ⊤) .charge c (squash x y p q k l)))
+            (A .charge c (fwdU (squash x y p q k l)))))
+        (cong (fwd-charge c) p)
+        (cong (fwd-charge c) q)
+        (λ _ → fwd-charge c x)
+        (λ _ → fwd-charge c y)
+        i j
 
-      -- type annotation purpose
-      module _ where
-        inj⊤ : cmp A → cmp ⊤ → val ℂ → A U⊗ ⊤
-        inj⊤ = inj
+    fwd : A ⊗ ⊤ ⊸ A
+    fwd .U = fwdU
+    fwd .charge = fwd-charge
 
-        law₁⊤
-          : (c c' : val ℂ) (a : cmp A) (b : cmp ⊤)
-          → inj⊤ (A .charge c' a) b c ≡ inj⊤ a b (c +ℂ c')
-        law₁⊤ = law₁
+    bwd : U A → A U⊗ ⊤
+    bwd a = inj a 0ℂ 0ℂ
 
-        law₂⊤
-          : (c c' : val ℂ) (a : cmp A) (b : cmp ⊤)
-          → inj⊤ a (⊤ .charge c' b) c ≡ inj⊤ a b (c +ℂ c')
-        law₂⊤ = law₂
+    fwd-bwd : section fwdU bwd
+    fwd-bwd a = cong (flip (A .charge) a) (+ℂ-identityʳ _) ∙ A .charge/0
 
-        squash⊤ : isSet (A U⊗ ⊤)
-        squash⊤ = squash
-
-      fwd-charge
-        : (c : val ℂ) (x : A U⊗ ⊤)
-        → fwd ((A ⊗ ⊤) .charge c x) ≡ A .charge c (fwd x)
-      fwd-charge c (inj a (cb , tt) c') =
-          A .charge cb (A .charge (c +ℂ c') a)
-        ≡⟨ cong (A .charge cb) (A .charge/+ {a = a} {c₁ = c} {c₂ = c'}) ⟩
-          A .charge cb (A .charge c (A .charge c' a))
-        ≡⟨ CHARGE {A = A} cb .charge c (A .charge c' a) ⟩
-          A .charge c (A .charge cb (A .charge c' a))
-        ∎
-      fwd-charge c (law₁ c₁ c' a b i) =
-        isSet→isSet'
-          (A .U .is-set)
-          (fwd-charge c (inj⊤ (A .charge c' a) b c₁))
-          (fwd-charge c (inj⊤ a b (c₁ +ℂ c')))
-          (λ k → fwd ((A ⊗ ⊤) .charge c (law₁⊤ c₁ c' a b k)))
-          (λ k → A .charge c (fwd (law₁⊤ c₁ c' a b k)))
-          i
-      fwd-charge c (law₂ c₁ c' a b i) =
-        isSet→isSet'
-          (A .U .is-set)
-          (fwd-charge c (inj⊤ a (⊤ .charge c' b) c₁))
-          (fwd-charge c (inj⊤ a b (c₁ +ℂ c')))
-          (λ k → fwd ((A ⊗ ⊤) .charge c (law₂⊤ c₁ c' a b k)))
-          (λ k → A .charge c (fwd (law₂⊤ c₁ c' a b k)))
-          i
-      fwd-charge c (squash x y p q i j) =
-        isSet→SquareP
-          (λ k l → isProp→isSet
-            (A .U .is-set
-              (fwd ((A ⊗ ⊤) .charge c (squash⊤ x y p q k l)))
-              (A .charge c (fwd (squash⊤ x y p q k l)))))
-          (cong (fwd-charge c) p)
-          (cong (fwd-charge c) q)
-          (λ _ → fwd-charge c x)
-          (λ _ → fwd-charge c y)
-          i j
-
-      bwd : cmp A → A U⊗ ⊤
-      bwd a = inj⊤ a (ret {X = 1ᵛ} tt) 0ℂ
-
-      fwd-bwd : section fwd bwd
-      fwd-bwd a =
-          bind' {X = 1ᵛ} {A = A} (λ _ → A .charge 0ℂ a) .U (ret {X = 1ᵛ} tt)
-        ≡⟨ bind'/β {X = 1ᵛ} {A = A} ⟩
-          A .charge 0ℂ a
-        ≡⟨ A .charge/0 {a = a} ⟩
-          a
-        ∎
-
-      bwd-fwd : retract fwd bwd
-      bwd-fwd (inj a (cb , tt) c) =
-          inj⊤ (A .charge cb (A .charge c a)) (ret {X = 1ᵛ} tt) 0ℂ
-        ≡⟨ cong (λ z → inj⊤ z (ret {X = 1ᵛ} tt) 0ℂ)
-              (sym (A .charge/+ {a = a} {c₁ = cb} {c₂ = c})) ⟩
-          inj⊤ (A .charge (cb +ℂ c) a) (ret {X = 1ᵛ} tt) 0ℂ
-        ≡⟨ law₁⊤ 0ℂ (cb +ℂ c) a (ret {X = 1ᵛ} tt) ⟩
-          inj⊤ a (ret {X = 1ᵛ} tt) (0ℂ +ℂ (cb +ℂ c))
-        ≡⟨ cong (inj⊤ a (ret {X = 1ᵛ} tt)) (+ℂ-identityˡ (cb +ℂ c)) ⟩
-          inj⊤ a (ret {X = 1ᵛ} tt) (cb +ℂ c)
-        ≡⟨ cong (inj⊤ a (ret {X = 1ᵛ} tt)) (+ℂ-comm cb c) ⟩
-          inj⊤ a (ret {X = 1ᵛ} tt) (c +ℂ cb)
-        ≡⟨ sym (law₂⊤ c cb a (ret {X = 1ᵛ} tt)) ⟩
-          inj⊤ a (⊤ .charge cb (ret {X = 1ᵛ} tt)) c
-        ≡⟨ cong (λ d → inj⊤ a (d , tt) c) (+ℂ-identityʳ cb) ⟩
-          inj⊤ a (cb , tt) c
-        ∎
-      bwd-fwd (law₁ c c' a b i) =
-        isSet→isSet'
-          squash⊤
-          (bwd-fwd (inj⊤ (A .charge c' a) b c))
-          (bwd-fwd (inj⊤ a b (c +ℂ c')))
-          (λ k → bwd (fwd (law₁⊤ c c' a b k)))
-          (law₁⊤ c c' a b)
-          i
-      bwd-fwd (law₂ c c' a b i) =
-        isSet→isSet'
-          squash⊤
-          (bwd-fwd (inj⊤ a (⊤ .charge c' b) c))
-          (bwd-fwd (inj⊤ a b (c +ℂ c')))
-          (λ k → bwd (fwd (law₂⊤ c c' a b k)))
-          (law₂⊤ c c' a b)
-          i
-      bwd-fwd (squash x y p q i j) =
-        isSet→SquareP
-          (λ k l → isProp→isSet
-            (squash⊤ (bwd (fwd (squash⊤ x y p q k l))) (squash⊤ x y p q k l)))
-          (cong bwd-fwd p)
-          (cong bwd-fwd q)
-          (λ _ → bwd-fwd x)
-          (λ _ → bwd-fwd y)
-          i j
-
-      tensor⊤≃ : (A U⊗ ⊤) ≃ cmp A
-      tensor⊤≃ = isoToEquiv (iso fwd bwd fwd-bwd bwd-fwd)
+    bwd-fwd : retract fwdU bwd
+    bwd-fwd (inj a b c) =
+        inj (A .charge (b +ℂ c) a) 0ℂ 0ℂ
+      ≡⟨ cong (λ x → inj {A} x 0ℂ 0ℂ) (A .charge/+) ⟩
+        inj (A .charge b (A .charge c a)) 0ℂ 0ℂ
+      ≡⟨ law₁ 0ℂ b (A .charge c a) 0ℂ ⟩
+        inj (A .charge c a) 0ℂ (0ℂ +ℂ b)
+      ≡⟨ sym (law₂ 0ℂ b (A .charge c a) 0ℂ) ⟩
+        inj (A .charge c a) (b +ℂ 0ℂ) 0ℂ
+      ≡⟨ law₁ 0ℂ c a (b +ℂ 0ℂ) ⟩
+        inj a (b +ℂ 0ℂ) (0ℂ +ℂ c)
+      ≡⟨ cong₂ (inj a) (+ℂ-identityʳ _) (+ℂ-identityˡ _) ⟩
+        inj a b c
+      ∎
+    bwd-fwd (law₁ c c' a b i) =
+      isSet→isSet'
+        squash
+        (bwd-fwd (inj (A .charge c' a) b c))
+        (bwd-fwd (inj a b (c +ℂ c')))
+        (λ k → bwd (fwdU (law₁ c c' a b k)))
+        (law₁ c c' a b)
+        i
+    bwd-fwd (law₂ c c' a b i) =
+      isSet→isSet'
+        squash
+        (bwd-fwd (inj a (c' +ℂ b) c))
+        (bwd-fwd (inj a b (c +ℂ c')))
+        (λ k → bwd (fwdU (law₂ c c' a b k)))
+        (law₂ c c' a b)
+        i
+    bwd-fwd (squash x y p q i j) =
+      isSet→SquareP
+        (λ k l → isProp→isSet
+          (squash (bwd (fwdU (squash x y p q k l))) (squash x y p q k l)))
+        (cong bwd-fwd p)
+        (cong bwd-fwd q)
+        (λ _ → bwd-fwd x)
+        (λ _ → bwd-fwd y)
+        i j
 
 module _ where
+  open import Calf.Computation.Open as ◯ᶜ
+  open import Calf.Computation.Closed as ●ᶜ
+  open import Calf.Computation.Glue
+  open import Calf.Computation.Abstraction
+  open import Calf.Computation.Credit
+
   opaque
     unfolding Abstractionᶜ
 
     pot-tensor : (A ⊗ (▷'[ c ] B)) ≡ (▷'[ c ] (A ⊗ B))
     pot-tensor {A = A} {c = c} {B = B} =
       𝒞-path
-        (𝒱-path (ua pot-tensor≃))
+        (ua pot-tensor≃)
         (charge-path
           pot-tensor≃
           ((A ⊗ (▷'[ c ] B)) .charge)
           ((▷'[ c ] (A ⊗ B)) .charge)
           fwd-charge)
       where
-        injAB : cmp A → cmp B → val ℂ → A U⊗ B
+        injAB : U A → U B → ℂ → A U⊗ B
         injAB = inj
 
-        injA▷B : cmp A → cmp (▷'[ c ] B) → val ℂ → A U⊗ (▷'[ c ] B)
+        injA▷B : U A → U (▷'[ c ] B) → ℂ → A U⊗ (▷'[ c ] B)
         injA▷B = inj
 
-        unit▷ : cmp B → cmp (▷'[ c ] B)
+        unit▷ : U B → U (▷'[ c ] B)
         unit▷ b .• = η• b
         unit▷ b .◦ _ = B .charge c b
         unit▷ b .•→◦ = refl
 
         unit▷-path
-          : (b : cmp B) (q◦ : cmp (◯ᶜ B))
+          : (b : U B) (q◦ : U (◯ᶜ B))
           → (r : (λ _ → B .charge c b) ≡ q◦)
           → unit▷ b
             ≡ record { • = η• b ; ◦ = q◦ ; •→◦ = cong η• r }
@@ -424,7 +385,7 @@ module _ where
         unit▷-path b q◦ r i .◦ = r i
         unit▷-path b q◦ r i .•→◦ =
           isProp→PathP
-            (λ i → ●ᶜ (◯ᶜ B) .U .is-set
+            (λ i → ●ᶜ (◯ᶜ B) .is-set
               (●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ {A = B}) .U (unit▷-path b q◦ r i .•))
               (η• (unit▷-path b q◦ r i .◦)))
             (unit▷ b .•→◦)
@@ -432,13 +393,13 @@ module _ where
             i
 
         unit▷-charge
-          : (e : val ℂ) (b : cmp B)
+          : (e : ℂ) (b : U B)
           → unit▷ (B .charge e b) ≡ (▷'[ c ] B) .charge e (unit▷ b)
         unit▷-charge e b i .• = η• (B .charge e b)
         unit▷-charge e b i .◦ _ = CHARGE {A = B} c .charge e b i
         unit▷-charge e b i .•→◦ =
           isProp→PathP
-            (λ i → ●ᶜ (◯ᶜ B) .U .is-set
+            (λ i → ●ᶜ (◯ᶜ B) .is-set
               (●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ {A = B}) .U (unit▷-charge e b i .•))
               (η• (unit▷-charge e b i .◦)))
             (unit▷ (B .charge e b) .•→◦)
@@ -464,13 +425,13 @@ module _ where
             (cong tensor-unit▷ q)
             i j
 
-        unit▷∗ : ⟨ ABS ⟩ → cmp B → cmp (▷'[ c ] B)
+        unit▷∗ : ⟨ ABS ⟩ → U B → U (▷'[ c ] B)
         unit▷∗ p b .• = ∗ p
         unit▷∗ p b .◦ _ = b
         unit▷∗ p b .•→◦ = sym (law (λ _ → b) p)
 
         unit▷∗-path
-          : (p : ⟨ ABS ⟩) (q◦ : cmp (◯ᶜ B))
+          : (p : ⟨ ABS ⟩) (q◦ : U (◯ᶜ B))
           → (qcoh : ∗ p ≡ η• q◦)
           → unit▷∗ p (q◦ p)
             ≡ record { • = ∗ p ; ◦ = q◦ ; •→◦ = qcoh }
@@ -479,7 +440,7 @@ module _ where
           (funExt λ abs → cong q◦ (ABS .snd p abs)) i
         unit▷∗-path p q◦ qcoh i .•→◦ =
           isProp→PathP
-            (λ i → ●ᶜ (◯ᶜ B) .U .is-set
+            (λ i → ●ᶜ (◯ᶜ B) .is-set
               (●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ {A = B}) .U (unit▷∗-path p q◦ qcoh i .•))
               (η• (unit▷∗-path p q◦ qcoh i .◦)))
             (unit▷∗ p (q◦ p) .•→◦)
@@ -487,7 +448,7 @@ module _ where
             i
 
         unit▷∗-η-path
-          : (b : cmp B) (p : ⟨ ABS ⟩) (q◦ : cmp (◯ᶜ B))
+          : (b : U B) (p : ⟨ ABS ⟩) (q◦ : U (◯ᶜ B))
           → unit▷∗ p (q◦ p)
             ≡ record
               { • = η• b
@@ -503,7 +464,7 @@ module _ where
           (funExt λ abs → cong q◦ (ABS .snd p abs)) i
         unit▷∗-η-path b p q◦ i .•→◦ =
           isProp→PathP
-            (λ i → ●ᶜ (◯ᶜ B) .U .is-set
+            (λ i → ●ᶜ (◯ᶜ B) .is-set
               (●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ {A = B}) .U (unit▷∗-η-path b p q◦ i .•))
               (η• (unit▷∗-η-path b p q◦ i .◦)))
             (unit▷∗ p (q◦ p) .•→◦)
@@ -511,13 +472,13 @@ module _ where
             i
 
         unit▷∗-charge
-          : (p : ⟨ ABS ⟩) (e : val ℂ) (b : cmp B)
+          : (p : ⟨ ABS ⟩) (e : ℂ) (b : U B)
           → unit▷∗ p (B .charge e b) ≡ (▷'[ c ] B) .charge e (unit▷∗ p b)
         unit▷∗-charge p e b i .• = ∗ p
         unit▷∗-charge p e b i .◦ _ = B .charge e b
         unit▷∗-charge p e b i .•→◦ =
           isProp→PathP
-            (λ i → ●ᶜ (◯ᶜ B) .U .is-set
+            (λ i → ●ᶜ (◯ᶜ B) .is-set
               (●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ {A = B}) .U (unit▷∗-charge p e b i .•))
               (η• (unit▷∗-charge p e b i .◦)))
             (unit▷∗ p (B .charge e b) .•→◦)
@@ -544,13 +505,13 @@ module _ where
             i j
 
         unit▷-star
-          : (p : ⟨ ABS ⟩) (b : cmp B)
+          : (p : ⟨ ABS ⟩) (b : U B)
           → unit▷ b ≡ unit▷∗ p (B .charge c b)
         unit▷-star p b i .• = law b p i
         unit▷-star p b i .◦ _ = B .charge c b
         unit▷-star p b i .•→◦ =
           isProp→PathP
-            (λ i → ●ᶜ (◯ᶜ B) .U .is-set
+            (λ i → ●ᶜ (◯ᶜ B) .is-set
               (●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ {A = B}) .U (unit▷-star p b i .•))
               (η• (unit▷-star p b i .◦)))
             (unit▷ b .•→◦)
@@ -600,17 +561,17 @@ module _ where
             i j
 
         fwd-law₁-•
-          : (d e : val ℂ) (a : cmp A) (q : cmp (▷'[ c ] B))
-          → ●ᵛ.map (λ b → injAB (A .charge e a) b d) (q .•)
-            ≡ ●ᵛ.map (λ b → injAB a b (d +ℂ e)) (q .•)
+          : (d e : ℂ) (a : U A) (q : U (▷'[ c ] B))
+          → ●.map (λ b → injAB (A .charge e a) b d) (q .•)
+            ≡ ●.map (λ b → injAB a b (d +ℂ e)) (q .•)
         fwd-law₁-• d e a q =
-          cong (λ f → ●ᵛ.map f (q .•)) (funExt λ b → law₁ d e a b)
+          cong (λ f → ●.map f (q .•)) (funExt λ b → law₁ d e a b)
 
-        open⊗ : cmp A → val ℂ → cmp (◯ᶜ B) → cmp (◯ᶜ (A ⊗ B))
+        open⊗ : U A → ℂ → U (◯ᶜ B) → U (◯ᶜ (A ⊗ B))
         open⊗ a d b◦ abs = injAB a (b◦ abs) d
 
         fwd-law₁-◦
-          : (d e : val ℂ) (a : cmp A) (q : cmp (▷'[ c ] B))
+          : (d e : ℂ) (a : U A) (q : U (▷'[ c ] B))
           → open⊗ (A .charge e a) d (q .◦)
             ≡ open⊗ a (d +ℂ e) (q .◦)
         fwd-law₁-◦ d e a q =
@@ -618,42 +579,42 @@ module _ where
             law₁ d e a (q .◦ abs)
 
         fwd-law₂-•
-          : (d e : val ℂ) (a : cmp A) (q : cmp (▷'[ c ] B))
-          → ●ᵛ.map (λ b → injAB a b d) (●ᶜ B .charge e (q .•))
-            ≡ ●ᵛ.map (λ b → injAB a b (d +ℂ e)) (q .•)
+          : (d e : ℂ) (a : U A) (q : U (▷'[ c ] B))
+          → ●.map (λ b → injAB a b d) (●ᶜ B .charge e (q .•))
+            ≡ ●.map (λ b → injAB a b (d +ℂ e)) (q .•)
         fwd-law₂-• d e a q =
-            ●ᵛ.map (λ b → injAB a b d) (●ᶜ B .charge e (q .•))
-          ≡⟨ cong (●ᵛ.map (λ b → injAB a b d)) (●ᶜ-charge-map {A = B} e (q .•)) ⟩
-            ●ᵛ.map (λ b → injAB a b d) (●ᵛ.map (B .charge e) (q .•))
-          ≡⟨ ●ᵛ.map-∘ (B .charge e) (λ b → injAB a b d) (q .•) ⟩
-            ●ᵛ.map (λ b → injAB a (B .charge e b) d) (q .•)
-          ≡⟨ cong (λ f → ●ᵛ.map f (q .•)) (funExt λ b → law₂ d e a b) ⟩
-            ●ᵛ.map (λ b → injAB a b (d +ℂ e)) (q .•)
+            ●.map (λ b → injAB a b d) (●ᶜ B .charge e (q .•))
+          ≡⟨ cong (●.map (λ b → injAB a b d)) (●ᶜ-charge-map {A = B} e (q .•)) ⟩
+            ●.map (λ b → injAB a b d) (●.map (B .charge e) (q .•))
+          ≡⟨ ●.map-∘ (B .charge e) (λ b → injAB a b d) (q .•) ⟩
+            ●.map (λ b → injAB a (B .charge e b) d) (q .•)
+          ≡⟨ cong (λ f → ●.map f (q .•)) (funExt λ b → law₂ d e a b) ⟩
+            ●.map (λ b → injAB a b (d +ℂ e)) (q .•)
           ∎
 
         fwd-law₂-◦
-          : (d e : val ℂ) (a : cmp A) (q : cmp (▷'[ c ] B))
+          : (d e : ℂ) (a : U A) (q : U (▷'[ c ] B))
           → open⊗ a d (((▷'[ c ] B) .charge e q) .◦)
             ≡ open⊗ a (d +ℂ e) (q .◦)
         fwd-law₂-◦ d e a q =
           funExt {A = ⟨ ABS ⟩} {B = λ _ _ → A U⊗ B} λ abs →
             law₂ d e a (q .◦ abs)
 
-        fwd : A U⊗ (▷'[ c ] B) → cmp (▷'[ c ] (A ⊗ B))
-        fwd (inj a q d) .• = ●ᵛ.map (λ b → injAB a b d) (q .•)
+        fwd : A U⊗ (▷'[ c ] B) → U (▷'[ c ] (A ⊗ B))
+        fwd (inj a q d) .• = ●.map (λ b → injAB a b d) (q .•)
         fwd (inj a q d) .◦ abs = injAB a (q .◦ abs) d
         fwd (inj a q d) .•→◦ =
             ●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ {A = A ⊗ B}) .U
-              (●ᵛ.map (λ b → injAB a b d) (q .•))
-          ≡⟨ ●ᵛ.map-∘
+              (●.map (λ b → injAB a b d) (q .•))
+          ≡⟨ ●.map-∘
                 (λ b → injAB a b d)
                 ((CHARGE c ⨾ᶜ η◦ᶜ {A = A ⊗ B}) .U)
                 (q .•) ⟩
-            ●ᵛ.map
+            ●.map
               (((CHARGE c ⨾ᶜ η◦ᶜ {A = A ⊗ B}) .U) ∘ (λ b → injAB a b d))
               (q .•)
-          ≡⟨ cong (λ f → ●ᵛ.map f (q .•))
-                (funExt {A = cmp B} {B = λ _ _ → cmp (◯ᶜ (A ⊗ B))} λ b →
+          ≡⟨ cong (λ f → ●.map f (q .•))
+                (funExt {A = U B} {B = λ _ _ → U (◯ᶜ (A ⊗ B))} λ b →
                   funExt {A = ⟨ ABS ⟩} {B = λ _ _ → A U⊗ B} λ abs →
                     injAB a b (c +ℂ d)
                   ≡⟨ cong (injAB a b) (+ℂ-comm c d) ⟩
@@ -661,17 +622,17 @@ module _ where
                   ≡⟨ sym (law₂ d c a b) ⟩
                     injAB a (B .charge c b) d
                   ∎) ⟩
-            ●ᵛ.map
+            ●.map
               (open⊗ a d
                 ∘ ((CHARGE c ⨾ᶜ η◦ᶜ {A = B}) .U))
               (q .•)
-          ≡⟨ sym (●ᵛ.map-∘
+          ≡⟨ sym (●.map-∘
                 ((CHARGE c ⨾ᶜ η◦ᶜ {A = B}) .U)
                 (open⊗ a d)
                 (q .•)) ⟩
-            ●ᵛ.map (open⊗ a d)
+            ●.map (open⊗ a d)
               (●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ {A = B}) .U (q .•))
-          ≡⟨ cong (●ᵛ.map (open⊗ a d)) (q .•→◦) ⟩
+          ≡⟨ cong (●.map (open⊗ a d)) (q .•→◦) ⟩
             η• (open⊗ a d (q .◦))
           ∎
         fwd (law₁ d e a q i) .• =
@@ -680,7 +641,7 @@ module _ where
           fwd-law₁-◦ d e a q i abs
         fwd (law₁ d e a q i) .•→◦ =
           isProp→PathP
-            (λ i → ●ᶜ (◯ᶜ (A ⊗ B)) .U .is-set
+            (λ i → ●ᶜ (◯ᶜ (A ⊗ B)) .is-set
               (●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ {A = A ⊗ B}) .U (fwd-law₁-• d e a q i))
               (η• (fwd-law₁-◦ d e a q i)))
             (fwd (inj (A .charge e a) q d) .•→◦)
@@ -692,28 +653,28 @@ module _ where
           fwd-law₂-◦ d e a q i abs
         fwd (law₂ d e a q i) .•→◦ =
           isProp→PathP
-            (λ i → ●ᶜ (◯ᶜ (A ⊗ B)) .U .is-set
+            (λ i → ●ᶜ (◯ᶜ (A ⊗ B)) .is-set
               (●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ {A = A ⊗ B}) .U (fwd-law₂-• d e a q i))
               (η• (fwd-law₂-◦ d e a q i)))
             (fwd (inj a ((▷'[ c ] B) .charge e q) d) .•→◦)
             (fwd (inj a q (d +ℂ e)) .•→◦)
             i
         fwd (squash x y p q i j) =
-          (▷'[ c ] (A ⊗ B)) .U .is-set
+          (▷'[ c ] (A ⊗ B)) .is-set
             (fwd x)
             (fwd y)
             (cong fwd p)
             (cong fwd q)
             i j
 
-        rhs◦ : cmp (A ⊗ B) → cmp (◯ᶜ (A ⊗ B))
+        rhs◦ : U (A ⊗ B) → U (◯ᶜ (A ⊗ B))
         rhs◦ = (CHARGE c ⨾ᶜ η◦ᶜ {A = A ⊗ B}) .U
 
-        rhsα : cmp (●ᶜ (A ⊗ B)) → cmp (●ᶜ (◯ᶜ (A ⊗ B)))
+        rhsα : U (●ᶜ (A ⊗ B)) → U (●ᶜ (◯ᶜ (A ⊗ B)))
         rhsα = ●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ {A = A ⊗ B}) .U
 
         bwd-from-fiber
-          : (q◦ : cmp (◯ᶜ (A ⊗ B)))
+          : (q◦ : U (◯ᶜ (A ⊗ B)))
           → ● (fiber rhs◦ q◦)
           → A U⊗ (▷'[ c ] B)
         bwd-from-fiber q◦ =
@@ -730,36 +691,36 @@ module _ where
               ∎)
 
         bwd-fiber
-          : (q : cmp (▷'[ c ] (A ⊗ B)))
+          : (q : U (▷'[ c ] (A ⊗ B)))
           → ● (fiber rhs◦ (q .◦))
         bwd-fiber q = ●-fiber-in rhs◦ (q .◦) (q .• , q .•→◦)
 
-        bwd : cmp (▷'[ c ] (A ⊗ B)) → A U⊗ (▷'[ c ] B)
+        bwd : U (▷'[ c ] (A ⊗ B)) → A U⊗ (▷'[ c ] B)
         bwd q = bwd-from-fiber (q .◦) (bwd-fiber q)
 
         fiber-in-fst
-          : (q◦ : cmp (◯ᶜ (A ⊗ B)))
-          → (x• : cmp (●ᶜ (A ⊗ B)))
+          : (q◦ : U (◯ᶜ (A ⊗ B)))
+          → (x• : U (●ᶜ (A ⊗ B)))
           → (x-coh : rhsα x• ≡ η• q◦)
-          → ●ᵛ.map (λ (r : fiber rhs◦ q◦) → r .fst)
+          → ●.map (λ (r : fiber rhs◦ q◦) → r .fst)
               (●-fiber-in rhs◦ q◦ (x• , x-coh))
             ≡ x•
         fiber-in-fst q◦ =
           ind R η•-case ∗-case law-case
           where
-            R : cmp (●ᶜ (A ⊗ B)) → Type
+            R : U (●ᶜ (A ⊗ B)) → Type
             R x• =
               (x-coh : rhsα x• ≡ η• q◦)
-              → ●ᵛ.map (λ (r : fiber rhs◦ q◦) → r .fst)
+              → ●.map (λ (r : fiber rhs◦ q◦) → r .fst)
                   (●-fiber-in rhs◦ q◦ (x• , x-coh))
                 ≡ x•
 
             η•-case : (x : A U⊗ B) → R (η• x)
             η•-case x x-coh =
-                ●ᵛ.map (λ (r : fiber rhs◦ q◦) → r .fst)
+                ●.map (λ (r : fiber rhs◦ q◦) → r .fst)
                   (●-fiber-in rhs◦ q◦ (η• x , x-coh))
-              ≡⟨ ●ᵛ.map-∘ (λ r → x , r) (λ (r : fiber rhs◦ q◦) → r .fst) (●-lex x-coh) ⟩
-                ●ᵛ.map (λ _ → x) (●-lex x-coh)
+              ≡⟨ ●.map-∘ (λ r → x , r) (λ (r : fiber rhs◦ q◦) → r .fst) (●-lex x-coh) ⟩
+                ●.map (λ _ → x) (●-lex x-coh)
               ≡⟨ ●-map-const x (●-lex x-coh) ⟩
                 η• x
               ∎
@@ -774,7 +735,7 @@ module _ where
               funext-dep-i0 λ x-coh →
                 isProp→PathP
                   (λ i → isProp→isSet (●-isProp p)
-                    (●ᵛ.map (λ (r : fiber rhs◦ q◦) → r .fst)
+                    (●.map (λ (r : fiber rhs◦ q◦) → r .fst)
                       (●-fiber-in rhs◦ q◦ (law x p i , coe0→i (λ j → rhsα (law x p j) ≡ η• q◦) i x-coh)))
                     (law x p i))
                   (η•-case x x-coh)
@@ -786,7 +747,7 @@ module _ where
         fwd-tensor-unit▷-• (inj a b d) = refl
         fwd-tensor-unit▷-• (law₁ d e a b i) =
           isSet→isSet'
-            (●ᶜ (A ⊗ B) .U .is-set)
+            (●ᶜ (A ⊗ B) .is-set)
             (fwd-tensor-unit▷-• (injAB (A .charge e a) b d))
             (fwd-tensor-unit▷-• (injAB a b (d +ℂ e)))
             (λ k → fwd (tensor-unit▷ (law₁ d e a b k)) .•)
@@ -794,7 +755,7 @@ module _ where
             i
         fwd-tensor-unit▷-• (law₂ d e a b i) =
           isSet→isSet'
-            (●ᶜ (A ⊗ B) .U .is-set)
+            (●ᶜ (A ⊗ B) .is-set)
             (fwd-tensor-unit▷-• (injAB a (B .charge e b) d))
             (fwd-tensor-unit▷-• (injAB a b (d +ℂ e)))
             (λ k → fwd (tensor-unit▷ (law₂ d e a b k)) .•)
@@ -803,7 +764,7 @@ module _ where
         fwd-tensor-unit▷-• (squash x y p q i j) =
           isSet→SquareP
             (λ k l → isProp→isSet
-              (●ᶜ (A ⊗ B) .U .is-set
+              (●ᶜ (A ⊗ B) .is-set
                 (fwd (tensor-unit▷ (squash x y p q k l)) .•)
                 (η• (squash x y p q k l))))
             (cong fwd-tensor-unit▷-• p)
@@ -825,7 +786,7 @@ module _ where
             ∎
         fwd-tensor-unit▷-◦ (law₁ d e a b i) =
           isSet→isSet'
-            (◯ᶜ (A ⊗ B) .U .is-set)
+            (◯ᶜ (A ⊗ B) .is-set)
             (fwd-tensor-unit▷-◦ (injAB (A .charge e a) b d))
             (fwd-tensor-unit▷-◦ (injAB a b (d +ℂ e)))
             (λ k → fwd (tensor-unit▷ (law₁ d e a b k)) .◦)
@@ -833,7 +794,7 @@ module _ where
             i
         fwd-tensor-unit▷-◦ (law₂ d e a b i) =
           isSet→isSet'
-            (◯ᶜ (A ⊗ B) .U .is-set)
+            (◯ᶜ (A ⊗ B) .is-set)
             (fwd-tensor-unit▷-◦ (injAB a (B .charge e b) d))
             (fwd-tensor-unit▷-◦ (injAB a b (d +ℂ e)))
             (λ k → fwd (tensor-unit▷ (law₂ d e a b k)) .◦)
@@ -842,7 +803,7 @@ module _ where
         fwd-tensor-unit▷-◦ (squash x y p q i j) =
           isSet→SquareP
             (λ k l → isProp→isSet
-              (◯ᶜ (A ⊗ B) .U .is-set
+              (◯ᶜ (A ⊗ B) .is-set
                 (fwd (tensor-unit▷ (squash x y p q k l)) .◦)
                 (rhs◦ (squash x y p q k l))))
             (cong fwd-tensor-unit▷-◦ p)
@@ -857,7 +818,7 @@ module _ where
         fwd-tensor-star▷-• p (inj a b d) = refl
         fwd-tensor-star▷-• p (law₁ d e a b i) =
           isSet→isSet'
-            (●ᶜ (A ⊗ B) .U .is-set)
+            (●ᶜ (A ⊗ B) .is-set)
             (fwd-tensor-star▷-• p (injAB (A .charge e a) b d))
             (fwd-tensor-star▷-• p (injAB a b (d +ℂ e)))
             (λ k → fwd (tensor-star▷ p (law₁ d e a b k)) .•)
@@ -865,7 +826,7 @@ module _ where
             i
         fwd-tensor-star▷-• p (law₂ d e a b i) =
           isSet→isSet'
-            (●ᶜ (A ⊗ B) .U .is-set)
+            (●ᶜ (A ⊗ B) .is-set)
             (fwd-tensor-star▷-• p (injAB a (B .charge e b) d))
             (fwd-tensor-star▷-• p (injAB a b (d +ℂ e)))
             (λ k → fwd (tensor-star▷ p (law₂ d e a b k)) .•)
@@ -874,7 +835,7 @@ module _ where
         fwd-tensor-star▷-• p (squash x y r s i j) =
           isSet→SquareP
             (λ k l → isProp→isSet
-              (●ᶜ (A ⊗ B) .U .is-set
+              (●ᶜ (A ⊗ B) .is-set
                 (fwd (tensor-star▷ p (squash x y r s k l)) .•)
                 (∗ p)))
             (cong (fwd-tensor-star▷-• p) r)
@@ -889,7 +850,7 @@ module _ where
         fwd-tensor-star▷-◦ p (inj a b d) = refl
         fwd-tensor-star▷-◦ p (law₁ d e a b i) =
           isSet→isSet'
-            (◯ᶜ (A ⊗ B) .U .is-set)
+            (◯ᶜ (A ⊗ B) .is-set)
             (fwd-tensor-star▷-◦ p (injAB (A .charge e a) b d))
             (fwd-tensor-star▷-◦ p (injAB a b (d +ℂ e)))
             (λ k → fwd (tensor-star▷ p (law₁ d e a b k)) .◦)
@@ -897,7 +858,7 @@ module _ where
             i
         fwd-tensor-star▷-◦ p (law₂ d e a b i) =
           isSet→isSet'
-            (◯ᶜ (A ⊗ B) .U .is-set)
+            (◯ᶜ (A ⊗ B) .is-set)
             (fwd-tensor-star▷-◦ p (injAB a (B .charge e b) d))
             (fwd-tensor-star▷-◦ p (injAB a b (d +ℂ e)))
             (λ k → fwd (tensor-star▷ p (law₂ d e a b k)) .◦)
@@ -906,7 +867,7 @@ module _ where
         fwd-tensor-star▷-◦ p (squash x y r s i j) =
           isSet→SquareP
             (λ k l → isProp→isSet
-              (◯ᶜ (A ⊗ B) .U .is-set
+              (◯ᶜ (A ⊗ B) .is-set
                 (fwd (tensor-star▷ p (squash x y r s k l)) .◦)
                 (η◦ᶜ {A = A ⊗ B} .U (squash x y r s k l))))
             (cong (fwd-tensor-star▷-◦ p) r)
@@ -916,22 +877,22 @@ module _ where
             i j
 
         fwd-bwd-fiber-•
-          : (q◦ : cmp (◯ᶜ (A ⊗ B))) (u : ● (fiber rhs◦ q◦))
+          : (q◦ : U (◯ᶜ (A ⊗ B))) (u : ● (fiber rhs◦ q◦))
           → fwd (bwd-from-fiber q◦ u) .•
-            ≡ ●ᵛ.map fst u
+            ≡ ●.map fst u
         fwd-bwd-fiber-• q◦ (η• (x , x-coh)) = fwd-tensor-unit▷-• x
         fwd-bwd-fiber-• q◦ (∗ p) = fwd-tensor-star▷-• p (q◦ p)
         fwd-bwd-fiber-• q◦ (law (x , x-coh) p i) =
           isSet→isSet'
-            (●ᶜ (A ⊗ B) .U .is-set)
+            (●ᶜ (A ⊗ B) .is-set)
             (fwd-bwd-fiber-• q◦ (η• (x , x-coh)))
             (fwd-bwd-fiber-• q◦ (∗ p))
             (λ k → fwd (bwd-from-fiber q◦ (law (x , x-coh) p k)) .•)
-            (λ k → ●ᵛ.map (λ (r : fiber rhs◦ q◦) → r .fst) (law (x , x-coh) p k))
+            (λ k → ●.map (λ (r : fiber rhs◦ q◦) → r .fst) (law (x , x-coh) p k))
             i
 
         fwd-bwd-fiber-◦
-          : (q◦ : cmp (◯ᶜ (A ⊗ B))) (u : ● (fiber rhs◦ q◦))
+          : (q◦ : U (◯ᶜ (A ⊗ B))) (u : ● (fiber rhs◦ q◦))
           → fwd (bwd-from-fiber q◦ u) .◦ ≡ q◦
         fwd-bwd-fiber-◦ q◦ (η• (x , x-coh)) =
             fwd (tensor-unit▷ x) .◦
@@ -949,7 +910,7 @@ module _ where
           ∎
         fwd-bwd-fiber-◦ q◦ (law (x , x-coh) p i) =
           isSet→isSet'
-            (◯ᶜ (A ⊗ B) .U .is-set)
+            (◯ᶜ (A ⊗ B) .is-set)
             (fwd-bwd-fiber-◦ q◦ (η• (x , x-coh)))
             (fwd-bwd-fiber-◦ q◦ (∗ p))
             (λ k → fwd (bwd-from-fiber q◦ (law (x , x-coh) p k)) .◦)
@@ -957,38 +918,38 @@ module _ where
             i
 
         fwd-charge-inj-•
-          : (e : val ℂ) (a : cmp A) (q : cmp (▷'[ c ] B)) (d : val ℂ)
-          → ●ᵛ.map (λ b → injAB a b (e +ℂ d)) (q .•)
+          : (e : ℂ) (a : U A) (q : U (▷'[ c ] B)) (d : ℂ)
+          → ●.map (λ b → injAB a b (e +ℂ d)) (q .•)
             ≡ ●ᶜ (A ⊗ B) .charge e
-                (●ᵛ.map (λ b → injAB a b d) (q .•))
+                (●.map (λ b → injAB a b d) (q .•))
         fwd-charge-inj-• e a q d =
-            ●ᵛ.map (λ b → injAB a b (e +ℂ d)) (q .•)
+            ●.map (λ b → injAB a b (e +ℂ d)) (q .•)
           ≡⟨ refl ⟩
-            ●ᵛ.map (((A ⊗ B) .charge e) ∘ (λ b → injAB a b d)) (q .•)
-          ≡⟨ sym (●ᵛ.map-∘ (λ b → injAB a b d) ((A ⊗ B) .charge e) (q .•)) ⟩
-            ●ᵛ.map ((A ⊗ B) .charge e)
-              (●ᵛ.map (λ b → injAB a b d) (q .•))
+            ●.map (((A ⊗ B) .charge e) ∘ (λ b → injAB a b d)) (q .•)
+          ≡⟨ sym (●.map-∘ (λ b → injAB a b d) ((A ⊗ B) .charge e) (q .•)) ⟩
+            ●.map ((A ⊗ B) .charge e)
+              (●.map (λ b → injAB a b d) (q .•))
           ≡⟨ sym (●ᶜ-charge-map {A = A ⊗ B} e
-                (●ᵛ.map (λ b → injAB a b d) (q .•))) ⟩
+                (●.map (λ b → injAB a b d) (q .•))) ⟩
             ●ᶜ (A ⊗ B) .charge e
-              (●ᵛ.map (λ b → injAB a b d) (q .•))
+              (●.map (λ b → injAB a b d) (q .•))
           ∎
 
         fwd-charge-inj-◦
-          : (e : val ℂ) (a : cmp A) (q : cmp (▷'[ c ] B)) (d : val ℂ)
+          : (e : ℂ) (a : U A) (q : U (▷'[ c ] B)) (d : ℂ)
           → (λ abs → injAB a (q .◦ abs) (e +ℂ d))
             ≡ ◯ᶜ (A ⊗ B) .charge e (λ abs → injAB a (q .◦ abs) d)
         fwd-charge-inj-◦ e a q d = refl
 
         fwd-charge-inj
-          : (e : val ℂ) (a : cmp A) (q : cmp (▷'[ c ] B)) (d : val ℂ)
+          : (e : ℂ) (a : U A) (q : U (▷'[ c ] B)) (d : ℂ)
           → fwd ((A ⊗ (▷'[ c ] B)) .charge e (injA▷B a q d))
             ≡ (▷'[ c ] (A ⊗ B)) .charge e (fwd (injA▷B a q d))
         fwd-charge-inj e a q d i .• = fwd-charge-inj-• e a q d i
         fwd-charge-inj e a q d i .◦ = fwd-charge-inj-◦ e a q d i
         fwd-charge-inj e a q d i .•→◦ =
           isProp→PathP
-            (λ i → ●ᶜ (◯ᶜ (A ⊗ B)) .U .is-set
+            (λ i → ●ᶜ (◯ᶜ (A ⊗ B)) .is-set
               (●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ {A = A ⊗ B}) .U (fwd-charge-inj-• e a q d i))
               (η• (fwd-charge-inj-◦ e a q d i)))
             (fwd ((A ⊗ (▷'[ c ] B)) .charge e (inj a q d)) .•→◦)
@@ -996,13 +957,13 @@ module _ where
             i
 
         fwd-charge
-          : (e : val ℂ) (x : A U⊗ (▷'[ c ] B))
+          : (e : ℂ) (x : A U⊗ (▷'[ c ] B))
           → fwd ((A ⊗ (▷'[ c ] B)) .charge e x)
             ≡ (▷'[ c ] (A ⊗ B)) .charge e (fwd x)
         fwd-charge e (inj a q d) = fwd-charge-inj e a q d
         fwd-charge e (law₁ d e' a q i) =
           isSet→isSet'
-            ((▷'[ c ] (A ⊗ B)) .U .is-set)
+            ((▷'[ c ] (A ⊗ B)) .is-set)
             (fwd-charge-inj e (A .charge e' a) q d)
             (fwd-charge-inj e a q (d +ℂ e'))
             (λ k → fwd ((A ⊗ (▷'[ c ] B)) .charge e (law₁ d e' a q k)))
@@ -1010,7 +971,7 @@ module _ where
             i
         fwd-charge e (law₂ d e' a q i) =
           isSet→isSet'
-            ((▷'[ c ] (A ⊗ B)) .U .is-set)
+            ((▷'[ c ] (A ⊗ B)) .is-set)
             (fwd-charge-inj e a ((▷'[ c ] B) .charge e' q) d)
             (fwd-charge-inj e a q (d +ℂ e'))
             (λ k → fwd ((A ⊗ (▷'[ c ] B)) .charge e (law₂ d e' a q k)))
@@ -1019,7 +980,7 @@ module _ where
         fwd-charge e (squash x y p q i j) =
           isSet→SquareP
             (λ k l → isProp→isSet
-              ((▷'[ c ] (A ⊗ B)) .U .is-set
+              ((▷'[ c ] (A ⊗ B)) .is-set
                 (fwd ((A ⊗ (▷'[ c ] B)) .charge e (squash x y p q k l)))
                 ((▷'[ c ] (A ⊗ B)) .charge e (fwd (squash x y p q k l)))))
             (cong (fwd-charge e) p)
@@ -1032,7 +993,7 @@ module _ where
         fwd-bwd q i .• =
           ( fwd (bwd q) .•
           ≡⟨ fwd-bwd-fiber-• (q .◦) (bwd-fiber q) ⟩
-            ●ᵛ.map (λ (r : fiber rhs◦ (q .◦)) → r .fst) (bwd-fiber q)
+            ●.map (λ (r : fiber rhs◦ (q .◦)) → r .fst) (bwd-fiber q)
           ≡⟨ fiber-in-fst (q .◦) (q .•) (q .•→◦) ⟩
             q .•
           ∎) i
@@ -1040,7 +1001,7 @@ module _ where
           fwd-bwd-fiber-◦ (q .◦) (bwd-fiber q) i
         fwd-bwd q i .•→◦ =
           isProp→PathP
-            (λ i → ●ᶜ (◯ᶜ (A ⊗ B)) .U .is-set
+            (λ i → ●ᶜ (◯ᶜ (A ⊗ B)) .is-set
               (rhsα (fwd-bwd q i .•))
               (η• (fwd-bwd q i .◦)))
             (fwd (bwd q) .•→◦)
@@ -1048,25 +1009,25 @@ module _ where
             i
 
         bwd-fwd-inj
-          : (a : cmp A)
-          → (q• : cmp (●ᶜ B))
-          → (q◦ : cmp (◯ᶜ B))
+          : (a : U A)
+          → (q• : U (●ᶜ B))
+          → (q◦ : U (◯ᶜ B))
           → (qcoh : ●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ {A = B}) .U q• ≡ η• q◦)
-          → (d : val ℂ)
+          → (d : ℂ)
           → bwd (fwd (injA▷B a (record { • = q• ; ◦ = q◦ ; •→◦ = qcoh }) d))
             ≡ injA▷B a (record { • = q• ; ◦ = q◦ ; •→◦ = qcoh }) d
         bwd-fwd-inj a =
           ind R η•-case ∗-case law-case
           where
-            R : cmp (●ᶜ B) → Type
+            R : U (●ᶜ B) → Type
             R q• =
-              (q◦ : cmp (◯ᶜ B))
+              (q◦ : U (◯ᶜ B))
               → (qcoh : ●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ {A = B}) .U q• ≡ η• q◦)
-              → (d : val ℂ)
+              → (d : ℂ)
               → bwd (fwd (injA▷B a (record { • = q• ; ◦ = q◦ ; •→◦ = qcoh }) d))
                 ≡ injA▷B a (record { • = q• ; ◦ = q◦ ; •→◦ = qcoh }) d
 
-            R-isProp : (q• : cmp (●ᶜ B)) → isProp (R q•)
+            R-isProp : (q• : U (●ᶜ B)) → isProp (R q•)
             R-isProp q• f g =
               funExt λ q◦ →
                 funExt λ qcoh →
@@ -1077,7 +1038,7 @@ module _ where
                       (f q◦ qcoh d)
                       (g q◦ qcoh d)
 
-            η•-case : (b : cmp B) → R (η• b)
+            η•-case : (b : U B) → R (η• b)
             η•-case b q◦ qcoh d =
               subst
                 (λ h →
@@ -1131,7 +1092,7 @@ module _ where
               ∎
 
             law-case
-              : (b : cmp B) (p : ⟨ ABS ⟩)
+              : (b : U B) (p : ⟨ ABS ⟩)
               → PathP (λ i → R (law b p i)) (η•-case b) (∗-case p)
             law-case b p =
               isProp→PathP (λ i → R-isProp (law b p i)) (η•-case b) (∗-case p)
@@ -1167,5 +1128,5 @@ module _ where
             (λ _ → bwd-fwd y)
             i j
 
-        pot-tensor≃ : (A U⊗ (▷'[ c ] B)) ≃ cmp (▷'[ c ] (A ⊗ B))
+        pot-tensor≃ : (A U⊗ (▷'[ c ] B)) ≃ U (▷'[ c ] (A ⊗ B))
         pot-tensor≃ = isoToEquiv (iso fwd bwd fwd-bwd bwd-fwd)

@@ -1,15 +1,14 @@
 module Calf.Computation.Product where
 
 open import Calf.Value
-open import Calf.Computation
 open import Calf.Value.Product public
-open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.Function
+open import Calf.Computation
 
 infixr 2 _×ᶜ_
 
 _×ᶜ_ : 𝒞 → 𝒞 → 𝒞
-(A ×ᶜ B) .U = A .U ×ᵛ B .U
+(A ×ᶜ B) .U = A .U × B .U
+(A ×ᶜ B) .is-set = isSet× (A .is-set) (B .is-set)
 (A ×ᶜ B) .charge c e .fst = A .charge c (e .fst)
 (A ×ᶜ B) .charge c e .snd = B .charge c (e .snd)
 (A ×ᶜ B) .charge/0 {e} i .fst = A .charge/0 {e .fst} i
