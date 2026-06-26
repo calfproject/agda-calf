@@ -2,7 +2,7 @@ module Calf.Value.List where
 
 open import Calf.Value
 open import Cubical.Data.List
-  using (List; []; _∷_; _++_; [_]; length)
+  using (List; []; _∷_; foldr; _++_; [_]; length)
   renaming (rev to reverse)
   public
 
@@ -21,22 +21,21 @@ open import Cubical.Data.Nat
 open import Cubical.Data.Sigma
 open import Cubical.Data.Unit
 
-Listᵛ : 𝒱 → 𝒱
-Listᵛ X .val = List (X .val)
-Listᵛ X .is-set = subst isSet (ua ΣVec≃List) (isSetΣ isSetℕ isSetVec)
+isSetList : isSet X → isSet (List X)
+isSetList {X} isSetX = subst isSet (ua ΣVec≃List) (isSetΣ isSetℕ isSetVec)
   where
     Vec : ℕ → Type
-    Vec n = iter n (val X ×_) Unit
+    Vec n = iter n (X ×_) Unit
 
     isSetVec : (n : ℕ) → isSet (Vec n)
     isSetVec zero = isSetUnit
-    isSetVec (suc n) = isSet× (X .is-set) (isSetVec n)
+    isSetVec (suc n) = isSet× isSetX (isSetVec n)
 
-    fwd : Σ ℕ Vec → List (val X)
+    fwd : Σ ℕ Vec → List X
     fwd (zero , tt) = []
     fwd (suc n , x , xs) = x ∷ fwd (n , xs)
 
-    bwd : List (val X) → Σ ℕ Vec
+    bwd : List X → Σ ℕ Vec
     bwd [] = 0 , tt
     bwd (x ∷ xs) = let (n , v) = bwd xs in suc n , x , v
 
@@ -49,7 +48,7 @@ Listᵛ X .is-set = subst isSet (ua ΣVec≃List) (isSetΣ isSetℕ isSetVec)
     bwd-fwd (suc n , x , v) i .fst = suc (bwd-fwd (n , v) i .fst)
     bwd-fwd (suc n , x , v) i .snd = x , bwd-fwd (n , v) i .snd
 
-    ΣVec≃List : Σ ℕ Vec ≃ List (val X)
+    ΣVec≃List : Σ ℕ Vec ≃ List X
     ΣVec≃List .fst = fwd
     ΣVec≃List .snd = isoToIsEquiv (iso fwd bwd fwd-bwd bwd-fwd)
 Listᵛ X .is-preorder = subst isPreorder lemma (Σᵛ ℕᵛ Vec .is-preorder)

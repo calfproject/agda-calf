@@ -1,38 +1,11 @@
 module Calf.Value.Product where
 
-open import Calf.Core.Directed
+open import Cubical.Data.Sigma
+  using (_×_; _,_)
+  renaming (fst to proj₁; snd to proj₂)
+  public
+open import Cubical.Foundations.HLevels using (isSet×) public
 open import Calf.Value
-open import Cubical.Data.Sigma public
-open import Cubical.Foundations.Function
-open import Cubical.Foundations.HLevels
 
-infixr 2 _×ᵛ_
-_×ᵛ_ : 𝒱 → 𝒱 → 𝒱
-(X ×ᵛ Y) .val = val X × val Y
-(X ×ᵛ Y) .is-set = isSet× (X .is-set) (Y .is-set)
-(X ×ᵛ Y) .is-preorder α .sec .fst f t .fst = X .is-preorder α .sec .fst (λ s → f s .fst) t
-(X ×ᵛ Y) .is-preorder α .sec .fst f t .snd = Y .is-preorder α .sec .fst (λ s → f s .snd) t
-(X ×ᵛ Y) .is-preorder α .sec .snd f = {!   !}
-(X ×ᵛ Y) .is-preorder α .secCong = {!   !}
--- .ortho g .fst .fst 𝕚₂ .fst = X .is-preorder .ortho (fst ∘ g) .fst .fst 𝕚₂
--- (X ×ᵛ Y) .is-preorder .ortho g .fst .fst 𝕚₂ .snd = Y .is-preorder .ortho (snd ∘ g) .fst .fst 𝕚₂
--- (X ×ᵛ Y) .is-preorder .ortho g .fst .snd i 𝕚∨𝕚 .fst =
---   X .is-preorder .ortho (fst ∘ g) .fst .snd i 𝕚∨𝕚
--- (X ×ᵛ Y) .is-preorder .ortho g .fst .snd i 𝕚∨𝕚 .snd =
---   Y .is-preorder .ortho (snd ∘ g) .fst .snd i 𝕚∨𝕚
--- (X ×ᵛ Y) .is-preorder .ortho g .snd y i .fst 𝕚₂ .fst =
---   X .is-preorder .ortho (fst ∘ g) .snd
---     ((λ 𝕚₂ → y .fst 𝕚₂ .fst) , λ j 𝕚∨𝕚 → y .snd j 𝕚∨𝕚 .fst)
---     i .fst 𝕚₂
--- (X ×ᵛ Y) .is-preorder .ortho g .snd y i .fst 𝕚₂ .snd =
---   Y .is-preorder .ortho (snd ∘ g) .snd
---     ((λ 𝕚₂ → y .fst 𝕚₂ .snd) , λ j 𝕚∨𝕚 → y .snd j 𝕚∨𝕚 .snd)
---     i .fst 𝕚₂
--- (X ×ᵛ Y) .is-preorder .ortho g .snd y i .snd j 𝕚∨𝕚 .fst =
---   X .is-preorder .ortho (fst ∘ g) .snd
---     ((λ 𝕚₂ → y .fst 𝕚₂ .fst) , λ j 𝕚∨𝕚 → y .snd j 𝕚∨𝕚 .fst)
---     i .snd j 𝕚∨𝕚
--- (X ×ᵛ Y) .is-preorder .ortho g .snd y i .snd j 𝕚∨𝕚 .snd =
---   Y .is-preorder .ortho (snd ∘ g) .snd
---     ((λ 𝕚₂ → y .fst 𝕚₂ .snd) , λ j 𝕚∨𝕚 → y .snd j 𝕚∨𝕚 .snd)
---     i .snd j 𝕚∨𝕚
+isPreorder× : isPreorder X → isPreorder Y → isPreorder (X × Y)
+isPreorder× = {!   !}

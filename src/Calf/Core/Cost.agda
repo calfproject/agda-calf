@@ -1,9 +1,10 @@
 module Calf.Core.Cost where
 
 open import Calf.Value
-open import Calf.Value.Nat
+-- open import Calf.Value.Nat
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Nat.Literals public
+open import Cubical.Data.Nat
 import Cubical.Data.Nat.Properties as Nat
 open import Data.Unit
 
@@ -14,12 +15,15 @@ module _ {A : Type} where
 
 opaque
   ℂ : 𝒱
-  ℂ = ℕᵛ
+  ℂ = ℕ
 
-  0ℂ : val ℂ
+  isSetℂ : isSet ℂ
+  isSetℂ = isSetℕ
+
+  0ℂ : ℂ
   0ℂ = 0
 
-  _+ℂ_ : val ℂ → val ℂ → val ℂ
+  _+ℂ_ : ℂ → ℂ → ℂ
   _+ℂ_ = _+_
 
   +ℂ-identityˡ : LeftIdentity 0ℂ _+ℂ_
@@ -34,17 +38,17 @@ opaque
   +ℂ-comm : Commutative _+ℂ_
   +ℂ-comm c₁ c₂ = Nat.+-comm c₁ c₂
 
-  ℕ→ℂ : ℕ → val ℂ
+  ℕ→ℂ : ℕ → ℂ
   ℕ→ℂ n = ` n
 
 instance
-  fromNatℂ : HasFromNat (val ℂ)
+  fromNatℂ : HasFromNat ℂ
   fromNatℂ = record { Constraint = λ _ → ⊤ ; fromNat = λ n → ℕ→ℂ n }
 
 variable
-  c c' c₁ c₂ : val ℂ
+  c c' c₁ c₂ : ℂ
 
-_⊙_ : ℕ → val ℂ → val ℂ
+_⊙_ : ℕ → ℂ → ℂ
 zero ⊙ c = 0ℂ
 suc n ⊙ c = c +ℂ (n ⊙ c)
 

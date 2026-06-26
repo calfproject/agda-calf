@@ -1,7 +1,6 @@
 module Examples where
 
 open import Calf.Core.Cost
-open import Calf.Core.Directed
 open import Calf.Value
 open import Calf.Value.List
 open import Calf.Value.Nat
@@ -10,10 +9,8 @@ open import Calf.Computation
 open import Calf.Computation.Copower
 open import Calf.Computation.Free
 open import Calf.Computation.Power
-open import Cubical.Foundations.Prelude
 import Cubical.Data.List.Properties as List
 import Cubical.Data.Nat.Properties as Nat
-open import Function
 
 double : cmp (ℕᵛ ⇀ F ℕᵛ)
 double zero = ret 0
@@ -49,44 +46,42 @@ opaque
         ≡⇒⊑ᵛ {X = U (F ℕᵛ)} (sym (F ℕᵛ .charge/+ {c₁ = 1}))
 
 BQ : 𝒞
-BQ = F (Listᵛ ℕᵛ ×ᵛ Listᵛ ℕᵛ)
+BQ = F (List ℕ × List ℕ)
 
 LQ : 𝒞
-LQ = F (Listᵛ ℕᵛ)
+LQ = F (List ℕ)
 
 φ : BQ ⊸ LQ
-φ =
-  bind (l₁ , l₂) ← idᶜ ⨾
-  LQ .charge (` length l₁) (ret (l₂ ++ reverse l₁))
+φ = bind' λ (l₁ , l₂) → LQ .charge (` length l₁) (ret (l₂ ++ reverse l₁))
 
-emptyq : cmp LQ
+emptyq : U LQ
 emptyq = ret []
 
-enqueue : val ℕᵛ → LQ ⊸ LQ
+enqueue : ℕ → LQ ⊸ LQ
 enqueue e = bind' λ l → LQ .charge 1 (ret (l ++ [ e ]))
 
-dequeue : LQ ⊸ (ℕᵛ ⋊ LQ)
+dequeue : LQ ⊸ (ℕₛ ⋊ LQ)
 dequeue = bind' λ
   { []      → 0 , ret []
   ; (x ∷ l) → x , ret l }
 
-emptyᵗ : cmp BQ
+emptyᵗ : U BQ
 emptyᵗ = ret ([] , [])
 
-enqueueᵗ : val ℕᵛ → BQ ⊸ BQ
+enqueueᵗ : ℕ → BQ ⊸ BQ
 enqueueᵗ e = bind' λ (back , front) → ret (e ∷ back , front)
 
-dequeueᵗ : BQ ⊸ (ℕᵛ ⋊ BQ)
+dequeueᵗ : BQ ⊸ (ℕₛ ⋊ BQ)
 dequeueᵗ = bind' λ
   { (back , x ∷ front) → x , ret (back , front)
   ; (back , [])        → reverse-front back }
   where
-    reverse-front : List ℕ → cmp (ℕᵛ ⋊ BQ)
+    reverse-front : List ℕ → U (ℕₛ ⋊ BQ)
     reverse-front back with reverse back
     ... | []     = 0 , BQ .charge (` length back) (ret ([] , []))
     ... | x ∷ l  = x , BQ .charge (` length back) (ret ([] , l))
 
-mapφ : (ℕᵛ ⋊ BQ) ⊸ (ℕᵛ ⋊ LQ)
+mapφ : (ℕₛ ⋊ BQ) ⊸ (ℕₛ ⋊ LQ)
 mapφ .U (x , q) = x , φ .U q
 mapφ .charge c (x , q) i .fst = x
 mapφ .charge c (x , q) i .snd = φ .charge c q i
@@ -101,8 +96,6 @@ dequeue-snd .charge c q = cong snd (dequeue .charge c q)
 
 opaque
   unfolding ℂ
-  unfolding F
-  unfolding bind'
 
   enqueue-cost : (c n : ℕ) → c + 0 + suc (n + 0) ≡ c + (n + 0) + 1
   enqueue-cost c n =
@@ -116,51 +109,58 @@ opaque
     ∙ sym (Nat.+-zero (c + (n + 0)))
 
   empty-coherent : φ .U emptyᵗ ≡ emptyq
-  empty-coherent = refl
+  empty-coherent = bind'/β ∙ F _ .charge/0
 
   enqueue-coherent :
-    (e : val ℕᵛ) (q : cmp BQ)
+    (e : ℕ) (q : U BQ)
     → φ .U (enqueueᵗ e .U q) ≡ enqueue e .U (φ .U q)
-  enqueue-coherent e (c , back , front) =
-    cong₂ _,_
-      (enqueue-cost c (length back))
-      (sym (List.++-assoc front (reverse back) [ e ]))
+  enqueue-coherent e q =
+      φ .U (enqueueᵗ e .U q)
+    ≡⟨ refl ⟩
+      bind' (λ (l₁ , l₂) → LQ .charge (` length l₁) (ret (l₂ ++ reverse l₁))) .U (
+      bind' (λ (back , front) → ret (e ∷ back , front)) .U q)
+    ≡⟨ {!   !} ⟩
+      bind' (λ l → LQ .charge 1 (ret (l ++ [ e ]))) .U (
+      (bind' (λ (l₁ , l₂) → LQ .charge (` length l₁) (ret (l₂ ++ reverse l₁))) .U q))
+    ≡⟨ refl ⟩
+      enqueue e .U (φ .U q)
+    ∎
 
   dequeue-coherent :
-    (q : cmp BQ)
+    (q : U BQ)
     → mapφ .U (dequeueᵗ .U q) ≡ dequeue .U (φ .U q)
-  dequeue-coherent (c , back , []) with reverse back
-  ... | [] = refl
-  ... | x ∷ front =
-    λ i → x , c + (length back + 0) + 0 , List.++-unit-r front i
-  dequeue-coherent (c , back , x ∷ front) =
-    λ i → x , dequeue-front-cost c (length back) i , front ++ reverse back
+  dequeue-coherent = {!   !}
+  -- dequeue-coherent (c , back , []) with reverse back
+  -- ... | [] = refl
+  -- ... | x ∷ front =
+  --   λ i → x , c + (length back + 0) + 0 , List.++-unit-r front i
+  -- dequeue-coherent (c , back , x ∷ front) =
+  --   λ i → x , dequeue-front-cost c (length back) i , front ++ reverse back
 
 
 open import Cubical.Foundations.Equiv
+open import Calf.Value.Open as ◯
+open import Calf.Value.Closed as ●
+open import Calf.Value.Glue
 open import Calf.Computation.Open as ◯ᶜ
 open import Calf.Computation.Closed as ●ᶜ hiding (law)
-open import Calf.Computation.Glue
-open import Calf.Value.Open as ◯ᵛ
-open import Calf.Value.Closed as ●ᵛ
+open import Calf.Computation.Abstraction
 
 BLQ : 𝒞
-BLQ = Glueᶜ' BQ LQ φ
+BLQ = Abstractionᶜ BQ LQ φ
 
-empty' : cmp BLQ
-empty' = triangleᶜ' {B-⊤ = BQ} {B-abs = LQ} {β = φ} emptyᵗ emptyq empty-coherent
+empty' : U BLQ
+empty' = triangleᶜ' emptyᵗ emptyq empty-coherent
 
-enqueue' : val ℕᵛ → BLQ ⊸ BLQ
+enqueue' : ℕ → BLQ ⊸ BLQ
 enqueue' e = squareᶜ' (enqueueᵗ e) (enqueue e) (enqueue-coherent e)
 
 opaque
-  unfolding Glueᶜ'
+  unfolding Abstractionᶜ
 
-  dequeue'-fst-glue : cmp BLQ → val (𝒱-fromFRAC (𝒱-toFRAC ℕᵛ))
+  dequeue'-fst-glue : U BLQ → fromFRAC (toFRAC ℕ)
   dequeue'-fst-glue =
-    squareᵛ'
-      {X-⊤ = U BQ} {X-abs = U LQ} {χ = φ .U}
-      {Y-⊤ = ℕᵛ} {Y-abs = ℕᵛ} {ψ = λ n → n}
+    square'
       (λ bq → fst (dequeueᵗ .U bq))
       (λ lq → fst (dequeue .U lq))
       (λ q → cong fst (dequeue-coherent q))
@@ -169,41 +169,43 @@ opaque
   dequeue'-snd = squareᶜ' dequeueᵗ-snd dequeue-snd (λ q → cong snd (dequeue-coherent q))
 
   dequeueᵗ-fst-●-charge
-    : (c : val ℂ) (q• : val (●ᶜ BQ .U))
-    → ●ᵛ.map (λ bq → fst (dequeueᵗ .U bq)) (●ᶜ BQ .charge c q•)
-      ≡ ●ᵛ.map (λ bq → fst (dequeueᵗ .U bq)) q•
-  dequeueᵗ-fst-●-charge c (η• bq) = cong (η•ᵛ {ℕᵛ}) (cong fst (dequeueᵗ .charge c bq))
+    : (c : ℂ) (q• : (●ᶜ BQ .U))
+    → ●.map (λ bq → fst (dequeueᵗ .U bq)) (●ᶜ BQ .charge c q•)
+      ≡ ●.map (λ bq → fst (dequeueᵗ .U bq)) q•
+  dequeueᵗ-fst-●-charge c (η• bq) = cong η• (cong fst (dequeueᵗ .charge c bq))
   dequeueᵗ-fst-●-charge c (∗ p) = refl
   dequeueᵗ-fst-●-charge c (law bq p i) =
     isProp→PathP
-      (λ i → ●ᵛ ℕᵛ .is-set
-        (●ᵛ.map (λ bq → fst (dequeueᵗ .U bq)) (●ᶜ BQ .charge c (law bq p i)))
-        (●ᵛ.map (λ bq → fst (dequeueᵗ .U bq)) (law bq p i)))
-      (cong (η•ᵛ {ℕᵛ}) (cong fst (dequeueᵗ .charge c bq)))
+      (λ i → isSet● isSetℕ
+        (●.map (λ bq → fst (dequeueᵗ .U bq)) (●ᶜ BQ .charge c (law bq p i)))
+        (●.map (λ bq → fst (dequeueᵗ .U bq)) (law bq p i)))
+      (cong η• (cong fst (dequeueᵗ .charge c bq)))
       refl
       i
 
   dequeue-fst-◯-charge
-    : (c : val ℂ) (q◦ : val (◯ᶜ LQ .U))
-    → ◯ᵛ.map (λ lq → fst (dequeue .U lq)) (◯ᶜ LQ .charge c q◦)
-      ≡ ◯ᵛ.map (λ lq → fst (dequeue .U lq)) q◦
+    : (c : ℂ) (q◦ : (◯ᶜ LQ .U))
+    → ◯.map (λ lq → fst (dequeue .U lq)) (◯ᶜ LQ .charge c q◦)
+      ≡ ◯.map (λ lq → fst (dequeue .U lq)) q◦
   dequeue-fst-◯-charge c q◦ i p = cong fst (dequeue .charge c (q◦ p)) i
 
   dequeue'-fst-glue-charge
-    : (c : val ℂ) (q : cmp BLQ)
+    : (c : ℂ) (q : U BLQ)
     → dequeue'-fst-glue (BLQ .charge c q) ≡ dequeue'-fst-glue q
   dequeue'-fst-glue-charge c q i .• = dequeueᵗ-fst-●-charge c (q .•) i
   dequeue'-fst-glue-charge c q i .◦ = dequeue-fst-◯-charge c (q .◦) i
   dequeue'-fst-glue-charge c q i .•→◦ =
     isProp→PathP
-      (λ i → ●ᵛ (◯ᵛ ℕᵛ) .is-set
-        (●ᵛ.map (η◦ᵛ {ℕᵛ}) (dequeueᵗ-fst-●-charge c (q .•) i))
-        (η•ᵛ {◯ᵛ ℕᵛ} (dequeue-fst-◯-charge c (q .◦) i)))
+      (λ i → isSet● (◯-preserves-isSet isSetℕ)
+        (●.map η◦ (dequeueᵗ-fst-●-charge c (q .•) i))
+        (η• (dequeue-fst-◯-charge c (q .◦) i)))
       (dequeue'-fst-glue (BLQ .charge c q) .•→◦)
       (dequeue'-fst-glue q .•→◦)
       i
 
-  dequeue' : BLQ ⊸ (ℕᵛ ⋊ BLQ)
+  open import Cubical.Data.Sigma using (ΣPathP)
+
+  dequeue' : BLQ ⊸ (ℕₛ ⋊ BLQ)
   dequeue' .U q .fst =
     invIsEq fracture-isEquiv (dequeue'-fst-glue q)
   dequeue' .U q .snd = dequeue'-snd .U q
