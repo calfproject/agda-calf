@@ -13,8 +13,14 @@ Potential {X} Φ = Abstractionᶜ (F X) (F X) (bind' λ x → F _ .charge (Φ x)
 
 Potential-0ℂ : Potential {X} (λ _ → 0ℂ) ≡ F X
 Potential-0ℂ =
-  cong (Abstractionᶜ _ _) (cong bind' (funExt λ _ → F _ .charge/0) ∙ bind'/η)
-  ∙ Abstractionᶜ-id
+    Abstractionᶜ (F _) (F _) (bind' λ x → F _ .charge 0ℂ (ret x))
+  ≡⟨ cong (Abstractionᶜ _ _) (cong bind' (funExt λ _ → F _ .charge/0)) ⟩
+    Abstractionᶜ (F _) (F _) (bind' ret)
+  ≡⟨ cong (Abstractionᶜ _ _) bind'/η ⟩
+    Abstractionᶜ (F _) (F _) idᶜ
+  ≡⟨ Abstractionᶜ-id ⟩
+    F _
+  ∎
 
 square : {ΦX : X → ℂ} {ΦY : Y → ℂ}
   → (f : X → Y)
@@ -28,11 +34,43 @@ square {ΦX = ΦX} {ΦY = ΦY} f c-⊤ c-abs amortization =
     λ a-⊤ →
         bind' (λ x → F _ .charge (ΦY x) (ret x)) .U
         (bind' (λ x → F _ .charge (c-⊤ x) (ret (f x))) .U a-⊤)
-      ≡⟨ {!   !} ⟩
+      ≡⟨ bind'-assoc _ _ a-⊤ ⟩
+        bind' (λ x →
+          bind' (λ x → F _ .charge (ΦY x) (ret x)) .U
+            (F _ .charge (c-⊤ x) (ret (f x)))) .U a-⊤
+      ≡⟨ cong (λ e → bind' {A = F _} e .U a-⊤)
+            (funExt λ x →
+                bind' (λ x → F _ .charge (ΦY x) (ret x)) .U
+                  (F _ .charge (c-⊤ x) (ret (f x)))
+              ≡⟨ bind' (λ x → F _ .charge (ΦY x) (ret x)) .charge (c-⊤ x) (ret (f x)) ⟩
+                F _ .charge (c-⊤ x)
+                  (bind' (λ x → F _ .charge (ΦY x) (ret x)) .U (ret (f x)))
+              ≡⟨ cong (F _ .charge (c-⊤ x)) bind'/β ⟩
+                F _ .charge (c-⊤ x)
+                  (F _ .charge (ΦY (f x)) (ret (f x)))
+              ≡⟨ sym (F _ .charge/+) ⟩
+                F _ .charge (c-⊤ x +ℂ ΦY (f x)) (ret (f x))
+              ∎) ⟩
         bind' (λ x → F _ .charge (c-⊤ x +ℂ ΦY (f x)) (ret (f x))) .U a-⊤
       ≡⟨ cong (λ e → bind' {A = F _} e .U a-⊤) (funExt λ x → cong (λ e → F _ .charge e _) (amortization x)) ⟩
         bind' (λ x → F _ .charge (ΦX x +ℂ c-abs x) (ret (f x))) .U a-⊤
-      ≡⟨ {!   !} ⟩
+      ≡⟨ cong (λ e → bind' {A = F _} e .U a-⊤)
+            (funExt λ x →
+                F _ .charge (ΦX x +ℂ c-abs x) (ret (f x))
+              ≡⟨ F _ .charge/+ ⟩
+                F _ .charge (ΦX x)
+                  (F _ .charge (c-abs x) (ret (f x)))
+              ≡⟨ cong (F _ .charge (ΦX x)) (sym bind'/β) ⟩
+                F _ .charge (ΦX x)
+                  (bind' (λ x → F _ .charge (c-abs x) (ret (f x))) .U (ret x))
+              ≡⟨ sym (bind' (λ x → F _ .charge (c-abs x) (ret (f x))) .charge (ΦX x) (ret x)) ⟩
+                bind' (λ x → F _ .charge (c-abs x) (ret (f x))) .U
+                  (F _ .charge (ΦX x) (ret x))
+              ∎) ⟩
+        bind' (λ x →
+          bind' (λ x → F _ .charge (c-abs x) (ret (f x))) .U
+            (F _ .charge (ΦX x) (ret x))) .U a-⊤
+      ≡⟨ sym (bind'-assoc _ _ a-⊤) ⟩
         bind' (λ x → F _ .charge (c-abs x) (ret (f x))) .U
         (bind' (λ x → F _ .charge (ΦX x) (ret x)) .U a-⊤)
       ∎

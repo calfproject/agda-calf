@@ -2,7 +2,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.Isomorphism
-open import Cubical.Foundations.Univalence using (ua)
+open import Cubical.Foundations.Univalence using (ua; ua→; ua-gluePath)
 open import Cubical.Functions.Embedding
 
 module Calf.Computation.Glue where
@@ -279,4 +279,14 @@ fracture-map-same {A} {B} f =
   ⊸-path
     (𝒞-glue-fracture-retract A)
     (𝒞-glue-fracture-retract B)
-    {!   !}
+    (λ i →
+      ua→
+        {e = 𝒞-fracture {A = A} .U , fracture-isEquiv}
+        {B = λ i → U (conservativity (𝒞-fracture {A = B}) fracture-isEquiv i)}
+        {f₀ = f .U}
+        {f₁ = fracture-map f .U}
+        (λ a →
+          ua-gluePath
+            (𝒞-fracture {A = B} .U , fracture-isEquiv)
+            (sym (fracture-map-fracture f a)))
+        (~ i))
