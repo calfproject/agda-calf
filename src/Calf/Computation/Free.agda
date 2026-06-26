@@ -61,7 +61,16 @@ opaque
   bind'/β {A = A} = A .charge/0
 
   bind'/η : bind' (ret {X}) ≡ idᶜ
-  bind'/η = ⊸-path refl refl (funExt λ (c , x) → {!   !}) -- cong (_, x) (+ℂ-identityʳ c))
+  bind'/η =
+    ⊸-path refl refl (funExt λ (c , x) →
+      elim
+        (λ x →
+          isProp→isSet $
+          F _ .is-set
+            (bind' {A = F _} ret .U (c , x))
+            (c , x))
+        (λ x → cong (_, ∣ x ∣₂) (+ℂ-identityʳ c))
+        x)
 
   bind'-assoc :
       (h : X → U (F Y))
@@ -69,7 +78,15 @@ opaque
     → (e : U (F X))
     → bind' {A = A} k .U (bind' {A = F Y} h .U e)
       ≡ bind' {A = A} (λ x → bind' {A = A} k .U (h x)) .U e
-  bind'-assoc {Y = Y} {A = A} h k (c , x) = {!   !} -- bind' {X = Y} {A = A} k .charge c (h x)
+  bind'-assoc {Y = Y} {A = A} h k (c , x) =
+    elim
+      (λ x →
+        isProp→isSet $
+        A .is-set
+          (bind' {A = A} k .U (bind' {A = F Y} h .U (c , x)))
+          (bind' {A = A} (λ x → bind' {A = A} k .U (h x)) .U (c , x)))
+      (λ x → bind' {A = A} k .charge c (h x))
+      x
 
   bind'-charge :
       (h : X → U A)
@@ -86,8 +103,17 @@ opaque
       (f : A ⊸ B)
     → (h : X → U A)
     → (e : U (F X))
-    → f .U (bind' {A = A} h .U e) ≡ bind' {A = B} (λ x → f .U (h x)) .U e
-  bind'-map f h (c , x) = {!   !} -- f .charge c (h x)
+    → f .U (bind' {A = A} h .U e) 
+      ≡ bind' {A = B} (λ x → f .U (h x)) .U e
+  bind'-map {A = A} {B = B} f h (c , x) =
+    elim
+      (λ x →
+        isProp→isSet $
+        B .is-set
+          (f .U (bind' {A = A} h .U (c , x)))
+          (bind' {A = B} (λ x → f .U (h x)) .U (c , x)))
+      (λ x → f .charge c (h x))
+      x
 
 bind'-isEquiv : isEquiv (bind' {X} {A})
 bind'-isEquiv {X} {A} = isoToIsEquiv $
