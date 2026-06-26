@@ -20,6 +20,8 @@ open import Calf.Computation.Copower
 open import Calf.Computation.Open as ◯ᶜ
 open import Calf.Computation.Closed as ●ᶜ
 open import Calf.Computation.Glue
+open import Calf.Computation.Abstraction
+open import Calf.Computation.Potential
 open import Calf.Computation.Credit
 
 binom2 : ℕ → ℕ
@@ -70,7 +72,7 @@ module _ where
 opaque
   PList₂ : val ℂ → val ℂ → 𝒱 → 𝒞
   PList₂ c-linear c-quadratic X =
-    PotentialFunction {Listᵛ X} (plist₂-potential c-linear c-quadratic ∘ length)
+    Potential {Listᵛ X} (plist₂-potential c-linear c-quadratic ∘ length)
 
   pnil₂ : ∀ {c-lin c-quad} → cmp (PList₂ c-lin c-quad X)
   pnil₂ {X} {c-lin} {c-quad} =
@@ -90,20 +92,20 @@ opaque
   pcons₂ : ∀ {c-lin c-quad} → val X → ▷'[ c-lin ] (PList₂ (c-quad +ℂ c-lin) c-quad X) ⊸ PList₂ c-lin c-quad X
   pcons₂ {X} {c-lin} {c-quad} x =
     subst (_⊸ PList₂ c-lin c-quad X)
-      ( Glueᶜ' (F (Listᵛ X)) (F (Listᵛ X))
+      ( Abstractionᶜ (F (Listᵛ X)) (F (Listᵛ X))
           (CHARGE c-lin ⨾ᶜ bind' (λ l → F _ .charge (plist₂-potential (c-quad +ℂ c-lin) c-quad (length l)) (ret l)))
-      ≡⟨ cong (Glueᶜ' _ _) (CHARGE-commute _ _) ⟩
-        Glueᶜ' (F (Listᵛ X)) (F (Listᵛ X))
+      ≡⟨ cong (Abstractionᶜ _ _) (CHARGE-commute _ _) ⟩
+        Abstractionᶜ (F (Listᵛ X)) (F (Listᵛ X))
           (bind' (λ l → F _ .charge (plist₂-potential (c-quad +ℂ c-lin) c-quad (length l)) (ret l)) ⨾ᶜ CHARGE c-lin)
-      ≡⟨ sym Glueᶜ'-Glueᶜ' ⟩
-        Glueᶜ'
+      ≡⟨ sym Abstractionᶜ-Abstractionᶜ ⟩
+        Abstractionᶜ
           (PList₂ (c-quad +ℂ c-lin) c-quad X)
           (PList₂ (c-quad +ℂ c-lin) c-quad X)
           (squareᶜ'
             (CHARGE c-lin)
             (CHARGE c-lin)
             (λ e → bind' (λ l → F _ .charge (plist₂-potential (c-quad +ℂ c-lin) c-quad (length l)) (ret l)) .charge c-lin e))
-      ≡⟨ cong (Glueᶜ' _ _) (squareᶜ'-charge _) ⟩
+      ≡⟨ cong (Abstractionᶜ _ _) (squareᶜ'-charge _) ⟩
         ▷'[ c-lin ] (PList₂ (c-quad +ℂ c-lin) c-quad X)
       ∎) $
     squareᶜ'
@@ -170,7 +172,7 @@ opaque
       ∎
 
   opaque
-    unfolding Glueᶜ'
+    unfolding Abstractionᶜ
 
     pfoldr₂ : ∀ {c-lin c-quad} (A : val ℂ → 𝒞)
       → (∀ c-lin → cmp (A c-lin))

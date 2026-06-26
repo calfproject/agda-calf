@@ -18,29 +18,30 @@ open import Calf.Computation
 open import Calf.Computation.Open as ◯ᶜ
 open import Calf.Computation.Closed as ●ᶜ
 open import Calf.Computation.Glue
+open import Calf.Computation.Abstraction
 
 open 𝒞-FRAC
 
 ▷'[_]_ : val ℂ → 𝒞 → 𝒞
-▷'[ c ] A = Glueᶜ' A A (CHARGE c)
+▷'[ c ] A = Abstractionᶜ A A (CHARGE c)
 
 ▷'/0 : ▷'[ 0ℂ ] A ≡ A
-▷'/0 {A} = cong (Glueᶜ' A A) CHARGE-0 ∙ Glueᶜ'-id
+▷'/0 {A} = cong (Abstractionᶜ A A) CHARGE-0 ∙ Abstractionᶜ-id
 
 ▷'/+ : ▷'[ c₁ +ℂ c₂ ] A ≡ ▷'[ c₁ ] ▷'[ c₂ ] A
 ▷'/+ {c₁} {c₂} {A} =
     ▷'[ c₁ +ℂ c₂ ] A
   ≡⟨ refl ⟩
-    Glueᶜ' A A (CHARGE (c₁ +ℂ c₂))
-  ≡⟨ cong (Glueᶜ' A A) (CHARGE-+ c₁ c₂) ⟩
-    Glueᶜ' A A (CHARGE c₂ ⨾ᶜ CHARGE c₁)
-  ≡⟨ sym Glueᶜ'-Glueᶜ' ⟩
-    Glueᶜ'
-      (Glueᶜ' A A (CHARGE c₂))
-      (Glueᶜ' A A (CHARGE c₂))
+    Abstractionᶜ A A (CHARGE (c₁ +ℂ c₂))
+  ≡⟨ cong (Abstractionᶜ A A) (CHARGE-+ c₁ c₂) ⟩
+    Abstractionᶜ A A (CHARGE c₂ ⨾ᶜ CHARGE c₁)
+  ≡⟨ sym Abstractionᶜ-Abstractionᶜ ⟩
+    Abstractionᶜ
+      (Abstractionᶜ A A (CHARGE c₂))
+      (Abstractionᶜ A A (CHARGE c₂))
       (squareᶜ' (CHARGE c₁) (CHARGE c₁) (λ a → cong ((_$ a) ∘ U) (CHARGE-comm {A} c₁ c₂)))
-  ≡⟨ cong (Glueᶜ' _ _) (squareᶜ'-charge (λ a → cong ((_$ a) ∘ U) (CHARGE-comm {A} c₁ c₂))) ⟩
-    Glueᶜ' (Glueᶜ' A A (CHARGE c₂)) (Glueᶜ' A A (CHARGE c₂)) (CHARGE c₁)
+  ≡⟨ cong (Abstractionᶜ _ _) (squareᶜ'-charge (λ a → cong ((_$ a) ∘ U) (CHARGE-comm {A} c₁ c₂))) ⟩
+    Abstractionᶜ (Abstractionᶜ A A (CHARGE c₂)) (Abstractionᶜ A A (CHARGE c₂)) (CHARGE c₁)
   ≡⟨ refl ⟩
     ▷'[ c₁ ] (▷'[ c₂ ] A)
   ∎
@@ -60,7 +61,7 @@ open 𝒞-FRAC
     i
 
 opaque
-  unfolding Glueᶜ'
+  unfolding Abstractionᶜ
 
   ▷'-open : ⟨ ABS ⟩ → (c : val ℂ) (A : 𝒞) → ▷'[ c ] A ≡ A
   ▷'-open abs c A = cong 𝒞-fromFRAC (▷'-FRAC-open abs c A) ∙ 𝒞-glue-fracture-retract A
@@ -84,7 +85,7 @@ opaque
 
 store' : ∀ {c A} → A ⊸ ▷'[ c ] A
 store' {c} {A} =
-  subst (_⊸ ▷'[ c ] A) Glueᶜ'-id $
+  subst (_⊸ ▷'[ c ] A) Abstractionᶜ-id $
   squareᶜ'
     {A-⊤ = A} {A-abs = A} {α = idᶜ}
     {B-⊤ = A} {B-abs = A} {β = CHARGE c}
@@ -94,7 +95,7 @@ store' {c} {A} =
 
 spend : ▷'[ c ] A ⊸ A
 spend {c} {A} =
-  subst (▷'[ c ] A ⊸_) Glueᶜ'-id $
+  subst (▷'[ c ] A ⊸_) Abstractionᶜ-id $
   squareᶜ'
     {A-⊤ = A} {A-abs = A} {α = CHARGE c}
     {B-⊤ = A} {B-abs = A} {β = idᶜ}

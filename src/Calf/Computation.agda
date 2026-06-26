@@ -134,6 +134,9 @@ CHARGE-+ {A = A} c₁ c₂ =
 idᶜ⨾ᶜf≡f : (f : A ⊸ B) → idᶜ ⨾ᶜ f ≡ f
 idᶜ⨾ᶜf≡f f = ⊸-path refl refl refl
 
+f⨾ᶜidᶜ≡f : (f : A ⊸ B) → f ⨾ᶜ idᶜ ≡ f
+f⨾ᶜidᶜ≡f f = ?
+
 charge-path-inv
   : {X Y : Type}
   → (e : X ≃ Y)
@@ -164,13 +167,13 @@ charge-path e chargeX chargeY h =
     ua→ {e = e} λ x →
       ua-gluePath e (h c x)
 
-module _ where 
+module _ where
   -- a very random transport lemma that is unfortunately needed twice
   transport-charge
     : (p : B ≡ C) (d : val ℂ) (a : cmp B)
     → transport (cong cmp p) (B .charge d a)
     ≡ C .charge d (transport (cong cmp p) a)
-  transport-charge {B = B} = 
+  transport-charge {B = B} =
     J
       (λ C p → (d : val ℂ) (a : cmp B) →
         transport (cong cmp p) (B .charge d a)

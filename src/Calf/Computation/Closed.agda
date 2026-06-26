@@ -63,7 +63,7 @@ map {A} {B} f .charge c (law a p i) =
     (cong η• (f .charge c a))
     refl
     i
-  
+
 ●ᶜ-charge-map
   : (c : val ℂ) (a• : cmp (●ᶜ A))
   → ●ᶜ A .charge c a• ≡ ●ᵛ.map (A .charge c) a•
@@ -136,3 +136,17 @@ bind-η• {A = A} {B = B} f =
         refl
         refl
         i
+
+●ᶜ-map-CHARGE
+  : (c : val ℂ) (a• : cmp (●ᶜ A))
+  → map (CHARGE {A = A} c) .U a• ≡ ●ᶜ A .charge c a•
+●ᶜ-map-CHARGE c (η• a) = refl
+●ᶜ-map-CHARGE c (∗ p) = refl
+●ᶜ-map-CHARGE {A = A} c (law a p i) =
+  isProp→PathP
+    (λ i → ●ᶜ A .U .is-set
+      (map (CHARGE {A = A} c) .U (law a p i))
+      (●ᶜ A .charge c (law a p i)))
+    refl
+    refl
+    i

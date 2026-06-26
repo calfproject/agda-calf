@@ -21,6 +21,7 @@ open import Calf.Computation.Free
 open import Calf.Computation.Open as ◯ᶜ
 open import Calf.Computation.Closed as ●ᶜ
 open import Calf.Computation.Glue
+open import Calf.Computation.Abstraction
 open import Calf.Computation.Credit
 
 data _U⊗_ (A B : 𝒞) : Type where
@@ -391,7 +392,7 @@ opaque
 
 module _ where
   opaque
-    unfolding Glueᶜ'
+    unfolding Abstractionᶜ
 
     pot-tensor : (A ⊗ (▷'[ c ] B)) ≡ (▷'[ c ] (A ⊗ B))
     pot-tensor {A = A} {c = c} {B = B} =

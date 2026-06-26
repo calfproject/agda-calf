@@ -105,14 +105,15 @@ opaque
 
 
 open import Cubical.Foundations.Equiv
-open import Calf.Computation.Open as ◯ᶜ
-open import Calf.Computation.Closed as ●ᶜ hiding (law)
-open import Calf.Computation.Glue
 open import Calf.Value.Open as ◯ᵛ
 open import Calf.Value.Closed as ●ᵛ
+open import Calf.Value.Glue
+open import Calf.Computation.Open as ◯ᶜ
+open import Calf.Computation.Closed as ●ᶜ hiding (law)
+open import Calf.Computation.Abstraction
 
 BLQ : 𝒞
-BLQ = Glueᶜ' BQ LQ φ
+BLQ = Abstractionᶜ BQ LQ φ
 
 empty' : cmp BLQ
 empty' = triangleᶜ' {B-⊤ = BQ} {B-abs = LQ} {β = φ} emptyᵗ emptyq empty-coherent
@@ -121,7 +122,7 @@ enqueue' : val ℕᵛ → BLQ ⊸ BLQ
 enqueue' e = squareᶜ' (enqueueᵗ e) (enqueue e) (enqueue-coherent e)
 
 opaque
-  unfolding Glueᶜ'
+  unfolding Abstractionᶜ
 
   dequeue'-fst-glue : cmp BLQ → val (𝒱-fromFRAC (𝒱-toFRAC ℕᵛ))
   dequeue'-fst-glue =
