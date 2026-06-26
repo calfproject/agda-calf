@@ -6,37 +6,32 @@ open import Cubical.Data.Nat using (ℕ; zero; suc; HasFromNat)
 open import Cubical.Foundations.Prelude
 open import Data.Unit
 
-data valω : Type where
-  zero : valω
-  suc : (n : valω) → valω
-  rel : (𝕚 : 𝟚) (n : valω) → valω
+data ω : 𝒱 where
+  zero : ω
+  suc : (n : ω) → ω
+  rel : (𝕚 : 𝟚) (n : ω) → ω
   rel-0𝟚 : ∀ n → rel 0𝟚 n ≡ n
   rel-1𝟚 : ∀ n → rel 1𝟚 n ≡ suc n
 
-ℕ→ω : ℕ → valω
+ℕ→ω : ℕ → ω
 ℕ→ω zero = zero
 ℕ→ω (suc n) = suc (ℕ→ω n)
 
 opaque
   unfolding 𝒱-family
 
-  isPreorder-valω : isPreorder valω
-  isPreorder-valω = {!   !}
-
-ω : 𝒱
-ω .val = valω
-ω .is-set = {!   !}
-ω .is-preorder = isPreorder-valω
+  isPreorder-ω : isPreorder ω
+  isPreorder-ω = {!   !}
 
 instance
-  fromNatω : HasFromNat (val ω)
+  fromNatω : HasFromNat ω
   fromNatω = record { Constraint = λ _ → ⊤ ; fromNat = λ n → ℕ→ω n }
 
-open import Algebra.Definitions {A = valω} _≡_
+open import Algebra.Definitions {A = ω} _≡_
 
 infixl 6 _+_
 
-_+_ : valω → valω → valω
+_+_ : ω → ω → ω
 zero + m = m
 suc n + m = suc (n + m)
 rel 𝕚 n + m = rel 𝕚 (n + m)
