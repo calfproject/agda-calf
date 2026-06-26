@@ -5,116 +5,26 @@ open import Cubical.Data.Bool using (Bool; true; false; if_then_else_; _and_)
 open import Cubical.Data.Maybe using (Maybe; just; nothing)
 open import Cubical.Data.List using (_++_)
 open import Cubical.Data.Nat using (ℕ; zero; suc; _+_; _∸_; _·_)
-open import Cubical.Data.Nat.Order using
-  (_≤_; isProp≤; zero-≤; ≤-refl; suc-≤-suc; ≤-trans; ≤-+-≤; ≤SumLeft; ≤SumRight;
-   ≤-∸-+-cancel)
+open import Cubical.Data.Nat.Order using (_≤_)
 open import Cubical.Data.Sigma using (fst; snd; _×_)
-open import Cubical.Data.Vec using (Vec) renaming ([] to emptyVec; _∷_ to _∷vec_)
+open import Cubical.Data.Vec using () renaming ([] to emptyVec; _∷_ to _∷vec_)
 open import Cubical.Reflection.Base using (_v∷_; _>>=_; _>>_; _<|>_; varg)
 open import Cubical.Tactics.Reflection using (unapply-path)
 open import Cubical.Tactics.Reflection.Utilities using (finiteNumberAsTerm)
 open import Cubical.Tactics.Reflection.Variables using
-  (Vars; appendWithoutRepetition; indexOf)
-open import Cubical.Tactics.NatSolver.NatExpression using (Expr; K; ∣; _+'_; _·'_)
-open import Cubical.Tactics.NatSolver.HornerForms using (eval)
+  (Vars; indexOf)
+open import Cubical.Tactics.NatSolver.NatExpression using (K; ∣; _+'_; _·'_)
 open import Cubical.Tactics.NatSolver.Solver using (module EqualityToNormalform)
 
 open import Agda.Builtin.List using (List; []; _∷_)
+open import Agda.Builtin.Nat using () renaming (_==_ to _=ℕ_)
 open import Agda.Builtin.Reflection hiding (Type)
+open import Agda.Builtin.String using (String)
 open import Agda.Builtin.Unit using (⊤)
 open import Function using (case_of_)
 
 open EqualityToNormalform renaming (solve to natSolve)
-
-∸-witness : ∀ {m n : ℕ} → (h : m ≤ n) → n ∸ m ≡ fst h
-∸-witness {m} {n} h =
-  cong fst (isProp≤ ((n ∸ m) , ≤-∸-+-cancel h) h)
-
-natNormRefl :
-  ∀ {n : ℕ} (e : Expr n) (xs : Vec ℕ n)
-  → eval (normalize e) xs ≡ eval (normalize e) xs
-natNormRefl e xs = refl
-
-natRefl : (x : ℕ) → x ≡ x
-natRefl x = refl
-
-natCongSuc : (x y : ℕ) → x ≡ y → suc x ≡ suc y
-natCongSuc x y p = cong suc p
-
-natCong₂+ :
-  (a a′ b b′ : ℕ)
-  → a ≡ a′
-  → b ≡ b′
-  → a + b ≡ a′ + b′
-natCong₂+ a a′ b b′ p q = cong₂ _+_ p q
-
-natCong₂· :
-  (a a′ b b′ : ℕ)
-  → a ≡ a′
-  → b ≡ b′
-  → a · b ≡ a′ · b′
-natCong₂· a a′ b b′ p q = cong₂ _·_ p q
-
-natCong₂∸ :
-  (a a′ b b′ : ℕ)
-  → a ≡ a′
-  → b ≡ b′
-  → a ∸ b ≡ a′ ∸ b′
-natCong₂∸ a a′ b b′ p q = cong₂ _∸_ p q
-
-natComp :
-  (x y z : ℕ)
-  → x ≡ y
-  → y ≡ z
-  → x ≡ z
-natComp x y z p q = p ∙ q
-
-finishNatExplicit :
-  (lhs lhs′ rhs rhs′ : ℕ)
-  → lhs ≡ lhs′
-  → lhs′ ≡ rhs′
-  → rhs ≡ rhs′
-  → lhs ≡ rhs
-finishNatExplicit lhs lhs′ rhs rhs′ lhs-step middle rhs-step =
-  lhs-step ∙ middle ∙ sym rhs-step
-
-finishLeExplicit :
-  (lower lower′ upper upper′ : ℕ)
-  → lower ≡ lower′
-  → lower′ ≤ upper′
-  → upper ≡ upper′
-  → lower ≤ upper
-finishLeExplicit lower lower′ upper upper′ lower-step middle upper-step =
-  subst (λ n → lower ≤ n) (sym upper-step)
-    (subst (λ n → n ≤ upper′) (sym lower-step) middle)
-
-leRefl : (m : ℕ) → m ≤ m
-leRefl m = ≤-refl
-
-leZero : (n : ℕ) → 0 ≤ n
-leZero n = zero-≤
-
-leSuc : (m n : ℕ) → m ≤ n → suc m ≤ suc n
-leSuc m n p = suc-≤-suc p
-
-leTrans : (k m n : ℕ) → k ≤ m → m ≤ n → k ≤ n
-leTrans k m n p q = ≤-trans p q
-
-lePlus :
-  (m n l k : ℕ)
-  → m ≤ n
-  → l ≤ k
-  → m + l ≤ n + k
-lePlus m n l k p q = ≤-+-≤ p q
-
-leSumLeft : (n k : ℕ) → n ≤ n + k
-leSumLeft n k = ≤SumLeft
-
-leSumRight : (n k : ℕ) → n ≤ k + n
-leSumRight n k = ≤SumRight
-
-leWitnessEq : (lower upper : ℕ) → (p : lower ≤ upper) → upper ≡ fst p + lower
-leWitnessEq lower upper p = sym (snd p)
+open import Calf.Solver.Nat.Arithmetic public
 
 private
   record LeFact : Type where
@@ -133,7 +43,7 @@ private
   isJust : ∀ {A : Type} → Maybe A → Bool
   isJust (just _) = true
   isJust nothing = false
-  
+
   natLit : ℕ → Term
   natLit n = lit (nat n)
 
@@ -151,30 +61,30 @@ private
   visibleTerms (arg (arg-info visible _) t ∷ args) = t ∷ visibleTerms args
   visibleTerms (_ ∷ args) = visibleTerms args
 
-  visible1 : List (Arg Term) → Maybe Term
-  visible1 args with visibleTerms args
-  ... | t ∷ [] = just t
-  ... | _ = nothing
-
   visible2 : List (Arg Term) → Maybe (Term × Term)
   visible2 args with visibleTerms args
   ... | x ∷ y ∷ [] = just (x , y)
   ... | _ = nothing
 
-  viewNamed2 : Name → Term → Maybe (Term × Term)
-  viewNamed2 nm (def f args) with primQNameEquality nm f
-  ... | true = visible2 args
+  viewDef : Name → Term → Maybe (List Term)
+  viewDef nm (def f args) with primQNameEquality nm f
+  ... | true = just (visibleTerms args)
   ... | false = nothing
-  viewNamed2 _ _ = nothing
+  viewDef _ _ = nothing
+
+  view2 : Name → Term → Maybe (Term × Term)
+  view2 nm t with viewDef nm t
+  ... | just (x ∷ y ∷ []) = just (x , y)
+  ... | _ = nothing
 
   view+ : Term → Maybe (Term × Term)
-  view+ = viewNamed2 (quote _+_)
+  view+ = view2 (quote _+_)
 
   view· : Term → Maybe (Term × Term)
-  view· = viewNamed2 (quote _·_)
+  view· = view2 (quote _·_)
 
   view∸ : Term → Maybe (Term × Term)
-  view∸ = viewNamed2 (quote _∸_)
+  view∸ = view2 (quote _∸_)
 
   viewZero : Term → Bool
   viewZero (lit (nat zero)) = true
@@ -183,18 +93,11 @@ private
 
   viewSuc : Term → Maybe Term
   viewSuc (lit (nat (suc n))) = just (natLit n)
-  viewSuc (con (quote suc) args) = visible1 args
+  viewSuc (con (quote suc) args) with visibleTerms args
+  ... | t ∷ [] = just t
+  ... | _ = nothing
   viewSuc t with view+ t
   ... | just (lit (nat (suc n)) , x) = just (def (quote _+_) (natLit n v∷ x v∷ []))
-  ... | _ = nothing
-
-  expandMulByNat : ℕ → Term → Term
-  expandMulByNat zero x = zeroTerm
-  expandMulByNat (suc n) x = def (quote _+_) (x v∷ expandMulByNat n x v∷ [])
-
-  viewLiteralMul : Term → Maybe Term
-  viewLiteralMul t with view· t
-  ... | just (lit (nat k) , x) = just (expandMulByNat k x)
   ... | _ = nothing
 
   termEq : Term → Term → TC Bool
@@ -202,6 +105,38 @@ private
     do x′ ← normalise x
        y′ ← normalise y
        returnTC (isJust (indexOf x′ (y′ ∷ [])))
+
+  literalShapeEq : Literal → Literal → Bool
+  literalShapeEq (nat m) (nat n) = m =ℕ n
+  literalShapeEq (name m) (name n) = primQNameEquality m n
+  literalShapeEq (meta m) (meta n) = primMetaEquality m n
+  literalShapeEq _ _ = false
+
+  mutual
+    termShapeEq : Term → Term → Bool
+    termShapeEq (var i args) (var j args′) =
+      (i =ℕ j) and argListShapeEq args args′
+    termShapeEq (con c args) (con c′ args′) =
+      primQNameEquality c c′ and argListShapeEq args args′
+    termShapeEq (def f args) (def f′ args′) =
+      primQNameEquality f f′ and argListShapeEq args args′
+    termShapeEq (lit l) (lit l′) = literalShapeEq l l′
+    termShapeEq (meta m args) (meta m′ args′) =
+      primMetaEquality m m′ and argListShapeEq args args′
+    termShapeEq _ _ = false
+
+    argListShapeEq : List (Arg Term) → List (Arg Term) → Bool
+    argListShapeEq [] [] = true
+    argListShapeEq [] (arg (arg-info visible _) _ ∷ _) = false
+    argListShapeEq [] (_ ∷ args′) = argListShapeEq [] args′
+    argListShapeEq (arg (arg-info visible _) _ ∷ _) [] = false
+    argListShapeEq (_ ∷ args) [] = argListShapeEq args []
+    argListShapeEq (arg (arg-info visible _) t ∷ args)
+                   (arg (arg-info visible _) u ∷ args′) =
+      termShapeEq t u and argListShapeEq args args′
+    argListShapeEq (a@(arg (arg-info visible _) _) ∷ args) (_ ∷ args′) =
+      argListShapeEq (a ∷ args) args′
+    argListShapeEq (_ ∷ args) args′ = argListShapeEq args args′
 
   mk≤-trans : Term → Term → Term → Term → Term → Term
   mk≤-trans lower middle upper p q =
@@ -212,10 +147,6 @@ private
   mk≤-+-≤ l₁ u₁ l₂ u₂ p q =
     def (quote lePlus)
       (l₁ v∷ u₁ v∷ l₂ v∷ u₂ v∷ p v∷ q v∷ [])
-
-  mapMaybeTerm : (Term → Term) → Maybe Term → Maybe Term
-  mapMaybeTerm f (just t) = just (f t)
-  mapMaybeTerm f nothing = nothing
 
   returnMap : (Term → Term) → TC (Maybe Term) → TC (Maybe Term)
   returnMap f tc =
@@ -232,39 +163,89 @@ private
          then returnTC (just proof)
          else findDirect lower upper facts
 
+  parse≤Type : Term → Maybe (Term × Term)
+  parse≤Type = view2 (quote _≤_)
+
+  Strategy : Type
+  Strategy = ℕ → List LeFact → Term → Term → TC (Maybe Term)
+
+  infixr 4 _<<<_
+  _<<<_ : TC (Maybe Term) → TC (Maybe Term) → TC (Maybe Term)
+  m <<< k = m >>= λ where
+    (just p) → returnTC (just p)
+    nothing → k
+
   mutual
-    synth≤ : ℕ → List LeFact → Term → Term → TC (Maybe Term)
+    synth≤ : Strategy
     synth≤ zero facts lower upper = findDirect lower upper facts
     synth≤ (suc fuel) facts lower upper =
-      findDirect lower upper facts >>= λ where
-        (just proof) → returnTC (just proof)
-        nothing → tryRefl fuel facts lower upper
+      sFindDirect  fuel facts lower upper <<<
+      sRefl        fuel facts lower upper <<<
+      sZero        fuel facts lower upper <<<
+      sMulRight    fuel facts lower upper <<<
+      sMinusUpper  fuel facts lower upper <<<
+      sSuc         fuel facts lower upper <<<
+      sSum         fuel facts lower upper <<<
+      sPlus        fuel facts lower upper <<<
+      sSucPlus     fuel facts lower upper <<<
+      sTrans       fuel facts lower upper
 
-    tryRefl : ℕ → List LeFact → Term → Term → TC (Maybe Term)
-    tryRefl fuel facts lower upper =
+    sFindDirect : Strategy
+    sFindDirect _ facts lower upper = findDirect lower upper facts
+
+    sRefl : Strategy
+    sRefl _ _ lower upper =
       termEq lower upper >>= λ where
         true → returnTC (just (def (quote leRefl) (lower v∷ [])))
-        false → tryZero fuel facts lower upper
+        false → returnTC nothing
 
-    tryZero : ℕ → List LeFact → Term → Term → TC (Maybe Term)
-    tryZero fuel facts lower upper with viewZero lower
+    sZero : Strategy
+    sZero _ _ lower upper with viewZero lower
     ... | true = returnTC (just (def (quote leZero) (upper v∷ [])))
-    ... | false = tryLiteralMul fuel facts lower upper
+    ... | false = returnTC nothing
 
-    tryLiteralMul : ℕ → List LeFact → Term → Term → TC (Maybe Term)
-    tryLiteralMul fuel facts lower upper with viewLiteralMul upper
-    ... | just upper′ = synth≤ fuel facts lower upper′
-    ... | nothing = trySuc fuel facts lower upper
+    sMulRight : Strategy
+    sMulRight fuel facts lower upper with view· upper
+    ... | just (lit (nat (suc k)) , x) =
+      synth≤ fuel facts lower x >>= λ where
+        (just p) →
+          returnTC
+            (just
+              (def (quote leMulRight)
+                (lower v∷ x v∷ natLit k v∷ p v∷ [])))
+        nothing → returnTC nothing
+    ... | _ = returnTC nothing
 
-    trySuc : ℕ → List LeFact → Term → Term → TC (Maybe Term)
-    trySuc fuel facts lower upper with viewSuc lower | viewSuc upper
+    sMinusUpper : Strategy
+    sMinusUpper fuel facts lower upper with view∸ upper
+    ... | just (upper′ , subtrahend) =
+      let lower+sub = def (quote _+_) (lower v∷ subtrahend v∷ []) in
+      synth≤ fuel facts lower+sub upper′ >>= λ where
+        (just proof) →
+          returnTC
+            (just
+              (def (quote leMinusRight)
+                (lower v∷ upper′ v∷ subtrahend v∷ proof v∷ [])))
+        nothing →
+          let sub+lower = def (quote _+_) (subtrahend v∷ lower v∷ []) in
+          synth≤ fuel facts sub+lower upper′ >>= λ where
+            (just proof) →
+              returnTC
+                (just
+                  (def (quote leMinusRightComm)
+                    (lower v∷ upper′ v∷ subtrahend v∷ proof v∷ [])))
+            nothing → returnTC nothing
+    ... | nothing = returnTC nothing
+
+    sSuc : Strategy
+    sSuc fuel facts lower upper with viewSuc lower | viewSuc upper
     ... | just lower′ | just upper′ =
       returnMap (λ p → def (quote leSuc) (lower′ v∷ upper′ v∷ p v∷ []))
         (synth≤ fuel facts lower′ upper′)
-    ... | _ | _ = trySum fuel facts lower upper
+    ... | _ | _ = returnTC nothing
 
-    trySum : ℕ → List LeFact → Term → Term → TC (Maybe Term)
-    trySum fuel facts lower upper with view+ upper
+    sSum : Strategy
+    sSum fuel facts lower upper with view+ upper
     ... | just (u₁ , u₂) =
       termEq lower u₁ >>= λ where
         true → returnTC (just (def (quote leSumLeft) (u₁ v∷ u₂ v∷ [])))
@@ -272,61 +253,67 @@ private
           termEq lower u₂ >>= λ where
             true → returnTC (just (def (quote leSumRight) (u₂ v∷ u₁ v∷ [])))
             false →
-              case view+ lower of λ where
-                (just _) → tryPlus fuel facts lower upper
+              synth≤ fuel facts lower u₁ >>= λ where
+                (just p₁) →
+                  returnTC
+                    (just
+                      (mk≤-trans lower u₁ upper p₁
+                        (def (quote leSumLeft) (u₁ v∷ u₂ v∷ []))))
                 nothing →
-                  case viewSuc lower of λ where
-                    (just _) → trySucPlus fuel facts lower upper
-                    nothing → tryTrans fuel facts lower upper facts
-    ... | nothing = tryPlus fuel facts lower upper
+                  synth≤ fuel facts lower u₂ >>= λ where
+                    (just p₂) →
+                      returnTC
+                        (just
+                          (mk≤-trans lower u₂ upper p₂
+                            (def (quote leSumRight) (u₂ v∷ u₁ v∷ []))))
+                    nothing → returnTC nothing
+    ... | nothing = returnTC nothing
 
-    tryPlus : ℕ → List LeFact → Term → Term → TC (Maybe Term)
-    tryPlus fuel facts lower upper with view+ lower | view+ upper
+    sPlus : Strategy
+    sPlus fuel facts lower upper with view+ lower | view+ upper
     ... | just (l₁ , l₂) | just (u₁ , u₂) =
       synth≤ fuel facts l₁ u₁ >>= λ where
         (just p₁) →
           synth≤ fuel facts l₂ u₂ >>= λ where
             (just p₂) → returnTC (just (mk≤-+-≤ l₁ u₁ l₂ u₂ p₁ p₂))
-            nothing → trySucPlus fuel facts lower upper
-        nothing → trySucPlus fuel facts lower upper
-    ... | _ | _ = trySucPlus fuel facts lower upper
+            nothing → returnTC nothing
+        nothing → returnTC nothing
+    ... | _ | _ = returnTC nothing
 
-    trySucPlus : ℕ → List LeFact → Term → Term → TC (Maybe Term)
-    trySucPlus fuel facts lower upper with viewSuc lower | view+ upper
+    sSucPlus : Strategy
+    sSucPlus fuel facts lower upper with viewSuc lower | view+ upper
     ... | just lower′ | just (u₁ , u₂) =
       synth≤ fuel facts oneTerm u₁ >>= λ where
         (just p₁) →
           synth≤ fuel facts lower′ u₂ >>= λ where
             (just p₂) → returnTC (just (mk≤-+-≤ oneTerm u₁ lower′ u₂ p₁ p₂))
-            nothing → tryTrans fuel facts lower upper facts
-        nothing → tryTrans fuel facts lower upper facts
-    ... | _ | _ = tryTrans fuel facts lower upper facts
+            nothing → returnTC nothing
+        nothing → returnTC nothing
+    ... | _ | _ = returnTC nothing
 
-    tryTrans : ℕ → List LeFact → Term → Term → List LeFact → TC (Maybe Term)
-    tryTrans fuel facts lower upper [] = returnTC nothing
-    tryTrans fuel facts lower upper (leFact factLower factUpper factProof ∷ rest) =
+    sTrans : Strategy
+    sTrans fuel facts lower upper = sTransAt fuel facts lower upper facts
+
+    sTransAt :
+      ℕ → List LeFact → Term → Term → List LeFact → TC (Maybe Term)
+    sTransAt fuel facts lower upper [] = returnTC nothing
+    sTransAt fuel facts lower upper (leFact factLower factUpper factProof ∷ rest) =
       termEq lower factLower >>= λ where
         true →
           synth≤ fuel facts factUpper upper >>= λ where
             (just q) → returnTC (just (mk≤-trans lower factUpper upper factProof q))
-            nothing → tryTransRight fuel facts lower upper rest factLower factUpper factProof
-        false → tryTransRight fuel facts lower upper rest factLower factUpper factProof
+            nothing → sTransAtRight fuel facts lower upper rest factLower factUpper factProof
+        false → sTransAtRight fuel facts lower upper rest factLower factUpper factProof
 
-    tryTransRight :
+    sTransAtRight :
       ℕ → List LeFact → Term → Term → List LeFact → Term → Term → Term → TC (Maybe Term)
-    tryTransRight fuel facts lower upper rest factLower factUpper factProof =
+    sTransAtRight fuel facts lower upper rest factLower factUpper factProof =
       termEq upper factUpper >>= λ where
         true →
           synth≤ fuel facts lower factLower >>= λ where
             (just p) → returnTC (just (mk≤-trans lower factLower upper p factProof))
-            nothing → tryTrans fuel facts lower upper rest
-        false → tryTrans fuel facts lower upper rest
-
-  parse≤Type : Term → Maybe (Term × Term)
-  parse≤Type (def f args) with primQNameEquality f (quote _≤_)
-  ... | true = visible2 args
-  ... | false = nothing
-  parse≤Type _ = nothing
+            nothing → sTransAt fuel facts lower upper rest
+        false → sTransAt fuel facts lower upper rest
 
   parseSingleAssumption : Term → TC (Maybe Term)
   parseSingleAssumption p =
@@ -349,6 +336,12 @@ private
 
   assumptionFuel : ℕ
   assumptionFuel = 50
+  rewriteFuel : ℕ
+  rewriteFuel = 50
+  synthFuel : ℕ
+  synthFuel = 8
+  expressionFuel : ℕ
+  expressionFuel = 50
 
   mutual
     parseAssumptionsFuel : ℕ → Term → TC (List Term)
@@ -424,75 +417,211 @@ private
   leWitnessEqTerm lower upper proof =
     def (quote leWitnessEq) (lower v∷ upper v∷ proof v∷ [])
 
-  rewriteFuel : ℕ
-  rewriteFuel = 50
+  leMinusPlusEqTerm : Term → Term → Term → Term
+  leMinusPlusEqTerm lower upper proof =
+    def (quote leMinusPlusEq) (lower v∷ upper v∷ proof v∷ [])
 
-  synthFuel : ℕ
-  synthFuel = 8
+  minusZeroRightTerm : Term → Term
+  minusZeroRightTerm x =
+    def (quote minusZeroRight) (x v∷ [])
 
-  rewriteTerm : ℕ → List LeFact → Term → TC Rewrite
-  rewriteTerm zero facts t =
-    typeError (strErr "Nat solver preprocessing ran out of fuel at: "
-      ∷ termErr t ∷ [])
-  rewriteTerm (suc fuel) facts t with view+ t
+  minusZeroLeftTerm : Term → Term
+  minusZeroLeftTerm x =
+    def (quote minusZeroLeft) (x v∷ [])
+
+  minusSelfTerm : Term → Term
+  minusSelfTerm x =
+    def (quote minusSelf) (x v∷ [])
+
+  minusPullLeftTerm : Term → Term → Term → Term → Term
+  minusPullLeftTerm m n k p =
+    def (quote minusPullLeft) (m v∷ n v∷ k v∷ p v∷ [])
+
+  minusPullRightTerm : Term → Term → Term → Term → Term
+  minusPullRightTerm m n k p =
+    def (quote minusPullRight) (m v∷ n v∷ k v∷ p v∷ [])
+
+  minusPlusRightTerm : Term → Term → Term
+  minusPlusRightTerm x k =
+    def (quote minusPlusRight) (x v∷ k v∷ [])
+
+  minusPlusLeftTerm : Term → Term → Term
+  minusPlusLeftTerm k x =
+    def (quote minusPlusLeft) (k v∷ x v∷ [])
+
+  rewriteMinusByPlus : Term → Term → TC (Maybe Rewrite)
+  rewriteMinusByPlus upper lower with view+ upper
+  ... | just (x , k) =
+    termEq lower x >>= λ where
+      true →
+        returnTC
+          (just
+            (mkRewrite k
+              (minusPlusRightTerm x k)))
+      false →
+        termEq lower k >>= λ where
+          true →
+            returnTC
+              (just
+                (mkRewrite x
+                  (minusPlusLeftTerm x k)))
+          false → returnTC nothing
+  ... | nothing = returnTC nothing
+
+  rewriteMinusFromSum : ℕ → List LeFact → Term → Term → TC (Maybe Rewrite)
+  rewriteMinusFromSum zero facts upper lower = returnTC nothing
+  rewriteMinusFromSum (suc fuel) facts upper lower with view+ upper
   ... | just (x , y) =
-    do rx ← rewriteTerm fuel facts x
-       ry ← rewriteTerm fuel facts y
-       let x′ = Rewrite.term rx
-       let y′ = Rewrite.term ry
-       let px = Rewrite.step rx
-       let py = Rewrite.step ry
-       returnTC
-         (mkRewrite
-           (def (quote _+_) (x′ v∷ y′ v∷ []))
-           (cong₂+Term x x′ y y′ px py))
-  ... | nothing with view· t
-  ... | just (x , y) =
-    do rx ← rewriteTerm fuel facts x
-       ry ← rewriteTerm fuel facts y
-       let x′ = Rewrite.term rx
-       let y′ = Rewrite.term ry
-       let px = Rewrite.step rx
-       let py = Rewrite.step ry
-       returnTC
-         (mkRewrite
-           (def (quote _·_) (x′ v∷ y′ v∷ []))
-           (cong₂·Term x x′ y y′ px py))
-  ... | nothing with view∸ t
-  ... | just (upper , lower) =
-    do rUpper ← rewriteTerm fuel facts upper
-       rLower ← rewriteTerm fuel facts lower
-       let upper′ = Rewrite.term rUpper
-       let lower′ = Rewrite.term rLower
-       let originalMinus = def (quote _∸_) (upper v∷ lower v∷ [])
-       let rewrittenMinus = def (quote _∸_) (upper′ v∷ lower′ v∷ [])
-       let childStep =
-             cong₂∸Term upper upper′ lower lower′
-               (Rewrite.step rUpper)
-               (Rewrite.step rLower)
-       guard ← synth≤ synthFuel facts lower′ upper′
-       case guard of λ where
-         (just proof) →
-           let witness = fstTerm proof in
-           returnTC
-             (mkRewrite witness
-               (compTerm originalMinus rewrittenMinus witness
-                 childStep
-                 (def (quote ∸-witness) (proof v∷ []))))
-         nothing →
-           typeError
-             (strErr "Could not synthesize a checked ≤ guard for subtraction: "
-             ∷ termErr lower′
-             ∷ strErr " ≤ "
-             ∷ termErr upper′
-             ∷ [])
-  ... | nothing with viewSuc t
-  ... | just x =
-    do rx ← rewriteTerm fuel facts x
-       let x′ = Rewrite.term rx
-       let step = Rewrite.step rx
-       returnTC (mkRewrite (con (quote suc) (x′ v∷ [])) (congSucTerm x x′ step))
-  ... | nothing = returnTC (mkRewrite t (natReflTerm t))
+    termEq lower x >>= λ where
+      true →
+        returnTC
+          (just
+            (mkRewrite y
+              (minusPlusRightTerm x y)))
+      false →
+        termEq lower y >>= λ where
+          true →
+            returnTC
+              (just
+                (mkRewrite x
+                  (minusPlusLeftTerm x y)))
+          false →
+            rewriteMinusFromSum fuel facts x lower >>= λ where
+              (just rx) →
+                synth≤ synthFuel facts lower x >>= λ where
+                  (just guard) →
+                    let x∸lower = def (quote _∸_) (x v∷ lower v∷ []) in
+                    let residual = def (quote _+_) (Rewrite.term rx v∷ y v∷ []) in
+                    let residualStep =
+                          cong₂+Term x∸lower (Rewrite.term rx) y y
+                            (Rewrite.step rx)
+                            (natReflTerm y)
+                    in
+                    returnTC
+                      (just
+                        (mkRewrite residual
+                          (compTerm
+                            (def (quote _∸_)
+                              (upper v∷ lower v∷ []))
+                            (def (quote _+_) (x∸lower v∷ y v∷ []))
+                            residual
+                            (minusPullRightTerm lower x y guard)
+                            residualStep)))
+                  nothing → tryRight
+              nothing → tryRight
+    where
+    tryPullRight : TC (Maybe Rewrite)
+    tryPullRight =
+      synth≤ synthFuel facts lower y >>= λ where
+        (just guard) →
+          let residual = def (quote _+_)
+                (x v∷ def (quote _∸_) (y v∷ lower v∷ []) v∷ [])
+          in
+          returnTC
+            (just
+              (mkRewrite residual
+                (minusPullLeftTerm lower y x guard)))
+        nothing → returnTC nothing
+
+    tryPullLeft : TC (Maybe Rewrite)
+    tryPullLeft =
+      synth≤ synthFuel facts lower x >>= λ where
+        (just guard) →
+          let residual = def (quote _+_)
+                (def (quote _∸_) (x v∷ lower v∷ []) v∷ y v∷ [])
+          in
+          returnTC
+            (just
+              (mkRewrite residual
+                (minusPullRightTerm lower x y guard)))
+        nothing → tryPullRight
+
+    tryRight : TC (Maybe Rewrite)
+    tryRight =
+      rewriteMinusFromSum fuel facts y lower >>= λ where
+        (just ry) →
+          synth≤ synthFuel facts lower y >>= λ where
+            (just guard) →
+              let y∸lower = def (quote _∸_) (y v∷ lower v∷ []) in
+              let residual = def (quote _+_) (x v∷ Rewrite.term ry v∷ []) in
+              let residualStep =
+                    cong₂+Term x x y∸lower (Rewrite.term ry)
+                      (natReflTerm x)
+                      (Rewrite.step ry)
+              in
+              returnTC
+                (just
+                  (mkRewrite residual
+                    (compTerm
+                      (def (quote _∸_)
+                        (upper v∷ lower v∷ []))
+                      (def (quote _+_) (x v∷ y∸lower v∷ []))
+                      residual
+                      (minusPullLeftTerm lower y x guard)
+                      residualStep)))
+            nothing → tryPullLeft
+        nothing → tryPullLeft
+  ... | nothing = returnTC nothing
+
+  rewriteMinusDirect : ℕ → List LeFact → Term → Term → TC (Maybe Rewrite)
+  rewriteMinusDirect fuel facts upper lower with viewZero lower
+  ... | true =
+    returnTC
+      (just
+        (mkRewrite upper
+          (minusZeroRightTerm upper)))
+  ... | false with viewZero upper
+  ... | true =
+    returnTC
+      (just
+        (mkRewrite zeroTerm
+          (minusZeroLeftTerm lower)))
+  ... | false =
+    termEq upper lower >>= λ where
+      true →
+        returnTC
+          (just
+            (mkRewrite zeroTerm
+              (minusSelfTerm upper)))
+      false →
+        rewriteMinusByPlus upper lower >>= λ where
+          (just r) → returnTC (just r)
+          nothing → rewriteMinusFromSum fuel facts upper lower
+
+  record RewritePolicy : Type where
+    constructor mkPolicy
+    field
+      fuelErrorPrefix : String
+      preHead : Term → TC (Maybe Rewrite)
+      onMinus : ℕ → Term → Term → TC (Maybe Rewrite)
+
+  noPreHead : Term → TC (Maybe Rewrite)
+  noPreHead _ = returnTC nothing
+
+  noOpMinus : ℕ → Term → Term → TC (Maybe Rewrite)
+  noOpMinus _ _ _ = returnTC nothing
+
+  rewriteMinusBasic : Term → Term → TC (Maybe Rewrite)
+  rewriteMinusBasic upper lower with viewZero lower
+  ... | true =
+    returnTC
+      (just
+        (mkRewrite upper
+          (minusZeroRightTerm upper)))
+  ... | false with viewZero upper
+  ... | true =
+    returnTC
+      (just
+        (mkRewrite zeroTerm
+          (minusZeroLeftTerm lower)))
+  ... | false =
+    termEq upper lower >>= λ where
+      true →
+        returnTC
+          (just
+            (mkRewrite zeroTerm
+              (minusSelfTerm upper)))
+      false → rewriteMinusByPlus upper lower
 
   findUpperRewrite : Term → List LeFact → TC (Maybe Rewrite)
   findUpperRewrite t [] = returnTC nothing
@@ -502,83 +631,204 @@ private
         returnTC
           (just
             (mkRewrite
-              (def (quote _+_) (fstTerm proof v∷ lower v∷ []))
-              (leWitnessEqTerm lower upper proof)))
+              (def (quote _+_)
+                (def (quote _∸_) (upper v∷ lower v∷ []) v∷ lower v∷ []))
+              (leMinusPlusEqTerm lower upper proof)))
       false → findUpperRewrite t facts
 
-  mutual
-    rewriteBy≤Facts : ℕ → List LeFact → Term → TC Rewrite
-    rewriteBy≤Facts zero facts t =
-      typeError (strErr "Nat solver ≤-assumption rewriting ran out of fuel at: "
-        ∷ termErr t ∷ [])
-    rewriteBy≤Facts (suc fuel) facts t =
-      findUpperRewrite t facts >>= λ where
-        (just r) → returnTC r
-        nothing → rewriteBy≤Facts′ fuel facts t
+  findUpperRewriteWitness : Term → List LeFact → TC (Maybe Rewrite)
+  findUpperRewriteWitness t [] = returnTC nothing
+  findUpperRewriteWitness t (leFact lower upper proof ∷ facts) =
+    termEq t upper >>= λ where
+      true →
+        returnTC
+          (just
+            (mkRewrite
+              (def (quote _+_) (fstTerm proof v∷ lower v∷ []))
+              (leWitnessEqTerm lower upper proof)))
+      false → findUpperRewriteWitness t facts
 
-    rewriteBy≤Facts′ : ℕ → List LeFact → Term → TC Rewrite
-    rewriteBy≤Facts′ fuel facts t with view+ t
+  onMinusElim : List LeFact → ℕ → Term → Term → TC (Maybe Rewrite)
+  onMinusElim facts fuel upper′ lower′ =
+    rewriteMinusDirect fuel facts upper′ lower′
+
+  onMinusWitness : List LeFact → ℕ → Term → Term → TC (Maybe Rewrite)
+  onMinusWitness facts _ upper′ lower′ =
+    rewriteMinusBasic upper′ lower′ >>= λ where
+      (just r) → returnTC (just r)
+      nothing →
+        synth≤ synthFuel facts lower′ upper′ >>= λ where
+          (just proof) →
+            returnTC
+              (just
+                (mkRewrite (fstTerm proof)
+                  (def (quote ∸-witness) (proof v∷ []))))
+          nothing →
+            typeError
+              (strErr "Could not synthesize a checked ≤ guard for subtraction: "
+              ∷ termErr lower′
+              ∷ strErr " ≤ "
+              ∷ termErr upper′
+              ∷ [])
+
+  policyMinusElim : List LeFact → RewritePolicy
+  policyMinusElim facts =
+    mkPolicy "Nat solver preprocessing ran out of fuel at: "
+      noPreHead (onMinusElim facts)
+
+  policyMinusElimWitness : List LeFact → RewritePolicy
+  policyMinusElimWitness facts =
+    mkPolicy "Nat solver witness preprocessing ran out of fuel at: "
+      noPreHead (onMinusWitness facts)
+
+  policyUpperRewrite : List LeFact → RewritePolicy
+  policyUpperRewrite facts =
+    mkPolicy "Nat solver ≤-assumption rewriting ran out of fuel at: "
+      (λ t → findUpperRewrite t facts) noOpMinus
+
+  policyUpperRewriteWitness : List LeFact → RewritePolicy
+  policyUpperRewriteWitness facts =
+    mkPolicy "Nat solver witness ≤-assumption rewriting ran out of fuel at: "
+      (λ t → findUpperRewriteWitness t facts) noOpMinus
+
+  mutual
+    traverseRewrite : RewritePolicy → ℕ → Term → TC Rewrite
+    traverseRewrite pol zero t =
+      typeError
+        (strErr (RewritePolicy.fuelErrorPrefix pol) ∷ termErr t ∷ [])
+    traverseRewrite pol (suc fuel) t =
+      RewritePolicy.preHead pol t >>= λ where
+        (just r) → returnTC r
+        nothing → traverseStructural pol fuel t
+
+    traverseStructural : RewritePolicy → ℕ → Term → TC Rewrite
+    traverseStructural pol fuel t with view+ t
     ... | just (x , y) =
-      do rx ← rewriteBy≤Facts fuel facts x
-         ry ← rewriteBy≤Facts fuel facts y
+      do rx ← traverseRewrite pol fuel x
+         ry ← traverseRewrite pol fuel y
          let x′ = Rewrite.term rx
          let y′ = Rewrite.term ry
-         let px = Rewrite.step rx
-         let py = Rewrite.step ry
          returnTC
            (mkRewrite
              (def (quote _+_) (x′ v∷ y′ v∷ []))
-             (cong₂+Term x x′ y y′ px py))
+             (cong₂+Term x x′ y y′ (Rewrite.step rx) (Rewrite.step ry)))
     ... | nothing with view· t
     ... | just (x , y) =
-      do rx ← rewriteBy≤Facts fuel facts x
-         ry ← rewriteBy≤Facts fuel facts y
+      do rx ← traverseRewrite pol fuel x
+         ry ← traverseRewrite pol fuel y
          let x′ = Rewrite.term rx
          let y′ = Rewrite.term ry
-         let px = Rewrite.step rx
-         let py = Rewrite.step ry
          returnTC
            (mkRewrite
              (def (quote _·_) (x′ v∷ y′ v∷ []))
-             (cong₂·Term x x′ y y′ px py))
+             (cong₂·Term x x′ y y′ (Rewrite.step rx) (Rewrite.step ry)))
     ... | nothing with view∸ t
-    ... | just (x , y) =
-      do rx ← rewriteBy≤Facts fuel facts x
-         ry ← rewriteBy≤Facts fuel facts y
-         let x′ = Rewrite.term rx
-         let y′ = Rewrite.term ry
-         let px = Rewrite.step rx
-         let py = Rewrite.step ry
-         returnTC
-           (mkRewrite
-             (def (quote _∸_) (x′ v∷ y′ v∷ []))
-             (cong₂∸Term x x′ y y′ px py))
+    ... | just (upper , lower) =
+      do rUpper ← traverseRewrite pol fuel upper
+         rLower ← traverseRewrite pol fuel lower
+         let upper′ = Rewrite.term rUpper
+         let lower′ = Rewrite.term rLower
+         let origMinus = def (quote _∸_) (upper v∷ lower v∷ [])
+         let rebuilt = def (quote _∸_) (upper′ v∷ lower′ v∷ [])
+         let childStep =
+               cong₂∸Term upper upper′ lower lower′
+                 (Rewrite.step rUpper) (Rewrite.step rLower)
+         RewritePolicy.onMinus pol fuel upper′ lower′ >>= λ where
+           (just r) →
+             returnTC
+               (mkRewrite (Rewrite.term r)
+                 (compTerm origMinus rebuilt (Rewrite.term r)
+                   childStep (Rewrite.step r)))
+           nothing →
+             returnTC (mkRewrite rebuilt childStep)
     ... | nothing with viewSuc t
     ... | just x =
-      do rx ← rewriteBy≤Facts fuel facts x
+      do rx ← traverseRewrite pol fuel x
          let x′ = Rewrite.term rx
-         let step = Rewrite.step rx
-         returnTC (mkRewrite (con (quote suc) (x′ v∷ [])) (congSucTerm x x′ step))
+         returnTC
+           (mkRewrite (con (quote suc) (x′ v∷ []))
+             (congSucTerm x x′ (Rewrite.step rx)))
     ... | nothing = returnTC (mkRewrite t (natReflTerm t))
+
+  rewriteTerm : ℕ → List LeFact → Term → TC Rewrite
+  rewriteTerm fuel facts = traverseRewrite (policyMinusElim facts) fuel
+
+  rewriteBy≤Facts : ℕ → List LeFact → Term → TC Rewrite
+  rewriteBy≤Facts fuel facts = traverseRewrite (policyUpperRewrite facts) fuel
+
+  rewriteTermWitness : ℕ → List LeFact → Term → TC Rewrite
+  rewriteTermWitness fuel facts = traverseRewrite (policyMinusElimWitness facts) fuel
+
+  rewriteBy≤FactsWitness : ℕ → List LeFact → Term → TC Rewrite
+  rewriteBy≤FactsWitness fuel facts = traverseRewrite (policyUpperRewriteWitness facts) fuel
 
   ExprBuilder : Type
   ExprBuilder = Vars → TC Term
 
+  variableVector : Vars → Term
+  variableVector [] = con (quote emptyVec) []
+  variableVector (t ∷ ts) =
+    con (quote _∷vec_) (t v∷ variableVector ts v∷ [])
+
+  indexOfTermByNormalForm : Term → Vars → TC (Maybe ℕ)
+  indexOfTermByNormalForm t [] = returnTC nothing
+  indexOfTermByNormalForm t (t′ ∷ vars) =
+    termEq t t′ >>= λ where
+      true → returnTC (just 0)
+      false →
+        indexOfTermByNormalForm t vars >>= λ where
+          (just n) → returnTC (just (suc n))
+          nothing → returnTC nothing
+
+  indexOfTermByShape : Term → Vars → TC (Maybe ℕ)
+  indexOfTermByShape t [] = returnTC nothing
+  indexOfTermByShape t (t′ ∷ vars) =
+    case termShapeEq t t′ of λ where
+      true → returnTC (just 0)
+      false →
+        do tNorm ← normalise t
+           t′Norm ← normalise t′
+           case termShapeEq tNorm t′Norm of λ where
+             true → returnTC (just 0)
+             false →
+               indexOfTermByShape t vars >>= λ where
+                 (just n) → returnTC (just (suc n))
+                 nothing → returnTC nothing
+
+  indexOfTerm : Term → Vars → TC (Maybe ℕ)
+  indexOfTerm t [] = returnTC nothing
+  indexOfTerm t vars with indexOf t vars
+  ... | just n = returnTC (just n)
+  ... | nothing =
+    indexOfTermByShape t vars >>= λ where
+      (just n) → returnTC (just n)
+      nothing → indexOfTermByNormalForm t vars
+
+  addVariable : Term → Vars → TC Vars
+  addVariable t vars =
+    indexOfTerm t vars >>= λ where
+      (just _) → returnTC vars
+      nothing → returnTC (t ∷ vars)
+
+  appendVariables : Vars → Vars → TC Vars
+  appendVariables [] vars = returnTC vars
+  appendVariables (t ∷ ts) vars =
+    do vars′ ← addVariable t vars
+       appendVariables ts vars′
+
   asVariable : Term → TC (ExprBuilder × Vars)
   asVariable t =
-    returnTC
-      ((λ vars →
-        case indexOf t vars of λ where
-          (just n) → returnTC (con (quote ∣) (finiteNumberAsTerm (just n) v∷ []))
-          nothing →
-            typeError
-              (strErr "Internal error: Nat solver variable was not collected: "
-              ∷ termErr t
-              ∷ []))
-      , t ∷ [])
-
-  expressionFuel : ℕ
-  expressionFuel = 50
+    do t′ ← normalise t
+       returnTC
+         ((λ vars →
+           indexOfTerm t′ vars >>= λ where
+             (just n) → returnTC (con (quote ∣) (finiteNumberAsTerm (just n) v∷ []))
+             nothing →
+               typeError
+                 (strErr "Internal error: Nat solver variable was not collected: "
+                 ∷ termErr t′
+                 ∷ []))
+         , t′ ∷ [])
 
   buildExpression : ℕ → Term → TC (ExprBuilder × Vars)
   buildExpression zero t =
@@ -588,26 +838,26 @@ private
   ... | just (x , y) =
     do rx ← buildExpression fuel x
        ry ← buildExpression fuel y
+       vars ← appendVariables (snd rx) (snd ry)
        returnTC
          ((λ vars →
            do x ← fst rx vars
               y ← fst ry vars
               returnTC (con (quote _+'_) (x v∷ y v∷ [])))
-         , appendWithoutRepetition (snd rx) (snd ry))
+         , vars)
   ... | nothing with view· t
   ... | just (x , y) =
     do rx ← buildExpression fuel x
        ry ← buildExpression fuel y
+       vars ← appendVariables (snd rx) (snd ry)
        returnTC
          ((λ vars →
            do x ← fst rx vars
               y ← fst ry vars
               returnTC (con (quote _·'_) (x v∷ y v∷ [])))
-         , appendWithoutRepetition (snd rx) (snd ry))
+         , vars)
   ... | nothing with view∸ t
-  ... | just _ =
-    typeError (strErr "Internal error: subtraction remained after preprocessing: "
-      ∷ termErr t ∷ [])
+  ... | just _ = asVariable t
   ... | nothing with viewZero t
   ... | true = returnTC ((λ _ → returnTC (con (quote K) (zeroTerm v∷ []))) , [])
   ... | false with viewSuc t
@@ -628,15 +878,10 @@ private
   toNatExpression lhs rhs =
     do rx ← buildExpression expressionFuel lhs
        ry ← buildExpression expressionFuel rhs
-       let vars = appendWithoutRepetition (snd rx) (snd ry)
+       vars ← appendVariables (snd rx) (snd ry)
        lhsExpr ← fst rx vars
        rhsExpr ← fst ry vars
        returnTC (lhsExpr , rhsExpr , vars)
-
-  variableVector : Vars → Term
-  variableVector [] = con (quote emptyVec) []
-  variableVector (t ∷ ts) =
-    con (quote _∷vec_) (t v∷ variableVector ts v∷ [])
 
   natSolverCall : Term → Term → Vars → Term
   natSolverCall lhs rhs vars =
@@ -645,8 +890,71 @@ private
       (varg lhs
       ∷ varg rhs
       ∷ varg xs
-      ∷ varg (def (quote natNormRefl) (lhs v∷ xs v∷ []))
+      ∷ varg (def (quote refl) [])
       ∷ [])
+
+  processSide : RewritePolicy → RewritePolicy → Bool → Term → TC (Term × Term)
+  processSide elimPol upperPol threePass t =
+    do r1 ← traverseRewrite elimPol rewriteFuel t
+       after∸ ← normalise (Rewrite.term r1)
+       r2 ← traverseRewrite upperPol rewriteFuel after∸
+       case threePass of λ where
+         true →
+           do r3 ← traverseRewrite elimPol rewriteFuel (Rewrite.term r2)
+              final ← normalise (Rewrite.term r3)
+              let step =
+                    compTerm t (Rewrite.term r1) final
+                      (Rewrite.step r1)
+                      (compTerm (Rewrite.term r1) (Rewrite.term r2) final
+                        (Rewrite.step r2)
+                        (Rewrite.step r3))
+              returnTC (final , step)
+         false →
+           do final ← normalise (Rewrite.term r2)
+              let step =
+                    compTerm t (Rewrite.term r1) final
+                      (Rewrite.step r1)
+                      (Rewrite.step r2)
+              returnTC (final , step)
+
+  solveEqGoal :
+    List LeFact → RewritePolicy → RewritePolicy → Bool
+    → Term → Term → Term → TC Term
+  solveEqGoal leFacts elimPol upperPol threePass goal lhsN rhsN =
+    do (lhs′ , lhsStep) ← processSide elimPol upperPol threePass lhsN
+       (rhs′ , rhsStep) ← processSide elimPol upperPol threePass rhsN
+       parsed ← toNatExpression lhs′ rhs′
+       let lhsExpr = fst parsed
+       let rhsExpr = fst (snd parsed)
+       let vars = snd (snd parsed)
+       let middle = natSolverCall lhsExpr rhsExpr vars
+       checkType
+         (def (quote finishNatExplicit)
+           (lhsN v∷ lhs′ v∷ rhsN v∷ rhs′ v∷
+            lhsStep v∷ middle v∷ rhsStep v∷ []))
+         goal
+
+  solveLeGoal :
+    List LeFact → RewritePolicy → RewritePolicy → Bool
+    → Term → Term → Term → TC Term
+  solveLeGoal leFacts elimPol upperPol threePass goal lowerN upperN =
+    do (lower′ , lowerStep) ← processSide elimPol upperPol threePass lowerN
+       (upper′ , upperStep) ← processSide elimPol upperPol threePass upperN
+       proof? ← synth≤ synthFuel leFacts lower′ upper′
+       case proof? of λ where
+         (just middle) →
+           checkType
+             (def (quote finishLeExplicit)
+              (lowerN v∷ lower′ v∷ upperN v∷ upper′ v∷
+               lowerStep v∷ middle v∷ upperStep v∷ []))
+             goal
+         nothing →
+           typeError
+             (strErr "Could not synthesize a checked ≤ proof: "
+             ∷ termErr lower′
+             ∷ strErr " ≤ "
+             ∷ termErr upper′
+             ∷ [])
 
   solveNatGoalProof : List LeFact → Term → TC Term
   solveNatGoalProof leFacts goal =
@@ -655,80 +963,34 @@ private
          nothing →
            case parse≤Type goal of λ where
              (just (lower , upper)) →
-               do lower ← normalise lower
-                  upper ← normalise upper
-                  proof? ← synth≤ synthFuel leFacts lower upper
+               do lowerN ← normalise lower
+                  upperN ← normalise upper
+                  proof? ← synth≤ synthFuel leFacts lowerN upperN
                   case proof? of λ where
                     (just proof) →
                       checkType proof goal
                     nothing →
-                      do lowerRewrite ← rewriteTerm rewriteFuel leFacts lower
-                         upperRewrite ← rewriteTerm rewriteFuel leFacts upper
-                         lowerAfter∸ ← normalise (Rewrite.term lowerRewrite)
-                         upperAfter∸ ← normalise (Rewrite.term upperRewrite)
-                         lower≤Rewrite ← rewriteBy≤Facts rewriteFuel leFacts lowerAfter∸
-                         upper≤Rewrite ← rewriteBy≤Facts rewriteFuel leFacts upperAfter∸
-                         lower′ ← normalise (Rewrite.term lower≤Rewrite)
-                         upper′ ← normalise (Rewrite.term upper≤Rewrite)
-                         proof? ← synth≤ synthFuel leFacts lower′ upper′
-                         case proof? of λ where
-                           (just middle) →
-                             let lowerStep =
-                                   compTerm lower lowerAfter∸ lower′
-                                     (Rewrite.step lowerRewrite)
-                                     (Rewrite.step lower≤Rewrite)
-                             in
-                             let upperStep =
-                                   compTerm upper upperAfter∸ upper′
-                                     (Rewrite.step upperRewrite)
-                                     (Rewrite.step upper≤Rewrite)
-                             in
-                             checkType
-                               (def (quote finishLeExplicit)
-                                 (lower v∷ lower′ v∷ upper v∷ upper′ v∷
-                                  lowerStep v∷ middle v∷ upperStep v∷ []))
-                               goal
-                           nothing →
-                             typeError
-                               (strErr "Could not synthesize a checked ≤ proof: "
-                               ∷ termErr lower′
-                               ∷ strErr " ≤ "
-                               ∷ termErr upper′
-                               ∷ [])
+                      (solveLeGoal leFacts
+                         (policyMinusElim leFacts) (policyUpperRewrite leFacts)
+                         true goal lowerN upperN)
+                      <|>
+                      (solveLeGoal leFacts
+                         (policyMinusElimWitness leFacts) (policyUpperRewriteWitness leFacts)
+                         false goal lowerN upperN)
              nothing →
                typeError (strErr "Expected a Cubical Nat path or ≤ goal, got: "
                  ∷ termErr goal ∷ [])
          (just (dom , lhs , rhs)) →
            do unify dom (def (quote ℕ) [])
-              lhs ← normalise lhs
-              rhs ← normalise rhs
-              lhsRewrite ← rewriteTerm rewriteFuel leFacts lhs
-              rhsRewrite ← rewriteTerm rewriteFuel leFacts rhs
-              lhsAfter∸ ← normalise (Rewrite.term lhsRewrite)
-              rhsAfter∸ ← normalise (Rewrite.term rhsRewrite)
-              lhs≤Rewrite ← rewriteBy≤Facts rewriteFuel leFacts lhsAfter∸
-              rhs≤Rewrite ← rewriteBy≤Facts rewriteFuel leFacts rhsAfter∸
-              lhs′ ← normalise (Rewrite.term lhs≤Rewrite)
-              rhs′ ← normalise (Rewrite.term rhs≤Rewrite)
-              parsed ← toNatExpression lhs′ rhs′
-              let lhsExpr = fst parsed
-              let rhsExpr = fst (snd parsed)
-              let vars = snd (snd parsed)
-              let middle = natSolverCall lhsExpr rhsExpr vars
-              let lhsStep =
-                    compTerm lhs lhsAfter∸ lhs′
-                      (Rewrite.step lhsRewrite)
-                      (Rewrite.step lhs≤Rewrite)
-              let rhsStep =
-                    compTerm rhs rhsAfter∸ rhs′
-                      (Rewrite.step rhsRewrite)
-                      (Rewrite.step rhs≤Rewrite)
-              proof ← checkType
-                (def (quote finishNatExplicit)
-                  (lhs v∷ lhs′ v∷ rhs v∷ rhs′ v∷
-                   lhsStep v∷ middle v∷ rhsStep v∷ []))
-                goal
-              returnTC proof
+              lhsN ← normalise lhs
+              rhsN ← normalise rhs
+              (solveEqGoal leFacts
+                 (policyMinusElim leFacts) (policyUpperRewrite leFacts)
+                 true goal lhsN rhsN)
+               <|>
+               (solveEqGoal leFacts
+                  (policyMinusElimWitness leFacts) (policyUpperRewriteWitness leFacts)
+                  false goal lhsN rhsN)
 
   solveNatProofFromFacts : List LeFact → Term → TC Term
   solveNatProofFromFacts leFacts hole =

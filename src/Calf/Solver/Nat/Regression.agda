@@ -224,6 +224,24 @@ guarded-sub-crazy h₁ h₂ h₃ = solveNat (h₁ , h₂ , h₃)
   → 1 + q ≤ q + p
 ≤-guarded-sum h = solveNat h
 
+≤-sub-one-from-suc-guard :
+  ∀ {q p : ℕ}
+  → 1 + q ≤ p
+  → q ≤ p ∸ 1
+≤-sub-one-from-suc-guard h = solveNat h
+
+≤-one-sum-from-guard :
+  ∀ {q p : ℕ}
+  → 1 + q ≤ p
+  → 1 ≤ q + p
+≤-one-sum-from-guard h = solveNat h
+
+∸-nested-plus-zero-self :
+  ∀ {q p : ℕ}
+  → 1 + q ≤ p
+  → 0 ≡ (((p ∸ 1) ∸ q) + 0) ∸ ((p ∸ 1) ∸ q)
+∸-nested-plus-zero-self h = solveNat h
+
 ≤-trans-two-assumptions :
   ∀ {l m n : ℕ}
   → l ≤ m

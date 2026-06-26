@@ -67,6 +67,12 @@ cmp→cmpᴳ : cmp A → cmpᴳ A
 cmp→cmpᴳ {A} e = transport (cong (_⊸ A) (sym ▷'/0)) (bind' λ _ → e)
 
 module _ where
+  substᵐᴳ :
+    q ≡ q'
+    → Δ , q ⊢ A
+    → Δ , q' ⊢ A
+  substᵐᴳ qq = subst (_⊸ _) (cong (▷'[_] _) qq)
+
   substᴳ :
     (A : val ℂ → 𝒞)
     → p ≡ p'
@@ -141,8 +147,8 @@ module _ where
   foldr₁ᴳ e-nil e-cons e = e ⨾ᶜ pfoldr₁ (cmpᴳ→cmp e-nil) e-cons
 
 module _ where
-  nil₂ᴳ : cmpᴳ (PList₂ p₁ p₂ X)
-  nil₂ᴳ = cmp→cmpᴳ pnil₂
+  nil₂ᴳ : q ⋎₀ → ⊤ , q ⊢ (PList₂ p₁ p₂ X)
+  nil₂ᴳ split = subst (λ x → ▷'[ x ] _ ⊸ _) split (cmp→cmpᴳ pnil₂)
 
   cons₂ᴳ :
     q ⋎₂ (p₁ , q')
