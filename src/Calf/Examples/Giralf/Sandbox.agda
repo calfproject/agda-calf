@@ -126,6 +126,27 @@ arithmetic-29-left h h' = solveNat (h , h')
 arithmetic-29-right : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → 1 + q2 ≤ q2 + p5
 arithmetic-29-right h h' = solveNat (h , h')
 
+arithmetic-30 : ∀ {q2 : ℕ} → 1 ≤ q2 → 1 ≤ q2
+arithmetic-30 h = solveNat h
+
+arithmetic-31 : 0 ≡ 0 + 0
+arithmetic-31 = solveNat0
+
+arithmetic-32 : ∀ {q2 p17 : ℕ} → 1 ≤ q2 → (((q2 + p17) ∸ 1) ∸ (q2 ∸ 1)) + 0 ≡ 0 + p17
+arithmetic-32 h = solveNat h
+
+arithmetic-33 : ∀ {q2 p17 : ℕ} → 1 ≤ q2 → ((q2 + p17) ∸ 1) ∸ (q2 ∸ 1) ≡ p17
+arithmetic-33 h = solveNat h
+
+arithmetic-34 : ∀ {q2 : ℕ} → 1 ≤ q2 → q2 ∸ 1 ≡ q2 ∸ 1
+arithmetic-34 _ = solveNat0
+
+arithmetic-35 : ∀ {q2 p17 : ℕ} → 1 ≤ q2 → 1 + (q2 ∸ 1) ≤ q2 + p17
+arithmetic-35 h = {!   !}
+
+arithmetic-36-left : ∀ {q2 p17 : ℕ} → 1 ≤ q2 → 1 ≤ q2 + p17
+arithmetic-36-left h = solveNat h
+
 _≤ᵇ_ : ℕ → ℕ → Bool
 m ≤ᵇ n with ≤Dec m n
 ... | yes p = true
@@ -200,5 +221,100 @@ opaque
           powappᴳ {X = 1 ≤ᵛ q2 + p5 ×ᵛ 1 + q2 ≤ᵛ q2 + p5}
             (arithmetic-29-left (snd cs5) (snd cs5) , arithmetic-29-right (snd cs5) (snd cs5)) $ idᴳ refl
         )
+      )
+      (idᴳ refl)
+
+
+
+  reverse : ∀ {l1 q2 : ℕ} → (val (1 ≤ᵛ q2)) → PList₂ (` (l1)) (` (q2)) (X) , (` (0 + 0)) ⊢ PList₂ (` (l1)) (` (q2 ∸ 1)) (X)
+  reverse {X} {l1} {q2} cs =
+    payᴳ {p = 0} {q' = 0} refl $
+    powappᴳ {X = 1 ≤ᵛ q2} (arithmetic-30 cs) $
+    foldr₂ᴳ (λ p17 → (1 ≤ᵛ q2) ⇀ (◁'[ 0 ] (PList₂ (p17) (q2 ∸ 1) (X))))
+      (λ p17 →
+        powlamᴳ {X = 1 ≤ᵛ q2} $ λ cs10 →
+        getᴳ {q' = 0 + 0} (0) refl $ nil₂ᴳ arithmetic-31
+      )
+      (λ p17 → λ yh4 →
+        powlamᴳ {X = 1 ≤ᵛ q2} $ λ cs7 →
+        getᴳ {q' = 0 + p17} (0) refl $
+        substᵐᴳ (arithmetic-32 cs7) $ subst2ᴳ (λ p28 p27 → PList₂ (p28) (p27) (X)) (arithmetic-33 cs7) (arithmetic-34 cs7) $
+        payᴳ {p = ((q2 + p17) ∸ 1) ∸ (q2 ∸ 1)} {q' = 0 + 0} refl $
+        powappᴳ {X = 1 + (q2 ∸ 1) ≤ᵛ q2 + p17} (arithmetic-35 cs7) $
+        foldr₂ᴳ (λ p20 → (1 + (q2 ∸ 1) ≤ᵛ p20) ⇀ (◁'[ (p20 ∸ 1) ∸ (q2 ∸ 1) ] (PList₂ ((p20 ∸ 1) ∸ (q2 ∸ 1)) (q2 ∸ 1) (X))))
+          (λ p20 →
+            powlamᴳ {X = 1 + (q2 ∸ 1) ≤ᵛ p20} $ λ cs9 →
+            getᴳ {q' = ((p20 ∸ 1) ∸ (q2 ∸ 1)) + 0} ((p20 ∸ 1) ∸ (q2 ∸ 1)) refl $
+            cons₂ᴳ {q' = (((p20 ∸ 1) ∸ (q2 ∸ 1)) + 0) ∸ ((p20 ∸ 1) ∸ (q2 ∸ 1))} (arithmetic-1 cs9 cs9) (yh4) $ nil₂ᴳ (arithmetic-2 cs9 cs9)
+          )
+          (λ p20 → λ xh2 →
+            powlamᴳ {X = 1 + (q2 ∸ 1) ≤ᵛ p20} $ λ cs8 →
+            getᴳ {q' = ((p20 ∸ 1) ∸ (q2 ∸ 1)) + p20} ((p20 ∸ 1) ∸ (q2 ∸ 1)) refl $
+            chargeᴳ {q' = (((p20 ∸ 1) ∸ (q2 ∸ 1)) + p20) ∸ 1} 1 (arithmetic-3 cs8 cs8) $
+            cons₂ᴳ {q' = ((((p20 ∸ 1) ∸ (q2 ∸ 1)) + p20) ∸ 1) ∸ ((p20 ∸ 1) ∸ (q2 ∸ 1))} (arithmetic-4 cs8 cs8) (xh2) $
+            substᵐᴳ (arithmetic-5 cs8 cs8) $ subst2ᴳ (λ p30 p29 → PList₂ (p30) (p29) (X)) (arithmetic-6 cs8 cs8) (arithmetic-7 cs8 cs8) $
+            payᴳ {p = (((q2 ∸ 1) + p20) ∸ 1) ∸ (q2 ∸ 1)} {q' = 0} refl $
+            powappᴳ {X = 1 + (q2 ∸ 1) ≤ᵛ (q2 ∸ 1) + p20} (arithmetic-8 cs8 cs8) $ idᴳ refl
+          )
+          (
+            payᴳ {p = 0} {q' = 0} refl $
+            powappᴳ {X = 1 ≤ᵛ q2} (arithmetic-30 cs) $ idᴳ refl)
+      )
+      (idᴳ refl)
+
+
+  isort : ∀ {l1 q2 : ℕ} → val (1 ≤ᵛ q2) → PList₂ (` (l1)) (` (q2)) (ℕᵛ) , (` (0 + 0)) ⊢ PList₂ (` (l1)) (` (q2 ∸ 1)) (ℕᵛ)
+  isort {l1} {q2} cs =
+    payᴳ {p = 0} {q' = 0} refl $
+    powappᴳ {X = 1 ≤ᵛ q2} (arithmetic-30 cs) $
+    foldr₂ᴳ (λ p17 → (1 ≤ᵛ q2) ⇀ (◁'[ 0 ] (PList₂ (p17) (q2 ∸ 1) (ℕᵛ))))
+      (λ p17 →
+        powlamᴳ {X = 1 ≤ᵛ q2} $ λ cs12 →
+        getᴳ {q' = 0 + 0} (0) refl $ nil₂ᴳ arithmetic-31
+      )
+      (λ p17 → λ yh4 →
+        powlamᴳ {X = 1 ≤ᵛ q2} $ λ cs9 →
+        getᴳ {q' = 0 + p17} (0) refl $
+        substᵐᴳ (arithmetic-32 cs9) $ subst2ᴳ (λ p42 p41 → PList₂ (p42) (p41) (ℕᵛ)) (arithmetic-33 cs9) (arithmetic-34 cs9) $
+        payᴳ {p = ((q2 + p17) ∸ 1) ∸ (q2 ∸ 1)} {q' = 0 + 0} refl $ proj₁ᴳ {B = ◁'[ 0 ] (PList₂ ((q2 + p17) ∸ 1) (q2 ∸ 1) (ℕᵛ))} $
+        powappᴳ {X = 1 ≤ᵛ q2 + p17 ×ᵛ 1 + (q2 ∸ 1) ≤ᵛ q2 + p17} (arithmetic-36-left cs9 , arithmetic-35 cs9) $
+        foldr₂ᴳ (λ p20 → (1 ≤ᵛ p20 ×ᵛ 1 + (q2 ∸ 1) ≤ᵛ p20) ⇀ ((◁'[ (p20 ∸ 1) ∸ (q2 ∸ 1) ] (PList₂ ((p20 ∸ 1) ∸ (q2 ∸ 1)) (q2 ∸ 1) (ℕᵛ))) ×ᶜ (◁'[ 0 ] (PList₂ (p20 ∸ 1) (q2 ∸ 1) (ℕᵛ)))))
+          (λ p20 →
+            powlamᴳ {X = 1 ≤ᵛ p20 ×ᵛ 1 + (q2 ∸ 1) ≤ᵛ p20} $ λ cs11 →
+            pairᴳ (
+              getᴳ {q' = ((p20 ∸ 1) ∸ (q2 ∸ 1)) + 0} ((p20 ∸ 1) ∸ (q2 ∸ 1)) refl $
+              cons₂ᴳ {q' = (((p20 ∸ 1) ∸ (q2 ∸ 1)) + 0) ∸ ((p20 ∸ 1) ∸ (q2 ∸ 1))} (arithmetic-10 (snd cs11) (snd cs11)) (yh4) $ nil₂ᴳ (arithmetic-11 (snd cs11) (snd cs11))
+            ) (
+              getᴳ {q' = 0 + 0} (0) refl $ nil₂ᴳ arithmetic-31
+            )
+          )
+          (λ p20 → λ xh2 →
+            powlamᴳ {X = 1 ≤ᵛ p20 ×ᵛ 1 + (q2 ∸ 1) ≤ᵛ p20} $ λ cs10 →
+            chargeᴳ {q' = p20 ∸ 1} 1 (arithmetic-13 (snd cs10) (snd cs10)) $
+            pairᴳ (
+              getᴳ {q' = ((p20 ∸ 1) ∸ (q2 ∸ 1)) + (p20 ∸ 1)} ((p20 ∸ 1) ∸ (q2 ∸ 1)) refl $
+              if ((yh4) ≤ᵇ (xh2)) then (
+                cons₂ᴳ {q' = (((p20 ∸ 1) ∸ (q2 ∸ 1)) + (p20 ∸ 1)) ∸ ((p20 ∸ 1) ∸ (q2 ∸ 1))} (arithmetic-14 (snd cs10) (snd cs10)) (yh4) $
+                cons₂ᴳ {q' = ((((p20 ∸ 1) ∸ (q2 ∸ 1)) + (p20 ∸ 1)) ∸ ((p20 ∸ 1) ∸ (q2 ∸ 1))) ∸ (((p20 ∸ 1) ∸ (q2 ∸ 1)) + (q2 ∸ 1))} (arithmetic-15 (snd cs10) (snd cs10)) (xh2) $
+                substᵐᴳ (arithmetic-16 (snd cs10) (snd cs10)) $ subst2ᴳ (λ p48 p47 → PList₂ (p48) (p47) (ℕᵛ)) (arithmetic-17 (snd cs10) (snd cs10)) (arithmetic-18 (snd cs10) (snd cs10)) $
+                payᴳ {p = 0} {q' = 0} refl $ proj₂ᴳ {A = ◁'[ (((q2 ∸ 1) + p20) ∸ 1) ∸ (q2 ∸ 1) ] (PList₂ ((((q2 ∸ 1) + p20) ∸ 1) ∸ (q2 ∸ 1)) (q2 ∸ 1) (ℕᵛ))} $
+                powappᴳ {X = 1 ≤ᵛ (q2 ∸ 1) + p20 ×ᵛ 1 + (q2 ∸ 1) ≤ᵛ (q2 ∸ 1) + p20} (arithmetic-19-left (snd cs10) (snd cs10) , arithmetic-19-right (snd cs10) (snd cs10)) $ idᴳ refl
+              ) else (
+                cons₂ᴳ {q' = (((p20 ∸ 1) ∸ (q2 ∸ 1)) + (p20 ∸ 1)) ∸ ((p20 ∸ 1) ∸ (q2 ∸ 1))} (arithmetic-20 (snd cs10) (snd cs10)) (xh2) $
+                substᵐᴳ (arithmetic-21 (snd cs10) (snd cs10)) $ subst2ᴳ (λ p46 p45 → PList₂ (p46) (p45) (ℕᵛ)) (arithmetic-22 (snd cs10) (snd cs10)) (arithmetic-23 (snd cs10) (snd cs10)) $
+                payᴳ {p = (((q2 ∸ 1) + p20) ∸ 1) ∸ (q2 ∸ 1)} {q' = 0} refl $ proj₁ᴳ {B = ◁'[ 0 ] (PList₂ (((q2 ∸ 1) + p20) ∸ 1) (q2 ∸ 1) (ℕᵛ))} $
+                powappᴳ {X = 1 ≤ᵛ (q2 ∸ 1) + p20 ×ᵛ 1 + (q2 ∸ 1) ≤ᵛ (q2 ∸ 1) + p20} (arithmetic-24-left (snd cs10) (snd cs10) , arithmetic-24-right (snd cs10) (snd cs10)) $ idᴳ refl
+              )
+            ) (
+              getᴳ {q' = 0 + (p20 ∸ 1)} (0) refl $
+              cons₂ᴳ {q' = (0 + (p20 ∸ 1)) ∸ (p20 ∸ 1)} (arithmetic-25 (snd cs10) (snd cs10)) (xh2) $
+              substᵐᴳ (arithmetic-26 (snd cs10) (snd cs10)) $ subst2ᴳ (λ p44 p43 → PList₂ (p44) (p43) (ℕᵛ)) (arithmetic-27 (snd cs10) (snd cs10)) (arithmetic-28 (snd cs10) (snd cs10)) $
+              payᴳ {p = 0} {q' = 0} refl $ proj₂ᴳ {A = ◁'[ (((q2 ∸ 1) + p20) ∸ 1) ∸ (q2 ∸ 1) ] (PList₂ ((((q2 ∸ 1) + p20) ∸ 1) ∸ (q2 ∸ 1)) (q2 ∸ 1) (ℕᵛ))} $
+              powappᴳ {X = 1 ≤ᵛ (q2 ∸ 1) + p20 ×ᵛ 1 + (q2 ∸ 1) ≤ᵛ (q2 ∸ 1) + p20} (arithmetic-29-left (snd cs10) (snd cs10) , arithmetic-29-right (snd cs10) (snd cs10)) $ idᴳ refl
+            )
+          )
+          (
+            payᴳ {p = 0} {q' = 0} refl $
+            powappᴳ {X = 1 ≤ᵛ q2} (arithmetic-30 cs) $ idᴳ refl)
       )
       (idᴳ refl)
