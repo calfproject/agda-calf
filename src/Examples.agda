@@ -11,6 +11,7 @@ open import Calf.Computation.Free
 open import Calf.Computation.Power
 import Cubical.Data.List.Properties as List
 import Cubical.Data.Nat.Properties as Nat
+import Cubical.Data.Nat.Order as Nat
 
 double : U (ℕ ⇀ F ℕ)
 double zero = ret 0
@@ -38,16 +39,27 @@ opaque
         ≡ᴾ⟨ refl ⟩
           F _ .charge 1 (bind (double n) (λ n' → ret (suc (suc n'))))
         ⊑⟨ ⊑-mono (λ e → F _ .charge 1 (bind e (λ n' → ret (suc (suc n'))))) (lemma n) ⟩
-          F _ .charge 1 (bind (F _ .charge n (ret (DOUBLE n))) (λ n' → ret (suc (suc n'))))
+          F _ .charge 1 (bind (F _ .charge (` n) (ret (DOUBLE n))) (λ n' → ret (suc (suc n'))))
         ≡ᴾ⟨ cong (F _ .charge 1) bind/charge ⟩
-          F _ .charge 1 (F _ .charge n (bind {A = F _} (ret (DOUBLE n)) (λ n' → ret (suc (suc n')))))
+          F _ .charge 1 (F _ .charge (` n) (bind {A = F _} (ret (DOUBLE n)) (λ n' → ret (suc (suc n')))))
         ≡ᴾ⟨ sym (F _ .charge/+) ⟩
-          F _ .charge (suc n) (bind {A = F _} (ret (DOUBLE n)) (λ n' → ret (suc (suc n'))))
-        ≡ᴾ⟨ cong (F _ .charge (suc n)) bind/β ⟩
-          F _ .charge (suc n) (ret (suc (suc (DOUBLE n))))
+          F _ .charge (` suc n) (bind {A = F _} (ret (DOUBLE n)) (λ n' → ret (suc (suc n'))))
+        ≡ᴾ⟨ cong (F _ .charge (` suc n)) bind/β ⟩
+          F _ .charge (` suc n) (ret (suc (suc (DOUBLE n))))
         ≡ᴾ⟨ refl ⟩
-          F _ .charge (suc n) (ret (DOUBLE (suc n)))
+          F _ .charge (` suc n) (ret (DOUBLE (suc n)))
         ∎ᴾ
+
+  double/bound' : double ⊑[ ℕ ⇀ F ℕ ] (λ n → F _ .charge (` suc n) (ret (DOUBLE n)))
+  double/bound' =
+    let open ⊑-Reasoning (ℕ ⇀ F ℕ) in
+    begin
+      double
+    ⊑⟨ double/bound ⟩
+      (λ n → F _ .charge (` n) (ret (DOUBLE n)))
+    ⊑⟨ ⊑-funext (λ n → ⊑-mono (λ e → F _ .charge e (ret (DOUBLE n))) (≤⇒⊑ℂ (Nat.≤-suc Nat.≤-refl))) ⟩
+      (λ n → F _ .charge (` suc n) (ret (DOUBLE n)))
+    ∎ᴾ
 
 BQ : 𝒞
 BQ = F (List ℕ × List ℕ)

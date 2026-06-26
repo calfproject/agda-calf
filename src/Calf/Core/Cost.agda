@@ -1,10 +1,11 @@
 module Calf.Core.Cost where
 
 open import Calf.Value
--- open import Calf.Value.Nat
+open import Calf.Value.Omega
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Nat.Literals public
-open import Cubical.Data.Nat
+open import Cubical.Data.Nat using (ℕ; zero; suc) renaming (_+_ to _+ℕ_)
+open import Cubical.Data.Nat.Order
 import Cubical.Data.Nat.Properties as Nat
 open import Data.Unit
 
@@ -15,13 +16,10 @@ module _ {A : Type} where
 
 opaque
   ℂ : 𝒱
-  ℂ = ℕ
-
-  isSetℂ : isSet ℂ
-  isSetℂ = isSetℕ
+  ℂ = ω
 
   isPreorderℂ : isPreorder ℂ
-  isPreorderℂ = {!   !}
+  isPreorderℂ = isPreorderω
 
   0ℂ : ℂ
   0ℂ = 0
@@ -30,19 +28,22 @@ opaque
   _+ℂ_ = _+_
 
   +ℂ-identityˡ : LeftIdentity 0ℂ _+ℂ_
-  +ℂ-identityˡ _ = refl
+  +ℂ-identityˡ = +-identityˡ
 
   +ℂ-identityʳ : RightIdentity 0ℂ _+ℂ_
-  +ℂ-identityʳ = Nat.+-zero
+  +ℂ-identityʳ = {!   !}
 
   +ℂ-assoc : Associative _+ℂ_
-  +ℂ-assoc c₁ c₂ c₃ = sym (Nat.+-assoc c₁ c₂ c₃)
+  +ℂ-assoc = +-assoc
 
   +ℂ-comm : Commutative _+ℂ_
-  +ℂ-comm c₁ c₂ = Nat.+-comm c₁ c₂
+  +ℂ-comm c₁ c₂ = {!   !}
 
   ℕ→ℂ : ℕ → ℂ
   ℕ→ℂ n = ` n
+
+  ≤⇒⊑ℂ : ∀ {m n} → m ≤ n → ℕ→ℂ m ⊑ ℕ→ℂ n
+  ≤⇒⊑ℂ = ≤⇒⊑
 
 instance
   fromNatℂ : HasFromNat ℂ
@@ -73,10 +74,10 @@ suc n ⊙ c = c +ℂ (n ⊙ c)
     (suc n ⊙ c₁) +ℂ (suc n ⊙ c₂)
   ∎
 
-⊙-+-left : ∀ n m c → (n + m) ⊙ c ≡ (n ⊙ c) +ℂ (m ⊙ c)
+⊙-+-left : ∀ n m c → (n +ℕ m) ⊙ c ≡ (n ⊙ c) +ℂ (m ⊙ c)
 ⊙-+-left zero m c = sym (+ℂ-identityˡ (m ⊙ c))
 ⊙-+-left (suc n) m c =
-    (suc n + m) ⊙ c
+    (suc n +ℕ m) ⊙ c
   ≡⟨ cong (c +ℂ_) (⊙-+-left n m c) ⟩
     c +ℂ ((n ⊙ c) +ℂ (m ⊙ c))
   ≡⟨ sym (+ℂ-assoc c (n ⊙ c) (m ⊙ c)) ⟩
