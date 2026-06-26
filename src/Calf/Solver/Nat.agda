@@ -1,3 +1,4 @@
+-- Eventually this should be replaced by something like Rocq's lia
 module Calf.Solver.Nat where
 
 open import Cubical.Foundations.Prelude
@@ -154,6 +155,175 @@ private
       (just t) → returnTC (just (f t))
       nothing → returnTC nothing
 
+  sumTerms : List Term → Term
+  sumTerms [] = zeroTerm
+  sumTerms (t ∷ []) = t
+  sumTerms (t ∷ ts) = def (quote _+_) (t v∷ sumTerms ts v∷ [])
+
+  expressionFuel : ℕ
+  expressionFuel = 50
+
+  addendsFuel : ℕ → Term → List Term
+  addendsFuel zero t = t ∷ []
+  addendsFuel (suc fuel) t with viewZero t
+  ... | true = []
+  ... | false with view+ t
+  ... | just (x , y) = addendsFuel fuel x ++ addendsFuel fuel y
+  ... | nothing with viewSuc t
+  ... | just x = oneTerm ∷ addendsFuel fuel x
+  ... | nothing = t ∷ []
+
+  addends : Term → List Term
+  addends = addendsFuel expressionFuel
+
+  removeAddend : Term → List Term → TC (Maybe (List Term))
+  removeAddend x [] = returnTC nothing
+  removeAddend x (y ∷ ys) =
+    termEq x y >>= λ where
+      true → returnTC (just ys)
+      false →
+        removeAddend x ys >>= λ where
+          (just ys′) → returnTC (just (y ∷ ys′))
+          nothing → returnTC nothing
+
+  removeAddends : List Term → List Term → TC (Maybe (List Term))
+  removeAddends [] upper = returnTC (just upper)
+  removeAddends (x ∷ xs) upper =
+    removeAddend x upper >>= λ where
+      (just upper′) → removeAddends xs upper′
+      nothing → returnTC nothing
+
+  ExprBuilder : Type
+  ExprBuilder = Vars → TC Term
+
+  variableVector : Vars → Term
+  variableVector [] = con (quote emptyVec) []
+  variableVector (t ∷ ts) =
+    con (quote _∷vec_) (t v∷ variableVector ts v∷ [])
+
+  indexOfTermByNormalForm : Term → Vars → TC (Maybe ℕ)
+  indexOfTermByNormalForm t [] = returnTC nothing
+  indexOfTermByNormalForm t (t′ ∷ vars) =
+    termEq t t′ >>= λ where
+      true → returnTC (just 0)
+      false →
+        indexOfTermByNormalForm t vars >>= λ where
+          (just n) → returnTC (just (suc n))
+          nothing → returnTC nothing
+
+  indexOfTermByShape : Term → Vars → TC (Maybe ℕ)
+  indexOfTermByShape t [] = returnTC nothing
+  indexOfTermByShape t (t′ ∷ vars) =
+    case termShapeEq t t′ of λ where
+      true → returnTC (just 0)
+      false →
+        do tNorm ← normalise t
+           t′Norm ← normalise t′
+           case termShapeEq tNorm t′Norm of λ where
+             true → returnTC (just 0)
+             false →
+               indexOfTermByShape t vars >>= λ where
+                 (just n) → returnTC (just (suc n))
+                 nothing → returnTC nothing
+
+  indexOfTerm : Term → Vars → TC (Maybe ℕ)
+  indexOfTerm t [] = returnTC nothing
+  indexOfTerm t vars with indexOf t vars
+  ... | just n = returnTC (just n)
+  ... | nothing =
+    indexOfTermByShape t vars >>= λ where
+      (just n) → returnTC (just n)
+      nothing → indexOfTermByNormalForm t vars
+
+  addVariable : Term → Vars → TC Vars
+  addVariable t vars =
+    indexOfTerm t vars >>= λ where
+      (just _) → returnTC vars
+      nothing → returnTC (t ∷ vars)
+
+  appendVariables : Vars → Vars → TC Vars
+  appendVariables [] vars = returnTC vars
+  appendVariables (t ∷ ts) vars =
+    do vars′ ← addVariable t vars
+       appendVariables ts vars′
+
+  asVariable : Term → TC (ExprBuilder × Vars)
+  asVariable t =
+    do t′ ← normalise t
+       returnTC
+         ((λ vars →
+           indexOfTerm t′ vars >>= λ where
+             (just n) → returnTC (con (quote ∣) (finiteNumberAsTerm (just n) v∷ []))
+             nothing →
+               typeError
+                 (strErr "Internal error: Nat solver variable was not collected: "
+                 ∷ termErr t′
+                 ∷ []))
+         , t′ ∷ [])
+
+  buildExpression : ℕ → Term → TC (ExprBuilder × Vars)
+  buildExpression zero t =
+    typeError (strErr "Nat solver expression parser ran out of fuel at: "
+      ∷ termErr t ∷ [])
+  buildExpression (suc fuel) t with view+ t
+  ... | just (x , y) =
+    do rx ← buildExpression fuel x
+       ry ← buildExpression fuel y
+       vars ← appendVariables (snd rx) (snd ry)
+       returnTC
+         ((λ vars →
+           do x ← fst rx vars
+              y ← fst ry vars
+              returnTC (con (quote _+'_) (x v∷ y v∷ [])))
+         , vars)
+  ... | nothing with view· t
+  ... | just (x , y) =
+    do rx ← buildExpression fuel x
+       ry ← buildExpression fuel y
+       vars ← appendVariables (snd rx) (snd ry)
+       returnTC
+         ((λ vars →
+           do x ← fst rx vars
+              y ← fst ry vars
+              returnTC (con (quote _·'_) (x v∷ y v∷ [])))
+         , vars)
+  ... | nothing with view∸ t
+  ... | just _ = asVariable t
+  ... | nothing with viewZero t
+  ... | true = returnTC ((λ _ → returnTC (con (quote K) (zeroTerm v∷ []))) , [])
+  ... | false with viewSuc t
+  ... | just x =
+    do rx ← buildExpression fuel x
+       returnTC
+         ((λ vars →
+           do x ← fst rx vars
+              returnTC
+                (con (quote _+'_)
+                  (con (quote K) (oneTerm v∷ []) v∷ x v∷ [])))
+         , snd rx)
+  ... | nothing with t
+  ... | lit (nat n) = returnTC ((λ _ → returnTC (con (quote K) (natLit n v∷ []))) , [])
+  ... | _ = asVariable t
+
+  toNatExpression : Term → Term → TC (Term × Term × Vars)
+  toNatExpression lhs rhs =
+    do rx ← buildExpression expressionFuel lhs
+       ry ← buildExpression expressionFuel rhs
+       vars ← appendVariables (snd rx) (snd ry)
+       lhsExpr ← fst rx vars
+       rhsExpr ← fst ry vars
+       returnTC (lhsExpr , rhsExpr , vars)
+
+  natSolverCall : Term → Term → Vars → Term
+  natSolverCall lhs rhs vars =
+    let xs = variableVector vars in
+    def (quote natSolve)
+      (varg lhs
+      ∷ varg rhs
+      ∷ varg xs
+      ∷ varg (def (quote refl) [])
+      ∷ [])
+
   findDirect : Term → Term → List LeFact → TC (Maybe Term)
   findDirect lower upper [] = returnTC nothing
   findDirect lower upper (leFact lower′ upper′ proof ∷ facts) =
@@ -179,16 +349,17 @@ private
     synth≤ : Strategy
     synth≤ zero facts lower upper = findDirect lower upper facts
     synth≤ (suc fuel) facts lower upper =
-      sFindDirect  fuel facts lower upper <<<
-      sRefl        fuel facts lower upper <<<
-      sZero        fuel facts lower upper <<<
-      sMulRight    fuel facts lower upper <<<
-      sMinusUpper  fuel facts lower upper <<<
-      sSuc         fuel facts lower upper <<<
-      sSum         fuel facts lower upper <<<
-      sPlus        fuel facts lower upper <<<
-      sSucPlus     fuel facts lower upper <<<
-      sTrans       fuel facts lower upper
+      sFindDirect   fuel facts lower upper <<<
+      sRefl         fuel facts lower upper <<<
+      sZero         fuel facts lower upper <<<
+      sMulRight     fuel facts lower upper <<<
+      sMinusUpper   fuel facts lower upper <<<
+      sSuc          fuel facts lower upper <<<
+      sSum          fuel facts lower upper <<<
+      sPlus         fuel facts lower upper <<<
+      sSucPlus      fuel facts lower upper <<<
+      sAdditiveDiff fuel facts lower upper <<<
+      sTrans        fuel facts lower upper
 
     sFindDirect : Strategy
     sFindDirect _ facts lower upper = findDirect lower upper facts
@@ -291,6 +462,22 @@ private
         nothing → returnTC nothing
     ... | _ | _ = returnTC nothing
 
+    sAdditiveDiff : Strategy
+    sAdditiveDiff _ _ lower upper =
+      removeAddends (addends lower) (addends upper) >>= λ where
+        (just diffTerms) →
+          let diff = sumTerms diffTerms in
+          let lhs = def (quote _+_) (diff v∷ lower v∷ []) in
+          do parsed ← toNatExpression lhs upper
+             let lhsExpr = fst parsed
+             let rhsExpr = fst (snd parsed)
+             let vars = snd (snd parsed)
+             returnTC
+               (just
+                 (con (quote _,_)
+                   (diff v∷ natSolverCall lhsExpr rhsExpr vars v∷ [])))
+        nothing → returnTC nothing
+
     sTrans : Strategy
     sTrans fuel facts lower upper = sTransAt fuel facts lower upper facts
 
@@ -340,8 +527,6 @@ private
   rewriteFuel = 50
   synthFuel : ℕ
   synthFuel = 8
-  expressionFuel : ℕ
-  expressionFuel = 50
 
   mutual
     parseAssumptionsFuel : ℕ → Term → TC (List Term)
@@ -491,22 +676,22 @@ private
                 synth≤ synthFuel facts lower x >>= λ where
                   (just guard) →
                     let x∸lower = def (quote _∸_) (x v∷ lower v∷ []) in
-                    let residual = def (quote _+_) (Rewrite.term rx v∷ y v∷ []) in
-                    let residualStep =
+                    let diff = def (quote _+_) (Rewrite.term rx v∷ y v∷ []) in
+                    let diffStep =
                           cong₂+Term x∸lower (Rewrite.term rx) y y
                             (Rewrite.step rx)
                             (natReflTerm y)
                     in
                     returnTC
                       (just
-                        (mkRewrite residual
+                        (mkRewrite diff
                           (compTerm
                             (def (quote _∸_)
                               (upper v∷ lower v∷ []))
                             (def (quote _+_) (x∸lower v∷ y v∷ []))
-                            residual
+                            diff
                             (minusPullRightTerm lower x y guard)
-                            residualStep)))
+                            diffStep)))
                   nothing → tryRight
               nothing → tryRight
     where
@@ -514,12 +699,12 @@ private
     tryPullRight =
       synth≤ synthFuel facts lower y >>= λ where
         (just guard) →
-          let residual = def (quote _+_)
+          let diff = def (quote _+_)
                 (x v∷ def (quote _∸_) (y v∷ lower v∷ []) v∷ [])
           in
           returnTC
             (just
-              (mkRewrite residual
+              (mkRewrite diff
                 (minusPullLeftTerm lower y x guard)))
         nothing → returnTC nothing
 
@@ -527,12 +712,12 @@ private
     tryPullLeft =
       synth≤ synthFuel facts lower x >>= λ where
         (just guard) →
-          let residual = def (quote _+_)
+          let diff = def (quote _+_)
                 (def (quote _∸_) (x v∷ lower v∷ []) v∷ y v∷ [])
           in
           returnTC
             (just
-              (mkRewrite residual
+              (mkRewrite diff
                 (minusPullRightTerm lower x y guard)))
         nothing → tryPullRight
 
@@ -543,22 +728,22 @@ private
           synth≤ synthFuel facts lower y >>= λ where
             (just guard) →
               let y∸lower = def (quote _∸_) (y v∷ lower v∷ []) in
-              let residual = def (quote _+_) (x v∷ Rewrite.term ry v∷ []) in
-              let residualStep =
+              let diff = def (quote _+_) (x v∷ Rewrite.term ry v∷ []) in
+              let diffStep =
                     cong₂+Term x x y∸lower (Rewrite.term ry)
                       (natReflTerm x)
                       (Rewrite.step ry)
               in
               returnTC
                 (just
-                  (mkRewrite residual
+                  (mkRewrite diff
                     (compTerm
                       (def (quote _∸_)
                         (upper v∷ lower v∷ []))
                       (def (quote _+_) (x v∷ y∸lower v∷ []))
-                      residual
+                      diff
                       (minusPullLeftTerm lower y x guard)
-                      residualStep)))
+                      diffStep)))
             nothing → tryPullLeft
         nothing → tryPullLeft
   ... | nothing = returnTC nothing
@@ -761,137 +946,6 @@ private
 
   rewriteBy≤FactsWitness : ℕ → List LeFact → Term → TC Rewrite
   rewriteBy≤FactsWitness fuel facts = traverseRewrite (policyUpperRewriteWitness facts) fuel
-
-  ExprBuilder : Type
-  ExprBuilder = Vars → TC Term
-
-  variableVector : Vars → Term
-  variableVector [] = con (quote emptyVec) []
-  variableVector (t ∷ ts) =
-    con (quote _∷vec_) (t v∷ variableVector ts v∷ [])
-
-  indexOfTermByNormalForm : Term → Vars → TC (Maybe ℕ)
-  indexOfTermByNormalForm t [] = returnTC nothing
-  indexOfTermByNormalForm t (t′ ∷ vars) =
-    termEq t t′ >>= λ where
-      true → returnTC (just 0)
-      false →
-        indexOfTermByNormalForm t vars >>= λ where
-          (just n) → returnTC (just (suc n))
-          nothing → returnTC nothing
-
-  indexOfTermByShape : Term → Vars → TC (Maybe ℕ)
-  indexOfTermByShape t [] = returnTC nothing
-  indexOfTermByShape t (t′ ∷ vars) =
-    case termShapeEq t t′ of λ where
-      true → returnTC (just 0)
-      false →
-        do tNorm ← normalise t
-           t′Norm ← normalise t′
-           case termShapeEq tNorm t′Norm of λ where
-             true → returnTC (just 0)
-             false →
-               indexOfTermByShape t vars >>= λ where
-                 (just n) → returnTC (just (suc n))
-                 nothing → returnTC nothing
-
-  indexOfTerm : Term → Vars → TC (Maybe ℕ)
-  indexOfTerm t [] = returnTC nothing
-  indexOfTerm t vars with indexOf t vars
-  ... | just n = returnTC (just n)
-  ... | nothing =
-    indexOfTermByShape t vars >>= λ where
-      (just n) → returnTC (just n)
-      nothing → indexOfTermByNormalForm t vars
-
-  addVariable : Term → Vars → TC Vars
-  addVariable t vars =
-    indexOfTerm t vars >>= λ where
-      (just _) → returnTC vars
-      nothing → returnTC (t ∷ vars)
-
-  appendVariables : Vars → Vars → TC Vars
-  appendVariables [] vars = returnTC vars
-  appendVariables (t ∷ ts) vars =
-    do vars′ ← addVariable t vars
-       appendVariables ts vars′
-
-  asVariable : Term → TC (ExprBuilder × Vars)
-  asVariable t =
-    do t′ ← normalise t
-       returnTC
-         ((λ vars →
-           indexOfTerm t′ vars >>= λ where
-             (just n) → returnTC (con (quote ∣) (finiteNumberAsTerm (just n) v∷ []))
-             nothing →
-               typeError
-                 (strErr "Internal error: Nat solver variable was not collected: "
-                 ∷ termErr t′
-                 ∷ []))
-         , t′ ∷ [])
-
-  buildExpression : ℕ → Term → TC (ExprBuilder × Vars)
-  buildExpression zero t =
-    typeError (strErr "Nat solver expression parser ran out of fuel at: "
-      ∷ termErr t ∷ [])
-  buildExpression (suc fuel) t with view+ t
-  ... | just (x , y) =
-    do rx ← buildExpression fuel x
-       ry ← buildExpression fuel y
-       vars ← appendVariables (snd rx) (snd ry)
-       returnTC
-         ((λ vars →
-           do x ← fst rx vars
-              y ← fst ry vars
-              returnTC (con (quote _+'_) (x v∷ y v∷ [])))
-         , vars)
-  ... | nothing with view· t
-  ... | just (x , y) =
-    do rx ← buildExpression fuel x
-       ry ← buildExpression fuel y
-       vars ← appendVariables (snd rx) (snd ry)
-       returnTC
-         ((λ vars →
-           do x ← fst rx vars
-              y ← fst ry vars
-              returnTC (con (quote _·'_) (x v∷ y v∷ [])))
-         , vars)
-  ... | nothing with view∸ t
-  ... | just _ = asVariable t
-  ... | nothing with viewZero t
-  ... | true = returnTC ((λ _ → returnTC (con (quote K) (zeroTerm v∷ []))) , [])
-  ... | false with viewSuc t
-  ... | just x =
-    do rx ← buildExpression fuel x
-       returnTC
-         ((λ vars →
-           do x ← fst rx vars
-              returnTC
-                (con (quote _+'_)
-                  (con (quote K) (oneTerm v∷ []) v∷ x v∷ [])))
-         , snd rx)
-  ... | nothing with t
-  ... | lit (nat n) = returnTC ((λ _ → returnTC (con (quote K) (natLit n v∷ []))) , [])
-  ... | _ = asVariable t
-
-  toNatExpression : Term → Term → TC (Term × Term × Vars)
-  toNatExpression lhs rhs =
-    do rx ← buildExpression expressionFuel lhs
-       ry ← buildExpression expressionFuel rhs
-       vars ← appendVariables (snd rx) (snd ry)
-       lhsExpr ← fst rx vars
-       rhsExpr ← fst ry vars
-       returnTC (lhsExpr , rhsExpr , vars)
-
-  natSolverCall : Term → Term → Vars → Term
-  natSolverCall lhs rhs vars =
-    let xs = variableVector vars in
-    def (quote natSolve)
-      (varg lhs
-      ∷ varg rhs
-      ∷ varg xs
-      ∷ varg (def (quote refl) [])
-      ∷ [])
 
   processSide : RewritePolicy → RewritePolicy → Bool → Term → TC (Term × Term)
   processSide elimPol upperPol threePass t =

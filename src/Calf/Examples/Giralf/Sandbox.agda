@@ -142,7 +142,7 @@ arithmetic-34 : ∀ {q2 : ℕ} → 1 ≤ q2 → q2 ∸ 1 ≡ q2 ∸ 1
 arithmetic-34 _ = solveNat0
 
 arithmetic-35 : ∀ {q2 p17 : ℕ} → 1 ≤ q2 → 1 + (q2 ∸ 1) ≤ q2 + p17
-arithmetic-35 h = {!   !}
+arithmetic-35 h = solveNat h
 
 arithmetic-36-left : ∀ {q2 p17 : ℕ} → 1 ≤ q2 → 1 ≤ q2 + p17
 arithmetic-36-left h = solveNat h

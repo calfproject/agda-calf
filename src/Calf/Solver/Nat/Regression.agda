@@ -300,3 +300,20 @@ twoFacts :
   → b ≤ c
   → a ≤ c
 twoFacts h₁ h₂ = solveNat (h₁ , h₂)
+
+≤-additive-diff-suc :
+  ∀ {x p : ℕ}
+  → suc x ≤ x + 1 + p
+≤-additive-diff-suc = solveNat0
+
+≤-minus-l-diff :
+  ∀ {l q p : ℕ}
+  → l ≤ q
+  → l + (q ∸ l) ≤ q + p
+≤-minus-l-diff h = solveNat h
+
+≤-minus-l-diff' :
+  ∀ {l q p : ℕ}
+  → l ≤ q
+  → (q ∸ l) + l ≤ q + p
+≤-minus-l-diff' h = solveNat h
