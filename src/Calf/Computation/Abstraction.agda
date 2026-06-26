@@ -34,11 +34,20 @@ opaque
   squareᶜ' : ∀ {A-⊤ A-abs α B-⊤ B-abs β} (f-⊤ : A-⊤ ⊸ B-⊤) (f-abs : A-abs ⊸ B-abs)
     → ((a-⊤ : U A-⊤) → U β (U f-⊤ a-⊤) ≡ U f-abs (U α a-⊤))
     → Abstractionᶜ A-⊤ A-abs α ⊸ Abstractionᶜ B-⊤ B-abs β
-  squareᶜ' f-⊤ f-abs f-coherence =
+  squareᶜ' {α = α} {β = β} f-⊤ f-abs f-coherence =
     Glueᶜ.squareᶜ
       (●ᶜ.map f-⊤)
       (◯ᶜ.map f-abs)
-      (map-∘ _ _ ∙ {! naturality  !} ∙ sym (map-∘ _ _))
+      (  ●ᶜ.map f-⊤ ⨾ᶜ ●ᶜ.map (β ⨾ᶜ η◦ᶜ)
+       ≡⟨ map-∘ f-⊤ (β ⨾ᶜ η◦ᶜ) ⟩
+         ●ᶜ.map (f-⊤ ⨾ᶜ (β ⨾ᶜ η◦ᶜ))
+       ≡⟨ cong ●ᶜ.map
+             (⊸-path refl refl
+               (funExt λ a-⊤ → cong η◦ (f-coherence a-⊤))) ⟩
+         ●ᶜ.map ((α ⨾ᶜ η◦ᶜ) ⨾ᶜ ◯ᶜ.map f-abs)
+       ≡⟨ sym (map-∘ (α ⨾ᶜ η◦ᶜ) (◯ᶜ.map f-abs)) ⟩
+         ●ᶜ.map (α ⨾ᶜ η◦ᶜ) ⨾ᶜ ●ᶜ.map (◯ᶜ.map f-abs)
+       ∎)
 
   squareᶜ'-charge
     : ∀ {A-⊤ A-abs α c}

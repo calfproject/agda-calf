@@ -146,7 +146,7 @@ idᶜ⨾ᶜf≡f : (f : A ⊸ B) → idᶜ ⨾ᶜ f ≡ f
 idᶜ⨾ᶜf≡f f = ⊸-path refl refl refl
 
 f⨾ᶜidᶜ≡f : (f : A ⊸ B) → f ⨾ᶜ idᶜ ≡ f
-f⨾ᶜidᶜ≡f f = {!   !}
+f⨾ᶜidᶜ≡f f = ⊸-path refl refl (funExt (λ x → refl))
 
 charge-path-inv
   : {X Y : 𝒱}
