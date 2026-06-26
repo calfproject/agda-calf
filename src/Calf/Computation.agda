@@ -77,21 +77,31 @@ isPropCharge/+ {U} {isSetU} charge =
       (charge A)
       (charge B)
   → A ≡ B
-𝒞-path {A} {B} U-path charge-path i .U = U-path i
-𝒞-path {A} {B} U-path charge-path i .is-set = isPropIsSet {!   !} {!   !} i
-𝒞-path {A} {B} U-path charge-path i .charge = charge-path i
-𝒞-path {A} {B} U-path charge-path i .charge/0 =
-  isProp→PathP
-    (λ i → isPropCharge/0 {U = U-path i} {{!   !}} (charge-path i))
-    (A .charge/0)
-    (B .charge/0)
-    i
-𝒞-path {A} {B} U-path charge-path i .charge/+ =
-  isProp→PathP
-    (λ i → isPropCharge/+ {U = U-path i} {{!   !}} (charge-path i))
-    (A .charge/+)
-    (B .charge/+)
-    i
+𝒞-path {A} {B} U-path charge-path i =
+  record
+    { U = U-path i
+    ; is-set = isSetUi i
+    ; charge = charge-path i
+    ; charge/0 =
+        isProp→PathP
+          (λ i → isPropCharge/0 {U = U-path i} {isSetUi i} (charge-path i))
+          (A .charge/0)
+          (B .charge/0)
+          i
+    ; charge/+ =
+        isProp→PathP
+          (λ i → isPropCharge/+ {U = U-path i} {isSetUi i} (charge-path i))
+          (A .charge/+)
+          (B .charge/+)
+          i
+    }
+  where
+    isSetUi : PathP (λ i → isSet (U-path i)) (A .is-set) (B .is-set)
+    isSetUi =
+      isProp→PathP
+        (λ i → isPropIsSet {A = U-path i})
+        (A .is-set)
+        (B .is-set)
 
 isProp⊸charge
   : (A B : 𝒞) (f : U A → U B)
@@ -164,6 +174,15 @@ charge-path e chargeX chargeY h =
   funExt λ c →
     ua→ {e = e} λ x →
       ua-gluePath e (h c x)
+
+conservativity :
+  (f : A ⊸ B)
+  → isEquivᶜ f
+  → A ≡ B
+conservativity {A} {B} f f-equiv =
+  𝒞-path
+    (ua (f .U , f-equiv))
+    (charge-path (f .U , f-equiv) (A .charge) (B .charge) (f .charge))
 
 module _ where
   -- a very random transport lemma that is unfortunately needed twice

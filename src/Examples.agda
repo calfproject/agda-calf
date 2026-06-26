@@ -20,9 +20,7 @@ LQ : 𝒞
 LQ = F (List ℕ)
 
 φ : BQ ⊸ LQ
-φ =
-  bind (l₁ , l₂) ← idᶜ ⨾
-  LQ .charge (` length l₁) (ret (l₂ ++ reverse l₁))
+φ = bind' λ (l₁ , l₂) → LQ .charge (` length l₁) (ret (l₂ ++ reverse l₁))
 
 emptyq : U LQ
 emptyq = ret []
@@ -66,8 +64,6 @@ dequeue-snd .charge c q = cong snd (dequeue .charge c q)
 
 opaque
   unfolding ℂ
-  unfolding F
-  unfolding bind'
 
   enqueue-cost : (c n : ℕ) → c + 0 + suc (n + 0) ≡ c + (n + 0) + 1
   enqueue-cost c n =
@@ -81,16 +77,22 @@ opaque
     ∙ sym (Nat.+-zero (c + (n + 0)))
 
   empty-coherent : φ .U emptyᵗ ≡ emptyq
-  empty-coherent = {!   !} -- refl
+  empty-coherent = bind'/β ∙ F _ .charge/0
 
   enqueue-coherent :
     (e : ℕ) (q : U BQ)
     → φ .U (enqueueᵗ e .U q) ≡ enqueue e .U (φ .U q)
-  enqueue-coherent = {!   !}
-  -- enqueue-coherent e (c , back , front) =
-  --   cong₂ _,_
-  --     (enqueue-cost c (length back))
-  --     (sym (List.++-assoc front (reverse back) [ e ]))
+  enqueue-coherent e q =
+      φ .U (enqueueᵗ e .U q)
+    ≡⟨ refl ⟩
+      bind' (λ (l₁ , l₂) → LQ .charge (` length l₁) (ret (l₂ ++ reverse l₁))) .U (
+      bind' (λ (back , front) → ret (e ∷ back , front)) .U q)
+    ≡⟨ {!   !} ⟩
+      bind' (λ l → LQ .charge 1 (ret (l ++ [ e ]))) .U (
+      (bind' (λ (l₁ , l₂) → LQ .charge (` length l₁) (ret (l₂ ++ reverse l₁))) .U q))
+    ≡⟨ refl ⟩
+      enqueue e .U (φ .U q)
+    ∎
 
   dequeue-coherent :
     (q : U BQ)

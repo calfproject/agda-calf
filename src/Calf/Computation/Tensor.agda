@@ -179,7 +179,11 @@ a ∥ b = inj a b 0ℂ
 
 
 ⊤ : 𝒞
-⊤ = F Unit
+⊤ .U = ℂ
+⊤ .is-set = isSetℂ
+⊤ .charge = _+ℂ_
+⊤ .charge/0 = +ℂ-identityˡ _
+⊤ .charge/+ = +ℂ-assoc _ _ _
 
 map₂ : ∀ {A₁ A₂ B₁ B₂}
   → (A₁ ⊸ B₁)
@@ -239,152 +243,107 @@ map₂ {A₁} {A₂} {B₁} {B₂} f g =
         (λ _ → h-charge c y)
         i j
 
-opaque
-  unfolding F  -- TODO: remove?
+⊗-identityʳ : A ⊗ ⊤ ≡ A
+⊗-identityʳ {A = A} =
+  conservativity
+    fwd
+    (isoToIsEquiv (iso fwdU bwd fwd-bwd bwd-fwd))
+  where
+    fwdU : A U⊗ ⊤ → U A
+    fwdU (inj a b c) = A .charge (b +ℂ c) a
+    fwdU (law₁ c c' a b i) =
+      (sym (A .charge/+) ∙ cong (flip (A .charge) a) (+ℂ-assoc b c c')) i
+    fwdU (law₂ c c' a b i) =
+      cong
+        (flip (A .charge) a)
+        (cong (_+ℂ c) (+ℂ-comm c' _) ∙ +ℂ-assoc _ _ _ ∙ cong (b +ℂ_) (+ℂ-comm _ _))
+        i
+    fwdU (squash e e' h h' i j) =
+      A .is-set (fwdU e) (fwdU e') (cong fwdU h) (cong fwdU h') i j
 
-  ⊗-identityʳ : A ⊗ ⊤ ≡ A
-  ⊗-identityʳ {A = A} =
-    𝒞-path
-      (ua tensor⊤≃)
-      (charge-path tensor⊤≃ ((A ⊗ ⊤) .charge) (A .charge) fwd-charge)
-    where
-      fwd : A U⊗ ⊤ → U A
-      fwd (inj a b c) = bind' {X = Unit} {A = A} (λ _ → A .charge c a) .U b
-      fwd (law₁ c c' a b i) =
-        ( bind' {X = Unit} {A = A} (λ _ → A .charge c (A .charge c' a)) .U b
-        ≡⟨ cong (λ f → bind' {X = Unit} {A = A} f .U b)
-              (funExt λ _ → sym (A .charge/+ {a = a} {c₁ = c} {c₂ = c'})) ⟩
-          bind' {X = Unit} {A = A} (λ _ → A .charge (c +ℂ c') a) .U b
-        ∎) i
-      fwd (law₂ c c' a b i) =
-        ( bind' {X = Unit} {A = A} (λ _ → A .charge c a) .U (⊤ .charge c' b)
-        ≡⟨ sym (bind'-charge {X = Unit} {A = A} (λ _ → A .charge c a) c' b) ⟩
-          bind' {X = Unit} {A = A} (λ _ → A .charge c' (A .charge c a)) .U b
-        ≡⟨ cong (λ f → bind' {X = Unit} {A = A} f .U b)
-              (funExt λ _ → sym (A .charge/+ {a = a} {c₁ = c'} {c₂ = c})) ⟩
-          bind' {X = Unit} {A = A} (λ _ → A .charge (c' +ℂ c) a) .U b
-        ≡⟨ cong (λ d → bind' {X = Unit} {A = A} (λ _ → A .charge d a) .U b)
-              (+ℂ-comm c' c) ⟩
-          bind' {X = Unit} {A = A} (λ _ → A .charge (c +ℂ c') a) .U b
-        ∎) i
-      fwd (squash e e' h h' i j) =
-        A .is-set (fwd e) (fwd e') (cong fwd h) (cong fwd h') i j
+    fwd-charge : ∀ c a → fwdU (chargeU⊗ A ⊤ c a) ≡ A .charge c (fwdU a)
+    fwd-charge c (inj a b c₁) =
+      cong
+        (flip (A .charge) a)
+        (sym (+ℂ-assoc _ _ _) ∙ cong (_+ℂ _) (+ℂ-comm _ _) ∙ +ℂ-assoc _ _ _)
+      ∙ A .charge/+
+    fwd-charge c (law₁ c₁ c' a b i) =
+      isSet→isSet'
+        (A .is-set)
+        (fwd-charge c (inj (A .charge c' a) b c₁))
+        (fwd-charge c (inj a b (c₁ +ℂ c')))
+        (λ k → fwdU ((A ⊗ ⊤) .charge c (law₁ c₁ c' a b k)))
+        (λ k → A .charge c (fwdU (law₁ c₁ c' a b k)))
+        i
+    fwd-charge c (law₂ c₁ c' a b i) =
+      isSet→isSet'
+        (A .is-set)
+        (fwd-charge c (inj a (⊤ .charge c' b) c₁))
+        (fwd-charge c (inj a b (c₁ +ℂ c')))
+        (λ k → fwdU ((A ⊗ ⊤) .charge c (law₂ c₁ c' a b k)))
+        (λ k → A .charge c (fwdU (law₂ c₁ c' a b k)))
+        i
+    fwd-charge c (squash x y p q i j) =
+      isSet→SquareP
+        (λ k l → isProp→isSet
+          (A .is-set
+            (fwdU ((A ⊗ ⊤) .charge c (squash x y p q k l)))
+            (A .charge c (fwdU (squash x y p q k l)))))
+        (cong (fwd-charge c) p)
+        (cong (fwd-charge c) q)
+        (λ _ → fwd-charge c x)
+        (λ _ → fwd-charge c y)
+        i j
 
-      -- type annotation purpose
-      module _ where
-        inj⊤ : U A → U ⊤ → ℂ → A U⊗ ⊤
-        inj⊤ = inj
+    fwd : A ⊗ ⊤ ⊸ A
+    fwd .U = fwdU
+    fwd .charge = fwd-charge
 
-        law₁⊤
-          : (c c' : ℂ) (a : U A) (b : U ⊤)
-          → inj⊤ (A .charge c' a) b c ≡ inj⊤ a b (c +ℂ c')
-        law₁⊤ = law₁
+    bwd : U A → A U⊗ ⊤
+    bwd a = inj a 0ℂ 0ℂ
 
-        law₂⊤
-          : (c c' : ℂ) (a : U A) (b : U ⊤)
-          → inj⊤ a (⊤ .charge c' b) c ≡ inj⊤ a b (c +ℂ c')
-        law₂⊤ = law₂
+    fwd-bwd : section fwdU bwd
+    fwd-bwd a = cong (flip (A .charge) a) (+ℂ-identityʳ _) ∙ A .charge/0
 
-        squash⊤ : isSet (A U⊗ ⊤)
-        squash⊤ = squash
-
-      fwd-charge
-        : (c : ℂ) (x : A U⊗ ⊤)
-        → fwd ((A ⊗ ⊤) .charge c x) ≡ A .charge c (fwd x)
-      fwd-charge = {!   !}
-      -- fwd-charge c (inj a (cb , _) c') =
-      --     A .charge cb (A .charge (c +ℂ c') a)
-      --   ≡⟨ cong (A .charge cb) (A .charge/+ {a = a} {c₁ = c} {c₂ = c'}) ⟩
-      --     A .charge cb (A .charge c (A .charge c' a))
-      --   ≡⟨ CHARGE {A = A} cb .charge c (A .charge c' a) ⟩
-      --     A .charge c (A .charge cb (A .charge c' a))
-      --   ∎
-      -- fwd-charge c (law₁ c₁ c' a b i) =
-      --   isSet→isSet'
-      --     (A .is-set)
-      --     (fwd-charge c (inj⊤ (A .charge c' a) b c₁))
-      --     (fwd-charge c (inj⊤ a b (c₁ +ℂ c')))
-      --     (λ k → fwd ((A ⊗ ⊤) .charge c (law₁⊤ c₁ c' a b k)))
-      --     (λ k → A .charge c (fwd (law₁⊤ c₁ c' a b k)))
-      --     i
-      -- fwd-charge c (law₂ c₁ c' a b i) =
-      --   isSet→isSet'
-      --     (A .is-set)
-      --     (fwd-charge c (inj⊤ a (⊤ .charge c' b) c₁))
-      --     (fwd-charge c (inj⊤ a b (c₁ +ℂ c')))
-      --     (λ k → fwd ((A ⊗ ⊤) .charge c (law₂⊤ c₁ c' a b k)))
-      --     (λ k → A .charge c (fwd (law₂⊤ c₁ c' a b k)))
-      --     i
-      -- fwd-charge c (squash x y p q i j) =
-      --   isSet→SquareP
-      --     (λ k l → isProp→isSet
-      --       (A .is-set
-      --         (fwd ((A ⊗ ⊤) .charge c (squash⊤ x y p q k l)))
-      --         (A .charge c (fwd (squash⊤ x y p q k l)))))
-      --     (cong (fwd-charge c) p)
-      --     (cong (fwd-charge c) q)
-      --     (λ _ → fwd-charge c x)
-      --     (λ _ → fwd-charge c y)
-      --     i j
-
-      bwd : U A → A U⊗ ⊤
-      bwd a = inj⊤ a (ret {X = Unit} tt) 0ℂ
-
-      fwd-bwd : section fwd bwd
-      fwd-bwd a =
-          bind' {X = Unit} {A = A} (λ _ → A .charge 0ℂ a) .U (ret {X = Unit} tt)
-        ≡⟨ bind'/β {X = Unit} {A = A} ⟩
-          A .charge 0ℂ a
-        ≡⟨ A .charge/0 {a = a} ⟩
-          a
-        ∎
-
-      bwd-fwd : retract fwd bwd
-      bwd-fwd = {!   !}
-      -- bwd-fwd (inj a (cb , tt) c) =
-      --     inj⊤ (A .charge cb (A .charge c a)) (ret {X = Unit} tt) 0ℂ
-      --   ≡⟨ cong (λ z → inj⊤ z (ret {X = Unit} tt) 0ℂ)
-      --         (sym (A .charge/+ {a = a} {c₁ = cb} {c₂ = c})) ⟩
-      --     inj⊤ (A .charge (cb +ℂ c) a) (ret {X = Unit} tt) 0ℂ
-      --   ≡⟨ law₁⊤ 0ℂ (cb +ℂ c) a (ret {X = Unit} tt) ⟩
-      --     inj⊤ a (ret {X = Unit} tt) (0ℂ +ℂ (cb +ℂ c))
-      --   ≡⟨ cong (inj⊤ a (ret {X = Unit} tt)) (+ℂ-identityˡ (cb +ℂ c)) ⟩
-      --     inj⊤ a (ret {X = Unit} tt) (cb +ℂ c)
-      --   ≡⟨ cong (inj⊤ a (ret {X = Unit} tt)) (+ℂ-comm cb c) ⟩
-      --     inj⊤ a (ret {X = Unit} tt) (c +ℂ cb)
-      --   ≡⟨ sym (law₂⊤ c cb a (ret {X = Unit} tt)) ⟩
-      --     inj⊤ a (⊤ .charge cb (ret {X = Unit} tt)) c
-      --   ≡⟨ cong (λ d → inj⊤ a (d , tt) c) (+ℂ-identityʳ cb) ⟩
-      --     inj⊤ a (cb , tt) c
-      --   ∎
-      -- bwd-fwd (law₁ c c' a b i) =
-      --   isSet→isSet'
-      --     squash⊤
-      --     (bwd-fwd (inj⊤ (A .charge c' a) b c))
-      --     (bwd-fwd (inj⊤ a b (c +ℂ c')))
-      --     (λ k → bwd (fwd (law₁⊤ c c' a b k)))
-      --     (law₁⊤ c c' a b)
-      --     i
-      -- bwd-fwd (law₂ c c' a b i) =
-      --   isSet→isSet'
-      --     squash⊤
-      --     (bwd-fwd (inj⊤ a (⊤ .charge c' b) c))
-      --     (bwd-fwd (inj⊤ a b (c +ℂ c')))
-      --     (λ k → bwd (fwd (law₂⊤ c c' a b k)))
-      --     (law₂⊤ c c' a b)
-      --     i
-      -- bwd-fwd (squash x y p q i j) =
-      --   isSet→SquareP
-      --     (λ k l → isProp→isSet
-      --       (squash⊤ (bwd (fwd (squash⊤ x y p q k l))) (squash⊤ x y p q k l)))
-      --     (cong bwd-fwd p)
-      --     (cong bwd-fwd q)
-      --     (λ _ → bwd-fwd x)
-      --     (λ _ → bwd-fwd y)
-      --     i j
-
-      tensor⊤≃ : (A U⊗ ⊤) ≃ U A
-      tensor⊤≃ = isoToEquiv (iso fwd bwd fwd-bwd bwd-fwd)
+    bwd-fwd : retract fwdU bwd
+    bwd-fwd (inj a b c) =
+        inj (A .charge (b +ℂ c) a) 0ℂ 0ℂ
+      ≡⟨ cong (λ x → inj {A} x 0ℂ 0ℂ) (A .charge/+) ⟩
+        inj (A .charge b (A .charge c a)) 0ℂ 0ℂ
+      ≡⟨ law₁ 0ℂ b (A .charge c a) 0ℂ ⟩
+        inj (A .charge c a) 0ℂ (0ℂ +ℂ b)
+      ≡⟨ sym (law₂ 0ℂ b (A .charge c a) 0ℂ) ⟩
+        inj (A .charge c a) (b +ℂ 0ℂ) 0ℂ
+      ≡⟨ law₁ 0ℂ c a (b +ℂ 0ℂ) ⟩
+        inj a (b +ℂ 0ℂ) (0ℂ +ℂ c)
+      ≡⟨ cong₂ (inj a) (+ℂ-identityʳ _) (+ℂ-identityˡ _) ⟩
+        inj a b c
+      ∎
+    bwd-fwd (law₁ c c' a b i) =
+      isSet→isSet'
+        squash
+        (bwd-fwd (inj (A .charge c' a) b c))
+        (bwd-fwd (inj a b (c +ℂ c')))
+        (λ k → bwd (fwdU (law₁ c c' a b k)))
+        (law₁ c c' a b)
+        i
+    bwd-fwd (law₂ c c' a b i) =
+      isSet→isSet'
+        squash
+        (bwd-fwd (inj a (c' +ℂ b) c))
+        (bwd-fwd (inj a b (c +ℂ c')))
+        (λ k → bwd (fwdU (law₂ c c' a b k)))
+        (law₂ c c' a b)
+        i
+    bwd-fwd (squash x y p q i j) =
+      isSet→SquareP
+        (λ k l → isProp→isSet
+          (squash (bwd (fwdU (squash x y p q k l))) (squash x y p q k l)))
+        (cong bwd-fwd p)
+        (cong bwd-fwd q)
+        (λ _ → bwd-fwd x)
+        (λ _ → bwd-fwd y)
+        i j
 
 module _ where
   open import Calf.Computation.Open as ◯ᶜ
