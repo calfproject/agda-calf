@@ -11,8 +11,8 @@ open import Calf.Core.Cost
 open import Calf.Value
 open import Calf.Value.List
 open import Calf.Value.Nat
-import Calf.Value.Closed as ●ᵛ
-import Calf.Value.Open as ◯ᵛ
+import Calf.Value.Closed as ●
+import Calf.Value.Open as ◯
 open import Calf.Computation
 open import Calf.Computation.Free as F
 open import Calf.Computation.Copower
@@ -193,7 +193,7 @@ opaque
         fold• =
           foldr
             (λ x rec c →
-              ●ᵛ.map (e-cons c x .U)
+              ●.map (e-cons c x .U)
                 (transport
                   (cong U (sym (▷'-●ᶜ c (A (c-quad +ℂ c)))))
                   (rec (c-quad +ℂ c))))
@@ -206,7 +206,7 @@ opaque
 
         open-econs : (c : ℂ) → X → ◯ᶜ (A (c-quad +ℂ c)) ⊸ ◯ᶜ (A c)
         open-econs c x .U a◦ =
-          ◯ᵛ.map (e-cons c x .U)
+          ◯.map (e-cons c x .U)
             (transport (cong U (sym (▷'-◯ᶜ c (A (c-quad +ℂ c))))) a◦)
         open-econs c x .charge d a◦ = funExt λ abs →
             e-cons c x .U
@@ -327,7 +327,7 @@ opaque
               ∎
 
             open-cons-charge : ∀ c x l →
-              ◯ᵛ.map (e-cons c x .U)
+              ◯.map (e-cons c x .U)
                 (transport (cong U (sym (▷'-◯ᶜ c (A (c-quad +ℂ c)))))
                   (CHARGE {A = ◯ᶜ (A (c-quad +ℂ c))} c .U
                     ((costᶜ-at (c-quad +ℂ c) ⨾ᶜ η◦ᶜ ⨾ᶜ go◦ (c-quad +ℂ c)) .U (ret l))))
@@ -358,7 +358,7 @@ opaque
               ≡ (costᶜ-at c ⨾ᶜ η◦ᶜ ⨾ᶜ go◦ c ⨾ᶜ η•ᶜ) .U (ret l)
             fold•-coherence c [] =
                 (fold•ᶜ c ⨾ᶜ ●ᶜ.map η◦ᶜ) .U (ret [])
-              ≡⟨ cong (●ᵛ.map (η◦ᶜ {A = A c} .U)) bind'/β ⟩
+              ≡⟨ cong (●.map (η◦ᶜ {A = A c} .U)) bind'/β ⟩
                 η•ᶜ {A = ◯ᶜ (A c)} .U (η◦ᶜ {A = A c} .U (e-nil c))
               ≡⟨ cong (η•ᶜ {A = ◯ᶜ (A c)} .U) (sym bind'/β) ⟩
                 η•ᶜ {A = ◯ᶜ (A c)} .U
@@ -378,18 +378,18 @@ opaque
               ∎
             fold•-coherence c (x ∷ l) =
                 (fold•ᶜ c ⨾ᶜ ●ᶜ.map η◦ᶜ) .U (ret (x ∷ l))
-              ≡⟨ cong (●ᵛ.map (η◦ᶜ {A = A c} .U)) bind'/β ⟩
-                ●ᵛ.map (η◦ᶜ {A = A c} .U)
-                  (●ᵛ.map (e-cons c x .U)
+              ≡⟨ cong (●.map (η◦ᶜ {A = A c} .U)) bind'/β ⟩
+                ●.map (η◦ᶜ {A = A c} .U)
+                  (●.map (e-cons c x .U)
                     (transport (cong U (sym (▷'-●ᶜ c (A (c-quad +ℂ c)))))
                       (fold• l (c-quad +ℂ c))))
               ≡⟨ cong
-                  (λ q → ●ᵛ.map (η◦ᶜ {A = A c} .U)
-                    (●ᵛ.map (e-cons c x .U)
+                  (λ q → ●.map (η◦ᶜ {A = A c} .U)
+                    (●.map (e-cons c x .U)
                       (transport (cong U (sym (▷'-●ᶜ c (A (c-quad +ℂ c))))) q)))
                   (sym bind'/β) ⟩
-                ●ᵛ.map (η◦ᶜ {A = A c} .U)
-                  (●ᵛ.map (e-cons c x .U)
+                ●.map (η◦ᶜ {A = A c} .U)
+                  (●.map (e-cons c x .U)
                     (transport (cong U (sym (▷'-●ᶜ c (A (c-quad +ℂ c)))))
                       (fold•ᶜ (c-quad +ℂ c) .U (ret l))))
               ≡⟨ (
@@ -415,15 +415,15 @@ opaque
                           ((▷'-FRAC c (A (c-quad +ℂ c)) .𝒞-FRAC.α•) .U
                             (fold•ᶜ (c-quad +ℂ c) .U (ret l)))
                       ≡⟨ cong tr▷◦
-                          (sym (●ᵛ.map-∘
+                          (sym (●.map-∘
                             (η◦ᶜ {A = A (c-quad +ℂ c)} .U)
                             (◯ᶜ (A (c-quad +ℂ c)) .charge c)
                             (fold•ᶜ (c-quad +ℂ c) .U (ret l)))) ⟩
                         tr▷◦
-                          (●ᵛ.map (CHARGE {A = ◯ᶜ (A (c-quad +ℂ c))} c .U)
+                          (●.map (CHARGE {A = ◯ᶜ (A (c-quad +ℂ c))} c .U)
                             ((fold•ᶜ (c-quad +ℂ c) ⨾ᶜ ●ᶜ.map η◦ᶜ) .U (ret l)))
                       ≡⟨ cong tr▷◦
-                          (cong (●ᵛ.map (CHARGE {A = ◯ᶜ (A (c-quad +ℂ c))} c .U))
+                          (cong (●.map (CHARGE {A = ◯ᶜ (A (c-quad +ℂ c))} c .U))
                             (fold•-coherence (c-quad +ℂ c) l)) ⟩
                         η• q▷◦
                       ∎
@@ -431,7 +431,7 @@ opaque
                   fracture-map-coh (e-cons c x) q▷• q▷◦ q▷-coh
               ) ⟩
                 η•ᶜ {A = ◯ᶜ (A c)} .U
-                  (◯ᵛ.map (e-cons c x .U)
+                  (◯.map (e-cons c x .U)
                     (transport (cong U (sym (▷'-◯ᶜ c (A (c-quad +ℂ c)))))
                       (CHARGE {A = ◯ᶜ (A (c-quad +ℂ c))} c .U
                         ((costᶜ-at (c-quad +ℂ c) ⨾ᶜ η◦ᶜ ⨾ᶜ go◦ (c-quad +ℂ c)) .U (ret l)))))

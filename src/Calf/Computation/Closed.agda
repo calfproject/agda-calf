@@ -8,7 +8,7 @@ module Calf.Computation.Closed where
 open import Calf.Core.Abstract
 open import Calf.Core.Cost
 open import Calf.Value
-open import Calf.Value.Closed as ●ᵛ hiding (map; map-∘; join; bind) public
+open import Calf.Value.Closed as ● hiding (map; map-∘; join; bind) public
 open import Calf.Computation
 
 ●ᶜ : 𝒞 → 𝒞
@@ -53,7 +53,7 @@ U• A• .fst = ⟨ A• ⟩ᶜ .U
 U• A• .snd = A• .snd
 
 map : (A ⊸ B) → (●ᶜ A ⊸ ●ᶜ B)
-map f .U = ●ᵛ.map (f .U)
+map f .U = ●.map (f .U)
 map f .charge c (η• a) = cong η• (f .charge c a)
 map f .charge c (∗ p) = refl
 map {A} {B} f .charge c (law a p i) =
@@ -67,13 +67,13 @@ map {A} {B} f .charge c (law a p i) =
 
 ●ᶜ-charge-map
   : (c : ℂ) (a• : U (●ᶜ A))
-  → ●ᶜ A .charge c a• ≡ ●ᵛ.map (A .charge c) a•
+  → ●ᶜ A .charge c a• ≡ ●.map (A .charge c) a•
 ●ᶜ-charge-map c (η• a) = refl
 ●ᶜ-charge-map c (∗ p) = refl
 ●ᶜ-charge-map c (law a p i) = refl
 
 map-∘ : (f : A ⊸ B) (g : B ⊸ C) → map f ⨾ᶜ map g ≡ map (f ⨾ᶜ g)
-map-∘ f g = ⊸-path refl refl (funExt (●ᵛ.map-∘ (f .U) (g .U)))
+map-∘ f g = ⊸-path refl refl (funExt (●.map-∘ (f .U) (g .U)))
 
 map-open : ⟨ ABS ⟩ → (f g : A ⊸ B) → map f ≡ map g
 map-open {A} {B} p f g =
@@ -90,7 +90,7 @@ map-open {A} {B} p f g =
         (map {A = A} {B = B} g .U a•))
 
 join : ●ᶜ (●ᶜ A) ⊸ ●ᶜ A
-join .U = ●ᵛ.join
+join .U = ●.join
 join .charge c (η• a•) = refl
 join .charge c (∗ abs) = refl
 join {A = A} .charge c (law a• abs i) =

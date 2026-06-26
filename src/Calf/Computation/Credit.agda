@@ -13,7 +13,7 @@ module Calf.Computation.Credit where
 open import Calf.Core.Abstract
 open import Calf.Core.Cost
 open import Calf.Value
-open import Calf.Value.Closed as ●ᵛ
+open import Calf.Value.Closed as ●
 open import Calf.Computation
 open import Calf.Computation.Open as ◯ᶜ
 open import Calf.Computation.Closed as ●ᶜ

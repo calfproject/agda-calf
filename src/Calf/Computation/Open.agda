@@ -7,7 +7,7 @@ module Calf.Computation.Open where
 
 open import Calf.Core.Abstract
 open import Calf.Value
-open import Calf.Value.Open as ◯ᵛ hiding (map; join; bind) public
+open import Calf.Value.Open as ◯ hiding (map; join; bind) public
 open import Calf.Computation
 open import Calf.Computation.Power
 
@@ -29,11 +29,11 @@ U◦ A◦ .fst = ⟨ A◦ ⟩ᶜ .U
 U◦ A◦ .snd = A◦ .snd
 
 map : (A ⊸ B) → (◯ᶜ A ⊸ ◯ᶜ B)
-map f .U = ◯ᵛ.map (f .U)
+map f .U = ◯.map (f .U)
 map f .charge c a◦ = funExt λ abs → f .charge c (a◦ abs)
 
 join : ◯ᶜ (◯ᶜ A) ⊸ ◯ᶜ A
-join .U = ◯ᵛ.join
+join .U = ◯.join
 join .charge c a◦ = refl
 
 bind : (A ⊸ ◯ᶜ B) → (◯ᶜ A ⊸ ◯ᶜ B)

@@ -48,11 +48,11 @@ CHARGE : ℂ → A ⊸ A
 CHARGE {A} c .U = charge A c
 CHARGE {A} c .charge c' a =
     A .charge c (A .charge c' a)
-  ≡⟨ sym (A .charge/+ {a = a} {c₁ = c} {c₂ = c'}) ⟩
+  ≡⟨ sym (A .charge/+) ⟩
     A .charge (c +ℂ c') a
   ≡⟨ cong (λ d → A .charge d a) (+ℂ-comm c c') ⟩
     A .charge (c' +ℂ c) a
-  ≡⟨ A .charge/+ {a = a} {c₁ = c'} {c₂ = c} ⟩
+  ≡⟨ A .charge/+ ⟩
     A .charge c' (A .charge c a)
   ∎
 
@@ -140,7 +140,7 @@ CHARGE-0 {A = A} =
 
 CHARGE-+ : ∀ c₁ c₂ → CHARGE {A} (c₁ +ℂ c₂) ≡ CHARGE c₂ ⨾ᶜ CHARGE c₁
 CHARGE-+ {A = A} c₁ c₂ =
-  ⊸-path refl refl (funExt λ a → A .charge/+ {a = a} {c₁ = c₁} {c₂ = c₂})
+  ⊸-path refl refl (funExt λ a → A .charge/+)
 
 idᶜ⨾ᶜf≡f : (f : A ⊸ B) → idᶜ ⨾ᶜ f ≡ f
 idᶜ⨾ᶜf≡f f = ⊸-path refl refl refl
@@ -159,9 +159,7 @@ charge-path-inv
       chargeY
       chargeX
 charge-path-inv e chargeX chargeY h =
-  funExt λ c →
-    ua→ {e = invEquiv e} λ y →
-      ua-gluePath (invEquiv e) (h c y)
+  funExt λ c → ua→ λ y → ua-gluePath (invEquiv e) (h c y)
 
 charge-path
   : {X Y : 𝒱}
@@ -174,9 +172,7 @@ charge-path
       chargeX
       chargeY
 charge-path e chargeX chargeY h =
-  funExt λ c →
-    ua→ {e = e} λ x →
-      ua-gluePath e (h c x)
+  funExt λ c → ua→ λ x → ua-gluePath e (h c x)
 
 conservativity :
   (f : A ⊸ B)

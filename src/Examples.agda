@@ -107,8 +107,8 @@ opaque
 
 
 open import Cubical.Foundations.Equiv
-open import Calf.Value.Open as ◯ᵛ
-open import Calf.Value.Closed as ●ᵛ
+open import Calf.Value.Open as ◯
+open import Calf.Value.Closed as ●
 open import Calf.Value.Glue
 open import Calf.Computation.Open as ◯ᶜ
 open import Calf.Computation.Closed as ●ᶜ hiding (law)
@@ -138,23 +138,23 @@ opaque
 
   dequeueᵗ-fst-●-charge
     : (c : ℂ) (q• : (●ᶜ BQ .U))
-    → ●ᵛ.map (λ bq → fst (dequeueᵗ .U bq)) (●ᶜ BQ .charge c q•)
-      ≡ ●ᵛ.map (λ bq → fst (dequeueᵗ .U bq)) q•
+    → ●.map (λ bq → fst (dequeueᵗ .U bq)) (●ᶜ BQ .charge c q•)
+      ≡ ●.map (λ bq → fst (dequeueᵗ .U bq)) q•
   dequeueᵗ-fst-●-charge c (η• bq) = cong η• (cong fst (dequeueᵗ .charge c bq))
   dequeueᵗ-fst-●-charge c (∗ p) = refl
   dequeueᵗ-fst-●-charge c (law bq p i) =
     isProp→PathP
       (λ i → ●-preserves-isSet isSetℕ
-        (●ᵛ.map (λ bq → fst (dequeueᵗ .U bq)) (●ᶜ BQ .charge c (law bq p i)))
-        (●ᵛ.map (λ bq → fst (dequeueᵗ .U bq)) (law bq p i)))
+        (●.map (λ bq → fst (dequeueᵗ .U bq)) (●ᶜ BQ .charge c (law bq p i)))
+        (●.map (λ bq → fst (dequeueᵗ .U bq)) (law bq p i)))
       (cong η• (cong fst (dequeueᵗ .charge c bq)))
       refl
       i
 
   dequeue-fst-◯-charge
     : (c : ℂ) (q◦ : (◯ᶜ LQ .U))
-    → ◯ᵛ.map (λ lq → fst (dequeue .U lq)) (◯ᶜ LQ .charge c q◦)
-      ≡ ◯ᵛ.map (λ lq → fst (dequeue .U lq)) q◦
+    → ◯.map (λ lq → fst (dequeue .U lq)) (◯ᶜ LQ .charge c q◦)
+      ≡ ◯.map (λ lq → fst (dequeue .U lq)) q◦
   dequeue-fst-◯-charge c q◦ i p = cong fst (dequeue .charge c (q◦ p)) i
 
   dequeue'-fst-glue-charge
@@ -165,7 +165,7 @@ opaque
   dequeue'-fst-glue-charge c q i .•→◦ =
     isProp→PathP
       (λ i → ●-preserves-isSet (◯-preserves-isSet isSetℕ)
-        (●ᵛ.map η◦ (dequeueᵗ-fst-●-charge c (q .•) i))
+        (●.map η◦ (dequeueᵗ-fst-●-charge c (q .•) i))
         (η• (dequeue-fst-◯-charge c (q .◦) i)))
       (dequeue'-fst-glue (BLQ .charge c q) .•→◦)
       (dequeue'-fst-glue q .•→◦)

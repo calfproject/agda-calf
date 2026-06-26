@@ -22,8 +22,8 @@ Glueᶜ A• A◦ α• .is-set = isSetGlue (⟨ A• ⟩ᶜ .is-set) (⟨ A◦ 
 Glueᶜ A• A◦ α• .charge c a .• = ⟨ A• ⟩ᶜ .charge c (a .•)
 Glueᶜ A• A◦ α• .charge c a .◦ = ⟨ A◦ ⟩ᶜ .charge c (a .◦)
 Glueᶜ A• A◦ α• .charge c a .•→◦ = α• .charge c (a .•) ∙ cong (●ᶜ ⟨ A◦ ⟩ᶜ .charge c) (a .•→◦)
-Glueᶜ A• A◦ α• .charge/0 {a} i .• = ⟨ A• ⟩ᶜ .charge/0 {a .•} i
-Glueᶜ A• A◦ α• .charge/0 {a} i .◦ = ⟨ A◦ ⟩ᶜ .charge/0 {a .◦} i
+Glueᶜ A• A◦ α• .charge/0 i .• = ⟨ A• ⟩ᶜ .charge/0 i
+Glueᶜ A• A◦ α• .charge/0 i .◦ = ⟨ A◦ ⟩ᶜ .charge/0 i
 Glueᶜ A• A◦ α• .charge/0 {a} i .•→◦ =
   isProp→PathP
     (λ i → ●ᶜ ⟨ A◦ ⟩ᶜ .is-set
@@ -32,10 +32,8 @@ Glueᶜ A• A◦ α• .charge/0 {a} i .•→◦ =
     (α• .charge 0ℂ (a .•) ∙ cong (●ᶜ ⟨ A◦ ⟩ᶜ .charge 0ℂ) (a .•→◦))
     (a .•→◦)
     i
-Glueᶜ A• A◦ α• .charge/+ {a} {c₁} {c₂} i .• =
-  ⟨ A• ⟩ᶜ .charge/+ {a .•} {c₁} {c₂} i
-Glueᶜ A• A◦ α• .charge/+ {a} {c₁} {c₂} i .◦ =
-  ⟨ A◦ ⟩ᶜ .charge/+ {a .◦} {c₁} {c₂} i
+Glueᶜ A• A◦ α• .charge/+ i .• = ⟨ A• ⟩ᶜ .charge/+ i
+Glueᶜ A• A◦ α• .charge/+ i .◦ = ⟨ A◦ ⟩ᶜ .charge/+ i
 Glueᶜ A• A◦ α• .charge/+ {a} {c₁} {c₂} i .•→◦ =
   isProp→PathP
     (λ i → ●ᶜ ⟨ A◦ ⟩ᶜ .is-set
@@ -157,62 +155,21 @@ glue◦-out-charge F c g◦ =
     (λ i → 𝒱-FRAC.χ• (glue-fracture-section (𝒞-FRAC→𝒱-FRAC F) i))
     i
 
-𝒞-fracture-equiv : (A : 𝒞) → U A ≃ U (𝒞-fromFRAC (𝒞-toFRAC A))
-𝒞-fracture-equiv A = fracture , fracture-isEquiv
-
-fracture-charge
-  : (A : 𝒞) (c : ℂ) (a : U A)
-  → 𝒞-fromFRAC (𝒞-toFRAC A) .charge c (fracture {X = U A} a)
-    ≡ fracture {X = U A} (A .charge c a)
-fracture-charge A c a i .• = η• (A .charge c a)
-fracture-charge A c a i .◦ = η◦ (A .charge c a)
-fracture-charge A c a i .•→◦ =
+𝒞-fracture : A ⊸ 𝒞-fromFRAC (𝒞-toFRAC A)
+𝒞-fracture .U = fracture
+𝒞-fracture {A} .charge c a i .• = η• (A .charge c a)
+𝒞-fracture {A} .charge c a i .◦ = η◦ (A .charge c a)
+𝒞-fracture {A} .charge c a i .•→◦ =
   isProp→PathP
     (λ i → ●ᶜ (◯ᶜ A) .is-set
       (𝒞-fromFRAC (𝒞-toFRAC A) .charge c (fracture a) .•→◦ i0)
       (η• (η◦ (A .charge c a))))
-    (𝒞-fromFRAC (𝒞-toFRAC A) .charge c (fracture a) .•→◦)
     refl
+    (𝒞-fromFRAC (𝒞-toFRAC A) .charge c (fracture a) .•→◦)
     i
 
-fracture-inv-charge
-  : (A : 𝒞) (c : ℂ) (g : U (𝒞-fromFRAC (𝒞-toFRAC A)))
-  → invEq (𝒞-fracture-equiv A) (𝒞-fromFRAC (𝒞-toFRAC A) .charge c g)
-    ≡ A .charge c (invEq (𝒞-fracture-equiv A) g)
-fracture-inv-charge A c g =
-  isEmbedding→Inj (isEquiv→isEmbedding (𝒞-fracture-equiv A .snd))
-    (invEq (𝒞-fracture-equiv A) (𝒞-fromFRAC (𝒞-toFRAC A) .charge c g))
-    (A .charge c (invEq (𝒞-fracture-equiv A) g))
-    (secEq (𝒞-fracture-equiv A) (𝒞-fromFRAC (𝒞-toFRAC A) .charge c g)
-      ∙ sym (cong (𝒞-fromFRAC (𝒞-toFRAC A) .charge c) (secEq (𝒞-fracture-equiv A) g))
-      ∙ fracture-charge A c (invEq (𝒞-fracture-equiv A) g))
-
-𝒞-glue-fracture-retract-U-path
-  : (A : 𝒞) → U (𝒞-fromFRAC (𝒞-toFRAC A)) ≡ U A
-𝒞-glue-fracture-retract-U-path A =
-  ua (invEquiv (𝒞-fracture-equiv A))
-
-𝒞-glue-fracture-retract-charge
-  : (A : 𝒞)
-  → PathP
-      (λ i →
-        ℂ
-        → (𝒞-glue-fracture-retract-U-path A i)
-        → (𝒞-glue-fracture-retract-U-path A i))
-      (𝒞-fromFRAC (𝒞-toFRAC A) .charge)
-      (A .charge)
-𝒞-glue-fracture-retract-charge A =
-  charge-path-inv
-    (𝒞-fracture-equiv A)
-    (A .charge)
-    (𝒞-fromFRAC (𝒞-toFRAC A) .charge)
-    (fracture-inv-charge A)
-
 𝒞-glue-fracture-retract : retract 𝒞-toFRAC 𝒞-fromFRAC
-𝒞-glue-fracture-retract A =
-  𝒞-path
-    (𝒞-glue-fracture-retract-U-path A)
-    (𝒞-glue-fracture-retract-charge A)
+𝒞-glue-fracture-retract A = sym (conservativity 𝒞-fracture fracture-isEquiv)
 
 𝒞-fracture-and-gluing : 𝒞 ≃ 𝒞-FRAC
 𝒞-fracture-and-gluing .fst = 𝒞-toFRAC
@@ -230,21 +187,15 @@ squareᶜ
   → (f◦ : ⟨ A◦ ⟩ᶜ ⊸ B◦ .fst)
   → f• ⨾ᶜ β ≡ α ⨾ᶜ ●ᶜ.map f◦
   → Glueᶜ A• A◦ α ⊸ Glueᶜ B• B◦ β
-squareᶜ {A• = A•} {A◦ = A◦} {α = α} {B• = B•} {B◦ = B◦} {β = β} f• f◦ f-coherence .U q =
+squareᶜ f• f◦ f-coherence .U q =
   square
-    {X• = U• A•}
-    {X◦ = U◦ A◦}
-    {χ = α .U}
-    {Y• = U• B•}
-    {Y◦ = U◦ B◦}
-    {ψ = β .U}
     (f• .U)
     (f◦ .U)
     (λ a• → cong ((_$ a•) ∘ U) f-coherence)
     q
-squareᶜ {A• = A•} {A◦ = A◦} {α = α} {B• = B•} {B◦ = B◦} {β = β} f• f◦ f-coherence .charge c q i .• =
+squareᶜ f• f◦ f-coherence .charge c q i .• =
   f• .charge c (q .•) i
-squareᶜ {A• = A•} {A◦ = A◦} {α = α} {B• = B•} {B◦ = B◦} {β = β} f• f◦ f-coherence .charge c q i .◦ =
+squareᶜ f• f◦ f-coherence .charge c q i .◦ =
   f◦ .charge c (q .◦) i
 squareᶜ {A• = A•} {A◦ = A◦} {α = α} {B• = B•} {B◦ = B◦} {β = β} f• f◦ f-coherence .charge c q i .•→◦ =
   isProp→PathP
@@ -262,3 +213,70 @@ squareᶜ {A• = A•} {A◦ = A◦} {α = α} {B• = B•} {B◦ = B◦} {β 
         f• f◦ f-coherence .U q)
       .•→◦)
     i
+
+fracture-map
+  : (f : A ⊸ B)
+  → 𝒞-fromFRAC (𝒞-toFRAC A) ⊸ 𝒞-fromFRAC (𝒞-toFRAC B)
+fracture-map {A} {B} f .U q .• =
+  ●ᶜ.map f .U (q .•)
+fracture-map {A} {B} f .U q .◦ =
+  ◯.map (f .U) (q .◦)
+fracture-map {A} {B} f .U q .•→◦ =
+    ●.map (η◦ᶜ {A = B} .U) (●ᶜ.map f .U (q .•))
+  ≡⟨ ●.map-∘ (f .U) (η◦ᶜ {A = B} .U) (q .•) ⟩
+    ●.map (λ a → η◦ᶜ {A = B} .U (f .U a)) (q .•)
+  ≡⟨ sym (●.map-∘ (η◦ᶜ {A = A} .U) (◯.map (f .U)) (q .•)) ⟩
+    ●.map (◯.map (f .U)) (●.map (η◦ᶜ {A = A} .U) (q .•))
+  ≡⟨ cong (●.map (◯.map (f .U))) (q .•→◦) ⟩
+    η• (◯.map (f .U) (q .◦))
+  ∎
+fracture-map {A} {B} f .charge c q i .• =
+  ●ᶜ.map f .charge c (q .•) i
+fracture-map {A} {B} f .charge c q i .◦ p =
+  f .charge c (q .◦ p) i
+fracture-map {A} {B} f .charge c q i .•→◦ =
+  isProp→PathP
+    (λ i → ●ᶜ (◯ᶜ B) .is-set
+      (●ᶜ.map (η◦ᶜ {A = B}) .U (●ᶜ.map f .charge c (q .•) i))
+      (η• (λ p → f .charge c (q .◦ p) i)))
+    (fracture-map {A} {B} f .U (𝒞-fromFRAC (𝒞-toFRAC A) .charge c q) .•→◦)
+    (𝒞-fromFRAC (𝒞-toFRAC B) .charge c (fracture-map f .U q) .•→◦)
+    i
+
+fracture-map-coh
+  : (f : A ⊸ B)
+  → (q• : U (●ᶜ A))
+  → (q◦ : U (◯ᶜ A))
+  → (qcoh : ●ᶜ.map (η◦ᶜ {A = A}) .U q• ≡ η• q◦)
+  → ●.map (η◦ᶜ {A = B} .U) (●ᶜ.map f .U q•)
+    ≡ η• (◯.map (f .U) q◦)
+fracture-map-coh f q• q◦ qcoh =
+  fracture-map f .U
+    (record { • = q• ; ◦ = q◦ ; •→◦ = qcoh })
+    .•→◦
+
+fracture-map-fracture
+  : (f : A ⊸ B) (a : U A)
+  → fracture-map f .U (fracture {X = U A} a) ≡ fracture {X = U B} (f .U a)
+fracture-map-fracture {A} {B} f a i .• = η• (f .U a)
+fracture-map-fracture {A} {B} f a i .◦ = η◦ᶜ {A = B} .U (f .U a)
+fracture-map-fracture {A} {B} f a i .•→◦ =
+  isProp→PathP
+    (λ i → ●ᶜ (◯ᶜ B) .is-set
+      (η• (η◦ᶜ {A = B} .U (f .U a)))
+      (η• (η◦ᶜ {A = B} .U (f .U a))))
+    (fracture-map f .U (fracture {X = U A} a) .•→◦)
+    refl
+    i
+
+fracture-map-same
+  : (f : A ⊸ B)
+  → PathP
+      (λ i → 𝒞-glue-fracture-retract A i ⊸ 𝒞-glue-fracture-retract B i)
+      (fracture-map f)
+      f
+fracture-map-same {A} {B} f =
+  ⊸-path
+    (𝒞-glue-fracture-retract A)
+    (𝒞-glue-fracture-retract B)
+    {!   !}
