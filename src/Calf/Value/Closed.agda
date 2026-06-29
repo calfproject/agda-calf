@@ -418,5 +418,6 @@ opaque
 opaque
   unfolding 𝟚
 
-  isPreorder● : ∀ {X} → isPreorder X → isPreorder (● X)
-  isPreorder● _ = isDiscrete→isPreorder ⦃ ⊑-beh refl ⦄
+  isPreorder● : isPreorder X → isPreorder (● X)
+  isPreorder● isPreorderX =
+    isSet∧isDiscrete→isPreorder (isSet● (isPreorder→isSet isPreorderX)) (⊑-beh refl)

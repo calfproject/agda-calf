@@ -18,11 +18,8 @@ data ω : 𝒱 where
 ℕ→ω zero = zero
 ℕ→ω (suc n) = suc (ℕ→ω n)
 
-opaque
-  unfolding 𝒱-family
-
-  isPreorderω : isPreorder ω
-  isPreorderω = {!   !}
+isPreorderω : isPreorder ω
+isPreorderω = {!   !}
 
 instance
   fromNatω : HasFromNat ω

@@ -7,5 +7,8 @@ open import Cubical.Data.Sigma
 open import Cubical.Foundations.HLevels using (isSet×) public
 open import Calf.Value
 
+isDiscrete× : isDiscrete X → isDiscrete Y → isDiscrete (X × Y)
+isDiscrete× = isLocal×
+
 isPreorder× : isPreorder X → isPreorder Y → isPreorder (X × Y)
-isPreorder× = {!   !}
+isPreorder× = isLocal×

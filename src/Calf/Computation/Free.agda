@@ -8,13 +8,12 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.Isomorphism
-open import Cubical.HITs.SetTruncation using (∥_∥₂; ∣_∣₂; squash₂; rec; elim)
 
 opaque
   unfolding M
 
   F : 𝒱 → 𝒞
-  F X .U = M (P X)
+  F X .U = M ∥ X ∥ᴾ
   F X .is-preorder = isPreorder× isPreorderℂ isPreorderP
   F X .charge c (c' , x) = c +ℂ c' , x
   F X .charge/0 {c , x} = cong (_, x) (+ℂ-identityˡ c)
@@ -24,21 +23,19 @@ opaque
   ret x = retᴹ (ηᴾ x)
 
   bind : U (F X) → (X → U A) → U A
-  bind {A = A} (c , x) k = {!   !} -- rec (A .is-set) (A .charge c ∘ k) x
+  bind {A = A} (c , x) k = rec (A .is-preorder) (A .charge c ∘ k) x
 
   bind/charge : ∀ {c e k} → bind {A = A} (F X .charge c e) k ≡ A .charge c (bind {A = A} e k)
-  bind/charge {A = A} {e = e} = {!   !}
-    -- elim
-    --   (λ ∣x∣ →
-    --     isProp→isSet $
-    --     A .is-set
-    --       (bind {A = A} (_ , ∣x∣) _)
-    --       (A .charge _ (bind {A = A} (_ , ∣x∣) _)))
-    --   (λ _ → A .charge/+)
-    --   (e .snd)
+  bind/charge {A = A} {e = e} =
+    rec-unique
+      (A .is-preorder)
+      (λ z → bind {A = A} (_ , z) _)
+      (λ z → A .charge _ (bind {A = A} (_ , z) _))
+      (λ _ → A .charge/+)
+      (e .snd)
 
   bind/β : ∀ {x k} → bind {A = A} (ret {X} x) k ≡ k x
-  bind/β {A = A} = {!   !} -- A .charge/0
+  bind/β {A = A} = A .charge/0
 
   syntax bind {A = A} e (λ x → k) = bind[ A ] x ← e ⨾ k
 
@@ -46,31 +43,27 @@ opaque
     Δ : 𝒞
 
   bind' : (X → U A) → (F X ⊸ A)
-  bind' {A = A} k .U (c , x) = {!   !} -- rec (A .is-set) (A .charge c ∘ k) x
-  bind' {A = A} _ .charge _ (c , x) = {!   !}
-    -- elim
-    --   (λ ∣x∣ →
-    --     isProp→isSet $
-    --     A .is-set
-    --       (bind {A = A} (_ , ∣x∣) _)
-    --       (A .charge _ (bind {A = A} (_ , ∣x∣) _)))
-    --   (λ _ → A .charge/+)
-    --   x
+  bind' {A = A} k .U (c , x) = rec (A .is-preorder) (A .charge c ∘ k) x
+  bind' {A = A} _ .charge _ (c , x) =
+    rec-unique
+      (A .is-preorder)
+      (λ z → bind {A = A} (_ , z) _)
+      (λ z → A .charge _ (bind {A = A} (_ , z) _))
+      (λ _ → A .charge/+)
+      x
 
   bind'/β : {x : X} {k : X → U A} → bind' {A = A} k .U (ret {X} x) ≡ k x
-  bind'/β {A = A} = {!   !} -- A .charge/0
+  bind'/β {A = A} = A .charge/0
 
   bind'/η : bind' (ret {X}) ≡ idᶜ
-  bind'/η = {!   !}
-    -- ⊸-path refl refl (funExt λ (c , x) →
-    --   elim
-    --     (λ x →
-    --       isProp→isSet $
-    --       F _ .is-set
-    --         (bind' {A = F _} ret .U (c , x))
-    --         (c , x))
-    --     (λ x → cong (_, ∣ x ∣₂) (+ℂ-identityʳ c))
-    --     x)
+  bind'/η =
+    ⊸-path refl refl (funExt λ (c , x) →
+      rec-unique
+        (F _ .is-preorder)
+        (λ z → bind' {A = F _} ret .U (c , z))
+        (λ z → c , z)
+        (λ x → cong (_, ηᴾ x) (+ℂ-identityʳ c))
+        x)
 
   bind'-assoc :
       (h : X → U (F Y))
@@ -78,15 +71,13 @@ opaque
     → (e : U (F X))
     → bind' {A = A} k .U (bind' {A = F Y} h .U e)
       ≡ bind' {A = A} (λ x → bind' {A = A} k .U (h x)) .U e
-  bind'-assoc {Y = Y} {A = A} h k (c , x) = {!   !}
-    -- elim
-    --   (λ x →
-    --     isProp→isSet $
-    --     A .is-set
-    --       (bind' {A = A} k .U (bind' {A = F Y} h .U (c , x)))
-    --       (bind' {A = A} (λ x → bind' {A = A} k .U (h x)) .U (c , x)))
-    --   (λ x → bind' {A = A} k .charge c (h x))
-    --   x
+  bind'-assoc {Y = Y} {A = A} h k (c , x) =
+    rec-unique
+      (A .is-preorder)
+      (λ z → bind' {A = A} k .U (bind' {A = F Y} h .U (c , z)))
+      (λ z → bind' {A = A} (λ x → bind' {A = A} k .U (h x)) .U (c , z))
+      (λ x → bind' {A = A} k .charge c (h x))
+      x
 
   bind'-charge :
       (h : X → U A)
@@ -94,10 +85,10 @@ opaque
     → (e : U (F X))
     → bind' {A = A} (λ x → A .charge c (h x)) .U e
       ≡ bind' {A = A} h .U (F X .charge c e)
-  bind'-charge {A = A} h c (c' , x) = {!   !}
-    -- cong (λ e → rec (A .is-set) e x) $
-    -- funExt λ x →
-    -- sym (A .charge/+) ∙ cong (λ d → A .charge d (h x)) (+ℂ-comm c' c)
+  bind'-charge {A = A} h c (c' , x) =
+    cong (λ e → rec (A .is-preorder) e x) $
+    funExt λ x →
+    sym (A .charge/+) ∙ cong (λ d → A .charge d (h x)) (+ℂ-comm c' c)
 
   bind'-map :
       (f : A ⊸ B)
@@ -105,15 +96,13 @@ opaque
     → (e : U (F X))
     → f .U (bind' {A = A} h .U e)
       ≡ bind' {A = B} (λ x → f .U (h x)) .U e
-  bind'-map {A = A} {B = B} f h (c , x) = {!   !}
-    -- elim
-    --   (λ x →
-    --     isProp→isSet $
-    --     B .is-set
-    --       (f .U (bind' {A = A} h .U (c , x)))
-    --       (bind' {A = B} (λ x → f .U (h x)) .U (c , x)))
-    --   (λ x → f .charge c (h x))
-    --   x
+  bind'-map {A = A} {B = B} f h (c , x) =
+    rec-unique
+      (B .is-preorder)
+      (λ z → f .U (bind' {A = A} h .U (c , z)))
+      (λ z → bind' {A = B} (λ x → f .U (h x)) .U (c , z))
+      (λ x → f .charge c (h x))
+      x
 
 bind'-isEquiv : isEquiv (bind' {X} {A})
 bind'-isEquiv {X} {A} = isoToIsEquiv $
