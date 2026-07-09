@@ -1,4 +1,3 @@
--- This proof is largely due to https://agda.monade.li/ErasureOpen.html
 module Calf.Value.Glue.Fracture where
 
 open import Calf.Core.Abstract
@@ -8,7 +7,7 @@ open import Calf.Value.Closed as ●
 open import Calf.Value.Glue.Base
 
 open import Cubical.Data.Sigma
-open import Cubical.Foundations.GroupoidLaws using (symInvo)
+open import Cubical.Foundations.GroupoidLaws using (symInvo; rUnit)
 open import Cubical.Foundations.Path
 open import Cubical.Foundations.Univalence using (ua; ua→; ua-gluePath)
 
@@ -256,6 +255,7 @@ glue-fracture-section F i .χ• =
     (glue-χ-path-base F)
     i
 
+-- This proof is largely due to https://agda.monade.li/ErasureOpen.html
 glue-fracture-retract : retract toFRAC fromFRAC
 glue-fracture-retract X = sym (ua (fracture , fracture-isEquiv))
 
@@ -263,5 +263,162 @@ fracture-and-gluing : 𝒱 ≃ 𝒱-FRAC
 fracture-and-gluing .fst = toFRAC
 fracture-and-gluing .snd = isoToIsEquiv (iso toFRAC fromFRAC glue-fracture-section glue-fracture-retract)
 
+opaque
+  unfracture : FractureGlue X → X
+  unfracture = invEq (fracture , fracture-isEquiv)
+
+  unfracture-fracture : (x : X) → unfracture (fracture x) ≡ x
+  unfracture-fracture = retEq (fracture , fracture-isEquiv)
+
+  fracture-unfracture : (g : FractureGlue X) → fracture (unfracture g) ≡ g
+  fracture-unfracture = secEq (fracture , fracture-isEquiv)
+
+toSquare-coh
+  : (f : X → Y)
+  → (x• : ● X)
+  → ●.map η◦ (●.map f x•) ≡ ●.map (◯.map f) (●.map η◦ x•)
+toSquare-coh f (η• x) = refl
+toSquare-coh f (∗ abs) = refl
+toSquare-coh f (law x abs i) =
+  isProp→PathP
+    (λ i → isProp→isSet (●-isProp abs)
+      (●.map η◦ (●.map f (law x abs i)))
+      (●.map (◯.map f) (●.map η◦ (law x abs i))))
+    (toSquare-coh f (η• x))
+    (toSquare-coh f (∗ abs))
+    i
+
+toSquare : (X → Y) → 𝒱-Square (toFRAC X) (toFRAC Y)
+toSquare f .𝒱-Square.f• = ●.map f
+toSquare f .𝒱-Square.f◦ = ◯.map f
+toSquare f .𝒱-Square.f-coh = toSquare-coh f
+
+square-point : 𝒱-Square (toFRAC X) (toFRAC Y) → X → FractureGlue Y
+square-point F x .• = F .𝒱-Square.f• (η• x)
+square-point F x .◦ = F .𝒱-Square.f◦ (η◦ x)
+square-point F x .•→◦ = F .𝒱-Square.f-coh (η• x)
+
+fromSquare : 𝒱-Square (toFRAC X) (toFRAC Y) → X → Y
+fromSquare F x = unfracture (square-point F x)
+
+square-f•-path
+  : (F : 𝒱-Square (toFRAC X) (toFRAC Y))
+  → (x• : ● X)
+  → ●.map (fromSquare F) x• ≡ F .𝒱-Square.f• x•
+square-f•-path F (η• x) = cong • (fracture-unfracture (square-point F x))
+square-f•-path F (∗ abs) = ●-isProp abs _ _
+square-f•-path F (law x abs i) =
+  isProp→PathP
+    (λ i → isProp→isSet (●-isProp abs)
+      (●.map (fromSquare F) (law x abs i))
+      (F .𝒱-Square.f• (law x abs i)))
+    (square-f•-path F (η• x))
+    (square-f•-path F (∗ abs))
+    i
+
+open-path : (x◦ : ◯ X) (abs : ⟨ ABS ⟩) → η◦ (x◦ abs) ≡ x◦
+open-path x◦ abs = funExt λ q → cong x◦ (str ABS abs q)
+
+square-f◦-path
+  : (F : 𝒱-Square (toFRAC X) (toFRAC Y))
+  → (x◦ : ◯ X)
+  → ◯.map (fromSquare F) x◦ ≡ F .𝒱-Square.f◦ x◦
+square-f◦-path F x◦ = funExt λ abs →
+  cong (λ y◦ → y◦ abs) (cong ◦ (fracture-unfracture (square-point F (x◦ abs))))
+  ∙ cong (λ z → F .𝒱-Square.f◦ z abs) (open-path x◦ abs)
+
+square-f◦-path-η
+  : (F : 𝒱-Square (toFRAC X) (toFRAC Y))
+  → (x : X) (i : I)
+  → fracture-unfracture (square-point F x) i .◦ ≡ square-f◦-path F (η◦ x) i
+square-f◦-path-η F x i = funExt λ abs →
+  let
+    p : η◦ (fromSquare F x) abs ≡ F .𝒱-Square.f◦ (η◦ x) abs
+    p = cong (λ y◦ → y◦ abs) (cong ◦ (fracture-unfracture (square-point F x)))
+  in
+    (λ j → rUnit p j i)
+
+square-f◦-path-η-i0
+  : (F : 𝒱-Square (toFRAC X) (toFRAC Y))
+  → (x : X)
+  → square-f◦-path-η F x i0 ≡ refl
+square-f◦-path-η-i0 F x = refl
+
+square-f◦-path-η-i1
+  : (F : 𝒱-Square (toFRAC X) (toFRAC Y))
+  → (x : X)
+  → square-f◦-path-η F x i1 ≡ refl
+square-f◦-path-η-i1 F x = refl
+
+square-f-coh-path
+  : (F : 𝒱-Square (toFRAC X) (toFRAC Y))
+  → (x• : ● X)
+  → PathP
+      (λ i →
+        ●.map η◦ (square-f•-path F x• i)
+        ≡ ●.map (λ x◦ → square-f◦-path F x◦ i) (●.map η◦ x•))
+      (toSquare-coh (fromSquare F) x•)
+      (F .𝒱-Square.f-coh x•)
+square-f-coh-path F (η• x) = start ◁ raw ▷ stop
+  where
+    raw :
+      PathP
+        (λ i →
+          ●.map η◦ (square-f•-path F (η• x) i)
+          ≡ ●.map (λ x◦ → square-f◦-path F x◦ i) (●.map η◦ (η• x)))
+        (toSquare-coh (fromSquare F) (η• x) ∙ cong η• (square-f◦-path-η F x i0))
+        (F .𝒱-Square.f-coh (η• x) ∙ cong η• (square-f◦-path-η F x i1))
+    raw i = fracture-unfracture (square-point F x) i .•→◦
+      ∙ cong η• (square-f◦-path-η F x i)
+
+    start :
+      toSquare-coh (fromSquare F) (η• x)
+      ≡ toSquare-coh (fromSquare F) (η• x) ∙ cong η• (square-f◦-path-η F x i0)
+    start =
+      rUnit _
+      ∙ cong
+          (λ q → toSquare-coh (fromSquare F) (η• x) ∙ q)
+          (sym (cong (cong η•) (square-f◦-path-η-i0 F x)))
+
+    stop :
+      F .𝒱-Square.f-coh (η• x) ∙ cong η• (square-f◦-path-η F x i1)
+      ≡ F .𝒱-Square.f-coh (η• x)
+    stop =
+      cong
+        (λ q → F .𝒱-Square.f-coh (η• x) ∙ q)
+        (cong (cong η•) (square-f◦-path-η-i1 F x))
+      ∙ sym (rUnit (F .𝒱-Square.f-coh (η• x)))
+square-f-coh-path F (∗ abs) =
+  isProp→PathP
+    (λ i → isProp→isSet (●-isProp abs)
+      (●.map η◦ (square-f•-path F (∗ abs) i))
+      (●.map (λ x◦ → square-f◦-path F x◦ i) (●.map η◦ (∗ abs))))
+    (toSquare-coh (fromSquare F) (∗ abs))
+    (F .𝒱-Square.f-coh (∗ abs))
+square-f-coh-path F (law x abs i) =
+  isProp→PathP
+    (λ k →
+      isOfHLevelPathP
+        {A = λ j →
+          ●.map η◦ (square-f•-path F (law x abs k) j)
+          ≡ ●.map (λ x◦ → square-f◦-path F x◦ j) (●.map η◦ (law x abs k))}
+        1
+        (isProp→isSet (●-isProp abs)
+          (●.map η◦ (square-f•-path F (law x abs k) i1))
+          (●.map (λ x◦ → square-f◦-path F x◦ i1) (●.map η◦ (law x abs k))))
+        (toSquare-coh (fromSquare F) (law x abs k))
+        (F .𝒱-Square.f-coh (law x abs k)))
+    (square-f-coh-path F (η• x))
+    (square-f-coh-path F (∗ abs))
+    i
+
+toSquare-leftInv : {X Y : 𝒱} → retract (toSquare {X = X} {Y = Y}) fromSquare
+toSquare-leftInv f = funExt λ x → unfracture-fracture (f x)
+
+toSquare-rightInv : {X Y : 𝒱} → section (toSquare {X = X} {Y = Y}) fromSquare
+toSquare-rightInv F i .𝒱-Square.f• x• = square-f•-path F x• i
+toSquare-rightInv F i .𝒱-Square.f◦ x◦ = square-f◦-path F x◦ i
+toSquare-rightInv F i .𝒱-Square.f-coh x• = square-f-coh-path F x• i
+
 fracture-and-gluing-square : (X → Y) ≡ 𝒱-Square (toFRAC X) (toFRAC Y)
-fracture-and-gluing-square = {!   !}
+fracture-and-gluing-square = isoToPath (iso toSquare fromSquare toSquare-rightInv toSquare-leftInv)
