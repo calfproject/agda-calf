@@ -88,7 +88,7 @@ opaque
         ret []
       ∎
 
-  pcons₂ : ∀ {c-lin c-quad} → X → ▷'[ c-lin ] (PList₂ (c-quad +ℂ c-lin) c-quad X) ⊸ PList₂ c-lin c-quad X
+  pcons₂ : ∀ {c-lin c-quad} → X → ▷[ c-lin ] (PList₂ (c-quad +ℂ c-lin) c-quad X) ⊸ PList₂ c-lin c-quad X
   pcons₂ {X} {c-lin} {c-quad} x =
     subst (_⊸ PList₂ c-lin c-quad X)
       ( Abstractionᶜ (F (List X)) (F (List X))
@@ -105,7 +105,7 @@ opaque
             (CHARGE c-lin)
             (λ e → bind' (λ l → F _ .charge (plist₂-potential (c-quad +ℂ c-lin) c-quad (length l)) (ret l)) .charge c-lin e))
       ≡⟨ cong (Abstractionᶜ _ _) (squareᶜ'-charge _) ⟩
-        ▷'[ c-lin ] (PList₂ (c-quad +ℂ c-lin) c-quad X)
+        ▷[ c-lin ] (PList₂ (c-quad +ℂ c-lin) c-quad X)
       ∎) $
     squareᶜ'
       (F.map (x ∷_))
@@ -175,7 +175,7 @@ opaque
 
     pfoldr₂ : ∀ {c-lin c-quad} (A : ℂ → 𝒞)
       → (∀ c-lin → U (A c-lin))
-      → (∀ c-lin → X → (▷'[ c-lin ] (A (c-quad +ℂ c-lin))) ⊸ A c-lin)
+      → (∀ c-lin → X → (▷[ c-lin ] (A (c-quad +ℂ c-lin))) ⊸ A c-lin)
       → PList₂ c-lin c-quad X ⊸ A c-lin
     pfoldr₂ {X = X} {c-lin = c-lin} {c-quad = c-quad} A e-nil e-cons =
       subst (PList₂ c-lin c-quad X ⊸_) (𝒞-glue-fracture-retract (A c-lin)) $
@@ -195,7 +195,7 @@ opaque
             (λ x rec c →
               ●.map (e-cons c x .U)
                 (transport
-                  (cong U (sym (▷'-●ᶜ c (A (c-quad +ℂ c)))))
+                  (cong U (sym (▷-●ᶜ c (A (c-quad +ℂ c)))))
                   (rec (c-quad +ℂ c))))
             (λ c → η• (e-nil c))
 
@@ -207,22 +207,22 @@ opaque
         open-econs : (c : ℂ) → X → ◯ᶜ (A (c-quad +ℂ c)) ⊸ ◯ᶜ (A c)
         open-econs c x .U a◦ =
           ◯.map (e-cons c x .U)
-            (transport (cong U (sym (▷'-◯ᶜ c (A (c-quad +ℂ c))))) a◦)
+            (transport (cong U (sym (▷-◯ᶜ c (A (c-quad +ℂ c))))) a◦)
         open-econs c x .charge d a◦ = funExt λ abs →
             e-cons c x .U
-              (transport (cong U (sym (▷'-◯ᶜ c (A (c-quad +ℂ c)))))
+              (transport (cong U (sym (▷-◯ᶜ c (A (c-quad +ℂ c)))))
                 (◯ᶜ (A (c-quad +ℂ c)) .charge d a◦)
                 abs)
           ≡⟨ cong (λ q → e-cons c x .U (q abs))
-                (transport-charge (sym (▷'-◯ᶜ c (A (c-quad +ℂ c)))) d a◦) ⟩
+                (transport-charge (sym (▷-◯ᶜ c (A (c-quad +ℂ c)))) d a◦) ⟩
             e-cons c x .U
-              ((◯ᶜ (▷'[ c ] (A (c-quad +ℂ c))) .charge d
-                (transport (cong U (sym (▷'-◯ᶜ c (A (c-quad +ℂ c))))) a◦)) abs)
+              ((◯ᶜ (▷[ c ] (A (c-quad +ℂ c))) .charge d
+                (transport (cong U (sym (▷-◯ᶜ c (A (c-quad +ℂ c))))) a◦)) abs)
           ≡⟨ e-cons c x .charge d
-                (transport (cong U (sym (▷'-◯ᶜ c (A (c-quad +ℂ c))))) a◦ abs) ⟩
+                (transport (cong U (sym (▷-◯ᶜ c (A (c-quad +ℂ c))))) a◦ abs) ⟩
             A c .charge d
               (e-cons c x .U
-                (transport (cong U (sym (▷'-◯ᶜ c (A (c-quad +ℂ c))))) a◦ abs))
+                (transport (cong U (sym (▷-◯ᶜ c (A (c-quad +ℂ c))))) a◦ abs))
           ∎
 
         fold◦ : (List X) → (c : ℂ) → U (◯ᶜ (A c))
@@ -328,7 +328,7 @@ opaque
 
             open-cons-charge : ∀ c x l →
               ◯.map (e-cons c x .U)
-                (transport (cong U (sym (▷'-◯ᶜ c (A (c-quad +ℂ c)))))
+                (transport (cong U (sym (▷-◯ᶜ c (A (c-quad +ℂ c)))))
                   (CHARGE {A = ◯ᶜ (A (c-quad +ℂ c))} c .U
                     ((costᶜ-at (c-quad +ℂ c) ⨾ᶜ η◦ᶜ ⨾ᶜ go◦ (c-quad +ℂ c)) .U (ret l))))
               ≡ (costᶜ-at c ⨾ᶜ η◦ᶜ ⨾ᶜ go◦ c) .U (ret (x ∷ l))
@@ -381,38 +381,38 @@ opaque
               ≡⟨ cong (●.map (η◦ᶜ {A = A c} .U)) bind'/β ⟩
                 ●.map (η◦ᶜ {A = A c} .U)
                   (●.map (e-cons c x .U)
-                    (transport (cong U (sym (▷'-●ᶜ c (A (c-quad +ℂ c)))))
+                    (transport (cong U (sym (▷-●ᶜ c (A (c-quad +ℂ c)))))
                       (fold• l (c-quad +ℂ c))))
               ≡⟨ cong
                   (λ q → ●.map (η◦ᶜ {A = A c} .U)
                     (●.map (e-cons c x .U)
-                      (transport (cong U (sym (▷'-●ᶜ c (A (c-quad +ℂ c))))) q)))
+                      (transport (cong U (sym (▷-●ᶜ c (A (c-quad +ℂ c))))) q)))
                   (sym bind'/β) ⟩
                 ●.map (η◦ᶜ {A = A c} .U)
                   (●.map (e-cons c x .U)
-                    (transport (cong U (sym (▷'-●ᶜ c (A (c-quad +ℂ c)))))
+                    (transport (cong U (sym (▷-●ᶜ c (A (c-quad +ℂ c)))))
                       (fold•ᶜ (c-quad +ℂ c) .U (ret l))))
               ≡⟨ (
                 let
                     q▷• =
                       transport
-                        (cong U (sym (▷'-●ᶜ c (A (c-quad +ℂ c)))))
+                        (cong U (sym (▷-●ᶜ c (A (c-quad +ℂ c)))))
                         (fold•ᶜ (c-quad +ℂ c) .U (ret l))
                     q▷◦ =
                       transport
-                        (cong U (sym (▷'-◯ᶜ c (A (c-quad +ℂ c)))))
+                        (cong U (sym (▷-◯ᶜ c (A (c-quad +ℂ c)))))
                         (CHARGE {A = ◯ᶜ (A (c-quad +ℂ c))} c .U
                           ((costᶜ-at (c-quad +ℂ c) ⨾ᶜ η◦ᶜ ⨾ᶜ go◦ (c-quad +ℂ c)) .U (ret l)))
                     tr▷◦ =
                       transport
-                        (cong (λ C → U (●ᶜ C)) (sym (▷'-◯ᶜ c (A (c-quad +ℂ c)))))
+                        (cong (λ C → U (●ᶜ C)) (sym (▷-◯ᶜ c (A (c-quad +ℂ c)))))
 
-                    q▷-coh : ●ᶜ.map (η◦ᶜ {A = ▷'[ c ] (A (c-quad +ℂ c))}) .U q▷• ≡ η• q▷◦
+                    q▷-coh : ●ᶜ.map (η◦ᶜ {A = ▷[ c ] (A (c-quad +ℂ c))}) .U q▷• ≡ η• q▷◦
                     q▷-coh =
-                        ●ᶜ.map (η◦ᶜ {A = ▷'[ c ] (A (c-quad +ℂ c))}) .U q▷•
-                      ≡⟨ transport-▷' c (A (c-quad +ℂ c)) (fold•ᶜ (c-quad +ℂ c) .U (ret l)) ⟩
+                        ●ᶜ.map (η◦ᶜ {A = ▷[ c ] (A (c-quad +ℂ c))}) .U q▷•
+                      ≡⟨ transport-▷ c (A (c-quad +ℂ c)) (fold•ᶜ (c-quad +ℂ c) .U (ret l)) ⟩
                         tr▷◦
-                          ((▷'-FRAC c (A (c-quad +ℂ c)) .𝒞-FRAC.α•) .U
+                          ((▷-FRAC c (A (c-quad +ℂ c)) .𝒞-FRAC.α•) .U
                             (fold•ᶜ (c-quad +ℂ c) .U (ret l)))
                       ≡⟨ cong tr▷◦
                           (sym (●.map-∘
@@ -432,7 +432,7 @@ opaque
               ) ⟩
                 η•ᶜ {A = ◯ᶜ (A c)} .U
                   (◯.map (e-cons c x .U)
-                    (transport (cong U (sym (▷'-◯ᶜ c (A (c-quad +ℂ c)))))
+                    (transport (cong U (sym (▷-◯ᶜ c (A (c-quad +ℂ c)))))
                       (CHARGE {A = ◯ᶜ (A (c-quad +ℂ c))} c .U
                         ((costᶜ-at (c-quad +ℂ c) ⨾ᶜ η◦ᶜ ⨾ᶜ go◦ (c-quad +ℂ c)) .U (ret l)))))
               ≡⟨ cong (η•ᶜ {A = ◯ᶜ (A c)} .U) (open-cons-charge c x l) ⟩

@@ -29,7 +29,7 @@ insert p x =
   payᴳ (+ℂ-identityʳ p) $
   proj₁ᴳ {B = PList₁ p ℕ} $
   foldr₁ᴳ
-    {A = (◁'[ p ] PList₁ p ℕ) ×ᶜ PList₁ p ℕ}
+    {A = (◁[ p ] PList₁ p ℕ) ×ᶜ PList₁ p ℕ}
     (pairᴳ
       (getᴳ p (+ℂ-identityʳ p) (cons₁ᴳ (+ℂ-identityʳ p) x nil₁ᴳ))
       nil₁ᴳ
@@ -42,7 +42,7 @@ insert p x =
             then cons₁ᴳ refl x (cons₁ᴳ (+ℂ-identityʳ p) y (proj₂ᴳ (idᴳ refl)))
             else cons₁ᴳ refl y (payᴳ (+ℂ-identityʳ p) (proj₁ᴳ {B = PList₁ p ℕ} (idᴳ refl)))
         )
-        (cons₁ᴳ (+ℂ-identityʳ p) y (proj₂ᴳ {A = ◁'[ p ] PList₁ p ℕ} (idᴳ refl)))
+        (cons₁ᴳ (+ℂ-identityʳ p) y (proj₂ᴳ {A = ◁[ p ] PList₁ p ℕ} (idᴳ refl)))
     )
     (idᴳ refl)
 
@@ -75,14 +75,14 @@ msort/clocked (suc k) k' =
   merge
     where
       lemma :
-        (▷'[ 0ℂ ] PList₁ (` (k + suc k')) ℕ) ⊗ (▷'[ 0ℂ ] PList₁ (` (k + suc k')) ℕ)
-        ≡ ▷'[ 0ℂ ] (PList₁ (` suc (k + k')) ℕ ⊗ PList₁ (` suc (k + k')) ℕ)
+        (▷[ 0ℂ ] PList₁ (` (k + suc k')) ℕ) ⊗ (▷[ 0ℂ ] PList₁ (` (k + suc k')) ℕ)
+        ≡ ▷[ 0ℂ ] (PList₁ (` suc (k + k')) ℕ ⊗ PList₁ (` suc (k + k')) ℕ)
       lemma =
-          (▷'[ 0ℂ ] PList₁ (` (k + suc k')) ℕ) ⊗ (▷'[ 0ℂ ] PList₁ (` (k + suc k')) ℕ)
-        ≡⟨ cong₂ _⊗_ ▷'/0 ▷'/0 ⟩
+          (▷[ 0ℂ ] PList₁ (` (k + suc k')) ℕ) ⊗ (▷[ 0ℂ ] PList₁ (` (k + suc k')) ℕ)
+        ≡⟨ cong₂ _⊗_ ▷/0 ▷/0 ⟩
           PList₁ (` (k + suc k')) ℕ ⊗ PList₁ (` (k + suc k')) ℕ
         ≡⟨ cong (λ n → PList₁ (` n) ℕ ⊗ PList₁ (` n) ℕ) (Nat.+-suc k k') ⟩
           PList₁ (` suc (k + k')) ℕ ⊗ PList₁ (` suc (k + k')) ℕ
-        ≡⟨ sym ▷'/0 ⟩
-          ▷'[ 0ℂ ] (PList₁ (` suc (k + k')) ℕ ⊗ PList₁ (` suc (k + k')) ℕ)
+        ≡⟨ sym ▷/0 ⟩
+          ▷[ 0ℂ ] (PList₁ (` suc (k + k')) ℕ ⊗ PList₁ (` suc (k + k')) ℕ)
         ∎
