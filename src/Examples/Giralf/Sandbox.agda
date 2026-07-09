@@ -42,7 +42,7 @@ opaque
       (λ p5 → λ xh3 →
         powlamᴳ {X = 1 + q2 ≤ p5} $ λ cs3 →
         getᴳ ((p5 ∸ 1) ∸ q2) refl $
-        chargeᴳ {q' = (((p5 ∸ 1) ∸ q2) + p5) ∸ 1} 1 {!   !} $
+        spendᴳ {q' = (((p5 ∸ 1) ∸ q2) + p5) ∸ 1} 1 {!   !} $
         cons₂ᴳ {q' = ((((p5 ∸ 1) ∸ q2) + p5) ∸ 1) ∸ ((p5 ∸ 1) ∸ q2)} {!   !} (xh3) $
         substᵐᴳ {!   !} $
         subst2ᴳ (λ l q → PList₂ l q X) {!  !} {!   !} $
@@ -66,7 +66,7 @@ opaque
       )
       (λ p5 → λ xh3 →
         powlamᴳ {X = (1 ≤ p5) × (1 + q2 ≤ p5)} $ λ cs5 →
-        chargeᴳ {q' = p5 ∸ 1} 1 {!   !} $
+        spendᴳ {q' = p5 ∸ 1} 1 {!   !} $
         pairᴳ (
           getᴳ {q' = ((p5 ∸ 1) ∸ q2) + (p5 ∸ 1)} ((p5 ∸ 1) ∸ q2) refl $
           if ((x1) ≤ᵇ (xh3)) then (
@@ -116,7 +116,7 @@ opaque
           (λ p20 → λ xh2 →
             powlamᴳ {X = 1 + (q2 ∸ 1) ≤ p20} $ λ cs8 →
             getᴳ {q' = ((p20 ∸ 1) ∸ (q2 ∸ 1)) + p20} ((p20 ∸ 1) ∸ (q2 ∸ 1)) refl $
-            chargeᴳ {q' = (((p20 ∸ 1) ∸ (q2 ∸ 1)) + p20) ∸ 1} 1 {!   !} $
+            spendᴳ {q' = (((p20 ∸ 1) ∸ (q2 ∸ 1)) + p20) ∸ 1} 1 {!   !} $
             cons₂ᴳ {q' = ((((p20 ∸ 1) ∸ (q2 ∸ 1)) + p20) ∸ 1) ∸ ((p20 ∸ 1) ∸ (q2 ∸ 1))} {!   !} (xh2) $
             substᵐᴳ {!   !} $ subst2ᴳ (λ p30 p29 → PList₂ (p30) (p29) (X)) {!   !} {!   !} $
             payᴳ {p = (((q2 ∸ 1) + p20) ∸ 1) ∸ (q2 ∸ 1)} {q' = 0} refl $
@@ -156,7 +156,7 @@ opaque
           )
           (λ p20 → λ xh2 →
             powlamᴳ {X = (1 ≤ p20) × (1 + (q2 ∸ 1) ≤ p20)} $ λ cs10 →
-            chargeᴳ {q' = p20 ∸ 1} 1 {!   !} $
+            spendᴳ {q' = p20 ∸ 1} 1 {!   !} $
             pairᴳ (
               getᴳ {q' = ((p20 ∸ 1) ∸ (q2 ∸ 1)) + (p20 ∸ 1)} ((p20 ∸ 1) ∸ (q2 ∸ 1)) refl $
               if ((yh4) ≤ᵇ (xh2)) then (

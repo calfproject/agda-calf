@@ -109,12 +109,11 @@ module _ where
     → Δ , q ⊢ A
   releaseᴳ e k = e ⨾ᶜ k
 
-chargeᴳ : ∀ p
+spendᴳ : ∀ p
   → q ⋎₂ (p , q')
   → Δ , q' ⊢ A
   → Δ , q ⊢ A
-chargeᴳ p split e =
-  releaseᴳ (storeᴳ p split e) {! spend  !}
+spendᴳ p split e = releaseᴳ (storeᴳ p split e) (spend p)
 
 module _ where
   getᴳ : ∀ p

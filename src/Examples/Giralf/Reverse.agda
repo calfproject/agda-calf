@@ -17,7 +17,7 @@ snoc p x =
       nil₁ᴳ
     )
     (λ y →
-      chargeᴳ 1 refl $
+      spendᴳ 1 refl $
       getᴳ p refl $
       cons₁ᴳ refl y $
       payᴳ (+ℂ-identityʳ p) $

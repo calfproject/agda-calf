@@ -13,7 +13,7 @@ id₁ =
   foldr₁ᴳ
     nil₁ᴳ
     (λ x →
-      chargeᴳ 1 refl $
+      spendᴳ 1 refl $
       cons₁ᴳ (+ℂ-identityʳ _) x $
       idᴳ refl
     )
