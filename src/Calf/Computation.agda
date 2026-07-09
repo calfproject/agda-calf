@@ -20,6 +20,10 @@ record 𝒞 : 𝒱₁ where
     charge : ℂ → U → U
     charge/0 : ∀ {a} → charge 0ℂ a ≡ a
     charge/+ : ∀ {a c₁ c₂} → charge (c₁ +ℂ c₂) a ≡ charge c₁ (charge c₂ a)
+
+  charge/comm : ∀ {c} {c'} {a}
+    → charge c (charge c' a) ≡ charge c' (charge c a)
+  charge/comm = sym charge/+ ∙ cong (flip charge _) (+ℂ-comm _ _) ∙ charge/+
 open 𝒞 public
 
 variable
