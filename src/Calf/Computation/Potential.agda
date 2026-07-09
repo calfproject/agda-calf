@@ -74,3 +74,15 @@ square {ΦX = ΦX} {ΦY = ΦY} f c-⊤ c-abs amortization =
         bind' (λ x → F _ .charge (c-abs x) (ret (f x))) .U
         (bind' (λ x → F _ .charge (ΦX x) (ret x)) .U a-⊤)
       ∎
+
+module _ where
+  open import Calf.Computation.Credit
+  open import Calf.Computation.Copower
+  open import Calf.Computation.Tensor
+
+  opaque
+    unfolding Abstractionᶜ F
+
+    potential-credit : ∀ {X : 𝒱ₛ} Φ →
+      Potential Φ ≡ [ x ∈ X ] ⋊ ▷[ Φ x ] ⊤
+    potential-credit = {!   !}
