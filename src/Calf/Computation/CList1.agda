@@ -23,10 +23,10 @@ open import Calf.Computation.Potential
 open import Calf.Computation.Credit
 
 opaque
-  PList₁ : ℂ → 𝒱 → 𝒞
-  PList₁ c X = Potential {List X} (λ l → length l ⊙ c)
+  CList₁ : ℂ → 𝒱 → 𝒞
+  CList₁ c X = Potential {List X} (λ l → length l ⊙ c)
 
-  pnil₁ : U (PList₁ c X)
+  pnil₁ : U (CList₁ c X)
   pnil₁ {c} =
     triangleᶜ'
       {F _} {F _} {bind' (λ l → F _ .charge (length l ⊙ c) (ret l))}
@@ -34,22 +34,22 @@ opaque
       (ret [])
       (bind'/β ∙ F _ .charge/0)
 
-  pcons₁ : X → ▷[ c ] (PList₁ c X) ⊸ PList₁ c X
+  pcons₁ : X → ▷[ c ] (CList₁ c X) ⊸ CList₁ c X
   pcons₁ {X} {c} x =
-    subst (_⊸ PList₁ c X)
+    subst (_⊸ CList₁ c X)
       ( Abstractionᶜ (F (List X)) (F (List X)) (CHARGE c ⨾ᶜ bind' (λ l → F _ .charge (length l ⊙ c) (ret l)))
       ≡⟨ cong (Abstractionᶜ _ _) (CHARGE-commute _ _) ⟩
         Abstractionᶜ (F (List X)) (F (List X)) (bind' (λ l → F _ .charge (length l ⊙ c) (ret l)) ⨾ᶜ CHARGE c)
       ≡⟨ sym Abstractionᶜ-Abstractionᶜ ⟩
         Abstractionᶜ
-          (PList₁ c X)
-          (PList₁ c X)
+          (CList₁ c X)
+          (CList₁ c X)
           (squareᶜ'
             (CHARGE c)
             (CHARGE c)
             (λ e → bind' (λ l → F _ .charge (length l ⊙ c) (ret l)) .charge c e))
       ≡⟨ cong (Abstractionᶜ _ _) (squareᶜ'-charge _) ⟩
-        ▷[ c ] (PList₁ c X)
+        ▷[ c ] (CList₁ c X)
       ∎) $
     squareᶜ'
       (F.map (x ∷_))
@@ -111,9 +111,9 @@ opaque
     pfoldr₁ :
         U A
       → (X → (▷[ c ] A ⊸ A))
-      → PList₁ c X ⊸ A
+      → CList₁ c X ⊸ A
     pfoldr₁ {A = A} {X = X} {c} enil econs =
-      subst (PList₁ c X ⊸_) (𝒞-glue-fracture-retract A) $
+      subst (CList₁ c X ⊸_) (𝒞-glue-fracture-retract A) $
       squareᶜ go• go◦ go-•⊸◦
       where
         costᶜ : F (List X) ⊸ F (List X)
