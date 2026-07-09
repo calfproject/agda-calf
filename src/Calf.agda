@@ -29,6 +29,6 @@ import Calf.Giralf
 
 import Examples
 import Examples.Giralf.Id
+import Examples.Giralf.InsertionSort
 import Examples.Giralf.Reverse
-import Examples.Giralf.Sort
 import Examples.Giralf.Sandbox

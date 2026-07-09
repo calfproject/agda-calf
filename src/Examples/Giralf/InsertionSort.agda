@@ -1,4 +1,4 @@
-module Examples.Giralf.Sort where
+module Examples.Giralf.InsertionSort where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
@@ -35,7 +35,7 @@ insert p x =
       nil₁ᴳ
     )
     (λ y →
-      chargeᴳ 1 refl $
+      spendᴳ 1 refl $
       pairᴳ
         ( getᴳ p refl $
           if x ≤ᵇ y
@@ -53,36 +53,3 @@ isort =
     (λ r → nil₁ᴳ)
     insert
     (idᴳ refl)
-
-
-variable
-  k : ℕ
-
-split : PList₁ c ℕ , 0ℂ ⊢ PList₁ c ℕ ⊗ PList₁ c ℕ
-split = {!   !}
-
-merge : PList₁ (` suc k) ℕ ⊗ PList₁ (` suc k) ℕ , 0ℂ ⊢ PList₁ (` k) ℕ
-merge = {!   !}
-
-msort/clocked : (k k' : ℕ) → PList₁ (` (k + k')) ℕ , 0ℂ ⊢ PList₁ (` k') ℕ
-msort/clocked zero k' = idᴳ refl
-msort/clocked (suc k) k' =
-  letᴳ (+ℂ-identityˡ _) split $
-  letᴳ (+ℂ-identityˡ _)
-    (transport
-      (cong (_⊸ _) lemma)
-      (map₂ (msort/clocked k (suc k')) (msort/clocked k (suc k')))) $
-  merge
-    where
-      lemma :
-        (▷[ 0ℂ ] PList₁ (` (k + suc k')) ℕ) ⊗ (▷[ 0ℂ ] PList₁ (` (k + suc k')) ℕ)
-        ≡ ▷[ 0ℂ ] (PList₁ (` suc (k + k')) ℕ ⊗ PList₁ (` suc (k + k')) ℕ)
-      lemma =
-          (▷[ 0ℂ ] PList₁ (` (k + suc k')) ℕ) ⊗ (▷[ 0ℂ ] PList₁ (` (k + suc k')) ℕ)
-        ≡⟨ cong₂ _⊗_ ▷/0 ▷/0 ⟩
-          PList₁ (` (k + suc k')) ℕ ⊗ PList₁ (` (k + suc k')) ℕ
-        ≡⟨ cong (λ n → PList₁ (` n) ℕ ⊗ PList₁ (` n) ℕ) (Nat.+-suc k k') ⟩
-          PList₁ (` suc (k + k')) ℕ ⊗ PList₁ (` suc (k + k')) ℕ
-        ≡⟨ sym ▷/0 ⟩
-          ▷[ 0ℂ ] (PList₁ (` suc (k + k')) ℕ ⊗ PList₁ (` suc (k + k')) ℕ)
-        ∎
