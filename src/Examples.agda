@@ -1,6 +1,8 @@
 module Examples where
 
 open import Calf.Core.Cost
+open import Calf.Core.Monad using (M)
+open import Cubical.HITs.SetTruncation using (∣_∣₂)
 open import Calf.Value
 open import Calf.Value.List
 open import Calf.Value.Nat
@@ -39,15 +41,15 @@ emptyᵗ = ret ([] , [])
 enqueueᵗ : ℕ → BQ ⊸ BQ
 enqueueᵗ e = bind' λ (back , front) → ret (e ∷ back , front)
 
+reverse-front : List ℕ → U (ℕₛ ⋊ BQ)
+reverse-front back with reverse back
+... | []     = 0 , BQ .charge (` length back) (ret ([] , []))
+... | x ∷ l  = x , BQ .charge (` length back) (ret ([] , l))
+
 dequeueᵗ : BQ ⊸ (ℕₛ ⋊ BQ)
 dequeueᵗ = bind' λ
   { (back , x ∷ front) → x , ret (back , front)
   ; (back , [])        → reverse-front back }
-  where
-    reverse-front : List ℕ → U (ℕₛ ⋊ BQ)
-    reverse-front back with reverse back
-    ... | []     = 0 , BQ .charge (` length back) (ret ([] , []))
-    ... | x ∷ l  = x , BQ .charge (` length back) (ret ([] , l))
 
 mapφ : (ℕₛ ⋊ BQ) ⊸ (ℕₛ ⋊ LQ)
 mapφ .U (x , q) = x , φ .U q
@@ -85,31 +87,104 @@ opaque
   enqueue-coherent e q =
       φ .U (enqueueᵗ e .U q)
     ≡⟨ refl ⟩
-      bind' (λ (l₁ , l₂) → LQ .charge (` length l₁) (ret (l₂ ++ reverse l₁))) .U (
-      bind' (λ (back , front) → ret (e ∷ back , front)) .U q)
-    ≡⟨ {!   !} ⟩
-      bind' (λ l → LQ .charge 1 (ret (l ++ [ e ]))) .U (
-      (bind' (λ (l₁ , l₂) → LQ .charge (` length l₁) (ret (l₂ ++ reverse l₁))) .U q))
+      bind' {A = LQ} (λ (l₁ , l₂) → LQ .charge (` length l₁) (ret (l₂ ++ reverse l₁))) .U (
+      bind' {A = BQ} (λ (back , front) → ret (e ∷ back , front)) .U q)
+    ≡⟨ bind'-assoc {A = LQ}
+         (λ (back , front) → ret (e ∷ back , front))
+         (λ (l₁ , l₂) → LQ .charge (` length l₁) (ret (l₂ ++ reverse l₁)))
+         q ⟩
+      bind' {A = LQ} (λ (x : List ℕ × List ℕ) →
+        bind' {A = LQ} (λ (l₁ , l₂) → LQ .charge (` length l₁) (ret (l₂ ++ reverse l₁))) .U
+          ((λ ((back , front) : List ℕ × List ℕ) → ret (e ∷ back , front)) x)) .U q
+    ≡⟨ cong (λ (f : List ℕ × List ℕ → U LQ) → bind' {A = LQ} f .U q) (funExt enqueue-lemma) ⟩
+      bind' {A = LQ} (λ (x : List ℕ × List ℕ) →
+        bind' {A = LQ} (λ l → LQ .charge 1 (ret (l ++ [ e ]))) .U
+          ((λ ((l₁ , l₂) : List ℕ × List ℕ) → LQ .charge (` length l₁) (ret (l₂ ++ reverse l₁))) x)) .U q
+    ≡⟨ sym (bind'-assoc {A = LQ}
+         (λ (l₁ , l₂) → LQ .charge (` length l₁) (ret (l₂ ++ reverse l₁)))
+         (λ l → LQ .charge 1 (ret (l ++ [ e ])))
+         q) ⟩
+      bind' {A = LQ} (λ l → LQ .charge 1 (ret (l ++ [ e ]))) .U (
+      (bind' {A = LQ} (λ (l₁ , l₂) → LQ .charge (` length l₁) (ret (l₂ ++ reverse l₁))) .U q))
     ≡⟨ refl ⟩
       enqueue e .U (φ .U q)
     ∎
+    where
+      enqueue-lemma : (x : List ℕ × List ℕ)
+        → bind' {X = List ℕ × List ℕ} {A = LQ}
+            (λ (l₁ , l₂) → LQ .charge (` length l₁) (ret (l₂ ++ reverse l₁))) .U
+            ((λ ((back , front) : List ℕ × List ℕ) → ret (e ∷ back , front)) x)
+          ≡ bind' {X = List ℕ} {A = LQ}
+            (λ l → LQ .charge 1 (ret (l ++ [ e ]))) .U
+            ((λ ((l₁ , l₂) : List ℕ × List ℕ) → LQ .charge (` length l₁) (ret (l₂ ++ reverse l₁))) x)
+      enqueue-lemma (back , front) =
+          bind' {A = LQ} (λ (l₁ , l₂) → LQ .charge (` length l₁) (ret (l₂ ++ reverse l₁))) .U
+            (ret (e ∷ back , front))
+        ≡⟨ bind'/β {A = LQ} ⟩
+          LQ .charge (` length (e ∷ back)) (ret (front ++ reverse (e ∷ back)))
+        ≡⟨ cong (λ w → LQ .charge (` length (e ∷ back)) (ret w))
+             (sym (List.++-assoc front (reverse back) [ e ])) ⟩
+          LQ .charge (` length (e ∷ back)) (ret ((front ++ reverse back) ++ [ e ]))
+        ≡⟨ cong (λ c → LQ .charge c (ret ((front ++ reverse back) ++ [ e ])))
+             (sym (Nat.+-comm (length back) 1)) ⟩
+          LQ .charge ((` length back) +ℂ 1) (ret ((front ++ reverse back) ++ [ e ]))
+        ≡⟨ LQ .charge/+ ⟩
+          LQ .charge (` length back) (LQ .charge 1 (ret ((front ++ reverse back) ++ [ e ])))
+        ≡⟨ cong (LQ .charge (` length back)) (sym (bind'/β {A = LQ})) ⟩
+          LQ .charge (` length back)
+            (bind' {A = LQ} (λ l → LQ .charge 1 (ret (l ++ [ e ]))) .U (ret (front ++ reverse back)))
+        ≡⟨ sym (bind' {A = LQ} (λ l → LQ .charge 1 (ret (l ++ [ e ]))) .charge
+                 (` length back) (ret (front ++ reverse back))) ⟩
+          bind' {A = LQ} (λ l → LQ .charge 1 (ret (l ++ [ e ]))) .U
+            (LQ .charge (` length back) (ret (front ++ reverse back)))
+        ∎
+
+opaque
+  unfolding ℂ M F
 
   dequeue-coherent :
     (q : U BQ)
     → mapφ .U (dequeueᵗ .U q) ≡ dequeue .U (φ .U q)
-  dequeue-coherent = {!   !}
-  -- dequeue-coherent (c , back , []) with reverse back
-  -- ... | [] = refl
-  -- ... | x ∷ front =
-  --   λ i → x , c + (length back + 0) + 0 , List.++-unit-r front i
-  -- dequeue-coherent (c , back , x ∷ front) =
-  --   λ i → x , dequeue-front-cost c (length back) i , front ++ reverse back
+  dequeue-coherent q =
+    cong (λ f → f .U q)
+      (bind'-path
+        (dequeueᵗ ⨾ᶜ mapφ)
+        (φ ⨾ᶜ dequeue)
+        (funExt dequeue-lemma))
+    where
+      dequeue-lemma : (x : List ℕ × List ℕ)
+        → (dequeueᵗ ⨾ᶜ mapφ) .U (ret x) ≡ (φ ⨾ᶜ dequeue) .U (ret x)
+      dequeue-lemma (back , x ∷ front) =
+          mapφ .U (dequeueᵗ .U (ret (back , x ∷ front)))
+        ≡⟨ cong (mapφ .U)
+             (bind'/β {A = ℕₛ ⋊ BQ} {x = back , x ∷ front}
+               {k = λ { (b , z ∷ f) → z , ret (b , f) ; (b , []) → reverse-front b }}) ⟩
+          (x , φ .U (ret (back , front)))
+        ≡⟨ cong (x ,_)
+             (bind'/β {A = LQ} {x = back , front}
+               {k = λ (l₁ , l₂) → LQ .charge (` length l₁) (ret (l₂ ++ reverse l₁))}) ⟩
+          (x , LQ .charge (` length back) (ret (front ++ reverse back)))
+        ≡⟨ sym (cong ((ℕₛ ⋊ LQ) .charge (` length back))
+             (bind'/β {A = ℕₛ ⋊ LQ} {x = x ∷ (front ++ reverse back)}
+               {k = λ { [] → 0 , ret [] ; (z ∷ l) → z , ret l }})) ⟩
+          (ℕₛ ⋊ LQ) .charge (` length back) (dequeue .U (ret (x ∷ (front ++ reverse back))))
+        ≡⟨ sym (dequeue .charge (` length back) (ret (x ∷ (front ++ reverse back)))) ⟩
+          dequeue .U (LQ .charge (` length back) (ret (x ∷ (front ++ reverse back))))
+        ≡⟨ sym (cong (dequeue .U)
+             (bind'/β {A = LQ} {x = back , x ∷ front}
+               {k = λ (l₁ , l₂) → LQ .charge (` length l₁) (ret (l₂ ++ reverse l₁))})) ⟩
+          dequeue .U (φ .U (ret (back , x ∷ front)))
+        ∎
+      dequeue-lemma (back , []) with reverse back
+      ... | []    = refl
+      ... | y ∷ l = λ i → y , length back + 0 + 0 , ∣ List.++-unit-r l i ∣₂
 
 
 open import Cubical.Foundations.Equiv
 open import Calf.Value.Open as ◯
 open import Calf.Value.Closed as ●
 open import Calf.Value.Glue
+open import Calf.Value.Abstraction using (square')
 open import Calf.Computation.Open as ◯ᶜ
 open import Calf.Computation.Closed as ●ᶜ hiding (law)
 open import Calf.Computation.Abstraction
@@ -127,11 +202,11 @@ opaque
   unfolding Abstractionᶜ
 
   dequeue'-fst-glue : U BLQ → fromFRAC (toFRAC ℕ)
-  dequeue'-fst-glue = {!   !}
-    -- square'
-    --   (λ bq → fst (dequeueᵗ .U bq))
-    --   (λ lq → fst (dequeue .U lq))
-    --   (λ q → cong fst (dequeue-coherent q))
+  dequeue'-fst-glue =
+    square'
+      (λ bq → fst (dequeueᵗ .U bq))
+      (λ lq → fst (dequeue .U lq))
+      (λ q → cong fst (dequeue-coherent q))
 
   dequeue'-snd : BLQ ⊸ BLQ
   dequeue'-snd = squareᶜ' dequeueᵗ-snd dequeue-snd (λ q → cong snd (dequeue-coherent q))
