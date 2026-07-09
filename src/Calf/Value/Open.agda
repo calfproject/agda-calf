@@ -43,3 +43,6 @@ bind x◦ k = join (map k x◦)
 
 ◯-preserves-isSet : isSet X → isSet (◯ X)
 ◯-preserves-isSet = isSet→
+
+isPreorder◯ : isPreorder X → isPreorder (◯ X)
+isPreorder◯ isPreorderX = isLocalΠ λ _ → isPreorderX

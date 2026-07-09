@@ -8,12 +8,12 @@ open import Cubical.Foundations.Prelude using (cong)
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Structure
 
-Σᶜ : (X : 𝒱) ⦃ _ : isDiscrete X ⦄ → (X → 𝒞) → 𝒞
-Σᶜ X A .U = Σ[ x ∈ X ] U (A x)
-Σᶜ X A .is-preorder = isPreorderΣ λ x → A x .is-preorder
-Σᶜ X A .charge c (x , a) = x , A x .charge c a
-Σᶜ X A .charge/0 {x , _} = cong (x ,_) (A x .charge/0)
-Σᶜ X A .charge/+ {x , _} = cong (x ,_) (A x .charge/+)
+Σᶜ : isSet X × isDiscrete X → (X → 𝒞) → 𝒞
+Σᶜ {X} (isSetX , isDiscreteX) A .U = Σ[ x ∈ X ] U (A x)
+Σᶜ {X} (isSetX , isDiscreteX) A .is-preorder = isPreorderΣ isSetX isDiscreteX λ x → A x .is-preorder
+Σᶜ {X} (isSetX , isDiscreteX) A .charge c (x , a) = x , A x .charge c a
+Σᶜ {X} (isSetX , isDiscreteX) A .charge/0 {x , _} = cong (x ,_) (A x .charge/0)
+Σᶜ {X} (isSetX , isDiscreteX) A .charge/+ {x , _} = cong (x ,_) (A x .charge/+)
 
 syntax Σᶜ X (λ x → A) = [ x ∈ X ] ⋊ A
 

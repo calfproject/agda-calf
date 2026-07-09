@@ -8,8 +8,9 @@ open import Cubical.Data.Unit
   renaming (Unit to ⊤; isSetUnit to isSet⊤)
   public
 
-isDiscrete⊤ : isDiscrete ⊤
-isDiscrete⊤ = isLocalUnit
+opaque
+  isDiscrete⊤ : isDiscrete ⊤
+  isDiscrete⊤ = isLocalUnit
 
-isPreorder⊤ : isPreorder ⊤
-isPreorder⊤ = isLocalUnit {F = Fᴾ}
+  isPreorder⊤ : isPreorder ⊤
+  isPreorder⊤ = isLocalUnit {F = Fᴾ}

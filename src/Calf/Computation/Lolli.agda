@@ -15,14 +15,16 @@ infix 1 _⊸ᶜ_
 
 _⊸ᶜ_ : 𝒞 → 𝒞 → 𝒞
 (A ⊸ᶜ B) .U = A ⊸ B
-(A ⊸ᶜ B) .is-preorder = {!   !}
-  -- isSetRetract
-  --   (λ f → f .U , f .charge)
-  --   (λ (U , charge) → record { U = U ; charge = charge })
-  --   (λ _ → refl)
-  --   (isSetΣSndProp
-  --     (isSetΠ λ _ → B .is-set)
-  --     (isProp⊸charge A B))
+(A ⊸ᶜ B) .is-preorder =
+  isLocalRetract
+    (λ f → f .U , funExt λ c → funExt λ a → f .charge c a)
+    (λ (U , p) → record { U = U ; charge = λ c a → funExt⁻ (funExt⁻ p c) a })
+    (λ _ → refl)
+    (isLocalEqualizer
+      (isLocalΠ λ _ → B .is-preorder)
+      (isLocalΠ λ _ → isLocalΠ λ _ → B .is-preorder)
+      (λ U c a → U (A .charge c a))
+      (λ U c a → B .charge c (U a)))
 (A ⊸ᶜ B) .charge c f .U a = B .charge c (f .U a)
 (A ⊸ᶜ B) .charge c f .charge c' a =
   cong (B .charge c) (f .charge c' a)

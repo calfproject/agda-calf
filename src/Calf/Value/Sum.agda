@@ -13,8 +13,8 @@ open import Calf.Value.Sigma
 isPreorder⊎ : isPreorder X → isPreorder Y → isPreorder (X ⊎ Y)
 isPreorder⊎ isPreorderX isPreorderY =
   subst isPreorder
-    (ua (isoToEquiv lemma))
-    (isPreorderΣ λ { false → isPreorderX ; true → isPreorderY })
+    (isoToPath lemma)
+    (isPreorderΣ isSetBool isDiscreteBool λ { false → isPreorderX ; true → isPreorderY })
   where
     open Iso
 

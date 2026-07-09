@@ -18,7 +18,10 @@ open import Cubical.Data.Unit
 open import Cubical.HITs.Localization
 open import Cubical.HITs.Nullification.Properties using (toPathP⁻-sq)
 
-private variable X Y : Type
+open import Calf.Core.Interval using (𝟚; 0𝟚; 1𝟚)
+open import Calf.Directed.Path using (_⊑_; path; path₀; path₁)
+
+private variable X Y Z : Type
 
 open isPathSplitEquiv
 open Iso
@@ -32,8 +35,8 @@ isProp→isLocal {X} s isPropX α =
     (λ _ → isPropΠ (λ _ → isPropX) _ _)
     (λ _ → isPropΠ (λ _ → isPropX) _ _)
 
-retract-isLocal : (s : Y → X) (r : X → Y) → retract s r → isLocal F X → isLocal F Y
-retract-isLocal {Y} {X} s r ret isLocalX α =
+isLocalRetract : (s : Y → X) (r : X → Y) → retract s r → isLocal F X → isLocal F Y
+isLocalRetract {Y} {X} s r ret isLocalX α =
   fromIsEquiv _ $ isoToIsEquiv $
   iso
     (_∘ F α)
@@ -140,3 +143,67 @@ isLocalΠ {X} {Y} isLocalY α = fromIsEquiv _ (equivIsEquiv equiv)
       ((x : X) → T α → Y x) ≃⟨ equivΠCod (λ x → _ , toIsEquiv _ (isLocalY x α)) ⟩
       ((x : X) → S α → Y x) ≃⟨ invEquiv (flip≃ (S α)) ⟩
       (S α → (x : X) → Y x) ■
+
+isLocalEqualizer :
+  isLocal F X → isLocal F Y → (φ ψ : X → Y)
+  → isLocal F (Σ[ x ∈ X ] φ x ≡ ψ x)
+isLocalEqualizer {X} {Y} isLocalX isLocalY φ ψ α = fromIsEquiv _ (equivIsEquiv equiv)
+  where
+    equiv : (T α → Σ[ x ∈ X ] φ x ≡ ψ x) ≃ (S α → Σ[ x ∈ X ] φ x ≡ ψ x)
+    equiv =
+        (T α → Σ[ x ∈ X ] φ x ≡ ψ x)
+      ≃⟨ Σ-Π-≃ ⟩
+        Σ[ g ∈ (T α → X) ] ((t : T α) → φ (g t) ≡ ψ (g t))
+      ≃⟨
+        Σ-cong-equiv
+          (_ , toIsEquiv _ (isLocalX α))
+          (λ g → _ , toIsEquiv _ (isLocalPathFun isLocalY α (φ ∘ g) (ψ ∘ g)))
+      ⟩
+        Σ[ h ∈ (S α → X) ] ((s : S α) → φ (h s) ≡ ψ (h s))
+      ≃⟨ invEquiv Σ-Π-≃ ⟩
+        (S α → Σ[ x ∈ X ] φ x ≡ ψ x)
+      ■
+
+isLocalPullback :
+  isLocal F X → isLocal F Y → isLocal F Z → (f : X → Z) (g : Y → Z)
+  → isLocal F (Σ[ (x , y) ∈ X × Y ] f x ≡ g y)
+isLocalPullback isLocalX isLocalY isLocalZ f g =
+  isLocalEqualizer (isLocal× isLocalX isLocalY) isLocalZ (λ (x , y) → f x) (λ (x , y) → g y)
+
+isLocalComma :
+  isLocal F X → isLocal F Y → isLocal F Z → (f : X → Z) (g : Y → Z)
+  → isLocal F (Σ[ (x , y) ∈ X × Y ] f x ⊑ g y)
+isLocalComma isLocalX isLocalY isLocalZ f g =
+  isLocalRetract
+    (λ ((x , y) , q) → ((x , y) , q .path) , λ i → q .path₀ i , q .path₁ i)
+    (λ (((x , y) , p) , e) → (x , y) , record { path = p ; path₀ = cong fst e ; path₁ = cong snd e })
+    (λ _ → refl)
+    (isLocalEqualizer
+      (isLocal× (isLocal× isLocalX isLocalY) (isLocalΠ λ _ → isLocalZ))
+      (isLocal× isLocalZ isLocalZ)
+      (λ ((x , y) , p) → p 0𝟚 , p 1𝟚)
+      (λ ((x , y) , p) → f x , g y))
+
+isLocalΣ : {Y : X → Type}
+  → isLocal F X
+  → ((α : A) → isEquiv (const {A = X} {B = T α}))
+  → ((x : X) → isLocal F (Y x))
+  → isLocal F (Σ X Y)
+isLocalΣ {X} {Y} isLocalX nullT isLocalY α = fromIsEquiv _ (equivIsEquiv equiv)
+  where
+    fiber-isEquiv : (f : T α → X) → isEquiv (λ (h : (t : T α) → Y (f t)) → h ∘ F α)
+    fiber-isEquiv f =
+      subst (λ f' → isEquiv (λ (h : (t : T α) → Y (f' t)) → h ∘ F α))
+        (secEq (const , nullT α) f)
+        (toIsEquiv _ (isLocalY (invEq (const , nullT α) f) α))
+
+    equiv : (T α → Σ X Y) ≃ (S α → Σ X Y)
+    equiv =
+        (T α → Σ X Y)
+      ≃⟨ Σ-Π-≃ ⟩
+        Σ[ f ∈ (T α → X) ] ((t : T α) → Y (f t))
+      ≃⟨ Σ-cong-equiv (_ , toIsEquiv _ (isLocalX α)) (λ f → _ , fiber-isEquiv f) ⟩
+        Σ[ g ∈ (S α → X) ] ((s : S α) → Y (g s))
+      ≃⟨ invEquiv Σ-Π-≃ ⟩
+        (S α → Σ X Y)
+      ■

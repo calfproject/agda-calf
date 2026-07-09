@@ -51,6 +51,16 @@ open Iso
 Δ²-elim .leftInv k i (push false j) = k (push false j)
 Δ²-elim .leftInv k i (push true j) = k (push true j)
 
+Λ²-elim : Iso (Λ² → X) (Σ[ p ∈ (𝟚 → X) ] Σ[ q ∈ (𝟚 → X) ] (p 1𝟚 ≡ q 0𝟚))
+Λ²-elim .fun k = (k ∘ inl) , (k ∘ inr) , cong k (push tt)
+Λ²-elim .inv (p , q , r) (inl 𝕚) = p 𝕚
+Λ²-elim .inv (p , q , r) (inr 𝕚) = q 𝕚
+Λ²-elim .inv (p , q , r) (push tt j) = r j
+Λ²-elim .rightInv _ = refl
+Λ²-elim .leftInv k i (inl 𝕚) = k (inl 𝕚)
+Λ²-elim .leftInv k i (inr 𝕚) = k (inr 𝕚)
+Λ²-elim .leftInv k i (push tt j) = k (push tt j)
+
 isPathTransitive : Type → Type
 isPathTransitive = isLocal {A = Unit} (const ι)
 

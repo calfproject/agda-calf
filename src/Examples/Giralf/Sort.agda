@@ -27,7 +27,7 @@ m ≤ᵇ n with ≤Dec m n
 insert : ∀ p → ℕ → PList₁ (1 +ℂ p) ℕ , p ⊢ PList₁ p ℕ
 insert p x =
   payᴳ (+ℂ-identityʳ p) $
-  proj₁ᴳ {B = PList₁ p ℕ} $
+  proj₁ᴳ $
   foldr₁ᴳ
     {A = (◁'[ p ] PList₁ p ℕ) ×ᶜ PList₁ p ℕ}
     (pairᴳ
@@ -40,9 +40,9 @@ insert p x =
         ( getᴳ p refl $
           if x ≤ᵇ y
             then cons₁ᴳ refl x (cons₁ᴳ (+ℂ-identityʳ p) y (proj₂ᴳ (idᴳ refl)))
-            else cons₁ᴳ refl y (payᴳ (+ℂ-identityʳ p) (proj₁ᴳ {B = PList₁ p ℕ} (idᴳ refl)))
+            else cons₁ᴳ refl y (payᴳ (+ℂ-identityʳ p) (proj₁ᴳ (idᴳ refl)))
         )
-        (cons₁ᴳ (+ℂ-identityʳ p) y (proj₂ᴳ {A = ◁'[ p ] PList₁ p ℕ} (idᴳ refl)))
+        (cons₁ᴳ (+ℂ-identityʳ p) y (proj₂ᴳ (idᴳ refl)))
     )
     (idᴳ refl)
 

@@ -26,20 +26,21 @@ private variable X Y : Type
 data Requirements : Type where
   transitive thin hset : Requirements
 
-Sᴾ : Requirements → Type
-Sᴾ transitive = Λ²
-Sᴾ thin = 𝕊 Bool
-Sᴾ hset = S¹
+opaque
+  Sᴾ : Requirements → Type
+  Sᴾ transitive = Λ²
+  Sᴾ thin = 𝕊 Bool
+  Sᴾ hset = S¹
 
-Tᴾ : Requirements → Type
-Tᴾ transitive = Δ²
-Tᴾ thin = 𝕊 Unit
-Tᴾ hset = Unit
+  Tᴾ : Requirements → Type
+  Tᴾ transitive = Δ²
+  Tᴾ thin = 𝕊 Unit
+  Tᴾ hset = Unit
 
-Fᴾ : (α : Requirements) → Sᴾ α → Tᴾ α
-Fᴾ transitive = ι
-Fᴾ thin = 𝕊map (terminal Bool)
-Fᴾ hset = terminal S¹
+  Fᴾ : (α : Requirements) → Sᴾ α → Tᴾ α
+  Fᴾ transitive = ι
+  Fᴾ thin = 𝕊map (terminal Bool)
+  Fᴾ hset = terminal S¹
 
 isPreorder : Type → Type
 isPreorder = isLocal Fᴾ
@@ -61,25 +62,28 @@ rec = Localization.rec
 
 open isPathSplitEquiv public
 
-⊑-trans : isPreorder X → Transitive _⊑_
-⊑-trans isPreorderX = isPathTransitive→Transitive[⊑] (const (isPreorderX transitive))
+opaque
+  unfolding Fᴾ
 
-isPreorder→isProp⊑ : isPreorder X → (x x' : X) → isProp (x ⊑ x')
-isPreorder→isProp⊑ isPreorderX = transport isBoundarySeparated≡isThin (const (isPreorderX thin))
+  ⊑-trans : isPreorder X → Transitive (_⊑_ {X})
+  ⊑-trans isPreorderX = isPathTransitive→Transitive[⊑] (const (isPreorderX transitive))
 
-isPreorder→isSet : isPreorder X → isSet X
-isPreorder→isSet isPreorderX =
-  transport isS¹Null≡isSet λ _ →
-  fromIsEquiv _ $ equivIsEquiv $
-  compEquiv (invEquiv (UnitToType≃ _)) (_ , toIsEquiv _ (isPreorderX hset))
+  isPreorder→isThin : isPreorder X → isThin X
+  isPreorder→isThin isPreorderX = transport isBoundarySeparated≡isThin (const (isPreorderX thin))
 
-isProp→isPreorder : isProp X → isPreorder X
-isProp→isPreorder =
-  isProp→isLocal λ
-    { transitive → inl 0𝟚
-    ; thin → inr true
-    ; hset → base
-    }
+  isPreorder→isSet : isPreorder X → isSet X
+  isPreorder→isSet isPreorderX =
+    transport isS¹Null≡isSet λ _ →
+    fromIsEquiv _ $ equivIsEquiv $
+    compEquiv (invEquiv (UnitToType≃ _)) (_ , toIsEquiv _ (isPreorderX hset))
+
+  isProp→isPreorder : isProp X → isPreorder X
+  isProp→isPreorder =
+    isProp→isLocal λ
+      { transitive → inl 0𝟚
+      ; thin → inr true
+      ; hset → base
+      }
 
 rec-unique :
   isPreorder Y

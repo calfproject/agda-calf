@@ -304,8 +304,14 @@ isSetGlue {χ• = χ•} isSetX• isSetX◦ x x' h h' i j .•→◦ =
     (λ _ → x' .•→◦)
     i j
 
-isPreorderGlue : ∀ {X• X◦ χ•} → isPreorder ⟨ X• ⟩ → isPreorder ⟨ X◦ ⟩ → isPreorder (Glue X• X◦ χ•)
-isPreorderGlue = {!   !}
+opaque
+  isPreorderGlue : ∀ {X• X◦ χ•} → isPreorder ⟨ X• ⟩ → isPreorder ⟨ X◦ ⟩ → isPreorder (Glue X• X◦ χ•)
+  isPreorderGlue {X•} {X◦} {χ•} pre• pre◦ =
+    isLocalRetract
+      (λ g → (g .• , g .◦) , g .•→◦)
+      (λ ((• , ◦) , p) → record { • = • ; ◦ = ◦ ; •→◦ = p })
+      (λ _ → refl)
+      (isLocalPullback pre• pre◦ (isPreorder● pre◦) χ• η•)
 
 square
   : ∀ {X• X◦ χ Y• Y◦ ψ}
