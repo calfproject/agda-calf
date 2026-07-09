@@ -39,13 +39,13 @@ opaque
       (●ᶜ.map f-⊤)
       (◯ᶜ.map f-abs)
       (  ●ᶜ.map f-⊤ ⨾ᶜ ●ᶜ.map (β ⨾ᶜ η◦ᶜ)
-       ≡⟨ map-∘ f-⊤ (β ⨾ᶜ η◦ᶜ) ⟩
+       ≡⟨ ●ᶜ.map-∘ f-⊤ (β ⨾ᶜ η◦ᶜ) ⟩
          ●ᶜ.map (f-⊤ ⨾ᶜ (β ⨾ᶜ η◦ᶜ))
        ≡⟨ cong ●ᶜ.map
              (⊸-path refl refl
                (funExt λ a-⊤ → cong η◦ (f-coherence a-⊤))) ⟩
          ●ᶜ.map ((α ⨾ᶜ η◦ᶜ) ⨾ᶜ ◯ᶜ.map f-abs)
-       ≡⟨ sym (map-∘ (α ⨾ᶜ η◦ᶜ) (◯ᶜ.map f-abs)) ⟩
+       ≡⟨ sym (●ᶜ.map-∘ (α ⨾ᶜ η◦ᶜ) (◯ᶜ.map f-abs)) ⟩
          ●ᶜ.map (α ⨾ᶜ η◦ᶜ) ⨾ᶜ ●ᶜ.map (◯ᶜ.map f-abs)
        ∎)
 
@@ -78,19 +78,47 @@ opaque
               i
         })
 
-  triangle : ∀ {A-⊤ A-abs α B}
-    → A-abs ⊸ B
-    → Abstractionᶜ A-⊤ A-abs α ⊸ B
-  triangle {α = α} {B} f-abs =
-    subst (_ ⊸_) Abstractionᶜ-id $
-    squareᶜ' (α ⨾ᶜ f-abs) f-abs (λ _ → refl)
+  -- `squareᶜ'` is functorial: composing two squares is the square of the
+  -- composed underlying maps (`•` by `●.map-∘`, `◦` definitionally).
+  squareᶜ'-⨾ᶜ : ∀ {A-⊤ A-abs α B-⊤ B-abs β C-⊤ C-abs γ}
+    (f-⊤ : A-⊤ ⊸ B-⊤) (f-abs : A-abs ⊸ B-abs)
+    (fc : (a : U A-⊤) → β .U (f-⊤ .U a) ≡ f-abs .U (α .U a))
+    (g-⊤ : B-⊤ ⊸ C-⊤) (g-abs : B-abs ⊸ C-abs)
+    (gc : (b : U B-⊤) → γ .U (g-⊤ .U b) ≡ g-abs .U (β .U b))
+    → squareᶜ' {α = α} {β = β} f-⊤ f-abs fc ⨾ᶜ squareᶜ' {α = β} {β = γ} g-⊤ g-abs gc
+      ≡ squareᶜ' {α = α} {β = γ} (f-⊤ ⨾ᶜ g-⊤) (f-abs ⨾ᶜ g-abs)
+          (λ a → gc (f-⊤ .U a) ∙ cong (g-abs .U) (fc a))
+  squareᶜ'-⨾ᶜ {A-⊤ = A-⊤} {A-abs = A-abs} {α = α} {β = β} {C-abs = C-abs} {γ = γ}
+              f-⊤ f-abs fc g-⊤ g-abs gc =
+    ⊸-path refl refl (funExt sq)
+    where
+      sq : (q : U (Abstractionᶜ A-⊤ A-abs α))
+        → (squareᶜ' {α = α} {β = β} f-⊤ f-abs fc ⨾ᶜ squareᶜ' {α = β} {β = γ} g-⊤ g-abs gc) .U q
+          ≡ squareᶜ' {α = α} {β = γ} (f-⊤ ⨾ᶜ g-⊤) (f-abs ⨾ᶜ g-abs)
+              (λ a → gc (f-⊤ .U a) ∙ cong (g-abs .U) (fc a)) .U q
+      sq q i .• = ●ᶜ.map-∘ f-⊤ g-⊤ i .U (q .•)
+      sq q i .◦ = ◯ᶜ.map-∘ f-abs g-abs i .U (q .◦)
+      sq q i .•→◦ =
+        isProp→PathP
+          (λ i → (●ᶜ (◯ᶜ C-abs)) .is-set
+            (●ᶜ.map (γ ⨾ᶜ η◦ᶜ {A = C-abs}) .U (sq q i .•))
+            (η• (sq q i .◦)))
+          ((squareᶜ' {α = α} {β = β} f-⊤ f-abs fc ⨾ᶜ squareᶜ' {α = β} {β = γ} g-⊤ g-abs gc) .U q .•→◦)
+          (squareᶜ' {α = α} {β = γ} (f-⊤ ⨾ᶜ g-⊤) (f-abs ⨾ᶜ g-abs)
+            (λ a → gc (f-⊤ .U a) ∙ cong (g-abs .U) (fc a)) .U q .•→◦)
+          i
 
-  triangle' : ∀ {A B-⊤ B-abs β}
-    → A ⊸ B-⊤
-    → A ⊸ Abstractionᶜ B-⊤ B-abs β
-  triangle' {β = β} f-⊤ =
-    subst (_⊸ _) Abstractionᶜ-id $
-    squareᶜ' f-⊤ (f-⊤ ⨾ᶜ β) (λ _ → refl)
+  squareᶜ'-≡ : ∀ {A-⊤ A-abs α B-⊤ B-abs β}
+    {f-⊤ f-⊤' : A-⊤ ⊸ B-⊤} {f-abs f-abs' : A-abs ⊸ B-abs}
+    {fc : (a : U A-⊤) → β .U (f-⊤ .U a) ≡ f-abs .U (α .U a)}
+    {fc' : (a : U A-⊤) → β .U (f-⊤' .U a) ≡ f-abs' .U (α .U a)}
+    → f-⊤ ≡ f-⊤' → f-abs ≡ f-abs'
+    → squareᶜ' {α = α} {β = β} f-⊤ f-abs fc ≡ squareᶜ' f-⊤' f-abs' fc'
+  squareᶜ'-≡ {α = α} {B-abs = B-abs} {β = β} {fc = fc} {fc' = fc'} p q i =
+    squareᶜ' (p i) (q i)
+      (isProp→PathP
+        (λ i u v → funExt λ a → B-abs .is-set (β .U (p i .U a)) (q i .U (α .U a)) (u a) (v a))
+        fc fc' i)
 
   triangle-U : ∀ {A-⊤ A-abs α}
     → U A-⊤
@@ -266,3 +294,17 @@ opaque
       cong 𝒞-fromFRAC
         (Abstractionᶜ-Abstractionᶜ-FRAC
           {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} {f-⊤} {f-abs} {f-coherence})
+
+triangle : ∀ {A-⊤ A-abs α B}
+  → A-abs ⊸ B
+  → Abstractionᶜ A-⊤ A-abs α ⊸ B
+triangle {α = α} {B} f-abs =
+  subst (_ ⊸_) Abstractionᶜ-id $
+  squareᶜ' (α ⨾ᶜ f-abs) f-abs (λ _ → refl)
+
+triangle' : ∀ {A B-⊤ B-abs β}
+  → A ⊸ B-⊤
+  → A ⊸ Abstractionᶜ B-⊤ B-abs β
+triangle' {β = β} f-⊤ =
+  subst (_⊸ _) Abstractionᶜ-id $
+  squareᶜ' f-⊤ (f-⊤ ⨾ᶜ β) (λ _ → refl)

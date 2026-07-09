@@ -32,6 +32,9 @@ map : (A ⊸ B) → (◯ᶜ A ⊸ ◯ᶜ B)
 map f .U = ◯.map (f .U)
 map f .charge c a◦ = funExt λ abs → f .charge c (a◦ abs)
 
+map-∘ : (f : A ⊸ B) (g : B ⊸ C) → map f ⨾ᶜ map g ≡ map (f ⨾ᶜ g)
+map-∘ f g = ⊸-path refl refl (funExt λ _ → refl)
+
 join : ◯ᶜ (◯ᶜ A) ⊸ ◯ᶜ A
 join .U = ◯.join
 join .charge c a◦ = refl
