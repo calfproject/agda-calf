@@ -3,7 +3,7 @@ open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.Structure
 
-module Calf.Computation.PList1 where
+module Calf.Computation.CList1 where
 
 open import Calf.Core.Abstract
 open import Calf.Core.Cost

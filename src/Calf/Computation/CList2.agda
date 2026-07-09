@@ -5,7 +5,7 @@ open import Cubical.Foundations.Univalence using (ua)
 open import Cubical.Data.Equality.Conversion using (eqToPath)
 open import Cubical.Data.Nat
 
-module Calf.Computation.PList2 where
+module Calf.Computation.CList2 where
 
 open import Calf.Core.Cost
 open import Calf.Value
