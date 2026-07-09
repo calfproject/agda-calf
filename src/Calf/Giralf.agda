@@ -14,8 +14,8 @@ open import Calf.Computation.Tensor
 open import Calf.Computation.Lolli
 open import Calf.Computation.Credit
 open import Calf.Computation.Debit
-open import Calf.Computation.PList1
-open import Calf.Computation.PList2
+open import Calf.Computation.CList1
+open import Calf.Computation.CList2
 open import Calf.Computation.Free
 open import Calf.Computation.Power
 
@@ -129,32 +129,32 @@ module _ where
   payᴳ split = transport (▷⊣◁ ∙ cong (_⊸ _) (sym ▷/+ ∙ cong (▷[_] _) split))
 
 module _ where
-  nil₁ᴳ : cmpᴳ (PList₁ p X)
+  nil₁ᴳ : cmpᴳ (CList₁ p X)
   nil₁ᴳ = cmp→cmpᴳ pnil₁
 
   cons₁ᴳ :
     q ⋎₂ (p , q')
     → X
-    → Δ , q' ⊢ PList₁ p X
-    → Δ , q ⊢ PList₁ p X
+    → Δ , q' ⊢ CList₁ p X
+    → Δ , q ⊢ CList₁ p X
   cons₁ᴳ split x e = storeᴳ _ split e ⨾ᶜ pcons₁ x
 
   foldr₁ᴳ :
     cmpᴳ A
     → (X → A , p ⊢ A)
-    → Δ , q ⊢ PList₁ p X
+    → Δ , q ⊢ CList₁ p X
     → Δ , q ⊢ A
   foldr₁ᴳ e-nil e-cons e = e ⨾ᶜ pfoldr₁ (cmpᴳ→cmp e-nil) e-cons
 
 module _ where
-  nil₂ᴳ : q ⋎₀ → ⊤ , q ⊢ (PList₂ p₁ p₂ X)
+  nil₂ᴳ : q ⋎₀ → ⊤ , q ⊢ (CList₂ p₁ p₂ X)
   nil₂ᴳ split = subst (λ x → ▷[ x ] _ ⊸ _) split (cmp→cmpᴳ pnil₂)
 
   cons₂ᴳ :
     q ⋎₂ (p₁ , q')
     → X
-    → Δ , q' ⊢ PList₂ (p₂ +ℂ p₁) p₂ X
-    → Δ , q ⊢ PList₂ p₁ p₂ X
+    → Δ , q' ⊢ CList₂ (p₂ +ℂ p₁) p₂ X
+    → Δ , q ⊢ CList₂ p₁ p₂ X
   cons₂ᴳ split-q x e =
     storeᴳ _ split-q e ⨾ᶜ pcons₂ x
 
@@ -162,7 +162,7 @@ module _ where
     (A : ℂ → 𝒞)
     → (∀ r → cmpᴳ (A r))
     → (∀ r → X → A (p₂ +ℂ r) , r ⊢ A r)
-    → Δ , q ⊢ PList₂ p₁ p₂ X
+    → Δ , q ⊢ CList₂ p₁ p₂ X
     → Δ , q ⊢ A p₁
   foldr₂ᴳ A e-nil e-cons e = e ⨾ᶜ pfoldr₂ A (cmpᴳ→cmp ∘ e-nil) e-cons
 

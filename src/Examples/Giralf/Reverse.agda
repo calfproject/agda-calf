@@ -4,8 +4,8 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
 open import Calf.Core.Cost
 open import Calf.Value
-open import Calf.Computation.PList1
-open import Calf.Computation.PList2
+open import Calf.Computation.CList1
+open import Calf.Computation.CList2
 open import Calf.Giralf
 
 snoc : ∀ p → X → CList₁ (1 +ℂ p) X , p ⊢ CList₁ p X

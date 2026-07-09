@@ -4,8 +4,8 @@ open import Calf.Core.Cost
 open import Calf.Value
 open import Calf.Value.Nat
 open import Calf.Value.Product
-open import Calf.Computation.PList1
-open import Calf.Computation.PList2
+open import Calf.Computation.CList1
+open import Calf.Computation.CList2
 open import Calf.Computation.Debit
 open import Calf.Computation.Power
 open import Calf.Computation.Product
