@@ -127,11 +127,11 @@ opaque
   unfolding Abstractionᶜ
 
   dequeue'-fst-glue : U BLQ → fromFRAC (toFRAC ℕ)
-  dequeue'-fst-glue =
-    square'
-      (λ bq → fst (dequeueᵗ .U bq))
-      (λ lq → fst (dequeue .U lq))
-      (λ q → cong fst (dequeue-coherent q))
+  dequeue'-fst-glue = {!   !}
+    -- square'
+    --   (λ bq → fst (dequeueᵗ .U bq))
+    --   (λ lq → fst (dequeue .U lq))
+    --   (λ q → cong fst (dequeue-coherent q))
 
   dequeue'-snd : BLQ ⊸ BLQ
   dequeue'-snd = squareᶜ' dequeueᵗ-snd dequeue-snd (λ q → cong snd (dequeue-coherent q))
