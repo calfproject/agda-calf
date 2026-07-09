@@ -304,6 +304,15 @@ isSetGlue {χ• = χ•} isSetX• isSetX◦ x x' h h' i j .•→◦ =
     (λ _ → x' .•→◦)
     i j
 
+record 𝒱-Square (X Y : 𝒱-FRAC) : 𝒱 where
+  field
+    f• : ⟨ X .X• ⟩ → ⟨ Y .X• ⟩
+    f◦ : ⟨ X .X◦ ⟩ → ⟨ Y .X◦ ⟩
+    f□ : (x• : ⟨ X .X• ⟩) → Y .χ• (f• x•) ≡ ●.map f◦ (X .χ• x•)
+
+fracture-and-gluing-square : (X → Y) ≡ 𝒱-Square (toFRAC X) (toFRAC Y)
+fracture-and-gluing-square = {!   !}
+
 square
   : ∀ {X• X◦ χ Y• Y◦ ψ}
   → (f• : X• .fst → Y• .fst)

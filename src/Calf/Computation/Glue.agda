@@ -181,6 +181,15 @@ glue◦-out-charge F c g◦ =
       𝒞-glue-fracture-section
       𝒞-glue-fracture-retract)
 
+record 𝒞-Square (A B : 𝒞-FRAC) : 𝒱 where
+  field
+    f• : ⟨ A .A• ⟩ᶜ ⊸ ⟨ B .A• ⟩ᶜ
+    f◦ : ⟨ A .A◦ ⟩ᶜ ⊸ ⟨ B .A◦ ⟩ᶜ
+    f□ : (a• : U ⟨ A .A• ⟩ᶜ) → B .α• .U (f• .U a•) ≡ ●ᶜ.map f◦ .U (A .α• .U a•)
+
+𝒞-fracture-and-gluing-square : (A ⊸ B) ≡ 𝒞-Square (𝒞-toFRAC A) (𝒞-toFRAC B)
+𝒞-fracture-and-gluing-square = {!   !}
+
 squareᶜ
   : ∀ {A• A◦ α B• B◦ β}
   → (f• : ⟨ A• ⟩ᶜ ⊸ B• .fst)
