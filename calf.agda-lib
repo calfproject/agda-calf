@@ -1,4 +1,4 @@
 name: calf
 depend: standard-library cubical-0.9
 include: src
-flags: --guardedness --cubical --allow-unsolved-metas
+flags: --guardedness --cubical
