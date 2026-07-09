@@ -73,8 +73,8 @@ opaque
   CList₂ c-linear c-quadratic X =
     Potential {List X} (clist₂-potential c-linear c-quadratic ∘ length)
 
-  pnil₂ : ∀ {c-lin c-quad} → U (CList₂ c-lin c-quad X)
-  pnil₂ {X} {c-lin} {c-quad} =
+  cnil₂ : ∀ {c-lin c-quad} → U (CList₂ c-lin c-quad X)
+  cnil₂ {X} {c-lin} {c-quad} =
     triangleᶜ'
       (ret [])
       (ret [])
@@ -88,8 +88,8 @@ opaque
         ret []
       ∎
 
-  pcons₂ : ∀ {c-lin c-quad} → X → ▷[ c-lin ] (CList₂ (c-quad +ℂ c-lin) c-quad X) ⊸ CList₂ c-lin c-quad X
-  pcons₂ {X} {c-lin} {c-quad} x =
+  ccons₂ : ∀ {c-lin c-quad} → X → ▷[ c-lin ] (CList₂ (c-quad +ℂ c-lin) c-quad X) ⊸ CList₂ c-lin c-quad X
+  ccons₂ {X} {c-lin} {c-quad} x =
     subst (_⊸ CList₂ c-lin c-quad X)
       ( Abstractionᶜ (F (List X)) (F (List X))
           (CHARGE c-lin ⨾ᶜ bind' (λ l → F _ .charge (clist₂-potential (c-quad +ℂ c-lin) c-quad (length l)) (ret l)))
@@ -173,11 +173,11 @@ opaque
   opaque
     unfolding Abstractionᶜ
 
-    pfoldr₂ : ∀ {c-lin c-quad} (A : ℂ → 𝒞)
+    cfoldr₂ : ∀ {c-lin c-quad} (A : ℂ → 𝒞)
       → (∀ c-lin → U (A c-lin))
       → (∀ c-lin → X → (▷[ c-lin ] (A (c-quad +ℂ c-lin))) ⊸ A c-lin)
       → CList₂ c-lin c-quad X ⊸ A c-lin
-    pfoldr₂ {X = X} {c-lin = c-lin} {c-quad = c-quad} A e-nil e-cons =
+    cfoldr₂ {X = X} {c-lin = c-lin} {c-quad = c-quad} A e-nil e-cons =
       subst (CList₂ c-lin c-quad X ⊸_) (𝒞-glue-fracture-retract (A c-lin)) $
       squareᶜ (go• c-lin) (go◦ c-lin) go-•⊸◦
       where

@@ -26,16 +26,16 @@ opaque
   CList₁ : ℂ → 𝒱 → 𝒞
   CList₁ c X = Potential {List X} (λ l → length l ⊙ c)
 
-  pnil₁ : U (CList₁ c X)
-  pnil₁ {c} =
+  cnil₁ : U (CList₁ c X)
+  cnil₁ {c} =
     triangleᶜ'
       {F _} {F _} {bind' (λ l → F _ .charge (length l ⊙ c) (ret l))}
       (ret [])
       (ret [])
       (bind'/β ∙ F _ .charge/0)
 
-  pcons₁ : X → ▷[ c ] (CList₁ c X) ⊸ CList₁ c X
-  pcons₁ {X} {c} x =
+  ccons₁ : X → ▷[ c ] (CList₁ c X) ⊸ CList₁ c X
+  ccons₁ {X} {c} x =
     subst (_⊸ CList₁ c X)
       ( Abstractionᶜ (F (List X)) (F (List X)) (CHARGE c ⨾ᶜ bind' (λ l → F _ .charge (length l ⊙ c) (ret l)))
       ≡⟨ cong (Abstractionᶜ _ _) (CHARGE-commute _ _) ⟩
@@ -108,11 +108,11 @@ opaque
   opaque
     unfolding Abstractionᶜ
 
-    pfoldr₁ :
+    cfoldr₁ :
         U A
       → (X → (▷[ c ] A ⊸ A))
       → CList₁ c X ⊸ A
-    pfoldr₁ {A = A} {X = X} {c} enil econs =
+    cfoldr₁ {A = A} {X = X} {c} enil econs =
       subst (CList₁ c X ⊸_) (𝒞-glue-fracture-retract A) $
       squareᶜ go• go◦ go-•⊸◦
       where

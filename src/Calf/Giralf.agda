@@ -130,25 +130,25 @@ module _ where
 
 module _ where
   nil₁ᴳ : cmpᴳ (CList₁ p X)
-  nil₁ᴳ = cmp→cmpᴳ pnil₁
+  nil₁ᴳ = cmp→cmpᴳ cnil₁
 
   cons₁ᴳ :
     q ⋎₂ (p , q')
     → X
     → Δ , q' ⊢ CList₁ p X
     → Δ , q ⊢ CList₁ p X
-  cons₁ᴳ split x e = storeᴳ _ split e ⨾ᶜ pcons₁ x
+  cons₁ᴳ split x e = storeᴳ _ split e ⨾ᶜ ccons₁ x
 
   foldr₁ᴳ :
     cmpᴳ A
     → (X → A , p ⊢ A)
     → Δ , q ⊢ CList₁ p X
     → Δ , q ⊢ A
-  foldr₁ᴳ e-nil e-cons e = e ⨾ᶜ pfoldr₁ (cmpᴳ→cmp e-nil) e-cons
+  foldr₁ᴳ e-nil e-cons e = e ⨾ᶜ cfoldr₁ (cmpᴳ→cmp e-nil) e-cons
 
 module _ where
   nil₂ᴳ : q ⋎₀ → ⊤ , q ⊢ (CList₂ p₁ p₂ X)
-  nil₂ᴳ split = subst (λ x → ▷[ x ] _ ⊸ _) split (cmp→cmpᴳ pnil₂)
+  nil₂ᴳ split = subst (λ x → ▷[ x ] _ ⊸ _) split (cmp→cmpᴳ cnil₂)
 
   cons₂ᴳ :
     q ⋎₂ (p₁ , q')
@@ -156,7 +156,7 @@ module _ where
     → Δ , q' ⊢ CList₂ (p₂ +ℂ p₁) p₂ X
     → Δ , q ⊢ CList₂ p₁ p₂ X
   cons₂ᴳ split-q x e =
-    storeᴳ _ split-q e ⨾ᶜ pcons₂ x
+    storeᴳ _ split-q e ⨾ᶜ ccons₂ x
 
   foldr₂ᴳ :
     (A : ℂ → 𝒞)
@@ -164,7 +164,7 @@ module _ where
     → (∀ r → X → A (p₂ +ℂ r) , r ⊢ A r)
     → Δ , q ⊢ CList₂ p₁ p₂ X
     → Δ , q ⊢ A p₁
-  foldr₂ᴳ A e-nil e-cons e = e ⨾ᶜ pfoldr₂ A (cmpᴳ→cmp ∘ e-nil) e-cons
+  foldr₂ᴳ A e-nil e-cons e = e ⨾ᶜ cfoldr₂ A (cmpᴳ→cmp ∘ e-nil) e-cons
 
 module _ where
   pairᴳ :
