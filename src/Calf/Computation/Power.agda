@@ -13,6 +13,8 @@ open import Calf.Computation
 
 syntax Πᶜ X (λ x → A) = [ x ∈ X ] ⇀ A
 
+infixr 2 _⇀_
+
 _⇀_ : 𝒱 → 𝒞 → 𝒞
 X ⇀ A = [ _ ∈ X ] ⇀ A
 
