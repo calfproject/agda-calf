@@ -1,5 +1,6 @@
 module Calf.Computation.Abstraction.Base where
 
+open import Calf.Core.Abstract
 open import Calf.Value
 open import Calf.Computation
 open import Calf.Computation.Open as ◯ᶜ
@@ -22,6 +23,9 @@ opaque
     cong (Glueᶜ (●ᶜ A , ●ᶜ.η-isEquiv) (◯ᶜ A , ◯ᶜ.η-isEquiv) ∘ ●ᶜ.map) (idᶜ⨾ᶜf≡f η◦ᶜ)
     ∙ 𝒞-glue-fracture-retract A
 
+  ◯[Abstractionᶜ≡A-abs] : ∀ {A-⊤ A-abs α} → ⟨ ABS ⟩ → Abstractionᶜ A-⊤ A-abs α ≡ A-abs
+  ◯[Abstractionᶜ≡A-abs] abs = {!   !}
+
   squareᶜ' : ∀ {A-⊤ A-abs α B-⊤ B-abs β} (f-⊤ : A-⊤ ⊸ B-⊤) (f-abs : A-abs ⊸ B-abs)
     → ((a-⊤ : U A-⊤) → U β (U f-⊤ a-⊤) ≡ U f-abs (U α a-⊤))
     → Abstractionᶜ A-⊤ A-abs α ⊸ Abstractionᶜ B-⊤ B-abs β
@@ -39,6 +43,12 @@ opaque
        ≡⟨ sym (●ᶜ.map-∘ (α ⨾ᶜ η◦ᶜ) (◯ᶜ.map f-abs)) ⟩
          ●ᶜ.map (α ⨾ᶜ η◦ᶜ) ⨾ᶜ ●ᶜ.map (◯ᶜ.map f-abs)
        ∎)
+
+  ◯[squareᶜ'≡f-abs] : ∀ {A-⊤ A-abs α B-⊤ B-abs β f-⊤ f-abs f-coh} (abs : ⟨ ABS ⟩) →
+    PathP (λ i → ◯[Abstractionᶜ≡A-abs] {A-⊤} {A-abs} {α} abs i ⊸ ◯[Abstractionᶜ≡A-abs] {B-⊤} {B-abs} {β} abs i)
+      (squareᶜ' f-⊤ f-abs f-coh)
+      f-abs
+  ◯[squareᶜ'≡f-abs] = {!   !}
 
   squareᶜ'-FRAC
     : ∀ {A-⊤ A-abs α B-⊤ B-abs β}
@@ -80,3 +90,9 @@ opaque
   triangleᶜ' {B-abs = B-abs} b-⊤ b-abs b-coherence .◦ = η◦ᶜ {A = B-abs} .U b-abs
   triangleᶜ' {B-abs = B-abs} b-⊤ b-abs b-coherence .•→◦ =
     cong (λ b → η• (η◦ᶜ {A = B-abs} .U b)) b-coherence
+
+  ◯[triangleᶜ'≡b-abs] : ∀ {B-⊤ B-abs β b-⊤ b-abs b-coh} (abs : ⟨ ABS ⟩) →
+    PathP (λ i → U (◯[Abstractionᶜ≡A-abs] {B-⊤} {B-abs} {β} abs i))
+      (triangleᶜ' {B-⊤} {B-abs} {β} b-⊤ b-abs b-coh)
+      b-abs
+  ◯[triangleᶜ'≡b-abs] = {!   !}
