@@ -41,3 +41,21 @@ join .charge c a◦ = refl
 
 bind : (A ⊸ ◯ᶜ B) → (◯ᶜ A ⊸ ◯ᶜ B)
 bind {B = B} k = map k ⨾ᶜ join {B}
+
+module _ where
+  open import Calf.Computation.Pullback
+
+  lex : (f : A ⊸ C) (g : B ⊸ C) → ◯ᶜ (Pullback f g) ≡ Pullback (map f) (map g)
+  lex {A} {B} {C} f g = conservativity fwd fwd-equiv
+    where
+      fwd : ◯ᶜ (Pullback f g) ⊸ Pullback (map f) (map g)
+      fwd .U e =
+        (λ abs → e abs .fst) , (λ abs → e abs .snd .fst) , funExt (λ abs → e abs .snd .snd)
+      fwd .charge c e =
+        ΣPathP (refl , ΣPathP (refl , isProp→PathP (λ i → (◯ᶜ B) .is-set _ _) _ _))
+
+      inv : U (Pullback (map f) (map g)) → U (◯ᶜ (Pullback f g))
+      inv (a◦ , b◦ , p) abs = a◦ abs , b◦ abs , funExt⁻ p abs
+
+      fwd-equiv : isEquivᶜ fwd
+      fwd-equiv = isoToIsEquiv (iso (fwd .U) inv (λ _ → refl) (λ _ → refl))

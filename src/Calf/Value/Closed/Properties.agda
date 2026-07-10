@@ -7,6 +7,7 @@ open import Calf.Value.Closed.Lex
 
 open import 1Lab.Set.Pi
 open import Cubical.Foundations.CartesianKanOps
+open import Cubical.Data.Sigma using (ΣPathP)
 
 𝒱•-at-open-isContr : (X• : 𝒱•) → ⟨ ABS ⟩ → isContr ⟨ X• ⟩
 𝒱•-at-open-isContr X• abs .fst = invIsEq (X• .snd) (∗ abs)
@@ -232,3 +233,92 @@ module _ where
 
       ret : {X : 𝒱} (c : ◯ (isContr X)) → retract η• (out c)
       ret c x = refl
+
+module _
+  {X Y Z : 𝒱} (X-set : isSet X) (Y-set : isSet Y) (Z-set : isSet Z)
+  (f : X → Z) (g : Y → Z)
+  where
+
+  private
+    P : 𝒱
+    P = Σ[ x ∈ X ] Σ[ y ∈ Y ] (f x ≡ g y)
+
+    Q : 𝒱
+    Q = Σ[ x• ∈ ● X ] Σ[ y• ∈ ● Y ] (map f x• ≡ map g y•)
+
+    P-isSet : isSet P
+    P-isSet = isSetΣ X-set λ _ → isSetΣ Y-set λ _ → isProp→isSet (Z-set _ _)
+
+    Q-isSet : isSet Q
+    Q-isSet =
+      isSetΣ (●-preserves-isSet X-set) λ _ →
+      isSetΣ (●-preserves-isSet Y-set) λ _ →
+      isProp→isSet (●-preserves-isSet Z-set _ _)
+
+    Q-isProp-at : ⟨ ABS ⟩ → isProp Q
+    Q-isProp-at abs =
+      isPropΣ (●-isProp abs) λ _ →
+      isPropΣ (●-isProp abs) λ _ →
+      isProp→isSet (●-isProp abs) _ _
+
+  ●-pullback-fwd : ● P → Q
+  ●-pullback-fwd w =
+      map (λ t → t .fst) w
+    , map (λ t → t .snd .fst) w
+    , map-∘ (λ t → t .fst) f w
+      ∙ cong (λ h → map h w) (funExt (λ t → t .snd .snd))
+      ∙ sym (map-∘ (λ t → t .snd .fst) g w)
+
+  ●-pullback-inv : Q → ● P
+  ●-pullback-inv (x• , y• , q) =
+    bind (η-fiber x•) λ { (x , px) →
+    bind (η-fiber y•) λ { (y , py) →
+    map (λ r → x , y , r) (●-lex (cong (map f) px ∙ q ∙ sym (cong (map g) py))) } }
+
+  private
+    ●-pullback-ret : (w : ● P) → ●-pullback-inv (●-pullback-fwd w) ≡ w
+    ●-pullback-ret =
+      ●-elimProp _ (λ _ → ●-preserves-isSet P-isSet _ _)
+        (λ { (x , y , p) →
+          cong (map (λ r → x , y , r))
+            (●-preserves-isProp (Z-set _ _)
+              (●-lex (refl ∙ ●-pullback-fwd (η• (x , y , p)) .snd .snd ∙ refl))
+              (η• p)) })
+        (λ _ → refl)
+
+    ●-pullback-sec : (w : Q) → ●-pullback-fwd (●-pullback-inv w) ≡ w
+    ●-pullback-sec (x• , y• , q) =
+      ●-elimProp R R-isProp η•-caseY (λ abs _ _ → Q-isProp-at abs _ _) y• x• q
+      where
+        R : ● Y → 𝒱
+        R y• = (x• : ● X) (q : map f x• ≡ map g y•)
+             → ●-pullback-fwd (●-pullback-inv (x• , y• , q)) ≡ (x• , y• , q)
+
+        R-isProp : (y• : ● Y) → isProp (R y•)
+        R-isProp y• = isPropΠ2 λ _ _ → Q-isSet _ _
+
+        η•-caseY : (y : Y) → R (η• y)
+        η•-caseY y = ●-elimProp S S-isProp η•-caseX (λ abs _ → Q-isProp-at abs _ _)
+          where
+            S : ● X → 𝒱
+            S x• = (q : map f x• ≡ η• (g y))
+                 → ●-pullback-fwd (●-pullback-inv (x• , η• y , q)) ≡ (x• , η• y , q)
+
+            S-isProp : (x• : ● X) → isProp (S x•)
+            S-isProp x• = isPropΠ λ _ → Q-isSet _ _
+
+            η•-caseX : (x : X) → S (η• x)
+            η•-caseX x q =
+              ΣPathP
+                ( map-∘ mk (λ t → t .fst) e ∙ ●-map-const x e
+                , ΣPathP
+                  ( map-∘ mk (λ t → t .snd .fst) e ∙ ●-map-const y e
+                  , isProp→PathP (λ i → ●-preserves-isSet Z-set _ _) _ _ ) )
+              where
+                mk : (f x ≡ g y) → P
+                mk r = x , y , r
+                e : ● (f x ≡ g y)
+                e = ●-lex (refl ∙ q ∙ refl)
+
+  ●-pullback-Iso : Iso (● P) Q
+  ●-pullback-Iso = iso ●-pullback-fwd ●-pullback-inv ●-pullback-sec ●-pullback-ret

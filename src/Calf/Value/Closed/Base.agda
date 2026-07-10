@@ -17,6 +17,15 @@ ind R η•-case ∗-case law-case (η• x) = η•-case x
 ind R η•-case ∗-case law-case (∗ abs) = ∗-case abs
 ind R η•-case ∗-case law-case (law x abs i) = law-case x abs i
 
+●-elimProp : {X : 𝒱} (R : ● X → 𝒱)
+  → ((x• : ● X) → isProp (R x•))
+  → ((x : X) → R (η• x))
+  → ((abs : ⟨ ABS ⟩) → R (∗ abs))
+  → (x• : ● X) → R x•
+●-elimProp R R-isProp η•-case ∗-case =
+  ind R η•-case ∗-case
+    (λ x abs → isProp→PathP (λ i → R-isProp (law x abs i)) (η•-case x) (∗-case abs))
+
 map : {X Y : 𝒱} → (X → Y) → ● X → ● Y
 map f (η• x) = η• (f x)
 map f (∗ abs) = ∗ abs

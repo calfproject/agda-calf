@@ -151,3 +151,25 @@ bind-η• {A = A} {B = B} f =
     refl
     refl
     i
+
+module _ {A B C : 𝒞} where
+  open import Calf.Computation.Pullback
+
+  lex : (f : A ⊸ C) (g : B ⊸ C) → ●ᶜ (Pullback f g) ≡ Pullback (map f) (map g)
+  lex f g =
+    conservativity fwd
+      (isoToIsEquiv
+        (●-pullback-Iso (A .is-set) (B .is-set) (C .is-set) (f .U) (g .U)))
+    where
+      isProp-at : ⟨ ABS ⟩ → isProp (U (Pullback (map f) (map g)))
+      isProp-at abs =
+        isPropΣ (●-isProp abs) λ _ →
+        isPropΣ (●-isProp abs) λ _ →
+        isProp→isSet (●-isProp abs) _ _
+
+      fwd : ●ᶜ (Pullback f g) ⊸ Pullback (map f) (map g)
+      fwd .U = ●-pullback-fwd (A .is-set) (B .is-set) (C .is-set) (f .U) (g .U)
+      fwd .charge c =
+        ●-elimProp _ (λ _ → Pullback (map f) (map g) .is-set _ _)
+          (λ t → ΣPathP (refl , ΣPathP (refl , isProp→PathP (λ i → ●ᶜ C .is-set _ _) _ _)))
+          (λ abs → isProp-at abs _ _)
