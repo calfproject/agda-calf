@@ -98,17 +98,3 @@ module _ where
               (⊛-≡ (●.●-preserves-isSet squash₂) (λ w → Ψ (ε w)) ●.η• (λ a b → refl))
               (λ abs → refl)
               (λ w abs → isProp→PathP (λ _ → ●.●-preserves-isSet squash₂ _ _) _ refl)
-
-module _ where
-  open import Calf.Computation.Open as ◯ᶜ
-  open import Calf.Computation.Closed as ●ᶜ
-  open import Calf.Computation.Glue
-  open import Calf.Computation.Abstraction
-
-  opaque
-    unfolding Abstractionᶜ
-
-    Abstractionᶜ-⊗ : ∀ {A-⊤ A-abs α B-⊤ B-abs β} →
-      Abstractionᶜ A-⊤ A-abs α ⊗ Abstractionᶜ B-⊤ B-abs β ≡
-      Abstractionᶜ (A-⊤ ⊗ B-⊤) (A-abs ⊗ B-abs) (map₂ α β)
-    Abstractionᶜ-⊗ = {!   !}
