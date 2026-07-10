@@ -1,12 +1,11 @@
 module Calf.Core.Cost where
 
 open import Calf.Value
--- open import Calf.Value.Nat
+open import Calf.Value.Nat
+open import Calf.Value.Unit
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Nat.Literals public
-open import Cubical.Data.Nat
 import Cubical.Data.Nat.Properties as Nat
-open import Data.Unit
 
 module _ {A : Type} where
   open import Algebra.Definitions {A = A} _≡_ public
