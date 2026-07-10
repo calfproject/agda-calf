@@ -1,6 +1,7 @@
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Structure
+open import Cubical.Foundations.Univalence using (ua→; ua-gluePath)
 open import Cubical.Data.Sigma
 
 module Calf.Computation.Open where
@@ -59,3 +60,46 @@ module _ where
 
       fwd-equiv : isEquivᶜ fwd
       fwd-equiv = isoToIsEquiv (iso (fwd .U) inv (λ _ → refl) (λ _ → refl))
+
+ABS-◯ᶜeval : ⟨ ABS ⟩ → (A : 𝒞) → ◯ᶜ A ⊸ A
+ABS-◯ᶜeval abs A .U a◦ = a◦ abs
+ABS-◯ᶜeval abs A .charge c a◦ = refl
+
+ABS-◯ᶜeval-equiv
+  : (abs : ⟨ ABS ⟩) (A : 𝒞)
+  → isEquivᶜ (ABS-◯ᶜeval abs A)
+ABS-◯ᶜeval-equiv abs A =
+  isoToIsEquiv
+    (iso
+      (ABS-◯ᶜeval abs A .U)
+      η◦
+      (λ _ → refl)
+      (λ a◦ → funExt λ abs' → cong a◦ (str ABS abs abs')))
+
+ABS-◯ᶜA≡A : {A : 𝒞} → ⟨ ABS ⟩ → ◯ᶜ A ≡ A
+ABS-◯ᶜA≡A {A} abs =
+  conservativity (ABS-◯ᶜeval abs A) (ABS-◯ᶜeval-equiv abs A)
+
+ABS-◯ᶜmap≡f : ∀ {A B} (abs : ⟨ ABS ⟩) (f : A ⊸ B)
+  → PathP (λ i → ABS-◯ᶜA≡A {A} abs i ⊸ ABS-◯ᶜA≡A {B} abs i)
+      (map f)
+      f
+ABS-◯ᶜmap≡f {A} {B} abs f =
+  ⊸-path
+    (ABS-◯ᶜA≡A {A} abs)
+    (ABS-◯ᶜA≡A {B} abs)
+    (ua→
+      {e = ABS-◯ᶜeval abs A .U , ABS-◯ᶜeval-equiv abs A}
+      {B = λ i → U (ABS-◯ᶜA≡A {B} abs i)}
+      (λ _ →
+        ua-gluePath
+          (ABS-◯ᶜeval abs B .U , ABS-◯ᶜeval-equiv abs B)
+          refl))
+
+ABS-◯ᶜpoint≡a : ∀ {A} (abs : ⟨ ABS ⟩) (a◦ : U (◯ᶜ A)) (a : U A)
+  → a◦ abs ≡ a
+  → PathP (λ i → U (ABS-◯ᶜA≡A {A} abs i)) a◦ a
+ABS-◯ᶜpoint≡a {A} abs a◦ a p =
+  ua-gluePath
+    (ABS-◯ᶜeval abs A .U , ABS-◯ᶜeval-equiv abs A)
+    p
