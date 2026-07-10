@@ -40,3 +40,5 @@ import Calf.Computation.Unit
 import Calf.Giralf
 
 import Examples
+
+import README
