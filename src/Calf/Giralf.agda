@@ -20,17 +20,14 @@ open import Calf.Computation.Free
 open import Calf.Computation.Power
 
 Context : Type₁
-Context = 𝒞 × ℂ  -- List 𝒞 × ℙ
+Context = 𝒞 × ℂ
 
-module _ where  -- promonoid
+module _ where
   _⋎₀ : ℂ → Type
   q ⋎₀ = 0ℂ ≡ q
 
-  _⋎₂_ : ℂ → (ℂ × ℂ) → Type  -- promonoid
+  _⋎₂_ : ℂ → (ℂ × ℂ) → Type
   q ⋎₂ (q₁ , q₂) = q₁ +ℂ q₂ ≡ q
-
-  -- _⋎_ : ℂ → List (ℂ) → Type  -- promonoid
-  -- p ⋎ ps = foldr _+ℂ_ 0ℂ ps ≡ p
 
 
 variable
@@ -57,7 +54,6 @@ letᴳ split e1 e2 =
 
 cmpᴳ : 𝒞 → Type
 cmpᴳ = ⊤ , 0ℂ ⊢_
--- cmpᴳ A = ∀ {q} → q ⋎₀ → (⊤ , q ⊢ A)
 
 cmpᴳ→cmp : cmpᴳ A → U A
 cmpᴳ→cmp e = e .U (subst U (sym ▷/0) 0ℂ)
@@ -101,7 +97,6 @@ module _ where
     → Δ , q' ⊢ A
     → Δ , q ⊢ ▷[ p ] A
   storeᴳ p split e = subst (_⊸ _) (sym ▷/+ ∙ cong (▷[_] _) split) (▷-map e)
-  -- TODO: use subst instead of transport if possible
 
   releaseᴳ :
     Δ , q ⊢ ▷[ p ] B
