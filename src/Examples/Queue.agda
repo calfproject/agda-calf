@@ -77,6 +77,7 @@ record Queue : 𝒱₁ where
 open Queue
 
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Univalence using (ua→; ua-gluePath)
 open import Calf.Value.Open as ◯
 open import Calf.Value.Closed as ●
 open import Calf.Value.Glue
@@ -351,4 +352,76 @@ batched-queue .spec abs i .empty =
   ◯[triangleᶜ'≡b-abs] {b-⊤ = emptyᴮ} {emptyᴸ} {empty-coherent} abs i
 batched-queue .spec abs i .enqueue e =
   ◯[squareᶜ'≡f-abs] {f-⊤ = enqueueᴮ e} {enqueueᴸ e} {enqueue-coherent e} abs i
-batched-queue .spec abs i .dequeue = {!   !}
+batched-queue .spec abs i .dequeue =
+  dequeue'≡dequeueᴸ i
+  where
+    opaque
+      unfolding Dequeue.dequeue'-snd
+
+      dequeue'-snd≡dequeueᴸ-snd
+        : PathP
+            (λ i →
+              ◯[Abstractionᶜ≡A-abs] {BQ} {LQ} {α} abs i
+                ⊸ ◯[Abstractionᶜ≡A-abs] {BQ} {LQ} {α} abs i)
+            Dequeue.dequeue'-snd
+            Dequeue.dequeueᴸ-snd
+      dequeue'-snd≡dequeueᴸ-snd =
+        ◯[squareᶜ'≡f-abs]
+          {f-⊤ = Dequeue.dequeueᴮ-snd}
+          {Dequeue.dequeueᴸ-snd}
+          {λ q → cong snd (Dequeue.dequeue-coherent q)}
+          abs
+
+    opaque
+      unfolding
+        Abstractionᶜ
+        abstraction-open-eval
+        ◯[Abstractionᶜ≡A-abs]
+        Dequeue.dequeue'-fst-glue
+        Dequeue.dequeue'
+
+      dequeue'-fst≡dequeueᴸ-fst
+        : (q : U Dequeue.BLQ)
+        → Dequeue.dequeue' .U q .fst
+          ≡ dequeueᴸ .U (abstraction-open-eval {BQ} {LQ} {α} abs .U q) .fst
+      dequeue'-fst≡dequeueᴸ-fst q =
+        cong
+          (λ g → g .◦ abs)
+          (secIsEq fracture-isEquiv (Dequeue.dequeue'-fst-glue q))
+
+      dequeue'-point≡dequeueᴸ
+        : (q : U Dequeue.BLQ)
+        → PathP
+            (λ i → U (ℕₛ ⋊ ◯[Abstractionᶜ≡A-abs] {BQ} {LQ} {α} abs i))
+            (Dequeue.dequeue' .U q)
+            (dequeueᴸ .U (abstraction-open-eval {BQ} {LQ} {α} abs .U q))
+      dequeue'-point≡dequeueᴸ q =
+        ΣPathP
+          ( dequeue'-fst≡dequeueᴸ-fst q
+          , λ i →
+              dequeue'-snd≡dequeueᴸ-snd i .U
+                (ua-gluePath
+                  ( abstraction-open-eval {BQ} {LQ} {α} abs .U
+                  , abstraction-open-eval-equiv {BQ} {LQ} {α} abs)
+                  {x = q}
+                  {y = abstraction-open-eval {BQ} {LQ} {α} abs .U q}
+                  refl i)
+          )
+
+      dequeue'≡dequeueᴸ
+        : PathP
+            (λ i →
+              ◯[Abstractionᶜ≡A-abs] {BQ} {LQ} {α} abs i
+                ⊸ ℕₛ ⋊ ◯[Abstractionᶜ≡A-abs] {BQ} {LQ} {α} abs i)
+            Dequeue.dequeue'
+            dequeueᴸ
+      dequeue'≡dequeueᴸ =
+        ⊸-path
+          (◯[Abstractionᶜ≡A-abs] {BQ} {LQ} {α} abs)
+          (λ i → ℕₛ ⋊ ◯[Abstractionᶜ≡A-abs] {BQ} {LQ} {α} abs i)
+          (ua→
+            {e =
+              ( abstraction-open-eval {BQ} {LQ} {α} abs .U
+              , abstraction-open-eval-equiv {BQ} {LQ} {α} abs)}
+            {B = λ i → U (ℕₛ ⋊ ◯[Abstractionᶜ≡A-abs] {BQ} {LQ} {α} abs i)}
+            dequeue'-point≡dequeueᴸ)
