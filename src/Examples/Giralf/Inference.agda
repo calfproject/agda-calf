@@ -1,4 +1,4 @@
-module Examples.Giralf.Sandbox where
+module Examples.Giralf.Inference where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
