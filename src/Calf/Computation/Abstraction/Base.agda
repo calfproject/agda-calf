@@ -2,6 +2,7 @@ module Calf.Computation.Abstraction.Base where
 
 open import Calf.Core.Abstract
 open import Calf.Value
+import Calf.Value.Closed as ●
 open import Calf.Computation
 open import Calf.Computation.Open as ◯ᶜ
 open import Calf.Computation.Closed as ●ᶜ
@@ -25,6 +26,23 @@ opaque
       (Glueᶜ (●ᶜ A , ●ᶜ.η-isEquiv) (◯ᶜ A , ◯ᶜ.η-isEquiv) ∘ ●ᶜ.map)
       (idᶜ⨾ᶜf≡f η◦ᶜ)
     ∙ 𝒞-glue-fracture-retract A
+
+  glue-path
+    : ∀ {A-⊤ A-abs α}
+    → {q r : U (𝒞-fromFRAC (Abstractionᶜ-FRAC A-⊤ A-abs α))}
+    → q .• ≡ r .•
+    → q .◦ ≡ r .◦
+    → q ≡ r
+  glue-path {A-abs = A-abs} {α = α} {q = q} {r = r} p• p◦ i .• = p• i
+  glue-path {A-abs = A-abs} {α = α} {q = q} {r = r} p• p◦ i .◦ = p◦ i
+  glue-path {A-abs = A-abs} {α = α} {q = q} {r = r} p• p◦ i .•→◦ =
+    isProp→PathP
+      (λ i → ●ᶜ (◯ᶜ A-abs) .is-set
+        (●ᶜ.map (α ⨾ᶜ η◦ᶜ {A = A-abs}) .U (p• i))
+        (●.η• (p◦ i)))
+      (q .•→◦)
+      (r .•→◦)
+      i
 
   squareᶜ'
     : ∀ {A-⊤ A-abs α B-⊤ B-abs β}
