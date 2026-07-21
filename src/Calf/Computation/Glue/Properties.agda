@@ -90,3 +90,14 @@ fracture-map-same {A} {B} f =
             (𝒞-fracture {A = B} .U , fracture-isEquiv)
             (sym (fracture-map-fracture f a)))
         (~ i))
+
+𝒞-fracture-≡
+  : {A B : 𝒞}
+  → (p• : ●ᶜ A ≡ ●ᶜ B)
+  → (p◦ : ◯ᶜ A ≡ ◯ᶜ B)
+  → PathP (λ i → p• i ⊸ ●ᶜ (p◦ i)) (●ᶜ.map (η◦ᶜ {A = A})) (●ᶜ.map (η◦ᶜ {A = B}))
+  → A ≡ B
+𝒞-fracture-≡ {A} {B} p• p◦ pα =
+    sym (𝒞-glue-fracture-retract A)
+  ∙ cong 𝒞-fromFRAC (𝒞-FRAC-path (●ᶜ.𝒞•-path p•) (◯ᶜ.𝒞◦-path p◦) pα)
+  ∙ 𝒞-glue-fracture-retract B

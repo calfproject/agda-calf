@@ -64,3 +64,9 @@ opaque
 
 par : U (F X) → U (F Y) → U (F (X × Y))
 par ex ey = transport (cong U F-monoidal) (ex ∥ ey)
+
+module _ where
+  open import Calf.Computation.Copower
+
+  Σᶜ-F : ∀ {X} → ([ x ∈ X ] ⋊ ⊤) ≡ F ⟨ X ⟩
+  Σᶜ-F = {!   !}

@@ -89,8 +89,8 @@ record 𝒞-Square (A B : 𝒞-FRAC) : 𝒱 where
 
 squareᶜ
   : ∀ {A• A◦ α B• B◦ β}
-  → (f• : ⟨ A• ⟩ᶜ ⊸ B• .fst)
-  → (f◦ : ⟨ A◦ ⟩ᶜ ⊸ B◦ .fst)
+  → (f• : ⟨ A• ⟩ᶜ ⊸ ⟨ B• ⟩ᶜ)
+  → (f◦ : ⟨ A◦ ⟩ᶜ ⊸ ⟨ B◦ ⟩ᶜ)
   → f• ⨾ᶜ β ≡ α ⨾ᶜ ●ᶜ.map f◦
   → Glueᶜ A• A◦ α ⊸ Glueᶜ B• B◦ β
 squareᶜ f• f◦ f-coherence .U q =
@@ -105,7 +105,7 @@ squareᶜ f• f◦ f-coherence .charge c q i .◦ =
   f◦ .charge c (q .◦) i
 squareᶜ {A• = A•} {A◦ = A◦} {α = α} {B• = B•} {B◦ = B◦} {β = β} f• f◦ f-coherence .charge c q i .•→◦ =
   isProp→PathP
-    (λ i → ●ᶜ (B◦ .fst) .is-set
+    (λ i → ●ᶜ ⟨ B◦ ⟩ᶜ .is-set
       (β .U (f• .charge c (q .•) i))
       (η• (f◦ .charge c (q .◦) i)))
     (squareᶜ

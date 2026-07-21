@@ -103,3 +103,11 @@ ABS-◯ᶜpoint≡a {A} abs a◦ a p =
   ua-gluePath
     (ABS-◯ᶜeval abs A .U , ABS-◯ᶜeval-equiv abs A)
     p
+
+◯ᶜ-lex : (A B : 𝒞) → (◯ᶜ A ≡ ◯ᶜ B) ≡ (⟨ ABS ⟩ → A ≡ B)
+
+module _ where
+  open import Calf.Computation.Copower
+
+  Σᶜ-◯ᶜ : ∀ {X A} → ◯ᶜ (Σᶜ X A) ≡ ◯ᶜ (Σᶜ X (◯ᶜ ∘ A))
+  Σᶜ-◯ᶜ = {!   !}

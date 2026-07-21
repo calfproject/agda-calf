@@ -16,6 +16,12 @@ open import Calf.Computation.Abstraction.Base
 opaque
   unfolding Abstractionᶜ
 
+  ●ᶜ-Abstractionᶜ : ∀ {A-⊤ A-abs α} → ●ᶜ (Abstractionᶜ A-⊤ A-abs α) ≡ ●ᶜ A-⊤
+  ●ᶜ-Abstractionᶜ = {!   !}
+
+  ◯ᶜ-Abstractionᶜ : ∀ {A-⊤ A-abs α} → ◯ᶜ (Abstractionᶜ A-⊤ A-abs α) ≡ ◯ᶜ A-abs
+  ◯ᶜ-Abstractionᶜ = {!   !}
+
   squareᶜ'-charge
     : ∀ {A-⊤ A-abs α c}
     → (α-charge : (a : U A-⊤) → α .U (A-⊤ .charge c a) ≡ A-abs .charge c (α .U a))

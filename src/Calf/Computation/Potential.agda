@@ -74,3 +74,46 @@ square {ΦX = ΦX} {ΦY = ΦY} f c-⊤ c-abs amortization =
         bind' (λ x → F _ .charge (c-abs x) (ret (f x))) .U
         (bind' (λ x → F _ .charge (ΦX x) (ret x)) .U a-⊤)
       ∎
+
+
+module _ where
+  open import Calf.Computation.Open
+  open import Calf.Computation.Closed
+  open import Calf.Computation.Glue
+  open import Calf.Computation.Credit
+  open import Calf.Computation.Copower
+  open import Calf.Computation.Tensor
+
+  potential-credit : ∀ {X : 𝒱ₛ} Φ →
+    Potential Φ ≡ [ x ∈ X ] ⋊ ▷[ Φ x ] ⊤
+  potential-credit {X} Φ = 𝒞-fracture-≡ lemma• lemma◦ {!   !}
+    where
+      lemma• : ●ᶜ (Potential Φ) ≡ ●ᶜ ([ x ∈ X ] ⋊ ▷[ Φ x ] ⊤)
+      lemma• =
+          ●ᶜ (Potential Φ)
+        ≡⟨ ●ᶜ-Abstractionᶜ ⟩
+          ●ᶜ (F ⟨ X ⟩)
+        ≡⟨ cong ●ᶜ (sym (Σᶜ-F {X})) ⟩
+          ●ᶜ ([ x ∈ X ] ⋊ ⊤)
+        ≡⟨ Σᶜ-●ᶜ {X} {const ⊤} ⟩
+          ●ᶜ ([ x ∈ X ] ⋊ ●ᶜ ⊤)
+        ≡⟨ cong (●ᶜ ∘ Σᶜ X) (funExt λ _ → sym ●ᶜ-Abstractionᶜ) ⟩
+          ●ᶜ ([ x ∈ X ] ⋊ ●ᶜ (▷[ Φ x ] ⊤))
+        ≡⟨ sym (Σᶜ-●ᶜ {X} {λ x → ▷[ Φ x ] ⊤}) ⟩
+          ●ᶜ ([ x ∈ X ] ⋊ ▷[ Φ x ] ⊤)
+        ∎
+
+      lemma◦ : ◯ᶜ (Potential Φ) ≡ ◯ᶜ ([ x ∈ X ] ⋊ ▷[ Φ x ] ⊤)
+      lemma◦ =
+          ◯ᶜ (Potential Φ)
+        ≡⟨ ◯ᶜ-Abstractionᶜ ⟩
+          ◯ᶜ (F ⟨ X ⟩)
+        ≡⟨ cong ◯ᶜ (sym (Σᶜ-F {X})) ⟩
+          ◯ᶜ ([ x ∈ X ] ⋊ ⊤)
+        ≡⟨ Σᶜ-◯ᶜ {X} {const ⊤} ⟩
+          ◯ᶜ ([ x ∈ X ] ⋊ ◯ᶜ ⊤)
+        ≡⟨ cong (◯ᶜ ∘ Σᶜ X) (funExt λ _ → sym ◯ᶜ-Abstractionᶜ) ⟩
+          ◯ᶜ ([ x ∈ X ] ⋊ ◯ᶜ (▷[ Φ x ] ⊤))
+        ≡⟨ sym (Σᶜ-◯ᶜ {X} {λ x → ▷[ Φ x ] ⊤}) ⟩
+          ◯ᶜ ([ x ∈ X ] ⋊ ▷[ Φ x ] ⊤)
+        ∎

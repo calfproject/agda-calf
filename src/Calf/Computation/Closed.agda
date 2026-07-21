@@ -173,3 +173,9 @@ module _ {A B C : 𝒞} where
         ●-elimProp _ (λ _ → Pullback (map f) (map g) .is-set _ _)
           (λ t → ΣPathP (refl , ΣPathP (refl , isProp→PathP (λ i → ●ᶜ C .is-set _ _) _ _)))
           (λ abs → isProp-at abs _ _)
+
+module _ where
+  open import Calf.Computation.Copower
+
+  Σᶜ-●ᶜ : ∀ {X A} → ●ᶜ (Σᶜ X A) ≡ ●ᶜ (Σᶜ X (●ᶜ ∘ A))
+  Σᶜ-●ᶜ = {!   !}
