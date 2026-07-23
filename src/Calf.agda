@@ -3,10 +3,10 @@ import Calf.Core.Cost
 import Calf.Core.Monad
 
 import Calf.Value
+import Calf.Value.Abstraction
 import Calf.Value.Bool
 import Calf.Value.Closed
 import Calf.Value.Empty
-import Calf.Value.Function
 import Calf.Value.Glue
 import Calf.Value.List
 import Calf.Value.Nat
@@ -20,6 +20,9 @@ import Calf.Value.Sum
 import Calf.Value.Unit
 
 import Calf.Computation
+import Calf.Computation.Abstraction
+import Calf.Computation.CList1
+import Calf.Computation.CList2
 import Calf.Computation.Closed
 import Calf.Computation.Copower
 import Calf.Computation.Credit
@@ -29,8 +32,7 @@ import Calf.Computation.Free
 import Calf.Computation.Glue
 import Calf.Computation.Lolli
 import Calf.Computation.Open
-import Calf.Computation.PList1
-import Calf.Computation.PList2
+import Calf.Computation.Potential
 import Calf.Computation.Power
 import Calf.Computation.Product
 import Calf.Computation.Seal
@@ -41,7 +43,5 @@ import Calf.Computation.Unit
 import Calf.Giralf
 
 import Examples
-import Examples.Giralf.Id
-import Examples.Giralf.Reverse
-import Examples.Giralf.Sort
-import Examples.Giralf.Sandbox
+
+import README

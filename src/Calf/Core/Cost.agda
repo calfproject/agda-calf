@@ -2,12 +2,12 @@ module Calf.Core.Cost where
 
 open import Calf.Value
 open import Calf.Value.Omega
+open import Calf.Value.Unit
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Nat.Literals public
 open import Cubical.Data.Nat using (ℕ; zero; suc) renaming (_+_ to _+ℕ_)
 open import Cubical.Data.Nat.Order
 import Cubical.Data.Nat.Properties as Nat
-open import Data.Unit
 
 module _ {A : Type} where
   open import Algebra.Definitions {A = A} _≡_ public

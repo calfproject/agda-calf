@@ -60,7 +60,7 @@ isPropIsPreorder = isPropΠ (λ _ → isPropIsPathSplitEquiv _)
 rec : isPreorder Y → (X → Y) → ∥ X ∥ᴾ → Y
 rec = Localization.rec
 
-open isPathSplitEquiv public
+open isPathSplitEquiv
 
 opaque
   unfolding Fᴾ
