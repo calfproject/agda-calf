@@ -13,3 +13,60 @@ _+ᶜ_ : 𝒞 → 𝒞 → 𝒞
 (A +ᶜ B) .charge/0 {inj₂ b} = cong inj₂ (B .charge/0)
 (A +ᶜ B) .charge/+ {inj₁ a} = cong inj₁ (A .charge/+)
 (A +ᶜ B) .charge/+ {inj₂ b} = cong inj₂ (B .charge/+)
+
+inj₁ᶜ : A ⊸ A +ᶜ B
+inj₁ᶜ .U a = inj₁ a
+inj₁ᶜ .charge c a = refl
+
+inj₂ᶜ : B ⊸ A +ᶜ B
+inj₂ᶜ .U b = inj₂ b
+inj₂ᶜ .charge c b = refl
+
+caseᶜ : (A ⊸ C) → (B ⊸ C) → (A +ᶜ B ⊸ C)
+caseᶜ f g .U ab = elim (f .U) (g .U) ab
+caseᶜ f g .charge c (inj₁ a) = f .charge c a
+caseᶜ f g .charge c (inj₂ b) = g .charge c b
+
+open import Calf.Computation.Credit
+
+▷A+▷B≡▷[A+B] : ∀ c → ((▷[ c ] A) +ᶜ (▷[ c ] B)) ≡ (▷[ c ] (A +ᶜ B))
+▷A+▷B≡▷[A+B] c = conservativity fwd fwd-equiv
+  where
+    fwd : ((▷[ c ] A) +ᶜ (▷[ c ] B)) ⊸ (▷[ c ] (A +ᶜ B))
+    fwd = caseᶜ (▷-map inj₁ᶜ) (▷-map inj₂ᶜ)
+
+    bwd : (▷[ c ] (A +ᶜ B)) ⊸ ((▷[ c ] A) +ᶜ (▷[ c ] B))
+    bwd = spend c ⨾ᶜ caseᶜ (save c ⨾ᶜ inj₁ᶜ) (save c ⨾ᶜ inj₂ᶜ)
+
+    fwd-equiv : isEquivᶜ fwd
+    fwd-equiv = isoToIsEquiv (iso (fwd .U) inv sect retr)
+      where
+        inv : U (▷[ c ] (A +ᶜ B)) → U ((▷[ c ] A) +ᶜ (▷[ c ] B))
+        inv a = bwd .U a
+
+        sect : ∀ a → fwd .U (inv a) ≡ a
+        sect a = {!  !}
+
+        retr : ∀ z → inv (fwd .U z) ≡ z
+        retr = {!   !}
+
+open import Calf.Computation.Tensor
+open import Cubical.HITs.SetTruncation renaming (map to map')
+
+A⊗C+B⊗C≡[A+B]⊗C : (A ⊗ C) +ᶜ (B ⊗ C) ≡ (A +ᶜ B) ⊗ C
+A⊗C+B⊗C≡[A+B]⊗C {A} {C} {B} = conservativity fwd fwd-equiv
+  where
+    fwd : (A ⊗ C) +ᶜ (B ⊗ C) ⊸ (A +ᶜ B) ⊗ C
+    fwd = caseᶜ (map₂ inj₁ᶜ idᶜ) (map₂ inj₂ᶜ idᶜ)
+
+    fwd-equiv : isEquivᶜ fwd
+    fwd-equiv = isoToIsEquiv (iso (fwd .U) inv sect retr)
+      where
+        inv : U ((A +ᶜ B) ⊗ C) → U ((A ⊗ C) +ᶜ (B ⊗ C))
+        inv a = {!   !}
+
+        sect : ∀ a → fwd .U (inv a) ≡ a
+        sect a = {!   !}
+
+        retr : ∀ z → inv (fwd .U z) ≡ z
+        retr = {!   !}

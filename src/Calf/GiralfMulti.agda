@@ -18,6 +18,7 @@ open import Calf.Computation.CList1
 open import Calf.Computation.CList2
 open import Calf.Computation.Free
 open import Calf.Computation.Power
+open import Calf.Computation.Sum
 open import Calf.Giralf using (_⊢_; _⋎₀; _⋎₂_)
 
 open import Calf.Value.List
@@ -241,3 +242,25 @@ module _ where
     X → Δ , q ⊢ᵐ X ⇀ A
     → Δ , q ⊢ᵐ A
   powappᴳ {X = X} x e = powapp {X = X} e x
+
+module _ where
+  inj₁ᴳ :
+      Δ , q ⊢ᵐ A
+    → Δ , q ⊢ᵐ A +ᶜ B
+  inj₁ᴳ {B = B} = _⨾ᶜ inj₁ᶜ {B = B}
+
+  inj₂ᴳ :
+      Δ , q ⊢ᵐ B
+    → Δ , q ⊢ᵐ A +ᶜ B
+  inj₂ᴳ {A = A} = _⨾ᶜ inj₂ᶜ {A = A}
+
+  caseᴳ : Δ ≡ Δ₁ ⊔ Δ₂
+    → q ⋎₂ (q₁ , q₂)
+    → Δ₁ , q₁ ⊢ᵐ A +ᶜ B
+    → A ∷ Δ₂ , q₂ ⊢ᵐ C
+    → B ∷ Δ₂ , q₂ ⊢ᵐ C
+    → Δ , q ⊢ᵐ C
+  caseᴳ {Δ₂ = Δ₂} {q₂ = q₂} {A = A} {B} {C} S s e e₁ e₂ = cutᴳ S s e k'
+    where
+      k' : (A +ᶜ B) ∷ Δ₂ , q₂ ⊢ᵐ C
+      k' = subst (_⊸ _) (▷A+▷B≡▷[A+B] q₂ ∙ cong (▷[ q₂ ]_) A⊗C+B⊗C≡[A+B]⊗C) (caseᶜ e₁ e₂)
