@@ -39,10 +39,13 @@ infix 1 _⊢_
 _⊢_ : Context → 𝒞 → Type
 Δ , q ⊢ A = ▷[ q ] Δ ⊸ A
 
+variable
+  Δ Δ₁ Δ₂ : 𝒞
+
 idᴳ :
   q ⋎₀
   → A , q ⊢ A
-idᴳ {q} {A} split = transport (cong (_⊸ A) (sym ▷/0 ∙ cong (▷[_] _) split)) idᶜ
+idᴳ {q} {A} split = subst (_⊸ A) (sym ▷/0 ∙ cong (▷[_] _) split) idᶜ
 
 letᴳ :
   q ⋎₂ (q₁ , q₂)
@@ -50,7 +53,7 @@ letᴳ :
   → B , q₂ ⊢ C
   → A , q ⊢ C
 letᴳ split e1 e2 =
-  transport (cong (_⊸ _) (sym ▷/+ ∙ cong (▷[_] _) (+ℂ-comm _ _ ∙ split))) ((▷-map e1) ⨾ᶜ e2)
+  subst (_⊸ _) (sym ▷/+ ∙ cong (▷[_] _) (+ℂ-comm _ _ ∙ split)) ((▷-map e1) ⨾ᶜ e2)
 
 cmpᴳ : 𝒞 → Type
 cmpᴳ = ⊤ , 0ℂ ⊢_

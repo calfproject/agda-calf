@@ -120,3 +120,21 @@ module _ where
             (λ a c →
                 cong ∣_∣₂ (law c a 0ℂ)
               ∙ cong (λ d → ∣ inj a d ∣₂) (+ℂ-identityʳ c))
+
+⊗-comm : A ⊗ B ≡ B ⊗ A
+⊗-comm {A = A} {B = B} = conservativity fwd fwd-equiv
+  where
+    fwd-U : A ⊛ B → B ⊛ A
+    fwd-U (inj a b) = inj b a
+    fwd-U (law c a b i) = sym (law c b a) i
+
+    fwd : A ⊗ B ⊸ B ⊗ A
+    fwd .U = map fwd-U
+    fwd .charge c = {!    !}
+
+    fwd-equiv : isEquivᶜ fwd
+    fwd-equiv = {!   !}
+
+
+⊗-assoc : A ⊗ (B ⊗ C) ≡ (A ⊗ B) ⊗ C
+⊗-assoc = {!   !}

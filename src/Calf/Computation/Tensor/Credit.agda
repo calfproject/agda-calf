@@ -47,3 +47,7 @@ A⊗▷B≡▷[A⊗B] {A} {B} c = 𝒞-fracture-≡ lemma• lemma◦ lemmaα
         {f₀ = ●ᶜ.map (η◦ᶜ {A = A ⊗ (▷[ c ] B)})}
         {f₁ = ●ᶜ.map (η◦ᶜ {A = ▷[ c ] (A ⊗ B)})}
         {!   !}
+
+
+▷A⊗B≡▷[A⊗B] : ∀ c → ((▷[ c ] A) ⊗ B) ≡ (▷[ c ] (A ⊗ B))
+▷A⊗B≡▷[A⊗B] {A} {B} c = ⊗-comm ∙ A⊗▷B≡▷[A⊗B] c ∙ cong (▷[ c ]_) ⊗-comm
