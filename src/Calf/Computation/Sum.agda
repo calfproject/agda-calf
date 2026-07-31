@@ -35,14 +35,11 @@ open import Calf.Computation.Credit
     fwd : ((▷[ c ] A) +ᶜ (▷[ c ] B)) ⊸ (▷[ c ] (A +ᶜ B))
     fwd = caseᶜ (▷-map inj₁ᶜ) (▷-map inj₂ᶜ)
 
-    bwd : (▷[ c ] (A +ᶜ B)) ⊸ ((▷[ c ] A) +ᶜ (▷[ c ] B))
-    bwd = spend c ⨾ᶜ caseᶜ (save c ⨾ᶜ inj₁ᶜ) (save c ⨾ᶜ inj₂ᶜ)
-
     fwd-equiv : isEquivᶜ fwd
     fwd-equiv = isoToIsEquiv (iso (fwd .U) inv sect retr)
       where
         inv : U (▷[ c ] (A +ᶜ B)) → U ((▷[ c ] A) +ᶜ (▷[ c ] B))
-        inv a = bwd .U a
+        inv a = {!   !}
 
         sect : ∀ a → fwd .U (inv a) ≡ a
         sect a = {!  !}
@@ -63,10 +60,14 @@ A⊗C+B⊗C≡[A+B]⊗C {A} {C} {B} = conservativity fwd fwd-equiv
     fwd-equiv = isoToIsEquiv (iso (fwd .U) inv sect retr)
       where
         inv : U ((A +ᶜ B) ⊗ C) → U ((A ⊗ C) +ᶜ (B ⊗ C))
-        inv a = {!   !}
+        inv ∣ inj (inj₁ a) c ∣₂ = inj₁ ∣ inj a c ∣₂
+        inv ∣ inj (inj₂ b) c ∣₂ = inj₂ ∣ inj b c ∣₂
+        inv ∣ law c₀ (inj₁ a) c i ∣₂ = inj₁ ∣ law c₀ a c i ∣₂
+        inv ∣ law c₀ (inj₂ b) c i ∣₂ = inj₂ ∣ law c₀ b c i ∣₂
+        inv (squash₂ a a₁ p q i i₁) = {! a  !}
 
         sect : ∀ a → fwd .U (inv a) ≡ a
-        sect a = {!   !}
+        sect a = {!  !}
 
         retr : ∀ z → inv (fwd .U z) ≡ z
         retr = {!   !}

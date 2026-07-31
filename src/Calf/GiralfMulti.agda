@@ -264,3 +264,18 @@ module _ where
     where
       k' : (A +ᶜ B) ∷ Δ₂ , q₂ ⊢ᵐ C
       k' = subst (_⊸ _) (▷A+▷B≡▷[A+B] q₂ ∙ cong (▷[ q₂ ]_) A⊗C+B⊗C≡[A+B]⊗C) (caseᶜ e₁ e₂)
+
+module _ where
+  tensorᴳ : Δ ≡ Δ₁ ⊔ Δ₂
+    → q ⋎₂ (q₁ , q₂)
+    → Δ₁ , q₁ ⊢ᵐ A
+    → Δ₂ , q₂ ⊢ᵐ B
+    → Δ , q ⊢ᵐ A ⊗ B
+  tensorᴳ {q₂ = q₂} S s e₁ e₂ = cutᴳ S s e₁ (subst (_⊸ _) (A⊗▷B≡▷[A⊗B] q₂) (map₂ idᶜ e₂))
+
+  splitᴳ : Δ ≡ Δ₁ ⊔ Δ₂
+    → q ⋎₂ (q₁ , q₂)
+    → Δ₁ , q₁ ⊢ᵐ A ⊗ B
+    → A ∷ B ∷ Δ₂ , q₂ ⊢ᵐ C
+    → Δ , q ⊢ᵐ C
+  splitᴳ {q₂ = q₂} S s e k = cutᴳ S s e (subst (_⊸ _) (cong (▷[ q₂ ]_) ⊗-assoc) k)
