@@ -53,16 +53,14 @@ glue◦-charge F c =
         (glue◦-charge F)))
 
 𝒞-glue-fracture-section : section 𝒞-toFRAC 𝒞-fromFRAC
-𝒞-glue-fracture-section F i .A• = 𝒞-glue•-path F i
-𝒞-glue-fracture-section F i .A◦ = 𝒞-glue◦-path F i
-𝒞-glue-fracture-section F i .α• = {!   !}
-  -- ⊸-path
-  --   (λ i → ⟨ 𝒞-glue•-path F i ⟩ᶜ)
-  --   (λ i → ●ᶜ ⟨ 𝒞-glue◦-path F i ⟩ᶜ)
-  --   -- {●ᶜ.map (η◦ᶜ {𝒞-fromFRAC F})}
-  --   -- {F .α•}
-  --   {!   !} -- (λ i → 𝒱-FRACTURE.χ• (glue-fracture-section (U-FRACTURE F) i))
-  --   i
+𝒞-glue-fracture-section F =
+  𝒞-FRAC-path
+    (𝒞-glue•-path F)
+    (𝒞-glue◦-path F)
+    (⊸-path
+      (λ i → ⟨ 𝒞-glue•-path F i ⟩ᶜ)
+      (λ i → ●ᶜ ⟨ 𝒞-glue◦-path F i ⟩ᶜ)
+      (λ i → 𝒱-FRACTURE.χ• (glue-fracture-section (U-FRACTURE F) i)))
 
 𝒞-fracture : A ⊸ 𝒞-fromFRAC (𝒞-toFRAC A)
 𝒞-fracture .U = fracture
@@ -95,4 +93,4 @@ to𝒞Square f .𝒞-Square.f◦ = ◯ᶜ.map f
 to𝒞Square f .𝒞-Square.f-coh = toSquare (U f) .𝒱-Square.f-coh
 
 𝒞-fracture-and-gluing-square : (A ⊸ B) ≃ 𝒞-Square (𝒞-toFRAC A) (𝒞-toFRAC B)
-𝒞-fracture-and-gluing-square = {!   !}
+𝒞-fracture-and-gluing-square = {!    !}

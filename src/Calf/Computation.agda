@@ -117,21 +117,22 @@ opaque
   isProp⊸charge A B f =
     isPropΠ2 λ c a → B .is-set (f (A .charge c a)) (B .charge c (f a))
 
-⊸-path
-  : {A₀ A₁ B₀ B₁ : 𝒞}
-  → (A-path : A₀ ≡ A₁)
-  → (B-path : B₀ ≡ B₁)
-  → {f₀ : A₀ ⊸ B₀}
-  → {f₁ : A₁ ⊸ B₁}
-  → PathP (λ i → U (A-path i) → U (B-path i)) (f₀ .U) (f₁ .U)
-  → PathP (λ i → A-path i ⊸ B-path i) f₀ f₁
-⊸-path A-path B-path {f₀ = f₀} {f₁ = f₁} U-path i .U = U-path i
-⊸-path A-path B-path {f₀ = f₀} {f₁ = f₁} U-path i .charge =
-  isProp→PathP
-    (λ i → isProp⊸charge (A-path i) (B-path i) (U-path i))
-    (f₀ .charge)
-    (f₁ .charge)
-    i
+opaque
+  ⊸-path
+    : {A₀ A₁ B₀ B₁ : 𝒞}
+    → (A-path : A₀ ≡ A₁)
+    → (B-path : B₀ ≡ B₁)
+    → {f₀ : A₀ ⊸ B₀}
+    → {f₁ : A₁ ⊸ B₁}
+    → PathP (λ i → U (A-path i) → U (B-path i)) (f₀ .U) (f₁ .U)
+    → PathP (λ i → A-path i ⊸ B-path i) f₀ f₁
+  ⊸-path A-path B-path {f₀ = f₀} {f₁ = f₁} U-path i .U = U-path i
+  ⊸-path A-path B-path {f₀ = f₀} {f₁ = f₁} U-path i .charge =
+    isProp→PathP
+      (λ i → isProp⊸charge (A-path i) (B-path i) (U-path i))
+      (f₀ .charge)
+      (f₁ .charge)
+      i
 
 CHARGE-commute
   : ∀ c (e : A ⊸ B)
