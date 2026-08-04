@@ -69,28 +69,6 @@ fracture-map-fracture {A} {B} f a i .•→◦ =
     refl
     i
 
-fracture-map-same
-  : (f : A ⊸ B)
-  → PathP
-      (λ i → 𝒞-glue-fracture-retract A i ⊸ 𝒞-glue-fracture-retract B i)
-      (fracture-map f)
-      f
-fracture-map-same {A} {B} f =
-  ⊸-path
-    (𝒞-glue-fracture-retract A)
-    (𝒞-glue-fracture-retract B)
-    (λ i →
-      ua→
-        {e = 𝒞-fracture {A = A} .U , fracture-isEquiv}
-        {B = λ i → U (conservativity (𝒞-fracture {A = B}) fracture-isEquiv i)}
-        {f₀ = f .U}
-        {f₁ = fracture-map f .U}
-        (λ a →
-          ua-gluePath
-            (𝒞-fracture {A = B} .U , fracture-isEquiv)
-            (sym (fracture-map-fracture f a)))
-        (~ i))
-
 𝒞-fracture-≡
   : {A B : 𝒞}
   → (p• : ●ᶜ A ≡ ●ᶜ B)
@@ -99,5 +77,10 @@ fracture-map-same {A} {B} f =
   → A ≡ B
 𝒞-fracture-≡ {A} {B} p• p◦ pα =
     sym (𝒞-glue-fracture-retract A)
-  ∙ cong 𝒞-fromFRAC (𝒞-FRAC-path (●ᶜ.𝒞•-path p•) (◯ᶜ.𝒞◦-path p◦) pα)
+  ∙ cong 𝒞-fromFRAC F-path
   ∙ 𝒞-glue-fracture-retract B
+  where
+    F-path : 𝒞-toFRAC A ≡ 𝒞-toFRAC B
+    F-path i .A• = ●ᶜ.𝒞•-path p• i
+    F-path i .A◦ = ◯ᶜ.𝒞◦-path p◦ i
+    F-path i .α• = pα i

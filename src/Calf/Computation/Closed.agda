@@ -1,5 +1,7 @@
+open import Cubical.Modalities.Modality
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Path using (compPathlEquiv; compPathrEquiv)
 open import Cubical.Foundations.Structure
 open import Cubical.Data.Sigma
 
@@ -13,7 +15,7 @@ open import Calf.Computation
 
 ●ᶜ : 𝒞 → 𝒞
 ●ᶜ A .U = ● (A .U)
-●ᶜ A .is-set = ●-preserves-isSet (A .is-set)
+●ᶜ A .is-set = isSet● (A .is-set)
 ●ᶜ A .charge c (η• a) = η• (A .charge c a)
 ●ᶜ A .charge c (∗ p) = ∗ p
 ●ᶜ A .charge c (law a p i) = law (A .charge c a) p i
@@ -42,11 +44,20 @@ open import Calf.Computation
 η•ᶜ .U = η•
 η•ᶜ .charge _ _ = refl
 
+isModalᶜ : 𝒞 → 𝒱
+isModalᶜ A = isModal (U A)
+
 𝒞• : 𝒱₁
-𝒞• = 𝒞WithStr λ A → isEquiv (η•ᶜ {A} .U)
+𝒞• = 𝒞WithStr isModalᶜ
 
 𝒞•-path : {A• B• : 𝒞•} → ⟨ A• ⟩ᶜ ≡ ⟨ B• ⟩ᶜ → A• ≡ B•
 𝒞•-path p = Σ≡Prop (λ A → isPropIsEquiv (η•ᶜ {A} .U)) p
+
+isModalᶜ●ᶜ : isModalᶜ (●ᶜ A)
+isModalᶜ●ᶜ = isModal●
+
+●ᶜ• : 𝒞 → 𝒞•
+●ᶜ• A = ●ᶜ A , isModalᶜ●ᶜ {A}
 
 U• : 𝒞• → 𝒱•
 U• A• .fst = ⟨ A• ⟩ᶜ .U
@@ -68,9 +79,10 @@ map {A} {B} f .charge c (law a p i) =
 ●ᶜ-charge-map
   : (c : ℂ) (a• : U (●ᶜ A))
   → ●ᶜ A .charge c a• ≡ ●.map (A .charge c) a•
-●ᶜ-charge-map c (η• a) = refl
-●ᶜ-charge-map c (∗ p) = refl
-●ᶜ-charge-map c (law a p i) = refl
+●ᶜ-charge-map _ =
+  ●.elim
+    (λ _ → Modality.◯-=-isModal ●Modality _ _)
+    (λ _ → refl)
 
 map-∘ : (f : A ⊸ B) (g : B ⊸ C) → map f ⨾ᶜ map g ≡ map (f ⨾ᶜ g)
 map-∘ f g = ⊸-path refl refl (funExt (●.map-∘ (f .U) (g .U)))
@@ -85,7 +97,7 @@ map-open {A} {B} p f g =
     refl
     refl
     (funExt λ a• →
-      ●-isProp p
+      ◯-isProp● p
         (map {A = A} {B = B} f .U a•)
         (map {A = A} {B = B} g .U a•))
 
@@ -156,21 +168,21 @@ module _ {A B C : 𝒞} where
   open import Calf.Computation.Pullback
 
   lex : (f : A ⊸ C) (g : B ⊸ C) → ●ᶜ (Pullback f g) ≡ Pullback (map f) (map g)
-  lex f g =
-    conservativity fwd
-      (isoToIsEquiv
-        (●-pullback-Iso (A .is-set) (B .is-set) (C .is-set) (f .U) (g .U)))
+  lex f g = conservativity fwd (equivIsEquiv e)
     where
+      e : U (●ᶜ (Pullback f g)) ≃ U (Pullback (map f) (map g))
+      e = ●.●-pullback
+
       isProp-at : ⟨ ABS ⟩ → isProp (U (Pullback (map f) (map g)))
       isProp-at abs =
-        isPropΣ (●-isProp abs) λ _ →
-        isPropΣ (●-isProp abs) λ _ →
-        isProp→isSet (●-isProp abs) _ _
+        isPropΣ (◯-isProp● abs) λ _ →
+        isPropΣ (◯-isProp● abs) λ _ →
+        isProp→isSet (◯-isProp● abs) _ _
 
       fwd : ●ᶜ (Pullback f g) ⊸ Pullback (map f) (map g)
-      fwd .U = ●-pullback-fwd (A .is-set) (B .is-set) (C .is-set) (f .U) (g .U)
+      fwd .U = equivFun e
       fwd .charge c =
-        ●-elimProp _ (λ _ → Pullback (map f) (map g) .is-set _ _)
+        ind-prop _ (λ _ → Pullback (map f) (map g) .is-set _ _)
           (λ t → ΣPathP (refl , ΣPathP (refl , isProp→PathP (λ i → ●ᶜ C .is-set _ _) _ _)))
           (λ abs → isProp-at abs _ _)
 

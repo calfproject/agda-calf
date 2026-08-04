@@ -48,8 +48,8 @@ open 𝒞-FRAC
 𝒞-fromFRAC F = Glueᶜ (F .A•) (F .A◦) (F .α•)
 
 𝒞-toFRAC : 𝒞 → 𝒞-FRAC
-𝒞-toFRAC A .A• = ●ᶜ A , ●ᶜ.η-isEquiv
-𝒞-toFRAC A .A◦ = ◯ᶜ A , ◯ᶜ.η-isEquiv
+𝒞-toFRAC A .A• = ●ᶜ• A
+𝒞-toFRAC A .A◦ = ◯ᶜ◦ A
 𝒞-toFRAC A .α• = ●ᶜ.map η◦ᶜ
 
 proj•ᶜ : (F : 𝒞-FRAC) → 𝒞-fromFRAC F ⊸ ⟨ F .A• ⟩ᶜ
@@ -73,8 +73,8 @@ proj◦ᶜ F .charge c g = refl
 𝒞-FRAC-path A•-path A◦-path α•-path i .A◦ = A◦-path i
 𝒞-FRAC-path A•-path A◦-path α•-path i .α• = α•-path i
 
-𝒞-FRAC→𝒱-FRAC : 𝒞-FRAC → 𝒱-FRAC
-𝒞-FRAC→𝒱-FRAC F =
+U-FRACTURE : 𝒞-FRAC → 𝒱-FRACTURE
+U-FRACTURE F =
   record
     { X• = U• (F .A•)
     ; X◦ = U◦ (F .A◦)

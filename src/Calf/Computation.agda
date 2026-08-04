@@ -60,18 +60,20 @@ CHARGE {A} c .charge c' a =
     A .charge c' (A .charge c a)
   ∎
 
-isPropCharge/0
-  : {U : 𝒱} {isSetU : isSet U} (charge : ℂ → U → U)
-  → isProp (∀ {a} → charge 0ℂ a ≡ a)
-isPropCharge/0 {U} {isSetU} charge =
-  isPropImplicitΠ λ a → isSetU (charge 0ℂ a) a
+opaque
+  isPropCharge/0
+    : {U : 𝒱} {isSetU : isSet U} (charge : ℂ → U → U)
+    → isProp (∀ {a} → charge 0ℂ a ≡ a)
+  isPropCharge/0 {U} {isSetU} charge =
+    isPropImplicitΠ λ a → isSetU (charge 0ℂ a) a
 
-isPropCharge/+
-  : {U : 𝒱} {isSetU : isSet U} (charge : ℂ → U → U)
-  → isProp (∀ {a c₁ c₂} → charge (c₁ +ℂ c₂) a ≡ charge c₁ (charge c₂ a))
-isPropCharge/+ {U} {isSetU} charge =
-  isPropImplicitΠ3 λ a c₁ c₂ →
-    isSetU (charge (c₁ +ℂ c₂) a) (charge c₁ (charge c₂ a))
+opaque
+  isPropCharge/+
+    : {U : 𝒱} {isSetU : isSet U} (charge : ℂ → U → U)
+    → isProp (∀ {a c₁ c₂} → charge (c₁ +ℂ c₂) a ≡ charge c₁ (charge c₂ a))
+  isPropCharge/+ {U} {isSetU} charge =
+    isPropImplicitΠ3 λ a c₁ c₂ →
+      isSetU (charge (c₁ +ℂ c₂) a) (charge c₁ (charge c₂ a))
 
 𝒞-path
   : {A B : 𝒞}
@@ -100,18 +102,20 @@ isPropCharge/+ {U} {isSetU} charge =
           i
     }
   where
-    isSetUi : PathP (λ i → isSet (U-path i)) (A .is-set) (B .is-set)
-    isSetUi =
-      isProp→PathP
-        (λ i → isPropIsSet {A = U-path i})
-        (A .is-set)
-        (B .is-set)
+    opaque
+      isSetUi : PathP (λ i → isSet (U-path i)) (A .is-set) (B .is-set)
+      isSetUi =
+        isProp→PathP
+          (λ i → isPropIsSet {A = U-path i})
+          (A .is-set)
+          (B .is-set)
 
-isProp⊸charge
-  : (A B : 𝒞) (f : U A → U B)
-  → isProp ((c : ℂ) (a : U A) → f (A .charge c a) ≡ B .charge c (f a))
-isProp⊸charge A B f =
-  isPropΠ2 λ c a → B .is-set (f (A .charge c a)) (B .charge c (f a))
+opaque
+  isProp⊸charge
+    : (A B : 𝒞) (f : U A → U B)
+    → isProp ((c : ℂ) (a : U A) → f (A .charge c a) ≡ B .charge c (f a))
+  isProp⊸charge A B f =
+    isPropΠ2 λ c a → B .is-set (f (A .charge c a)) (B .charge c (f a))
 
 ⊸-path
   : {A₀ A₁ B₀ B₁ : 𝒞}
@@ -165,18 +169,22 @@ charge-path-inv
 charge-path-inv e chargeX chargeY h =
   funExt λ c → ua→ λ y → ua-gluePath (invEquiv e) (h c y)
 
-charge-path
-  : {X Y : 𝒱}
-  → (e : X ≃ Y)
-  → (chargeX : ℂ → X → X)
-  → (chargeY : ℂ → Y → Y)
-  → ((c : ℂ) (x : X) → e .fst (chargeX c x) ≡ chargeY c (e .fst x))
-  → PathP
-      (λ i → ℂ → ua e i → ua e i)
-      chargeX
-      chargeY
-charge-path e chargeX chargeY h =
-  funExt λ c → ua→ λ x → ua-gluePath e (h c x)
+-- opaque: consumers only ever use this as a path value (its endpoints reduce
+-- type-directedly), and unfolding its ua→ implementation at a free interval
+-- variable produces enormous normal forms in downstream record paths
+opaque
+  charge-path
+    : {X Y : 𝒱}
+    → (e : X ≃ Y)
+    → (chargeX : ℂ → X → X)
+    → (chargeY : ℂ → Y → Y)
+    → ((c : ℂ) (x : X) → e .fst (chargeX c x) ≡ chargeY c (e .fst x))
+    → PathP
+        (λ i → ℂ → ua e i → ua e i)
+        chargeX
+        chargeY
+  charge-path e chargeX chargeY h =
+    funExt λ c → ua→ λ x → ua-gluePath e (h c x)
 
 conservativity :
   (f : A ⊸ B)

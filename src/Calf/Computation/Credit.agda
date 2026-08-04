@@ -56,8 +56,8 @@ open 𝒞-FRAC
   ∎
 
 ▷-FRAC : ℂ → 𝒞 → 𝒞-FRAC
-▷-FRAC c A .A• = ●ᶜ A , ●ᶜ.η-isEquiv
-▷-FRAC c A .A◦ = ◯ᶜ A , ◯ᶜ.η-isEquiv
+▷-FRAC c A .A• = ●ᶜ• A
+▷-FRAC c A .A◦ = ◯ᶜ◦ A
 ▷-FRAC c A .α• = ●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ)
 
 ▷-FRAC-open : ⟨ ABS ⟩ → (c : ℂ) (A : 𝒞) → ▷-FRAC c A ≡ 𝒞-toFRAC A
