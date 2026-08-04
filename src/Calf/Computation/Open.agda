@@ -105,6 +105,7 @@ ABS-◯ᶜpoint≡a {A} abs a◦ a p =
     p
 
 ◯ᶜ-lex : (A B : 𝒞) → (◯ᶜ A ≡ ◯ᶜ B) ≡ (⟨ ABS ⟩ → A ≡ B)
+◯ᶜ-lex = {!   !}
 
 module _ where
   open import Calf.Computation.Copower
