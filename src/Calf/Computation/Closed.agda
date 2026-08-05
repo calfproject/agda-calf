@@ -1,6 +1,7 @@
 open import Cubical.Modalities.Modality
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Path using (compPathlEquiv; compPathrEquiv)
 open import Cubical.Foundations.Structure
 open import Cubical.Data.Sigma
@@ -149,6 +150,21 @@ bind-η• {A = A} {B = B} f =
         refl
         refl
         i
+
+●ᶜ-rec : (B• : 𝒞•) → (A ⊸ ⟨ B• ⟩ᶜ) → (●ᶜ A ⊸ ⟨ B• ⟩ᶜ)
+●ᶜ-rec B• g .U = ●.elim (λ _ → strᶜ B•) (g .U)
+●ᶜ-rec B• g .charge c = ●.elim (λ a• → ●.isModal≡ (strᶜ B•)) (g .charge c)
+
+⊸-precomp-η•ᶜ-isEquiv : {A : 𝒞} (B• : 𝒞•)
+  → isEquiv (λ (f : ●ᶜ A ⊸ ⟨ B• ⟩ᶜ) → η•ᶜ ⨾ᶜ f)
+⊸-precomp-η•ᶜ-isEquiv B• =
+  isoToIsEquiv (iso (η•ᶜ ⨾ᶜ_) (●ᶜ-rec B•)
+    (λ g → ⊸-path refl refl refl)
+    (λ f → ⊸-path refl refl
+      (funExt (●.elim (λ a• → ●.isModal≡ (strᶜ B•)) (λ a → refl)))))
+
+⊸-precomp-η•ᶜ-≃ : {A : 𝒞} (B• : 𝒞•) → (●ᶜ A ⊸ ⟨ B• ⟩ᶜ) ≃ (A ⊸ ⟨ B• ⟩ᶜ)
+⊸-precomp-η•ᶜ-≃ B• = (η•ᶜ ⨾ᶜ_) , ⊸-precomp-η•ᶜ-isEquiv B•
 
 ●ᶜ-map-CHARGE
   : (c : ℂ) (a• : U (●ᶜ A))

@@ -1,5 +1,10 @@
 module Calf.Computation.Glue.Base where
 
+open import Cubical.Data.Sigma
+open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.HLevels using (isPropΠ)
+open import Cubical.Foundations.Isomorphism
+
 open import Calf.Core.Cost
 open import Calf.Value
 open import Calf.Computation
@@ -119,3 +124,80 @@ squareᶜ {A• = A•} {A◦ = A◦} {α = α} {B• = B•} {B◦ = B◦} {β 
         f• f◦ f-coherence .U q)
       .•→◦)
     i
+
+⊸-Glueᶜ-≃ : {A : 𝒞} {F : 𝒞-FRAC}
+  → (A ⊸ 𝒞-fromFRAC F)
+  ≃ (Σ[ (h◦ , h•) ∈ (A ⊸ ⟨ F .A◦ ⟩ᶜ) × (A ⊸ ⟨ F .A• ⟩ᶜ) ]
+      (h◦ ⨾ᶜ η•ᶜ ≡ h• ⨾ᶜ F .α•))
+⊸-Glueᶜ-≃ {A} {F} = isoToEquiv (iso fwd bwd sec ret)
+  where
+    fwd : (A ⊸ 𝒞-fromFRAC F)
+      → Σ[ (h◦ , h•) ∈ (A ⊸ ⟨ F .A◦ ⟩ᶜ) × (A ⊸ ⟨ F .A• ⟩ᶜ) ]
+          (h◦ ⨾ᶜ η•ᶜ ≡ h• ⨾ᶜ F .α•)
+    fwd k = (k ⨾ᶜ proj◦ᶜ F , k ⨾ᶜ proj•ᶜ F) ,
+      ⊸-path refl refl (funExt λ a → sym (k .U a .•→◦))
+
+    bwd : (Σ[ (h◦ , h•) ∈ (A ⊸ ⟨ F .A◦ ⟩ᶜ) × (A ⊸ ⟨ F .A• ⟩ᶜ) ]
+            (h◦ ⨾ᶜ η•ᶜ ≡ h• ⨾ᶜ F .α•))
+      → (A ⊸ 𝒞-fromFRAC F)
+    bwd ((h◦ , h•) , coh) .U a .• = h• .U a
+    bwd ((h◦ , h•) , coh) .U a .◦ = h◦ .U a
+    bwd ((h◦ , h•) , coh) .U a .•→◦ = sym (funExt⁻ (cong (λ w → w .U) coh) a)
+    bwd ((h◦ , h•) , coh) .charge c a i .• = h• .charge c a i
+    bwd ((h◦ , h•) , coh) .charge c a i .◦ = h◦ .charge c a i
+    bwd ((h◦ , h•) , coh) .charge c a i .•→◦ =
+      isProp→PathP
+        (λ i → ●ᶜ ⟨ F .A◦ ⟩ᶜ .is-set
+          (F .α• .U (h• .charge c a i))
+          (η• (h◦ .charge c a i)))
+        _ _ i
+
+    sec : section fwd bwd
+    sec ((h◦ , h•) , coh) =
+      Σ≡Prop (λ _ → isSet⊸ _ _)
+        (ΣPathP (⊸-path refl refl refl , ⊸-path refl refl refl))
+
+    ret : retract fwd bwd
+    ret k = ⊸-path refl refl (funExt λ a i → record
+      { • = k .U a .•
+      ; ◦ = k .U a .◦
+      ; •→◦ = ●ᶜ ⟨ F .A◦ ⟩ᶜ .is-set _ _
+          (bwd (fwd k) .U a .•→◦)
+          (k .U a .•→◦)
+          i
+      })
+
+Squareᶜ-pullback-≃ : {F G : 𝒞-FRAC}
+  → 𝒞-Square F G
+  ≃ (Σ[ (f◦ , f•) ∈ (⟨ F .A◦ ⟩ᶜ ⊸ ⟨ G .A◦ ⟩ᶜ) × (⟨ F .A• ⟩ᶜ ⊸ ⟨ G .A• ⟩ᶜ) ]
+      (F .α• ⨾ᶜ ●ᶜ.map f◦ ≡ f• ⨾ᶜ G .α•))
+Squareᶜ-pullback-≃ {F} {G} = isoToEquiv (iso fwd bwd sec ret)
+  where
+    fwd : 𝒞-Square F G
+      → Σ[ (f◦ , f•) ∈ (⟨ F .A◦ ⟩ᶜ ⊸ ⟨ G .A◦ ⟩ᶜ) × (⟨ F .A• ⟩ᶜ ⊸ ⟨ G .A• ⟩ᶜ) ]
+          (F .α• ⨾ᶜ ●ᶜ.map f◦ ≡ f• ⨾ᶜ G .α•)
+    fwd S = (S .𝒞-Square.f◦ , S .𝒞-Square.f•) ,
+      ⊸-path refl refl (funExt λ a• → sym (S .𝒞-Square.f-coh a•))
+
+    bwd : (Σ[ (f◦ , f•) ∈ (⟨ F .A◦ ⟩ᶜ ⊸ ⟨ G .A◦ ⟩ᶜ) × (⟨ F .A• ⟩ᶜ ⊸ ⟨ G .A• ⟩ᶜ) ]
+            (F .α• ⨾ᶜ ●ᶜ.map f◦ ≡ f• ⨾ᶜ G .α•))
+      → 𝒞-Square F G
+    bwd ((f◦ , f•) , coh) = record
+      { f• = f•
+      ; f◦ = f◦
+      ; f-coh = λ a• → sym (funExt⁻ (cong (λ w → w .U) coh) a•)
+      }
+
+    sec : section fwd bwd
+    sec w = Σ≡Prop (λ _ → isSet⊸ _ _) refl
+
+    ret : retract fwd bwd
+    ret S i = record
+      { f• = S .𝒞-Square.f•
+      ; f◦ = S .𝒞-Square.f◦
+      ; f-coh =
+          isPropΠ (λ a• → ●ᶜ ⟨ G .A◦ ⟩ᶜ .is-set _ _)
+            (bwd (fwd S) .𝒞-Square.f-coh)
+            (S .𝒞-Square.f-coh)
+            i
+      }

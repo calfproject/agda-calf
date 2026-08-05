@@ -1,5 +1,8 @@
 module Calf.Computation.Glue.Fracture where
 
+open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Equiv.Properties using (congEquiv)
+open import Cubical.Foundations.Path using (compPathlEquiv; compPathrEquiv)
 open import Cubical.Foundations.Univalence using (ua)
 
 open import Calf.Core.Cost
@@ -7,6 +10,8 @@ open import Calf.Value
 import Calf.Value.Open as ◯
 import Calf.Value.Closed as ●
 open import Calf.Value.Glue public
+open import Calf.Value.Product
+open import Calf.Value.Sigma
 open import Calf.Computation
 open import Calf.Computation.Open as ◯ᶜ
 open import Calf.Computation.Closed as ●ᶜ
@@ -93,4 +98,29 @@ to𝒞Square f .𝒞-Square.f◦ = ◯ᶜ.map f
 to𝒞Square f .𝒞-Square.f-coh = toSquare (U f) .𝒱-Square.f-coh
 
 𝒞-fracture-and-gluing-square : (A ⊸ B) ≃ 𝒞-Square (𝒞-toFRAC A) (𝒞-toFRAC B)
-𝒞-fracture-and-gluing-square = {!    !}
+𝒞-fracture-and-gluing-square {A} {B} =
+    (A ⊸ B)
+  ≃⟨ ⊸-postcomp-≃ {A} {B} 𝒞-fracture fracture-isEquiv ⟩
+    (A ⊸ 𝒞-fromFRAC (𝒞-toFRAC B))
+  ≃⟨ ⊸-Glueᶜ-≃ {A} {𝒞-toFRAC B} ⟩
+    (Σ[ (h◦ , h•) ∈ (A ⊸ ◯ᶜ B) × (A ⊸ ●ᶜ B) ]
+      (h◦ ⨾ᶜ η•ᶜ ≡ h• ⨾ᶜ ●ᶜ.map η◦ᶜ))
+  ≃⟨ invEquiv (Σ-cong-equiv
+       (≃-× (⊸-precomp-η◦ᶜ-≃ (◯ᶜ◦ B)) (⊸-precomp-η•ᶜ-≃ (●ᶜ• B)))
+       (λ (f◦ , f•) →
+           congEquiv (⊸-precomp-η•ᶜ-≃ (●ᶜ• (◯ᶜ B)))
+         ∙ₑ compPathrEquiv (assoc-η f•)
+         ∙ₑ compPathlEquiv (sym (natural-η f◦)))) ⟩
+    (Σ[ (f◦ , f•) ∈ (◯ᶜ A ⊸ ◯ᶜ B) × (●ᶜ A ⊸ ●ᶜ B) ]
+      (●ᶜ.map η◦ᶜ ⨾ᶜ ●ᶜ.map f◦ ≡ f• ⨾ᶜ ●ᶜ.map η◦ᶜ))
+  ≃⟨ invEquiv Squareᶜ-pullback-≃ ⟩
+    𝒞-Square (𝒞-toFRAC A) (𝒞-toFRAC B)
+  ■
+  where
+    natural-η : (f◦ : ◯ᶜ A ⊸ ◯ᶜ B)
+      → η•ᶜ ⨾ᶜ (●ᶜ.map η◦ᶜ ⨾ᶜ ●ᶜ.map f◦) ≡ (η◦ᶜ ⨾ᶜ f◦) ⨾ᶜ η•ᶜ
+    natural-η f◦ = ⊸-path refl refl refl
+
+    assoc-η : (f• : ●ᶜ A ⊸ ●ᶜ B)
+      → η•ᶜ ⨾ᶜ (f• ⨾ᶜ ●ᶜ.map η◦ᶜ) ≡ (η•ᶜ ⨾ᶜ f•) ⨾ᶜ ●ᶜ.map η◦ᶜ
+    assoc-η f• = ⊸-path refl refl refl

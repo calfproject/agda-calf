@@ -51,6 +51,24 @@ join .charge c a◦ = refl
 bind : (A ⊸ ◯ᶜ B) → (◯ᶜ A ⊸ ◯ᶜ B)
 bind {B = B} k = map k ⨾ᶜ join {B}
 
+◯ᶜ-rec : (B◦ : 𝒞◦) → (A ⊸ ⟨ B◦ ⟩ᶜ) → (◯ᶜ A ⊸ ⟨ B◦ ⟩ᶜ)
+◯ᶜ-rec B◦ g .U = ◯.elim (λ _ → strᶜ B◦) (g .U)
+◯ᶜ-rec {A = A} B◦ g .charge c =
+  ◯.elim (λ a◦ → ◯.isModal≡ (strᶜ B◦)) λ a →
+      ◯.elim-β (λ _ → strᶜ B◦) (g .U) (A .charge c a)
+    ∙ g .charge c a
+    ∙ cong (⟨ B◦ ⟩ᶜ .charge c) (sym (◯.elim-β (λ _ → strᶜ B◦) (g .U) a))
+
+⊸-precomp-η◦ᶜ-isEquiv : {A : 𝒞} (B◦ : 𝒞◦)
+  → isEquiv (λ (f : ◯ᶜ A ⊸ ⟨ B◦ ⟩ᶜ) → η◦ᶜ ⨾ᶜ f)
+⊸-precomp-η◦ᶜ-isEquiv B◦ =
+  isoToIsEquiv (iso (η◦ᶜ ⨾ᶜ_) (◯ᶜ-rec B◦)
+    (λ g → ⊸-path refl refl (funExt (◯.elim-β (λ _ → strᶜ B◦) (g .U))))
+    (λ f → ⊸-path refl refl (sym (◯.◯-rec-unique (strᶜ B◦) refl))))
+
+⊸-precomp-η◦ᶜ-≃ : {A : 𝒞} (B◦ : 𝒞◦) → (◯ᶜ A ⊸ ⟨ B◦ ⟩ᶜ) ≃ (A ⊸ ⟨ B◦ ⟩ᶜ)
+⊸-precomp-η◦ᶜ-≃ B◦ = (η◦ᶜ ⨾ᶜ_) , ⊸-precomp-η◦ᶜ-isEquiv B◦
+
 module _ where
   open import Calf.Computation.Pullback
 

@@ -9,6 +9,7 @@ open import Calf.Value
 open import Calf.Core.Cost
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Function
+open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence using (ua; ua→; ua-gluePath)
 
 record 𝒞 : 𝒱₁ where
@@ -134,6 +135,22 @@ opaque
       (f₁ .charge)
       i
 
+⊸-Σ-Iso
+  : Iso (A ⊸ B)
+      (Σ[ h ∈ (U A → U B) ]
+        ((c : ℂ) (a : U A) → h (A .charge c a) ≡ B .charge c (h a)))
+⊸-Σ-Iso .Iso.fun f = f .U , f .charge
+⊸-Σ-Iso .Iso.inv (h , ch) .U = h
+⊸-Σ-Iso .Iso.inv (h , ch) .charge = ch
+⊸-Σ-Iso .Iso.rightInv _ = refl
+⊸-Σ-Iso .Iso.leftInv _ = refl
+
+opaque
+  isSet⊸ : isSet (A ⊸ B)
+  isSet⊸ {A} {B} =
+    isOfHLevelRetractFromIso 2 ⊸-Σ-Iso
+      (isSetΣ (isSet→ (B .is-set)) λ h → isProp→isSet (isProp⊸charge A B h))
+
 CHARGE-commute
   : ∀ c (e : A ⊸ B)
   → CHARGE c ⨾ᶜ e ≡ e ⨾ᶜ CHARGE c
@@ -195,6 +212,23 @@ conservativity {A} {B} f f-equiv =
   𝒞-path
     (ua (f .U , f-equiv))
     (charge-path (f .U , f-equiv) (A .charge) (B .charge) (f .charge))
+
+⊸-inv : (e : B ⊸ C) → isEquivᶜ e → C ⊸ B
+⊸-inv e h .U = invIsEq h
+⊸-inv {B = B} {C = C} e h .charge c x =
+    sym (cong (invIsEq h)
+      (e .charge c (invIsEq h x) ∙ cong (C .charge c) (secIsEq h x)))
+  ∙ retIsEq h (B .charge c (invIsEq h x))
+
+⊸-postcomp-isEquiv : {A B C : 𝒞} (e : B ⊸ C) → isEquivᶜ e
+  → isEquiv (λ (f : A ⊸ B) → f ⨾ᶜ e)
+⊸-postcomp-isEquiv e h =
+  isoToIsEquiv (iso (_⨾ᶜ e) (_⨾ᶜ ⊸-inv e h)
+    (λ g → ⊸-path refl refl (funExt λ a → secIsEq h (g .U a)))
+    (λ f → ⊸-path refl refl (funExt λ a → retIsEq h (f .U a))))
+
+⊸-postcomp-≃ : {A B C : 𝒞} (e : B ⊸ C) → isEquivᶜ e → (A ⊸ B) ≃ (A ⊸ C)
+⊸-postcomp-≃ e h = (_⨾ᶜ e) , ⊸-postcomp-isEquiv e h
 
 module _ where
   -- a very random transport lemma that is unfortunately needed twice
