@@ -296,16 +296,9 @@ module Dequeue where
       : (c : ℂ) (q• : (●ᶜ BQ .U))
       → ●.map (λ bq → fst (dequeueᴮ .U bq)) (●ᶜ BQ .charge c q•)
         ≡ ●.map (λ bq → fst (dequeueᴮ .U bq)) q•
-    dequeueᴮ-fst-●-charge c (η• bq) = cong η• (cong fst (dequeueᴮ .charge c bq))
-    dequeueᴮ-fst-●-charge c (∗ p) = refl
-    dequeueᴮ-fst-●-charge c (law bq p i) =
-      isProp→PathP
-        (λ i → isSet● isSetℕ
-          (●.map (λ bq → fst (dequeueᴮ .U bq)) (●ᶜ BQ .charge c (law bq p i)))
-          (●.map (λ bq → fst (dequeueᴮ .U bq)) (law bq p i)))
-        (cong η• (cong fst (dequeueᴮ .charge c bq)))
-        refl
-        i
+    dequeueᴮ-fst-●-charge c =
+      ●.elim (λ _ → ●-≡-isModal _ _)
+        (λ bq → cong (λ w → η• (fst w)) (dequeueᴮ .charge c bq))
 
     dequeueᴸ-fst-◯-charge
       : (c : ℂ) (q◦ : (◯ᶜ LQ .U))
@@ -316,26 +309,28 @@ module Dequeue where
     dequeue'-fst-glue-charge
       : (c : ℂ) (q : U BLQ)
       → dequeue'-fst-glue (BLQ .charge c q) ≡ dequeue'-fst-glue q
-    dequeue'-fst-glue-charge c q i .• = dequeueᴮ-fst-●-charge c (q .•) i
-    dequeue'-fst-glue-charge c q i .◦ = dequeueᴸ-fst-◯-charge c (q .◦) i
-    dequeue'-fst-glue-charge c q i .•→◦ =
-      isProp→PathP
-        (λ i → isSet● (isSet◯ isSetℕ)
-          (●.map η◦ (dequeueᴮ-fst-●-charge c (q .•) i))
-          (η• (dequeueᴸ-fst-◯-charge c (q .◦) i)))
-        (dequeue'-fst-glue (BLQ .charge c q) .•→◦)
-        (dequeue'-fst-glue q .•→◦)
-        i
+    dequeue'-fst-glue-charge c q =
+      Glue-path (isSet◯ isSetℕ)
+        (dequeueᴮ-fst-●-charge c (q .•))
+        (dequeueᴸ-fst-◯-charge c (q .◦))
 
     open import Cubical.Data.Sigma using (ΣPathP)
 
+    dequeue'-fst-charge
+      : (c : ℂ) (q : U BLQ)
+      → invIsEq fracture-isEquiv (dequeue'-fst-glue (BLQ .charge c q))
+      ≡ invIsEq fracture-isEquiv (dequeue'-fst-glue q)
+    dequeue'-fst-charge c q =
+      cong (invIsEq fracture-isEquiv) (dequeue'-fst-glue-charge c q)
+
+  opaque
     dequeue' : BLQ ⊸ (ℕₛ ⋊ BLQ)
     dequeue' .U q .fst =
       invIsEq fracture-isEquiv (dequeue'-fst-glue q)
     dequeue' .U q .snd = dequeue'-snd .U q
     dequeue' .charge c q =
       ΣPathP
-        ( cong (invIsEq fracture-isEquiv) (dequeue'-fst-glue-charge c q)
+        ( dequeue'-fst-charge c q
         , dequeue'-snd .charge c q
         )
 
@@ -397,6 +392,8 @@ batched-queue .spec abs i .dequeue =
             (dequeueᴸ .U (abstraction-open-eval {BQ} {LQ} {α} abs .U q))
       dequeue'-point≡dequeueᴸ q =
         ΣPathP
+          {A = λ _ → ℕ}
+          {B = λ i _ → U (◯[Abstractionᶜ≡A-abs] {BQ} {LQ} {α} abs i)}
           ( dequeue'-fst≡dequeueᴸ-fst q
           , λ i →
               dequeue'-snd≡dequeueᴸ-snd i .U

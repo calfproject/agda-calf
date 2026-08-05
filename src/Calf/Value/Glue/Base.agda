@@ -14,6 +14,21 @@ record Glue (X• : 𝒱•) (X◦ : 𝒱◦) (χ• : ⟨ X• ⟩ → ● ⟨ 
     •→◦ : χ• • ≡ η• ◦
 open Glue public
 
+-- glued elements are equal componentwise; the coherence is a path in a set
+Glue-path : ∀ {X• X◦ χ•} {g g' : Glue X• X◦ χ•}
+  → isSet ⟨ X◦ ⟩
+  → g .• ≡ g' .•
+  → g .◦ ≡ g' .◦
+  → g ≡ g'
+Glue-path isSetX◦ p• p◦ i .• = p• i
+Glue-path isSetX◦ p• p◦ i .◦ = p◦ i
+Glue-path {χ• = χ•} {g} {g'} isSetX◦ p• p◦ i .•→◦ =
+  isProp→PathP
+    (λ i → isSet● isSetX◦ (χ• (p• i)) (η• (p◦ i)))
+    (g .•→◦)
+    (g' .•→◦)
+    i
+
 Glue-pullback-≃ : ∀ {X• X◦ χ•} →
   Glue X• X◦ χ• ≃ (Σ[ (x◦ , x•) ∈ ⟨ X◦ ⟩ × ⟨ X• ⟩ ] (η• x◦ ≡ χ• x•))
 Glue-pullback-≃ =
