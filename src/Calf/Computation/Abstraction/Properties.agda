@@ -15,12 +15,12 @@ opaque
   unfolding Abstractionᶜ
 
   ●ᶜ-Abstractionᶜ : ∀ {A-⊤ A-abs α} → ●ᶜ (Abstractionᶜ A-⊤ A-abs α) ≡ ●ᶜ A-⊤
-  ●ᶜ-Abstractionᶜ {A-⊤} {A-abs} {α} = {!   !}
-  -- cong ⟨_⟩ᶜ (𝒞-glue•-path (Abstractionᶜ-FRAC A-⊤ A-abs α))
+  ●ᶜ-Abstractionᶜ {A-⊤} {A-abs} {α} =
+    cong ⟨_⟩ᶜ (𝒞-glue•-path (Abstractionᶜ-FRAC A-⊤ A-abs α))
 
   ◯ᶜ-Abstractionᶜ : ∀ {A-⊤ A-abs α} → ◯ᶜ (Abstractionᶜ A-⊤ A-abs α) ≡ ◯ᶜ A-abs
-  ◯ᶜ-Abstractionᶜ {A-⊤} {A-abs} {α} = {!   !}
-  -- cong ⟨_⟩ᶜ (𝒞-glue◦-path (Abstractionᶜ-FRAC A-⊤ A-abs α))
+  ◯ᶜ-Abstractionᶜ {A-⊤} {A-abs} {α} =
+    cong ⟨_⟩ᶜ (𝒞-glue◦-path (Abstractionᶜ-FRAC A-⊤ A-abs α))
 
   squareᶜ'-charge
     : ∀ {A-⊤ A-abs α c}

@@ -21,13 +21,10 @@ opaque
   Abstractionᶜ A-⊤ A-abs α = 𝒞-fromFRAC (Abstractionᶜ-FRAC A-⊤ A-abs α)
 
   Abstractionᶜ-id : Abstractionᶜ A A idᶜ ≡ A
-  Abstractionᶜ-id {A} =
-    cong 𝒞-fromFRAC F-path ∙ 𝒞-glue-fracture-retract A
+  Abstractionᶜ-id {A} = cong 𝒞-fromFRAC F-path ∙ 𝒞-glue-fracture-retract A
     where
       F-path : Abstractionᶜ-FRAC A A idᶜ ≡ 𝒞-toFRAC A
-      F-path i .A• = ●ᶜ• A
-      F-path i .A◦ = ◯ᶜ◦ A
-      F-path i .α• = ●ᶜ.map (idᶜ⨾ᶜf≡f η◦ᶜ i)
+      F-path = 𝒞-FRAC-path refl refl (cong ●ᶜ.map (idᶜ⨾ᶜf≡f η◦ᶜ))
 
   glue-path
     : ∀ {A-⊤ A-abs α}
@@ -52,7 +49,6 @@ opaque
     → ((a-⊤ : U A-⊤) → U β (U f-⊤ a-⊤) ≡ U f-abs (U α a-⊤))
     → Abstractionᶜ A-⊤ A-abs α ⊸ Abstractionᶜ B-⊤ B-abs β
   squareᶜ' {α = α} {β = β} f-⊤ f-abs f-coherence = {!   !}
-  -- squareᶜ' {α = α} {β = β} f-⊤ f-abs f-coherence =
   --   Glueᶜ.squareᶜ
   --     (●ᶜ.map f-⊤)
   --     (◯ᶜ.map f-abs)
@@ -74,8 +70,7 @@ opaque
     → 𝒞-fromFRAC (Abstractionᶜ-FRAC A-⊤ A-abs α)
         ⊸ 𝒞-fromFRAC (Abstractionᶜ-FRAC B-⊤ B-abs β)
   squareᶜ'-FRAC f-⊤ f-abs f-coherence = {!   !}
-  -- squareᶜ'-FRAC f-⊤ f-abs f-coherence =
-  --   squareᶜ' f-⊤ f-abs f-coherence
+--     squareᶜ' f-⊤ f-abs f-coherence
 
 opaque
   unfolding Abstractionᶜ
@@ -148,21 +143,22 @@ opaque
           ⊸ ◯[Abstractionᶜ≡A-abs] {B-⊤} {B-abs} {β} abs i)
       (squareᶜ' f-⊤ f-abs f-coh)
       f-abs
-  ◯[squareᶜ'≡f-abs] {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} {f-⊤} {f-abs} {f-coh} abs = {!   !}
-  -- ◯[squareᶜ'≡f-abs] {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} {f-⊤} {f-abs} {f-coh} abs =
-  --   ⊸-path
-  --     (◯[Abstractionᶜ≡A-abs] {A-⊤} {A-abs} {α} abs)
-  --     (◯[Abstractionᶜ≡A-abs] {B-⊤} {B-abs} {β} abs)
-  --     (ua→
-  --       {e =
-  --         ( abstraction-open-eval {A-⊤} {A-abs} {α} abs .U
-  --         , abstraction-open-eval-equiv {A-⊤} {A-abs} {α} abs)}
-  --       {B = λ i → U (◯[Abstractionᶜ≡A-abs] {B-⊤} {B-abs} {β} abs i)}
-  --       (λ _ →
-  --         ua-gluePath
-  --           ( abstraction-open-eval {B-⊤} {B-abs} {β} abs .U
-  --           , abstraction-open-eval-equiv {B-⊤} {B-abs} {β} abs)
-  --           refl))
+  ◯[squareᶜ'≡f-abs] {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} {f-⊤} {f-abs} {f-coh} abs =
+    ⊸-path
+      (◯[Abstractionᶜ≡A-abs] {A-⊤} {A-abs} {α} abs)
+      (◯[Abstractionᶜ≡A-abs] {B-⊤} {B-abs} {β} abs)
+      {{! squareᶜ' f-⊤ f-abs f-coh  !}}
+      {f-abs}
+      (ua→
+        {e =
+          ( abstraction-open-eval {A-⊤} {A-abs} {α} abs .U
+          , abstraction-open-eval-equiv {A-⊤} {A-abs} {α} abs)}
+        {B = λ i → U (◯[Abstractionᶜ≡A-abs] {B-⊤} {B-abs} {β} abs i)}
+        (λ _ →
+          ua-gluePath
+            ( abstraction-open-eval {B-⊤} {B-abs} {β} abs .U
+            , abstraction-open-eval-equiv {B-⊤} {B-abs} {β} abs)
+            refl))
 
 triangle : ∀ {A-⊤ A-abs α B}
   → A-abs ⊸ B
