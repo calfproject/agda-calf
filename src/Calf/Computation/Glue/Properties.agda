@@ -81,6 +81,4 @@ fracture-map-fracture {A} {B} f a i .•→◦ =
   ∙ 𝒞-glue-fracture-retract B
   where
     F-path : 𝒞-toFRAC A ≡ 𝒞-toFRAC B
-    F-path i .A• = ●ᶜ.𝒞•-path p• i
-    F-path i .A◦ = ◯ᶜ.𝒞◦-path p◦ i
-    F-path i .α• = pα i
+    F-path = 𝒞-FRAC-path (●ᶜ.𝒞•-path p•) (◯ᶜ.𝒞◦-path p◦) pα
