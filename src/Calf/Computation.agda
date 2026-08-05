@@ -39,6 +39,9 @@ open _⊸_ public
 isEquivᶜ : (A ⊸ B) → 𝒱
 isEquivᶜ f = isEquiv (U f)
 
+_≃ᶜ_ : 𝒞 → 𝒞 → 𝒱
+A ≃ᶜ B = Σ[ f ∈ A ⊸ B ] isEquivᶜ f
+
 idᶜ : A ⊸ A
 idᶜ .U a = a
 idᶜ .charge _ _ = refl
@@ -208,3 +211,23 @@ module _ where
 
 strᶜ : ∀ {B} → (A : 𝒞WithStr B) → B ⟨ A ⟩ᶜ
 strᶜ = snd
+
+record NatEquiv (A B : 𝒞) : 𝒱₁ where
+  field
+    at : (C : 𝒞) → (A ⊸ C) ≃ (B ⊸ C)
+    natural
+      : ∀ {C D} (f : A ⊸ C) (g : C ⊸ D)
+      → equivFun (at D) (f ⨾ᶜ g) ≡ equivFun (at C) f ⨾ᶜ g
+
+yoneda : NatEquiv A B ≡ (A ≡ B)
+yoneda {A} {B} = isoToPath (iso fwd bwd {!   !} {!   !})
+  where
+    open NatEquiv
+    open import Cubical.Foundations.Univalence
+
+    fwd : NatEquiv A B → (A ≡ B)
+    fwd h = 𝒞-path (isoToPath {! iso (invEq (h .at B) idᶜ) ? ? ?  !}) {!   !}
+
+    bwd : (A ≡ B) → NatEquiv A B
+    bwd h .at C = pathToEquiv (cong (_⊸ C) h)
+    bwd h .natural f g = {!   !}

@@ -27,25 +27,43 @@ caseᶜ f g .U ab = elim (f .U) (g .U) ab
 caseᶜ f g .charge c (inj₁ a) = f .charge c a
 caseᶜ f g .charge c (inj₂ b) = g .charge c b
 
+open import Calf.Value.Product
+
+case-universal : (A ⊸ C) × (B ⊸ C) ≡ (A +ᶜ B ⊸ C)
+case-universal = isoToPath (iso fwd bwd sect retr)
+  where
+    fwd : (A ⊸ C) × (B ⊸ C) → (A +ᶜ B ⊸ C)
+    fwd (ac , bc) = caseᶜ ac bc
+
+    bwd : (A +ᶜ B ⊸ C) → (A ⊸ C) × (B ⊸ C)
+    bwd abc = inj₁ᶜ ⨾ᶜ abc , inj₂ᶜ ⨾ᶜ abc
+
+    sect : ∀ a → fwd (bwd a) ≡ a
+    sect a = {!  !}
+
+    retr : ∀ z → bwd (fwd z) ≡ z
+    retr = {!   !}
+
 open import Calf.Computation.Credit
 
 ▷A+▷B≡▷[A+B] : ∀ c → ((▷[ c ] A) +ᶜ (▷[ c ] B)) ≡ (▷[ c ] (A +ᶜ B))
-▷A+▷B≡▷[A+B] c = conservativity fwd fwd-equiv
-  where
-    fwd : ((▷[ c ] A) +ᶜ (▷[ c ] B)) ⊸ (▷[ c ] (A +ᶜ B))
-    fwd = caseᶜ (▷-map inj₁ᶜ) (▷-map inj₂ᶜ)
+▷A+▷B≡▷[A+B] c = transport yoneda {!   !}
+  -- conservativity fwd fwd-equiv
+  -- where
+  --   fwd : ((▷[ c ] A) +ᶜ (▷[ c ] B)) ⊸ (▷[ c ] (A +ᶜ B))
+  --   fwd = caseᶜ (▷-map inj₁ᶜ) (▷-map inj₂ᶜ)
 
-    fwd-equiv : isEquivᶜ fwd
-    fwd-equiv = isoToIsEquiv (iso (fwd .U) inv sect retr)
-      where
-        inv : U (▷[ c ] (A +ᶜ B)) → U ((▷[ c ] A) +ᶜ (▷[ c ] B))
-        inv a = {!   !}
+  --   fwd-equiv : isEquivᶜ fwd
+  --   fwd-equiv = isoToIsEquiv (iso (fwd .U) inv sect retr)
+  --     where
+  --       inv : U (▷[ c ] (A +ᶜ B)) → U ((▷[ c ] A) +ᶜ (▷[ c ] B))
+  --       inv a = {!    !}
 
-        sect : ∀ a → fwd .U (inv a) ≡ a
-        sect a = {!  !}
+  --       sect : ∀ a → fwd .U (inv a) ≡ a
+  --       sect a = {!  !}
 
-        retr : ∀ z → inv (fwd .U z) ≡ z
-        retr = {!   !}
+  --       retr : ∀ z → inv (fwd .U z) ≡ z
+  --       retr = {!   !}
 
 open import Calf.Computation.Tensor
 open import Cubical.HITs.SetTruncation renaming (map to map')
