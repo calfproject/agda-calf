@@ -282,7 +282,7 @@ module Dequeue where
   opaque
     unfolding Abstractionᶜ
 
-    dequeue'-fst-glue : U BLQ → fromFRAC (toFRAC ℕ)
+    dequeue'-fst-glue : U BLQ → FractureGlue ℕ
     dequeue'-fst-glue =
       square'
         (λ bq → fst (dequeueᴮ .U bq))
@@ -300,7 +300,7 @@ module Dequeue where
     dequeueᴮ-fst-●-charge c (∗ p) = refl
     dequeueᴮ-fst-●-charge c (law bq p i) =
       isProp→PathP
-        (λ i → ●-preserves-isSet isSetℕ
+        (λ i → isSet● isSetℕ
           (●.map (λ bq → fst (dequeueᴮ .U bq)) (●ᶜ BQ .charge c (law bq p i)))
           (●.map (λ bq → fst (dequeueᴮ .U bq)) (law bq p i)))
         (cong η• (cong fst (dequeueᴮ .charge c bq)))
@@ -320,7 +320,7 @@ module Dequeue where
     dequeue'-fst-glue-charge c q i .◦ = dequeueᴸ-fst-◯-charge c (q .◦) i
     dequeue'-fst-glue-charge c q i .•→◦ =
       isProp→PathP
-        (λ i → ●-preserves-isSet (◯-preserves-isSet isSetℕ)
+        (λ i → isSet● (isSet◯ isSetℕ)
           (●.map η◦ (dequeueᴮ-fst-●-charge c (q .•) i))
           (η• (dequeueᴸ-fst-◯-charge c (q .◦) i)))
         (dequeue'-fst-glue (BLQ .charge c q) .•→◦)
