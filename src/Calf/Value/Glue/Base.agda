@@ -27,12 +27,13 @@ Glue-pullback : ∀ {X• X◦ χ•} →
   Glue X• X◦ χ• ≡ (Σ[ (x◦ , x•) ∈ ⟨ X◦ ⟩ × ⟨ X• ⟩ ] (η• x◦ ≡ χ• x•))
 Glue-pullback = ua Glue-pullback-≃
 
-isSetGlue : ∀ {X• X◦ χ•} → isSet ⟨ X• ⟩ → isSet ⟨ X◦ ⟩ → isSet (Glue X• X◦ χ•)
-isSetGlue isSetX• isSetX◦ =
-  subst isSet (sym Glue-pullback) $
-  isSetΣ
-    (isSet× isSetX◦ isSetX•)
-    λ _ → isProp→isSet (isSet● isSetX◦ _ _)
+opaque
+  isSetGlue : ∀ {X• X◦ χ•} → isSet ⟨ X• ⟩ → isSet ⟨ X◦ ⟩ → isSet (Glue X• X◦ χ•)
+  isSetGlue isSetX• isSetX◦ =
+    subst isSet (sym Glue-pullback) $
+    isSetΣ
+      (isSet× isSetX◦ isSetX•)
+      λ _ → isProp→isSet (isSet● isSetX◦ _ _)
 
 record 𝒱-FRACTURE : 𝒱₁ where
   field
