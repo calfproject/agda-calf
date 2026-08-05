@@ -2,6 +2,7 @@ module Calf.Computation.Tensor.Base where
 
 open import Calf.Core.Cost
 open import Calf.Value
+open import Calf.Value.Nat
 open import Calf.Computation
 
 open import Cubical.HITs.SetTruncation
@@ -12,6 +13,9 @@ open import Cubical.HITs.SetTruncation
 ⊤ .charge = _+ℂ_
 ⊤ .charge/0 = +ℂ-identityˡ _
 ⊤ .charge/+ = +ℂ-assoc _ _ _
+
+trivᶜ : U ⊤
+trivᶜ = 0
 
 module _ where
   data _⊛_ (A B : 𝒞) : 𝒱 where
@@ -63,6 +67,14 @@ module _ where
     ⊛-≡ squash₂ (map (charge⊛ (c₁ +ℂ c₂))) (λ z → map (charge⊛ c₁) (map (charge⊛ c₂) z))
       (λ a b → cong (λ z → ∣ inj {A} z b ∣₂) (A .charge/+ {a} {c₁} {c₂}))
       x
+
+  ⊗ᵏ : ℕ → 𝒞 → 𝒞
+  ⊗ᵏ zero A = ⊤
+  ⊗ᵏ (suc k) A = A ⊗ (⊗ᵏ k A)
+
+  ⊗ᵏ' : ℕ → (ℕ → 𝒞) → 𝒞
+  ⊗ᵏ' zero Af = ⊤
+  ⊗ᵏ' (suc k) Af = (Af k) ⊗ (⊗ᵏ' k Af)
 
   _∥_ : U A → U B → U (A ⊗ B)
   a ∥ b = ∣ inj a b ∣₂
@@ -135,6 +147,8 @@ module _ where
     fwd-equiv : isEquivᶜ fwd
     fwd-equiv = {!   !}
 
+⊗-identityˡ : ⊤ ⊗ A ≡ A
+⊗-identityˡ = ⊗-comm ∙ ⊗-identityʳ
 
 ⊗-assoc : A ⊗ (B ⊗ C) ≡ (A ⊗ B) ⊗ C
 ⊗-assoc = {!   !}

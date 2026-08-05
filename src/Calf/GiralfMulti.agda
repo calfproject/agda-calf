@@ -266,6 +266,16 @@ module _ where
       k' = subst (_⊸ _) (▷A+▷B≡▷[A+B] q₂ ∙ cong (▷[ q₂ ]_) A⊗C+B⊗C≡[A+B]⊗C) (caseᶜ e₁ e₂)
 
 module _ where
+  trivᴳ : cmpᴳ ⊤
+  trivᴳ = cmp→cmpᴳ trivᶜ
+
+  checkᴳ : Δ ≡ Δ₁ ⊔ Δ₂
+    → q ⋎₂ (q₁ , q₂)
+    → Δ₁ , q₁ ⊢ᵐ ⊤
+    → Δ₂ , q₂ ⊢ᵐ C
+    → Δ , q ⊢ᵐ C
+  checkᴳ S s e k = cutᴳ S s e (subst (λ a → ▷[ _ ] a ⊸ _) (sym ⊗-identityˡ) k)
+
   tensorᴳ : Δ ≡ Δ₁ ⊔ Δ₂
     → q ⋎₂ (q₁ , q₂)
     → Δ₁ , q₁ ⊢ᵐ A
@@ -278,4 +288,4 @@ module _ where
     → Δ₁ , q₁ ⊢ᵐ A ⊗ B
     → A ∷ B ∷ Δ₂ , q₂ ⊢ᵐ C
     → Δ , q ⊢ᵐ C
-  splitᴳ {q₂ = q₂} S s e k = cutᴳ S s e (subst (_⊸ _) (cong (▷[ q₂ ]_) ⊗-assoc) k)
+  splitᴳ {q₂ = q₂} {C = C} S s e k = cutᴳ S s e (subst (λ a → ▷[ q₂ ] a ⊸ C) ⊗-assoc k)
