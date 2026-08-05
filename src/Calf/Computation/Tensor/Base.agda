@@ -17,6 +17,15 @@ open import Cubical.HITs.SetTruncation
 trivᶜ : U ⊤
 trivᶜ = 0
 
+cmp : 𝒞 → 𝒱
+cmp = ⊤ ⊸_
+
+cmp→U : cmp A → U A
+cmp→U e = e .U 0ℂ
+
+U→cmp : U A → cmp A
+U→cmp {A} e = record { U = flip (A .charge) e ; charge = λ _ _ → A .charge/+ }
+
 module _ where
   data _⊛_ (A B : 𝒞) : 𝒱 where
     inj : (a : U A) (b : U B) → A ⊛ B
@@ -68,14 +77,6 @@ module _ where
       (λ a b → cong (λ z → ∣ inj {A} z b ∣₂) (A .charge/+ {a} {c₁} {c₂}))
       x
 
-  ⊗ᵏ : ℕ → 𝒞 → 𝒞
-  ⊗ᵏ zero A = ⊤
-  ⊗ᵏ (suc k) A = A ⊗ (⊗ᵏ k A)
-
-  ⊗ᵏ' : ℕ → (ℕ → 𝒞) → 𝒞
-  ⊗ᵏ' zero Af = ⊤
-  ⊗ᵏ' (suc k) Af = (Af k) ⊗ (⊗ᵏ' k Af)
-
   _∥_ : U A → U B → U (A ⊗ B)
   a ∥ b = ∣ inj a b ∣₂
 
@@ -99,6 +100,14 @@ module _ where
           (λ z → mk .U ((A₁ ⊗ A₂) .charge c z))
           (λ z → (B₁ ⊗ B₂) .charge c (mk .U z))
           (λ a₁ a₂ → cong (λ z → ∣ inj z (g .U a₂) ∣₂) (f .charge c a₁))
+
+⊗ᵏ : ℕ → 𝒞 → 𝒞
+⊗ᵏ zero A = ⊤
+⊗ᵏ (suc k) A = A ⊗ (⊗ᵏ k A)
+
+⊗ᵏ' : ℕ → (ℕ → 𝒞) → 𝒞
+⊗ᵏ' zero Af = ⊤
+⊗ᵏ' (suc k) Af = (Af k) ⊗ (⊗ᵏ' k Af)
 
 ⊗-identityʳ : A ⊗ ⊤ ≡ A
 ⊗-identityʳ {A = A} = conservativity fwd fwd-equiv

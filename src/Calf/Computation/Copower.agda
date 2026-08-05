@@ -18,3 +18,8 @@ syntax Σᶜ X (λ x → A) = [ x ∈ X ] ⋊ A
 
 _⋊_ : 𝒱ₛ → 𝒞 → 𝒞
 X ⋊ A = [ _ ∈ X ] ⋊ A
+
+open import Calf.Computation.Tensor.Base
+
+A⊗[X⋊B]≡X⋊[A⊗B] : ∀ {X : 𝒱ₛ} {A : 𝒞} {B : (⟨ X ⟩ → 𝒞)} → (A ⊗ Σᶜ X B) ≡ (Σᶜ X λ x → A ⊗ B x)
+A⊗[X⋊B]≡X⋊[A⊗B] = {!   !}
