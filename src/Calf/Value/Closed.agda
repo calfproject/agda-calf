@@ -75,23 +75,24 @@ join (η• x) = x
 join (∗ abs) = ∗ abs
 join (law x abs i) = ◯[x•≡∗] abs x i
 
-isModal● : isModal (● X)
-isModal● = isoToIsEquiv (iso η• join sec ret)
-  where
-    ret : (x• : ● X) → join (η• x•) ≡ x•
-    ret x = refl
+opaque
+  isModal● : isModal (● X)
+  isModal● = isoToIsEquiv (iso η• join sec ret)
+    where
+      ret : (x• : ● X) → join (η• x•) ≡ x•
+      ret x = refl
 
-    sec : (x•• : ● (● X)) → η• (join x••) ≡ x••
-    sec (η• x•) = refl
-    sec (∗ abs) = law (∗ abs) abs
-    sec (law x• abs i) =
-      isProp→PathP
-        (λ i → isProp→isSet (◯-isProp● abs)
-          (η• (◯[x•≡∗] abs x• i))
-          (law x• abs i))
-        refl
-        (law (∗ abs) abs)
-        i
+      sec : (x•• : ● (● X)) → η• (join x••) ≡ x••
+      sec (η• x•) = refl
+      sec (∗ abs) = law (∗ abs) abs
+      sec (law x• abs i) =
+        isProp→PathP
+          (λ i → isProp→isSet (◯-isProp● abs)
+            (η• (◯[x•≡∗] abs x• i))
+            (law x• abs i))
+          refl
+          (law (∗ abs) abs)
+          i
 
 opaque
   isModal●→isConnected◯ : isModal X → ◯.isConnected X

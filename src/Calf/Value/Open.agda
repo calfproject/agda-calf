@@ -39,8 +39,9 @@ isModal X = isEquiv (η◦ {X = X})
     ret : (x : ◯' X) → join' (η◦ x) ≡ x
     ret x = refl
 
-isModal◯ : isModal (◯ X)
-isModal◯ = ◯'-isModal
+opaque
+  isModal◯ : isModal (◯ X)
+  isModal◯ = ◯'-isModal
 
 ◯Modality : Modality _
 ◯Modality .Modality.◯ = ◯

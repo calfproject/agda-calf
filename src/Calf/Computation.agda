@@ -187,9 +187,6 @@ charge-path-inv
 charge-path-inv e chargeX chargeY h =
   funExt λ c → ua→ λ y → ua-gluePath (invEquiv e) (h c y)
 
--- opaque: consumers only ever use this as a path value (its endpoints reduce
--- type-directedly), and unfolding its ua→ implementation at a free interval
--- variable produces enormous normal forms in downstream record paths
 opaque
   charge-path
     : {X Y : 𝒱}
