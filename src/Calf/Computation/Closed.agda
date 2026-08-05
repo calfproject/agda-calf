@@ -17,29 +17,23 @@ open import Calf.Computation
 ●ᶜ : 𝒞 → 𝒞
 ●ᶜ A .U = ● (A .U)
 ●ᶜ A .is-set = isSet● (A .is-set)
-●ᶜ A .charge c (η• a) = η• (A .charge c a)
-●ᶜ A .charge c (∗ p) = ∗ p
-●ᶜ A .charge c (law a p i) = law (A .charge c a) p i
-●ᶜ A .charge/0 {η• a} = cong η• (A .charge/0)
-●ᶜ A .charge/0 {∗ p} = refl
-●ᶜ A .charge/0 {law a p i} =
-  isProp→PathP
-    (λ i → ●ᶜ A .is-set
-      (●ᶜ A .charge 0ℂ (law a p i))
-      (law a p i))
-    (cong η• (A .charge/0))
-    refl
-    i
-●ᶜ A .charge/+ {η• a} = cong η• (A .charge/+)
-●ᶜ A .charge/+ {∗ p} = refl
-●ᶜ A .charge/+ {law a p i} {c₁} {c₂} =
-  isProp→PathP
-    (λ i → ●ᶜ A .is-set
-      (●ᶜ A .charge (c₁ +ℂ c₂) (law a p i))
-      (●ᶜ A .charge c₁ (●ᶜ A .charge c₂ (law a p i))))
-    (cong η• (A .charge/+))
-    refl
-    i
+●ᶜ A .charge = ●.map ∘ A .charge
+●ᶜ A .charge/0 {a•} = lemma
+  where
+    opaque
+      lemma : ●ᶜ A .charge 0ℂ a• ≡ a•
+      lemma =
+        ●.elim (λ a• → ●-≡-isModal (●ᶜ A .charge 0ℂ a•) a•)
+          (λ a → cong η• (A .charge/0 {a}))
+          a•
+●ᶜ A .charge/+ {a•} {c₁} {c₂} = lemma
+  where
+    opaque
+      lemma : ●ᶜ A .charge (c₁ +ℂ c₂) a• ≡ ●ᶜ A .charge c₁ (●ᶜ A .charge c₂ a•)
+      lemma =
+        ●.elim (λ a• → ●-≡-isModal (●ᶜ A .charge (c₁ +ℂ c₂) a•) (●ᶜ A .charge c₁ (●ᶜ A .charge c₂ a•)))
+          (λ a → cong η• (A .charge/+ {a} {c₁} {c₂}))
+          a•
 
 η•ᶜ : A ⊸ ●ᶜ A
 η•ᶜ .U = η•
@@ -66,90 +60,46 @@ U• A• .snd = A• .snd
 
 map : (A ⊸ B) → (●ᶜ A ⊸ ●ᶜ B)
 map f .U = ●.map (f .U)
-map f .charge c (η• a) = cong η• (f .charge c a)
-map f .charge c (∗ p) = refl
-map {A} {B} f .charge c (law a p i) =
-  isProp→PathP
-    (λ i → ●ᶜ B .is-set
-      (map f .U (●ᶜ A .charge c (law a p i)))
-      (●ᶜ B .charge c (map f .U (law a p i))))
-    (cong η• (f .charge c a))
-    refl
-    i
-
-●ᶜ-charge-map
-  : (c : ℂ) (a• : U (●ᶜ A))
-  → ●ᶜ A .charge c a• ≡ ●.map (A .charge c) a•
-●ᶜ-charge-map _ =
-  ●.elim
-    (λ _ → Modality.◯-=-isModal ●Modality _ _)
-    (λ _ → refl)
+map f .charge c =
+  ●.elim (λ _ → ●-≡-isModal _ _) (λ a → cong η• (f .charge c a))
 
 map-∘ : (f : A ⊸ B) (g : B ⊸ C) → map f ⨾ᶜ map g ≡ map (f ⨾ᶜ g)
 map-∘ f g = ⊸-path refl refl (funExt (●.map-∘ (f .U) (g .U)))
 
-map-open : ⟨ ABS ⟩ → (f g : A ⊸ B) → map f ≡ map g
-map-open {A} {B} p f g =
-  ⊸-path
-    {A₀ = ●ᶜ A}
-    {A₁ = ●ᶜ A}
-    {B₀ = ●ᶜ B}
-    {B₁ = ●ᶜ B}
-    refl
-    refl
-    (funExt λ a• →
-      ◯-isProp● p
-        (map {A = A} {B = B} f .U a•)
-        (map {A = A} {B = B} g .U a•))
+opaque
+  map-open : ⟨ ABS ⟩ → (f g : A ⊸ B) → map f ≡ map g
+  map-open {A} {B} p f g =
+    ⊸-path
+      {A₀ = ●ᶜ A}
+      {A₁ = ●ᶜ A}
+      {B₀ = ●ᶜ B}
+      {B₁ = ●ᶜ B}
+      refl
+      refl
+      (funExt λ a• →
+        ◯-isProp● p
+          (map {A = A} {B = B} f .U a•)
+          (map {A = A} {B = B} g .U a•))
 
 join : ●ᶜ (●ᶜ A) ⊸ ●ᶜ A
 join .U = ●.join
-join .charge c (η• a•) = refl
-join .charge c (∗ abs) = refl
-join {A = A} .charge c (law a• abs i) =
-  isProp→PathP
-    (λ i → ●ᶜ A .is-set
-      (join {A = A} .U (●ᶜ (●ᶜ A) .charge c (law a• abs i)))
-      (●ᶜ A .charge c (join {A = A} .U (law a• abs i))))
-    refl
-    refl
-    i
+join .charge c =
+  ●.elim (λ _ → ●-≡-isModal _ _) (λ _ → refl)
 
 bind : (A ⊸ ●ᶜ B) → (●ᶜ A ⊸ ●ᶜ B)
 bind k = map k ⨾ᶜ join
 
-bind-map : (k : A ⊸ ●ᶜ B) (f : B ⊸ C) → bind k ⨾ᶜ map f ≡ bind (k ⨾ᶜ map f)
-bind-map {A = A} {B = B} {C = C} k f =
-  ⊸-path refl refl (funExt h)
-  where
-    h : (a• : U (●ᶜ A)) →
-      (bind k ⨾ᶜ map f) .U a• ≡ bind (k ⨾ᶜ map f) .U a•
-    h (η• a) = refl
-    h (∗ p) = refl
-    h (law a p i) =
-      isProp→PathP
-        (λ i → ●ᶜ C .is-set
-          ((bind k ⨾ᶜ map f) .U (law a p i))
-          (bind (k ⨾ᶜ map f) .U (law a p i)))
-        refl
-        refl
-        i
+opaque
+  bind-map : (k : A ⊸ ●ᶜ B) (f : B ⊸ C) → bind k ⨾ᶜ map f ≡ bind (k ⨾ᶜ map f)
+  bind-map k f =
+    ⊸-path refl refl
+      (funExt (●.elim (λ _ → ●-≡-isModal _ _) (λ _ → refl)))
 
-bind-η• : (f : A ⊸ B) → bind (f ⨾ᶜ η•ᶜ) ≡ map f
-bind-η• {A = A} {B = B} f =
-  ⊸-path refl refl (funExt h)
-  where
-    h : (a• : U (●ᶜ A)) → bind (f ⨾ᶜ η•ᶜ) .U a• ≡ map f .U a•
-    h (η• a) = refl
-    h (∗ p) = refl
-    h (law a p i) =
-      isProp→PathP
-        (λ i → ●ᶜ B .is-set
-          (bind (f ⨾ᶜ η•ᶜ) .U (law a p i))
-          (map f .U (law a p i)))
-        refl
-        refl
-        i
+opaque
+  bind-η• : (f : A ⊸ B) → bind (f ⨾ᶜ η•ᶜ) ≡ map f
+  bind-η• f =
+    ⊸-path refl refl
+      (funExt (●.elim (λ _ → ●-≡-isModal _ _) (λ _ → refl)))
 
 ●ᶜ-rec : (B• : 𝒞•) → (A ⊸ ⟨ B• ⟩ᶜ) → (●ᶜ A ⊸ ⟨ B• ⟩ᶜ)
 ●ᶜ-rec B• g .U = ●.elim (λ _ → strᶜ B•) (g .U)
@@ -166,19 +116,12 @@ bind-η• {A = A} {B = B} f =
 ⊸-precomp-η•ᶜ-≃ : {A : 𝒞} (B• : 𝒞•) → (●ᶜ A ⊸ ⟨ B• ⟩ᶜ) ≃ (A ⊸ ⟨ B• ⟩ᶜ)
 ⊸-precomp-η•ᶜ-≃ B• = (η•ᶜ ⨾ᶜ_) , ⊸-precomp-η•ᶜ-isEquiv B•
 
-●ᶜ-map-CHARGE
-  : (c : ℂ) (a• : U (●ᶜ A))
-  → map (CHARGE {A = A} c) .U a• ≡ ●ᶜ A .charge c a•
-●ᶜ-map-CHARGE c (η• a) = refl
-●ᶜ-map-CHARGE c (∗ p) = refl
-●ᶜ-map-CHARGE {A = A} c (law a p i) =
-  isProp→PathP
-    (λ i → ●ᶜ A .is-set
-      (map (CHARGE {A = A} c) .U (law a p i))
-      (●ᶜ A .charge c (law a p i)))
-    refl
-    refl
-    i
+opaque
+  ●ᶜ-map-CHARGE
+    : (c : ℂ) (a• : U (●ᶜ A))
+    → map (CHARGE {A = A} c) .U a• ≡ ●ᶜ A .charge c a•
+  ●ᶜ-map-CHARGE c =
+    ●.elim (λ _ → ●-≡-isModal _ _) (λ _ → refl)
 
 module _ {A B C : 𝒞} where
   open import Calf.Computation.Pullback

@@ -135,13 +135,20 @@ opaque
 ●Modality .Modality.◯-elim {X} {Y} isModalY f =
   ind Y
     f
-    (λ abs → invIsEq (isModalY (∗ abs)) (∗ abs))
-    (λ x abs →
-      isProp→PathP
-        (λ i → isContr→isProp
-          (◯.isConnected→◯isContr (isModal●→isConnected◯ (isModalY (law x abs i))) abs))
-        (f x)
-        (invIsEq (isModalY (∗ abs)) (∗ abs)))
+    ∗-case
+    law-case
+  where
+    opaque
+      ∗-case : (abs : ⟨ ABS ⟩) → Y (∗ abs)
+      ∗-case abs = invIsEq (isModalY (∗ abs)) (∗ abs)
+
+      law-case : (x : X) (abs : ⟨ ABS ⟩) → PathP (λ i → Y (law x abs i)) (f x) (∗-case abs)
+      law-case x abs =
+        isProp→PathP
+          (λ i → isContr→isProp
+            (◯.isConnected→◯isContr (isModal●→isConnected◯ (isModalY (law x abs i))) abs))
+          (f x)
+          (invIsEq (isModalY (∗ abs)) (∗ abs))
 ●Modality .Modality.◯-elim-β isModalY f x = refl
 ●Modality .Modality.◯-=-isModal x• x•' =
   isConnected◯→isModal● (isContrΠ λ abs → isContr→isContrPath (◯-isConnected abs) x• x•')
