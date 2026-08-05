@@ -98,6 +98,10 @@ isConnected→◯isContr : isConnected X → ◯ (isContr X)
 isConnected→◯isContr c abs .fst = c .fst abs
 isConnected→◯isContr c abs .snd x = funExt⁻ (c .snd (λ _ → x)) abs
 
+◯isContr→isConnected : ◯ (isContr X) → isConnected X
+◯isContr→isConnected h .fst abs = h abs .fst
+◯isContr→isConnected h .snd x◦ = funExt λ abs → h abs .snd (x◦ abs)
+
 ◯isModal : ⟨ ABS ⟩ → isModal X
 ◯isModal abs =
   isoToIsEquiv (iso η◦ (λ f → f abs)
