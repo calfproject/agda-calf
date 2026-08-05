@@ -61,7 +61,7 @@ U• A• .snd = A• .snd
 map : (A ⊸ B) → (●ᶜ A ⊸ ●ᶜ B)
 map f .U = ●.map (f .U)
 map f .charge c =
-  ●.elim (λ _ → ●-≡-isModal _ _) (λ a → cong η• (f .charge c a))
+  ●.elim′ (λ _ → ●-≡-isModal _ _) (λ a → cong η• (f .charge c a))
 
 map-∘ : (f : A ⊸ B) (g : B ⊸ C) → map f ⨾ᶜ map g ≡ map (f ⨾ᶜ g)
 map-∘ f g = ⊸-path refl refl (funExt (●.map-∘ (f .U) (g .U)))
@@ -84,7 +84,7 @@ opaque
 join : ●ᶜ (●ᶜ A) ⊸ ●ᶜ A
 join .U = ●.join
 join .charge c =
-  ●.elim (λ _ → ●-≡-isModal _ _) (λ _ → refl)
+  ●.elim′ (λ _ → ●-≡-isModal _ _) (λ _ → refl)
 
 bind : (A ⊸ ●ᶜ B) → (●ᶜ A ⊸ ●ᶜ B)
 bind k = map k ⨾ᶜ join
@@ -103,7 +103,7 @@ opaque
 
 ●ᶜ-rec : (B• : 𝒞•) → (A ⊸ ⟨ B• ⟩ᶜ) → (●ᶜ A ⊸ ⟨ B• ⟩ᶜ)
 ●ᶜ-rec B• g .U = ●.elim (λ _ → strᶜ B•) (g .U)
-●ᶜ-rec B• g .charge c = ●.elim (λ a• → ●.isModal≡ (strᶜ B•)) (g .charge c)
+●ᶜ-rec B• g .charge c = ●.elim′ (λ a• → ●.isModal≡ (strᶜ B•)) (g .charge c)
 
 ⊸-precomp-η•ᶜ-isEquiv : {A : 𝒞} (B• : 𝒞•)
   → isEquiv (λ (f : ●ᶜ A ⊸ ⟨ B• ⟩ᶜ) → η•ᶜ ⨾ᶜ f)
@@ -121,7 +121,7 @@ opaque
     : (c : ℂ) (a• : U (●ᶜ A))
     → map (CHARGE {A = A} c) .U a• ≡ ●ᶜ A .charge c a•
   ●ᶜ-map-CHARGE c =
-    ●.elim (λ _ → ●-≡-isModal _ _) (λ _ → refl)
+    ●.elim′ (λ _ → ●-≡-isModal _ _) (λ _ → refl)
 
 module _ {A B C : 𝒞} where
   open import Calf.Computation.Pullback

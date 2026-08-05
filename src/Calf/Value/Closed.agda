@@ -126,37 +126,38 @@ opaque
     hPropExt (isPropIsEquiv η•) isPropIsContr
       isModal●→isConnected◯ isConnected◯→isModal●
 
+elim : {X : 𝒱} {Y : ● X → 𝒱}
+  → ((x : ● X) → isModal (Y x)) → ((x : X) → Y (η• x)) → (x : ● X) → Y x
+elim {X} {Y} isModalY f =
+  ind Y
+    f
+    (λ abs → invIsEq (isModalY (∗ abs)) (∗ abs))
+    (λ x abs →
+      isProp→PathP
+        (λ i → isContr→isProp
+          (◯.isConnected→◯isContr (isModal●→isConnected◯ (isModalY (law x abs i))) abs))
+        (f x)
+        (invIsEq (isModalY (∗ abs)) (∗ abs)))
+
+opaque
+  elim′ : {X : 𝒱} {Y : ● X → 𝒱}
+    → ((x : ● X) → isModal (Y x)) → ((x : X) → Y (η• x)) → (x : ● X) → Y x
+  elim′ = elim
+
 ●Modality : Modality _
 ●Modality .Modality.◯ = ●
 ●Modality .Modality.η = η•
 ●Modality .Modality.isModal = isModal
 ●Modality .Modality.isPropIsModal = isPropIsEquiv η•
 ●Modality .Modality.◯-isModal = isModal●
-●Modality .Modality.◯-elim {X} {Y} isModalY f =
-  ind Y
-    f
-    ∗-case
-    law-case
-  where
-    opaque
-      ∗-case : (abs : ⟨ ABS ⟩) → Y (∗ abs)
-      ∗-case abs = invIsEq (isModalY (∗ abs)) (∗ abs)
-
-      law-case : (x : X) (abs : ⟨ ABS ⟩) → PathP (λ i → Y (law x abs i)) (f x) (∗-case abs)
-      law-case x abs =
-        isProp→PathP
-          (λ i → isContr→isProp
-            (◯.isConnected→◯isContr (isModal●→isConnected◯ (isModalY (law x abs i))) abs))
-          (f x)
-          (invIsEq (isModalY (∗ abs)) (∗ abs))
+●Modality .Modality.◯-elim = elim
 ●Modality .Modality.◯-elim-β isModalY f x = refl
 ●Modality .Modality.◯-=-isModal x• x•' =
   isConnected◯→isModal● (isContrΠ λ abs → isContr→isContrPath (◯-isConnected abs) x• x•')
 
 open Modality ●Modality public
   renaming
-    ( ◯-elim to elim
-    ; ◯-elim-β to elim-β
+    ( ◯-elim-β to elim-β
     ; ◯-=-isModal to ●-≡-isModal
     ; Π-isModal to isModalΠ
     ; →-isModal to isModal→
