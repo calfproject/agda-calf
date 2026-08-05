@@ -33,7 +33,7 @@ import Calf.Value.Closed using
   ; ∗
   ; law
   ; 𝒱•
-  ; ●-isContr
+  ; ◯-isConnected
   )
 
 {-
@@ -42,9 +42,9 @@ import Calf.Value.Closed using
 -}
 import Calf.Value.Glue using
   ( Glue
-  ; 𝒱-FRAC
-  ; fromFRAC
-  ; toFRAC
+  ; 𝒱-FRACTURE
+  ; 𝒱-Glue
+  ; 𝒱-Fracture
   ; square
   ; fracture-and-gluing
   ; fracture-and-gluing-square
