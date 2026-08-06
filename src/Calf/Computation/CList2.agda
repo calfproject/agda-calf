@@ -41,8 +41,8 @@ opaque
   cfoldr₂ {A = A} {c-lin = c-lin} {c-quad = c-quad} B e[] e∷ =
     cfoldr'
       (λ A' → Σ[ c ∈ ℂ ] (A' ≡ ▷[ c ] A))
-      (λ A' (c-lin' , _) → B c-lin')
-      (λ A' (c-lin' , _) → e[] c-lin')
-      (λ A' (c-lin' , ap') → ((c-quad +ℂ c-lin' , cong (▷[ c-quad ]_) ap' ∙ (sym ▷/+))) ,
+      (λ _ (c-lin' , _) → B c-lin')
+      (λ _ (c-lin' , _) → e[] c-lin')
+      (λ _ (c-lin' , ap') → ((c-quad +ℂ c-lin' , cong (▷[ c-quad ]_) ap' ∙ (sym ▷/+))) ,
         subst (_⊸ _) (sym (▷A⊗B≡▷[A⊗B] c-lin') ∙ cong (_⊗ _) (sym ap')) (e∷ c-lin'))
       (c-lin , refl)

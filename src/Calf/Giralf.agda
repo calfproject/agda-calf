@@ -292,24 +292,26 @@ module _ where
     → (A ∷ [ B ] , p ⊢ B)
     → Δ , q ⊢ CList₁ p A
     → Δ , q ⊢ B
-  foldr₁ᴳ {p = p} e[] e∷ = _⨾ᶜ cfoldr₁ (cmpᴳ→U e[]) (subst (_⊸ _) (cong (▷[ p ]_) (cong (_ ⊗_) ⊗-identityʳ)) e∷)
+  foldr₁ᴳ {B = B} {p = p} e[] e∷ =
+    _⨾ᶜ cfoldr₁ (cmpᴳ→U e[]) (subst (λ C →  ▷[ p ] (_ ⊗ C) ⊸ B) ⊗-identityʳ e∷)
 
--- module _ where
---   nil₂ᴳ : q ⋎₀ → ⊤ , q ⊢ (CList₂ p₁ p₂ X)
---   nil₂ᴳ split = subst (λ x → ▷[ x ] _ ⊸ _) split (U→cmpᴳ cnil₂)
+module _ where
+  nil₂ᴳ : q ⋎₀ → [] , q ⊢ (CList₂ p₁ p₂ A)
+  nil₂ᴳ split = subst (λ x → ▷[ x ] _ ⊸ _) split (U→cmpᴳ cnil₂)
 
---   cons₂ᴳ :
---     q ⋎₂ (p₁ , q')
---     → X
---     → Δ , q' ⊢ CList₂ (p₂ +ℂ p₁) p₂ X
---     → Δ , q ⊢ CList₂ p₁ p₂ X
---   cons₂ᴳ split-q x e =
---     storeᴳ _ split-q e ⨾ᶜ ccons₂ x
+  cons₂ᴳ :
+    Δ ≡ Δ₁ ⊔ Δ₂
+    → q ⋎₂ (p₁ , (q₁ +ℂ q₂))
+    → Δ₁ , q₁ ⊢ A
+    → Δ₂ , q₂ ⊢ CList₂ (p₂ +ℂ p₁) p₂ A
+    → Δ , q ⊢ CList₂ p₁ p₂ A
+  cons₂ᴳ {Δ = Δ} {p₁ = p₁} S s eₕ eₜ = storeᴳ {Δ = Δ} p₁ s (tensorᴳ S refl eₕ eₜ) ⨾ᶜ ccons₂
 
---   foldr₂ᴳ :
---     (A : ℂ → 𝒞)
---     → (∀ r → cmpᴳ (A r))
---     → (∀ r → X → A (p₂ +ℂ r) , r ⊢ A r)
---     → Δ , q ⊢ CList₂ p₁ p₂ X
---     → Δ , q ⊢ A p₁
---   foldr₂ᴳ A e-nil e-cons e = e ⨾ᶜ cfoldr₂ A (cmpᴳ→U ∘ e-nil) e-cons
+  foldr₂ᴳ :
+    (B : ℂ → 𝒞)
+    → (∀ r → cmpᴳ (B r))
+    → (∀ r → A ∷ [ B (p₂ +ℂ r) ] , r ⊢ B r)
+    → Δ , q ⊢ CList₂ p₁ p₂ A
+    → Δ , q ⊢ B p₁
+  foldr₂ᴳ B e[] e∷ =
+    _⨾ᶜ cfoldr₂ B (cmpᴳ→U ∘ e[]) (λ c-lin' → subst (λ C →  ▷[ c-lin' ] (_ ⊗ C) ⊸ _) ⊗-identityʳ (e∷ c-lin'))
