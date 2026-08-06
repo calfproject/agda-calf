@@ -17,9 +17,7 @@ open import Calf.Computation.Power
 
 -- inductively changing computation list
 opaque
-  ⊗ᵏ : (X → 𝒞) → (X → X) → X → ℕ → 𝒞
-  ⊗ᵏ Af xf x₀ zero = ⊤
-  ⊗ᵏ Af xf x₀ (suc k) = Af x₀ ⊗ (⊗ᵏ Af xf (xf x₀) k)
+  unfolding ⊗ᵏ
 
   CList' : (X → 𝒞) → (X → X) → X → 𝒞
   CList' Af xf x₀ = [ n ∈ ℕₛ ] ⋊ ⊗ᵏ Af xf x₀ n

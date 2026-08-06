@@ -25,4 +25,4 @@ opaque
       U B
     → (▷[ c ] (A ⊗ B) ⊸ B)
     → CList₁ c A ⊸ B
-  cfoldr₁ {B} {c} {A} e[] e∷ = cfoldr e[] (subst (_⊸ B) (sym (▷A⊗B≡▷[A⊗B] c)) e∷)
+  cfoldr₁ {B} {c} e[] e∷ = cfoldr e[] (subst (_⊸ B) (sym (▷A⊗B≡▷[A⊗B] c)) e∷)
