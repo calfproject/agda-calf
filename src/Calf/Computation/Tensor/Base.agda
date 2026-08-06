@@ -64,42 +64,46 @@ module _ where
       → ∀ z → f z ≡ g z
     ⊛-≡ isSetY f g p = ∥∥₂-≡ isSetY f g (⊛-elimProp (λ _ → isSetY _ _) p)
 
-  _⊗_ : 𝒞 → 𝒞 → 𝒞
-  (A ⊗ B) .U = ∥ A ⊛ B ∥₂
-  (A ⊗ B) .is-set = squash₂
-  (A ⊗ B) .charge c = map (charge⊛ c)
-  (A ⊗ B) .charge/0 {x} =
-    ⊛-≡ squash₂ (map (charge⊛ 0ℂ)) (λ z → z)
-      (λ a b → cong (λ z → ∣ inj {A} z b ∣₂) (A .charge/0 {a}))
-      x
-  (A ⊗ B) .charge/+ {x} {c₁} {c₂} =
-    ⊛-≡ squash₂ (map (charge⊛ (c₁ +ℂ c₂))) (λ z → map (charge⊛ c₁) (map (charge⊛ c₂) z))
-      (λ a b → cong (λ z → ∣ inj {A} z b ∣₂) (A .charge/+ {a} {c₁} {c₂}))
-      x
+  opaque
+    _⊗_ : 𝒞 → 𝒞 → 𝒞
+    (A ⊗ B) .U = ∥ A ⊛ B ∥₂
+    (A ⊗ B) .is-set = squash₂
+    (A ⊗ B) .charge c = map (charge⊛ c)
+    (A ⊗ B) .charge/0 {x} =
+      ⊛-≡ squash₂ (map (charge⊛ 0ℂ)) (λ z → z)
+        (λ a b → cong (λ z → ∣ inj {A} z b ∣₂) (A .charge/0 {a}))
+        x
+    (A ⊗ B) .charge/+ {x} {c₁} {c₂} =
+      ⊛-≡ squash₂ (map (charge⊛ (c₁ +ℂ c₂))) (λ z → map (charge⊛ c₁) (map (charge⊛ c₂) z))
+        (λ a b → cong (λ z → ∣ inj {A} z b ∣₂) (A .charge/+ {a} {c₁} {c₂}))
+        x
 
-  _∥_ : U A → U B → U (A ⊗ B)
-  a ∥ b = ∣ inj a b ∣₂
+  opaque
+    unfolding _⊗_
 
-  map₂ : ∀ {A₁ A₂ B₁ B₂}
-    → (A₁ ⊸ B₁)
-    → (A₂ ⊸ B₂)
-    → (A₁ ⊗ A₂ ⊸ B₁ ⊗ B₂)
-  map₂ {A₁} {A₂} {B₁} {B₂} f g = mk
-    where
-      h : A₁ ⊛ A₂ → B₁ ⊛ B₂
-      h (inj a₁ a₂) = inj (f .U a₁) (g .U a₂)
-      h (law c a₁ a₂ i) =
-        ( cong (λ z → inj z (g .U a₂)) (f .charge c a₁)
-        ∙ law c (f .U a₁) (g .U a₂)
-        ∙ cong (inj (f .U a₁)) (sym (g .charge c a₂)) ) i
+    _∥_ : U A → U B → U (A ⊗ B)
+    a ∥ b = ∣ inj a b ∣₂
 
-      mk : A₁ ⊗ A₂ ⊸ B₁ ⊗ B₂
-      mk .U = map h
-      mk .charge c =
-        ⊛-≡ squash₂
-          (λ z → mk .U ((A₁ ⊗ A₂) .charge c z))
-          (λ z → (B₁ ⊗ B₂) .charge c (mk .U z))
-          (λ a₁ a₂ → cong (λ z → ∣ inj z (g .U a₂) ∣₂) (f .charge c a₁))
+    map₂ : ∀ {A₁ A₂ B₁ B₂}
+      → (A₁ ⊸ B₁)
+      → (A₂ ⊸ B₂)
+      → (A₁ ⊗ A₂ ⊸ B₁ ⊗ B₂)
+    map₂ {A₁} {A₂} {B₁} {B₂} f g = mk
+      where
+        h : A₁ ⊛ A₂ → B₁ ⊛ B₂
+        h (inj a₁ a₂) = inj (f .U a₁) (g .U a₂)
+        h (law c a₁ a₂ i) =
+          ( cong (λ z → inj z (g .U a₂)) (f .charge c a₁)
+          ∙ law c (f .U a₁) (g .U a₂)
+          ∙ cong (inj (f .U a₁)) (sym (g .charge c a₂)) ) i
+
+        mk : A₁ ⊗ A₂ ⊸ B₁ ⊗ B₂
+        mk .U = map h
+        mk .charge c =
+          ⊛-≡ squash₂
+            (λ z → mk .U ((A₁ ⊗ A₂) .charge c z))
+            (λ z → (B₁ ⊗ B₂) .charge c (mk .U z))
+            (λ a₁ a₂ → cong (λ z → ∣ inj z (g .U a₂) ∣₂) (f .charge c a₁))
 
 ⊗ᵏ : ℕ → 𝒞 → 𝒞
 ⊗ᵏ zero A = ⊤
@@ -109,55 +113,58 @@ module _ where
 ⊗ᵏ' zero Af = ⊤
 ⊗ᵏ' (suc k) Af = (Af k) ⊗ (⊗ᵏ' k Af)
 
-⊗-identityʳ : A ⊗ ⊤ ≡ A
-⊗-identityʳ {A = A} = conservativity fwd fwd-equiv
-  where
-    fwd-U : A ⊛ ⊤ → U A
-    fwd-U (inj a c) = A .charge c a
-    fwd-U (law c' a c i) =
-      ( sym (A .charge/+ {a} {c} {c'})
-      ∙ cong (λ d → A .charge d a) (+ℂ-comm c c') ) i
+opaque
+  unfolding _⊗_
 
-    fwd : A ⊗ ⊤ ⊸ A
-    fwd .U = rec (A .is-set) fwd-U
-    fwd .charge c₀ =
-      ⊛-≡ (A .is-set)
-        (λ z → fwd .U ((A ⊗ ⊤) .charge c₀ z))
-        (λ z → A .charge c₀ (fwd .U z))
-        (λ a c → charge/comm A)
+  ⊗-identityʳ : A ⊗ ⊤ ≡ A
+  ⊗-identityʳ {A = A} = conservativity fwd fwd-equiv
+    where
+      fwd-U : A ⊛ ⊤ → U A
+      fwd-U (inj a c) = A .charge c a
+      fwd-U (law c' a c i) =
+        ( sym (A .charge/+ {a} {c} {c'})
+        ∙ cong (λ d → A .charge d a) (+ℂ-comm c c') ) i
 
-    fwd-equiv : isEquivᶜ fwd
-    fwd-equiv = isoToIsEquiv (iso (fwd .U) inv sect retr)
-      where
-        inv : U A → U (A ⊗ ⊤)
-        inv a = ∣ inj a 0ℂ ∣₂
+      fwd : A ⊗ ⊤ ⊸ A
+      fwd .U = rec (A .is-set) fwd-U
+      fwd .charge c₀ =
+        ⊛-≡ (A .is-set)
+          (λ z → fwd .U ((A ⊗ ⊤) .charge c₀ z))
+          (λ z → A .charge c₀ (fwd .U z))
+          (λ a c → charge/comm A)
 
-        sect : ∀ a → fwd .U (inv a) ≡ a
-        sect a = A .charge/0
+      fwd-equiv : isEquivᶜ fwd
+      fwd-equiv = isoToIsEquiv (iso (fwd .U) inv sect retr)
+        where
+          inv : U A → U (A ⊗ ⊤)
+          inv a = ∣ inj a 0ℂ ∣₂
 
-        retr : ∀ z → inv (fwd .U z) ≡ z
-        retr =
-          ⊛-≡ squash₂ (λ z → inv (fwd .U z)) (λ z → z)
-            (λ a c →
-                cong ∣_∣₂ (law c a 0ℂ)
-              ∙ cong (λ d → ∣ inj a d ∣₂) (+ℂ-identityʳ c))
+          sect : ∀ a → fwd .U (inv a) ≡ a
+          sect a = A .charge/0
 
-⊗-comm : A ⊗ B ≡ B ⊗ A
-⊗-comm {A = A} {B = B} = conservativity fwd fwd-equiv
-  where
-    fwd-U : A ⊛ B → B ⊛ A
-    fwd-U (inj a b) = inj b a
-    fwd-U (law c a b i) = sym (law c b a) i
+          retr : ∀ z → inv (fwd .U z) ≡ z
+          retr =
+            ⊛-≡ squash₂ (λ z → inv (fwd .U z)) (λ z → z)
+              (λ a c →
+                  cong ∣_∣₂ (law c a 0ℂ)
+                ∙ cong (λ d → ∣ inj a d ∣₂) (+ℂ-identityʳ c))
 
-    fwd : A ⊗ B ⊸ B ⊗ A
-    fwd .U = map fwd-U
-    fwd .charge c = {!    !}
+  ⊗-comm : A ⊗ B ≡ B ⊗ A
+  ⊗-comm {A = A} {B = B} = conservativity fwd fwd-equiv
+    where
+      fwd-U : A ⊛ B → B ⊛ A
+      fwd-U (inj a b) = inj b a
+      fwd-U (law c a b i) = sym (law c b a) i
 
-    fwd-equiv : isEquivᶜ fwd
-    fwd-equiv = {!   !}
+      fwd : A ⊗ B ⊸ B ⊗ A
+      fwd .U = map fwd-U
+      fwd .charge c = {!    !}
 
-⊗-identityˡ : ⊤ ⊗ A ≡ A
-⊗-identityˡ = ⊗-comm ∙ ⊗-identityʳ
+      fwd-equiv : isEquivᶜ fwd
+      fwd-equiv = {!   !}
 
-⊗-assoc : A ⊗ (B ⊗ C) ≡ (A ⊗ B) ⊗ C
-⊗-assoc = {!   !}
+  ⊗-identityˡ : ⊤ ⊗ A ≡ A
+  ⊗-identityˡ = ⊗-comm ∙ ⊗-identityʳ
+
+  ⊗-assoc : A ⊗ (B ⊗ C) ≡ (A ⊗ B) ⊗ C
+  ⊗-assoc = {!   !}

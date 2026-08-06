@@ -50,24 +50,27 @@ open import Calf.Computation.Credit
 open import Calf.Computation.Tensor
 open import Cubical.HITs.SetTruncation renaming (map to map')
 
-A⊗C+B⊗C≡[A+B]⊗C : (A ⊗ C) +ᶜ (B ⊗ C) ≡ (A +ᶜ B) ⊗ C
-A⊗C+B⊗C≡[A+B]⊗C {A} {C} {B} = conservativity fwd fwd-equiv
-  where
-    fwd : (A ⊗ C) +ᶜ (B ⊗ C) ⊸ (A +ᶜ B) ⊗ C
-    fwd = caseᶜ (map₂ inj₁ᶜ idᶜ) (map₂ inj₂ᶜ idᶜ)
+opaque
+  unfolding _⊗_
 
-    fwd-equiv : isEquivᶜ fwd
-    fwd-equiv = isoToIsEquiv (iso (fwd .U) inv sect retr)
-      where
-        inv : U ((A +ᶜ B) ⊗ C) → U ((A ⊗ C) +ᶜ (B ⊗ C))
-        inv ∣ inj (inj₁ a) c ∣₂ = inj₁ ∣ inj a c ∣₂
-        inv ∣ inj (inj₂ b) c ∣₂ = inj₂ ∣ inj b c ∣₂
-        inv ∣ law c₀ (inj₁ a) c i ∣₂ = inj₁ ∣ law c₀ a c i ∣₂
-        inv ∣ law c₀ (inj₂ b) c i ∣₂ = inj₂ ∣ law c₀ b c i ∣₂
-        inv (squash₂ a a₁ p q i i₁) = {! a  !}
+  A⊗C+B⊗C≡[A+B]⊗C : (A ⊗ C) +ᶜ (B ⊗ C) ≡ (A +ᶜ B) ⊗ C
+  A⊗C+B⊗C≡[A+B]⊗C {A} {C} {B} = conservativity fwd fwd-equiv
+    where
+      fwd : (A ⊗ C) +ᶜ (B ⊗ C) ⊸ (A +ᶜ B) ⊗ C
+      fwd = caseᶜ (map₂ inj₁ᶜ idᶜ) (map₂ inj₂ᶜ idᶜ)
 
-        sect : ∀ a → fwd .U (inv a) ≡ a
-        sect a = {!  !}
+      fwd-equiv : isEquivᶜ fwd
+      fwd-equiv = isoToIsEquiv (iso (fwd .U) inv sect retr)
+        where
+          inv : U ((A +ᶜ B) ⊗ C) → U ((A ⊗ C) +ᶜ (B ⊗ C))
+          inv ∣ inj (inj₁ a) c ∣₂ = inj₁ ∣ inj a c ∣₂
+          inv ∣ inj (inj₂ b) c ∣₂ = inj₂ ∣ inj b c ∣₂
+          inv ∣ law c₀ (inj₁ a) c i ∣₂ = inj₁ ∣ law c₀ a c i ∣₂
+          inv ∣ law c₀ (inj₂ b) c i ∣₂ = inj₂ ∣ law c₀ b c i ∣₂
+          inv (squash₂ a a₁ p q i i₁) = {! a  !}
 
-        retr : ∀ z → inv (fwd .U z) ≡ z
-        retr = {!   !}
+          sect : ∀ a → fwd .U (inv a) ≡ a
+          sect a = {!  !}
+
+          retr : ∀ z → inv (fwd .U z) ≡ z
+          retr = {!   !}

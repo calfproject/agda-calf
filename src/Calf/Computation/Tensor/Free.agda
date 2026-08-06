@@ -11,7 +11,7 @@ open import Cubical.HITs.SetTruncation
 open import Calf.Computation.Tensor.Base
 
 opaque
-  unfolding F
+  unfolding F _⊗_
 
   F-monoidal : (F X ⊗ F Y) ≡ F (X × Y)
   F-monoidal {X} {Y} = conservativity f f-equiv
