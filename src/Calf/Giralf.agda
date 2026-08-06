@@ -14,13 +14,16 @@ open import Calf.Computation.Tensor
 open import Calf.Computation.Lolli
 open import Calf.Computation.Credit
 open import Calf.Computation.Debit
+open import Calf.Computation.CList
 open import Calf.Computation.CList1
 open import Calf.Computation.CList2
 open import Calf.Computation.Free
 open import Calf.Computation.Power
+open import Calf.Computation.Sum
 
+open import Calf.Value.List
 Context : Type₁
-Context = 𝒞 × ℂ
+Context = List 𝒞 × ℂ
 
 module _ where
   _⋎₀ : ℂ → Type
@@ -29,42 +32,88 @@ module _ where
   _⋎₂_ : ℂ → (ℂ × ℂ) → Type
   q ⋎₂ (q₁ , q₂) = q₁ +ℂ q₂ ≡ q
 
-
 variable
   p p' p₁ p₂ q q' q₁ q₂ r r' : ℂ
 
+import Cubical.Data.List as List
+open import Calf.Computation.Tensor
+Tensorfy : List 𝒞 → 𝒞
+Tensorfy Δ = List.foldr _⊗_ ⊤ Δ
+
 
 infix 1 _⊢_
-
 _⊢_ : Context → 𝒞 → Type
-Δ , q ⊢ A = ▷[ q ] Δ ⊸ A
-
-variable
-  Δ Δ₁ Δ₂ : 𝒞
+Δ , q ⊢ A = ▷[ q ] (Tensorfy Δ) ⊸ A
 
 idᴳ :
   q ⋎₀
-  → A , q ⊢ A
-idᴳ {q} {A} split = subst (_⊸ A) (sym ▷/0 ∙ cong (▷[_] _) split) idᶜ
+  → [ A ] , q ⊢ A
+idᴳ {q} {A} split = subst (_⊸ A) (sym ▷/0 ∙ cong₂ (▷[_]_) split (sym ⊗-identityʳ)) idᶜ
+
 
 letᴳ :
   q ⋎₂ (q₁ , q₂)
-  → A , q₁ ⊢ B
-  → B , q₂ ⊢ C
-  → A , q ⊢ C
+  → ▷[ q₁ ] A ⊸ B
+  → ▷[ q₂ ] B ⊸ C
+  → ▷[ q ] A ⊸ C
 letᴳ split e1 e2 =
   subst (_⊸ _) (sym ▷/+ ∙ cong (▷[_] _) (+ℂ-comm _ _ ∙ split)) ((▷-map e1) ⨾ᶜ e2)
 
+
+
+module Perm-Split {E : Type₁} where
+  data _≡_⊔_ : List E → List E → List E → Type₂ where
+    base : [] ≡ [] ⊔ []
+    left : {Δ Δ₁ Δ₂ : List E} {A : E} → Δ ≡ Δ₁ ⊔ Δ₂ → (A ∷ Δ) ≡ (A ∷ Δ₁) ⊔ Δ₂
+    right : {Δ Δ₁ Δ₂ : List E} {A : E} → Δ ≡ Δ₁ ⊔ Δ₂ → (A ∷ Δ) ≡ Δ₁ ⊔ (A ∷ Δ₂)
+
+  all-left : {Δ : List E} → Δ ≡ Δ ⊔ []
+  all-left {[]} = base
+  all-left {A ∷ Δ} = left (all-left {Δ})
+
+  all-right : {Δ : List E} → Δ ≡ [] ⊔ Δ
+  all-right {[]} = base
+  all-right {A ∷ Δ} = right (all-right {Δ})
+
+  switch : {Δ Δ₁ Δ₂ : List E} → Δ ≡ Δ₁ ⊔ Δ₂ → Δ ≡ Δ₂ ⊔ Δ₁
+  switch base = base
+  switch (left S) = right (switch S)
+  switch (right S) = left (switch S)
+
+open Perm-Split
+
+
+variable
+  Δ Δ₁ Δ₂ : List 𝒞
+
+permute : Δ ≡ Δ₁ ⊔ Δ₂ → (Tensorfy Δ ⊸ (Tensorfy Δ₁ ⊗ Tensorfy Δ₂))
+permute base = subst (⊤ ⊸_) (sym ⊗-identityʳ) idᶜ
+permute (left {Δ'} {Δ₁'} {Δ₂'} {A} s) = subst (A ⊗ Tensorfy Δ' ⊸_) ⊗-assoc (map₂ idᶜ (permute s))
+permute {Δ₁ = Δ₁} {Δ₂} (right {Δ'} {Δ₁'} {Δ₂'} {A} s) = subst (A ⊗ Tensorfy Δ' ⊸_) rearrange (map₂ idᶜ (permute s))
+  where
+    rearrange : (A ⊗ (Tensorfy Δ₁ ⊗ Tensorfy Δ₂')) ≡ (Tensorfy Δ₁ ⊗ Tensorfy (A ∷ Δ₂'))
+    rearrange = ⊗-assoc ∙ cong (_⊗ (Tensorfy Δ₂')) ⊗-comm ∙ sym ⊗-assoc
+
+
+cutᴳ :
+  Δ ≡ Δ₁ ⊔ Δ₂
+  → q ⋎₂ (q₁ , q₂)
+  → Δ₁ , q₁ ⊢ A
+  → A ∷ Δ₂ , q₂ ⊢ B
+  → Δ , q ⊢ B
+cutᴳ {Δ} {Δ₁} {Δ₂} {q} {q₁} {q₂} {A} {B} S s e₁ e₂ = (▷-map (permute S)) ⨾ᶜ (letᴳ s e₁' e₂)
+  where
+    e₁' : ▷[ q₁ ] (Tensorfy Δ₁ ⊗ Tensorfy Δ₂) ⊸ (A ⊗ Tensorfy Δ₂)
+    e₁' = subst (_⊸ _) (▷A⊗B≡▷[A⊗B] q₁) (map₂ e₁ idᶜ)
+
 cmpᴳ : 𝒞 → Type
-cmpᴳ = ⊤ , 0ℂ ⊢_
+cmpᴳ = [] , 0ℂ ⊢_
 
-cmpᴳ→cmp : cmpᴳ A → U A
-cmpᴳ→cmp e = e .U (subst U (sym ▷/0) 0ℂ)
+cmpᴳ→U : cmpᴳ A → U A
+cmpᴳ→U {A} e = cmp→U (subst (_⊸ A) ▷/0 e)
 
-cmp→cmpᴳ : U A → cmpᴳ A
-cmp→cmpᴳ {A} e =
-  subst (_⊸ A) (sym ▷/0) $
-  record { U = flip (A .charge) e ; charge = λ _ _ → A .charge/+ }
+U→cmpᴳ : U A → cmpᴳ A
+U→cmpᴳ {A} e = subst (_⊸ A) (sym ▷/0) (U→cmp e)
 
 module _ where
   substᵐᴳ :
@@ -92,7 +141,7 @@ module _ where
     → p1 ≡ p1' → p2 ≡ p2' → p3 ≡ p3'
     → Δ , q ⊢ A p1 p2 p3
     → Δ , q ⊢ A p1' p2' p3'
-  subst3ᴳ {p1 = p1} {p2' = p2'} {p3' = p3'} A ≡1 ≡2 ≡3 e = substᴳ (λ v → A v p2' p3') ≡1 (subst2ᴳ (A p1) ≡2 ≡3 e)
+  subst3ᴳ {Δ = Δ} {q = q} {p1 = p1} {p2' = p2'} {p3' = p3'} A ≡1 ≡2 ≡3 e = substᴳ {Δ = Δ} {q = q} (λ v → A v p2' p3') ≡1 (subst2ᴳ {Δ = Δ} {q = q} (A p1) ≡2 ≡3 e)
 
 module _ where
   storeᴳ : ∀ p
@@ -102,16 +151,22 @@ module _ where
   storeᴳ p split e = subst (_⊸ _) (sym ▷/+ ∙ cong (▷[_] _) split) (▷-map e)
 
   releaseᴳ :
-    Δ , q ⊢ ▷[ p ] B
-    → B , p ⊢ A
+    Δ ≡ Δ₁ ⊔ Δ₂
+    → q ⋎₂ (q₁ , q₂)
+    → Δ₁ , q₁ ⊢ ▷[ p ] B
+    → B ∷ Δ₂ , (q₂ +ℂ p) ⊢ A
     → Δ , q ⊢ A
-  releaseᴳ e k = e ⨾ᶜ k
+  releaseᴳ {Δ₂ = Δ₂} {q₂ = q₂} {p = p} {B = B} {A = A} S s e k = cutᴳ S s e k'
+    where
+      k' : (▷[ p ] B) ∷ Δ₂ , q₂ ⊢ A
+      k' = subst (_⊸ _) (▷/+ ∙ cong (▷[ q₂ ]_) (sym (▷A⊗B≡▷[A⊗B] p))) k
 
 spendᴳ : ∀ p
   → q ⋎₂ (p , q')
   → Δ , q' ⊢ A
   → Δ , q ⊢ A
-spendᴳ p split e = releaseᴳ (storeᴳ p split e) (spend p)
+spendᴳ {q = q} {A = A} p split e = letᴳ split (spend p) e
+
 
 module _ where
   getᴳ : ∀ p
@@ -125,44 +180,6 @@ module _ where
     → Δ , q' ⊢ ◁[ p ] A
     → Δ , q ⊢ A
   payᴳ split = transport (▷⊣◁ ∙ cong (_⊸ _) (sym ▷/+ ∙ cong (▷[_] _) split))
-
-module _ where
-  nil₁ᴳ : cmpᴳ (CList₁ p X)
-  nil₁ᴳ = cmp→cmpᴳ cnil₁
-
-  cons₁ᴳ :
-    q ⋎₂ (p , q')
-    → X
-    → Δ , q' ⊢ CList₁ p X
-    → Δ , q ⊢ CList₁ p X
-  cons₁ᴳ split x e = storeᴳ _ split e ⨾ᶜ ccons₁ x
-
-  foldr₁ᴳ :
-    cmpᴳ A
-    → (X → A , p ⊢ A)
-    → Δ , q ⊢ CList₁ p X
-    → Δ , q ⊢ A
-  foldr₁ᴳ e-nil e-cons e = e ⨾ᶜ cfoldr₁ (cmpᴳ→cmp e-nil) e-cons
-
-module _ where
-  nil₂ᴳ : q ⋎₀ → ⊤ , q ⊢ (CList₂ p₁ p₂ X)
-  nil₂ᴳ split = subst (λ x → ▷[ x ] _ ⊸ _) split (cmp→cmpᴳ cnil₂)
-
-  cons₂ᴳ :
-    q ⋎₂ (p₁ , q')
-    → X
-    → Δ , q' ⊢ CList₂ (p₂ +ℂ p₁) p₂ X
-    → Δ , q ⊢ CList₂ p₁ p₂ X
-  cons₂ᴳ split-q x e =
-    storeᴳ _ split-q e ⨾ᶜ ccons₂ x
-
-  foldr₂ᴳ :
-    (A : ℂ → 𝒞)
-    → (∀ r → cmpᴳ (A r))
-    → (∀ r → X → A (p₂ +ℂ r) , r ⊢ A r)
-    → Δ , q ⊢ CList₂ p₁ p₂ X
-    → Δ , q ⊢ A p₁
-  foldr₂ᴳ A e-nil e-cons e = e ⨾ᶜ cfoldr₂ A (cmpᴳ→cmp ∘ e-nil) e-cons
 
 module _ where
   pairᴳ :
@@ -191,3 +208,108 @@ module _ where
     X → Δ , q ⊢ X ⇀ A
     → Δ , q ⊢ A
   powappᴳ {X = X} x e = powapp {X = X} e x
+
+module _ where
+  inj₁ᴳ :
+      Δ , q ⊢ A
+    → Δ , q ⊢ A +ᶜ B
+  inj₁ᴳ {B = B} = _⨾ᶜ inj₁ᶜ {B = B}
+
+  inj₂ᴳ :
+      Δ , q ⊢ B
+    → Δ , q ⊢ A +ᶜ B
+  inj₂ᴳ {A = A} = _⨾ᶜ inj₂ᶜ {A = A}
+
+  caseᴳ : Δ ≡ Δ₁ ⊔ Δ₂
+    → q ⋎₂ (q₁ , q₂)
+    → Δ₁ , q₁ ⊢ A +ᶜ B
+    → A ∷ Δ₂ , q₂ ⊢ C
+    → B ∷ Δ₂ , q₂ ⊢ C
+    → Δ , q ⊢ C
+  caseᴳ {Δ₂ = Δ₂} {q₂ = q₂} {A = A} {B} {C} S s e e₁ e₂ = cutᴳ S s e k'
+    where
+      k' : (A +ᶜ B) ∷ Δ₂ , q₂ ⊢ C
+      k' = subst (_⊸ _) (▷A+▷B≡▷[A+B] q₂ ∙ cong (▷[ q₂ ]_) A⊗C+B⊗C≡[A+B]⊗C) (caseᶜ e₁ e₂)
+
+module _ where
+  trivᴳ : cmpᴳ ⊤
+  trivᴳ = U→cmpᴳ trivᶜ
+
+  checkᴳ : Δ ≡ Δ₁ ⊔ Δ₂
+    → q ⋎₂ (q₁ , q₂)
+    → Δ₁ , q₁ ⊢ ⊤
+    → Δ₂ , q₂ ⊢ C
+    → Δ , q ⊢ C
+  checkᴳ S s e k = cutᴳ S s e (subst (λ a → ▷[ _ ] a ⊸ _) (sym ⊗-identityˡ) k)
+
+  tensorᴳ : Δ ≡ Δ₁ ⊔ Δ₂
+    → q ⋎₂ (q₁ , q₂)
+    → Δ₁ , q₁ ⊢ A
+    → Δ₂ , q₂ ⊢ B
+    → Δ , q ⊢ A ⊗ B
+  tensorᴳ {q₂ = q₂} S s e₁ e₂ = cutᴳ S s e₁ (subst (_⊸ _) (A⊗▷B≡▷[A⊗B] q₂) (map₂ idᶜ e₂))
+
+  splitᴳ : Δ ≡ Δ₁ ⊔ Δ₂
+    → q ⋎₂ (q₁ , q₂)
+    → Δ₁ , q₁ ⊢ A ⊗ B
+    → A ∷ B ∷ Δ₂ , q₂ ⊢ C
+    → Δ , q ⊢ C
+  splitᴳ {q₂ = q₂} {C = C} S s e k = cutᴳ S s e (subst (λ a → ▷[ q₂ ] a ⊸ C) ⊗-assoc k)
+
+module _ where
+  nilᴳ : cmpᴳ (CList A)
+  nilᴳ = U→cmpᴳ cnil
+
+  consᴳ :
+    Δ ≡ Δ₁ ⊔ Δ₂
+    → q ⋎₂ (q₁ , q₂)
+    → Δ₁ , q₁ ⊢ A
+    → Δ₂ , q₂ ⊢ CList A
+    → Δ , q ⊢ CList A
+  consᴳ S s eₕ eₜ = tensorᴳ S s eₕ eₜ ⨾ᶜ ccons
+
+  foldrᴳ :
+    cmpᴳ B
+    → (A ∷ [ B ] , 0ℂ ⊢ B)
+    → Δ , q ⊢ CList A
+    → Δ , q ⊢ B
+  foldrᴳ e[] e∷ = _⨾ᶜ cfoldr (cmpᴳ→U e[]) (subst (_⊸ _) (▷/0 ∙ cong (_ ⊗_) ⊗-identityʳ) e∷)
+
+module _ where
+  nil₁ᴳ : cmpᴳ (CList₁ p A)
+  nil₁ᴳ = U→cmpᴳ cnil₁
+
+  cons₁ᴳ :
+    Δ ≡ Δ₁ ⊔ Δ₂
+    → q ⋎₂ (p , (q₁ +ℂ q₂))
+    → Δ₁ , q₁ ⊢ A
+    → Δ₂ , q₂ ⊢ CList₁ p A
+    → Δ , q ⊢ CList₁ p A
+  cons₁ᴳ {Δ = Δ} {p = p} S s eₕ eₜ = storeᴳ {Δ = Δ} p s (tensorᴳ S refl eₕ eₜ) ⨾ᶜ ccons₁
+
+  foldr₁ᴳ :
+    cmpᴳ B
+    → (A ∷ [ B ] , p ⊢ B)
+    → Δ , q ⊢ CList₁ p A
+    → Δ , q ⊢ B
+  foldr₁ᴳ {p = p} e[] e∷ = _⨾ᶜ cfoldr₁ (cmpᴳ→U e[]) (subst (_⊸ _) (cong (▷[ p ]_) (cong (_ ⊗_) ⊗-identityʳ)) e∷)
+
+-- module _ where
+--   nil₂ᴳ : q ⋎₀ → ⊤ , q ⊢ (CList₂ p₁ p₂ X)
+--   nil₂ᴳ split = subst (λ x → ▷[ x ] _ ⊸ _) split (U→cmpᴳ cnil₂)
+
+--   cons₂ᴳ :
+--     q ⋎₂ (p₁ , q')
+--     → X
+--     → Δ , q' ⊢ CList₂ (p₂ +ℂ p₁) p₂ X
+--     → Δ , q ⊢ CList₂ p₁ p₂ X
+--   cons₂ᴳ split-q x e =
+--     storeᴳ _ split-q e ⨾ᶜ ccons₂ x
+
+--   foldr₂ᴳ :
+--     (A : ℂ → 𝒞)
+--     → (∀ r → cmpᴳ (A r))
+--     → (∀ r → X → A (p₂ +ℂ r) , r ⊢ A r)
+--     → Δ , q ⊢ CList₂ p₁ p₂ X
+--     → Δ , q ⊢ A p₁
+--   foldr₂ᴳ A e-nil e-cons e = e ⨾ᶜ cfoldr₂ A (cmpᴳ→U ∘ e-nil) e-cons
