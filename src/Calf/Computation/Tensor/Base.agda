@@ -105,13 +105,6 @@ module _ where
             (λ z → (B₁ ⊗ B₂) .charge c (mk .U z))
             (λ a₁ a₂ → cong (λ z → ∣ inj z (g .U a₂) ∣₂) (f .charge c a₁))
 
-⊗ᵏ : ℕ → 𝒞 → 𝒞
-⊗ᵏ zero A = ⊤
-⊗ᵏ (suc k) A = A ⊗ (⊗ᵏ k A)
-
-⊗ᵏ' : ℕ → 𝒞 → (𝒞 → 𝒞) → 𝒞
-⊗ᵏ' zero A₀ Af = ⊤
-⊗ᵏ' (suc k) A₀ Af = A₀ ⊗ (⊗ᵏ' k (Af A₀) Af)
 
 opaque
   unfolding _⊗_

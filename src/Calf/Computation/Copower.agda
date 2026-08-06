@@ -30,7 +30,7 @@ X ⋊ A = [ _ ∈ X ] ⋊ A
     bwd h .U (x , a) = h x .U a
     bwd h .charge c (x , a) = h x .charge c a
 
-⋊-pairᶜ : ∀ {X : 𝒱ₛ} {B : 𝒞} {A : (⟨ X ⟩ → 𝒞)} → (x : ⟨ X ⟩) → (A x ⊸ Σᶜ X A)
+⋊-pairᶜ : ∀ {X : 𝒱ₛ} {A : (⟨ X ⟩ → 𝒞)} → (x : ⟨ X ⟩) → (A x ⊸ Σᶜ X A)
 ⋊-pairᶜ {X} = transport ([X⋊A]⊸B≡X→A⊸B {X}) idᶜ
 
 ⋊-splitᶜ : ∀ {X : 𝒱ₛ} {A : (⟨ X ⟩ → 𝒞)} {B : 𝒞} → ((x : ⟨ X ⟩) → A x ⊸ B) → (Σᶜ X A ⊸ B)

@@ -5,6 +5,7 @@ open import Cubical.Foundations.Structure
 
 module Calf.Computation.CList where
 
+open import Calf.Value
 open import Calf.Value.Nat
 open import Calf.Value.Sigma
 open import Calf.Computation
@@ -16,45 +17,46 @@ open import Calf.Computation.Power
 
 -- inductively changing computation list
 opaque
-  CList' : 𝒞 → (𝒞 → 𝒞) → 𝒞
-  CList' A₀ Af = [ n ∈ ℕₛ ] ⋊ ⊗ᵏ' n A₀ Af
+  ⊗ᵏ : (X → 𝒞) → (X → X) → X → ℕ → 𝒞
+  ⊗ᵏ Af xf x₀ zero = ⊤
+  ⊗ᵏ Af xf x₀ (suc k) = Af x₀ ⊗ (⊗ᵏ Af xf (xf x₀) k)
+
+  CList' : (X → 𝒞) → (X → X) → X → 𝒞
+  CList' Af xf x₀ = [ n ∈ ℕₛ ] ⋊ ⊗ᵏ Af xf x₀ n
 
   variable
-    A₀ : 𝒞
-    Af : 𝒞 → 𝒞
+    Af : X → 𝒞
+    xf : X → X
+    x₀ : X
 
-  cnil' : U (CList' A₀ Af)
+  cnil' : U (CList' Af xf x₀)
   cnil' = 0 , trivᶜ
 
-  ccons' : A₀ ⊗ CList' (Af A₀) Af ⊸ CList' A₀ Af
-  ccons' {A₀} {Af} = subst (_⊸ CList' A₀ Af) (sym (A⊗[X⋊B]≡X⋊[A⊗B] {X = ℕₛ})) ccons''
+  ccons' : Af x₀ ⊗ CList' Af xf (xf x₀) ⊸ CList' Af xf x₀
+  ccons' {Af = Af} {x₀ = x₀} {xf = xf} = subst (_⊸ CList' Af xf x₀) (sym (A⊗[X⋊B]≡X⋊[A⊗B] {X = ℕₛ})) ccons''
     where
-      ccons'' : [ n ∈ ℕₛ ] ⋊ (A₀ ⊗ ⊗ᵏ' n (Af A₀) Af) ⊸ CList' A₀ Af
+      ccons'' : [ n ∈ ℕₛ ] ⋊ (Af x₀ ⊗ ⊗ᵏ Af xf (xf x₀) n) ⊸ CList' Af xf x₀
       ccons'' .U (n , as) = suc n , as
       ccons'' .charge c (n , as) = refl
 
   cfoldr' :
-    (Ap : 𝒞 → Type₁)
-    → (B : (A : 𝒞) → Ap A → 𝒞)
-    → (∀ A → (ap : Ap A) → U (B A ap))
-    → (∀ A → (ap : Ap A) → Σ[ ap' ∈ Ap (Af A) ] (A ⊗ B (Af A) ap' ⊸ B A ap))
-    → (ap₀ : Ap A₀)
-    → CList' A₀ Af ⊸ B A₀ ap₀
-  cfoldr' {Af} {A₀} Ap B e[] e∷ ap₀ = ⋊-splitᶜ {X = ℕₛ} (⊗foldr' A₀ ap₀)
+    (B : (x : X) → 𝒞)
+    → (∀ x → U (B x))
+    → (∀ x → (Af x ⊗ B (xf x) ⊸ B x))
+    → CList' Af xf x₀ ⊸ B x₀
+  cfoldr' {X = X} {Af = Af} {xf = xf} {x₀ = x₀} B e[] e∷ = ⋊-splitᶜ {X = ℕₛ} (⊗foldr' x₀)
     where
-      ⊗foldr' : (A : 𝒞) → (ap : Ap A) → (n : ℕ) → ⊗ᵏ' n A Af ⊸ B A ap
-      ⊗foldr' A ap zero = U→cmp (e[] A ap)
-      ⊗foldr' A ap (suc n') =
-        let (ap' , e∷') = e∷ A ap in
-        map₂ idᶜ (⊗foldr' (Af A) ap' n') ⨾ᶜ e∷'
+      ⊗foldr' : (x : X) → (n : ℕ) → ⊗ᵏ Af xf x n ⊸ B x
+      ⊗foldr' x zero = U→cmp (e[] x)
+      ⊗foldr' x (suc n') = map₂ idᶜ (⊗foldr' (xf x) n') ⨾ᶜ e∷ x
 
 
 -- computation list
 opaque
-  unfolding CList'
+  open import Cubical.Data.Unit using (Unit; tt)
 
   CList : 𝒞 → 𝒞
-  CList A = CList' A (idfun 𝒞)
+  CList A = CList' (λ _ → A) (idfun Unit) tt
 
   cnil : U (CList A)
   cnil = cnil'
@@ -65,8 +67,13 @@ opaque
   cfoldr : U B
     → (A ⊗ B ⊸ B)
     → CList A ⊸ B
-  cfoldr {B} {A} e[] e∷ =
-    cfoldr' (A ≡_) (λ _ _ → B)
-      (λ A' ap' → e[])
-      (λ A' ap' → ap' , subst (λ C → (C ⊗ B) ⊸ _) ap' e∷)
-      refl
+  cfoldr {B} {A} e[] e∷ = cfoldr' (λ _ → B) (λ _ → e[]) (λ _ → e∷)
+
+opaque
+  unfolding CList
+  unfolding CList'
+  open import Calf.Computation.Free
+
+  clength : CList A ⊸ ℕₛ ⋊ CList A
+  clength {A} =
+    ⋊-splitᶜ {X = ℕₛ} (λ n → ⋊-pairᶜ {X = ℕₛ} {A = λ n → ⊗ᵏ (λ _ → A) (idfun Unit) tt n}  n ⨾ᶜ ⋊-pairᶜ {X = ℕₛ} n)
