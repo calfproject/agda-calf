@@ -19,6 +19,23 @@ syntax Σᶜ X (λ x → A) = [ x ∈ X ] ⋊ A
 _⋊_ : 𝒱ₛ → 𝒞 → 𝒞
 X ⋊ A = [ _ ∈ X ] ⋊ A
 
+[X⋊A]⊸B≡X→A⊸B : ∀ {X : 𝒱ₛ} {A : (⟨ X ⟩ → 𝒞)} {B : 𝒞} → (Σᶜ X A ⊸ B) ≡ ((x : ⟨ X ⟩) → A x ⊸ B)
+[X⋊A]⊸B≡X→A⊸B {X} {A} {B} = isoToPath (iso fwd bwd (λ _ → refl) (λ _ → refl))
+  where
+    fwd : (Σᶜ X A ⊸ B) → ((x : ⟨ X ⟩) → A x ⊸ B)
+    fwd h x .U a = h .U (x , a)
+    fwd h x .charge c a = h .charge c (x , a)
+
+    bwd : ((x : ⟨ X ⟩) → A x ⊸ B) → (Σᶜ X A ⊸ B)
+    bwd h .U (x , a) = h x .U a
+    bwd h .charge c (x , a) = h x .charge c a
+
+⋊-pairᶜ : ∀ {X : 𝒱ₛ} {B : 𝒞} {A : (⟨ X ⟩ → 𝒞)} → (x : ⟨ X ⟩) → (A x ⊸ Σᶜ X A)
+⋊-pairᶜ {X} = transport ([X⋊A]⊸B≡X→A⊸B {X}) idᶜ
+
+⋊-splitᶜ : ∀ {X : 𝒱ₛ} {A : (⟨ X ⟩ → 𝒞)} {B : 𝒞} → ((x : ⟨ X ⟩) → A x ⊸ B) → (Σᶜ X A ⊸ B)
+⋊-splitᶜ {X} h = transport (sym ([X⋊A]⊸B≡X→A⊸B {X})) h
+
 open import Calf.Computation.Tensor.Base
 
 A⊗[X⋊B]≡X⋊[A⊗B] : ∀ {X : 𝒱ₛ} {A : 𝒞} {B : (⟨ X ⟩ → 𝒞)} → (A ⊗ Σᶜ X B) ≡ (Σᶜ X λ x → A ⊗ B x)
