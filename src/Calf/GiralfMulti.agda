@@ -14,6 +14,7 @@ open import Calf.Computation.Tensor
 open import Calf.Computation.Lolli
 open import Calf.Computation.Credit
 open import Calf.Computation.Debit
+open import Calf.Computation.CList
 open import Calf.Computation.CList1
 open import Calf.Computation.CList2
 open import Calf.Computation.Free
@@ -176,25 +177,6 @@ module _ where
     → Δ , q ⊢ᵐ A
   payᴳ split = transport (▷⊣◁ ∙ cong (_⊸ _) (sym ▷/+ ∙ cong (▷[_] _) split))
 
-module _ where
-  nil₁ᴳ : cmpᴳ (CList₁ p X)
-  nil₁ᴳ = cmp→cmpᴳ cnil₁
-
-  cons₁ᴳ :
-    q ⋎₂ (p , q')
-    → X
-    → Δ , q' ⊢ᵐ CList₁ p X
-    → Δ , q ⊢ᵐ CList₁ p X
-  cons₁ᴳ split x e = storeᴳ _ split e ⨾ᶜ ccons₁ x
-
-  foldr₁ᴳ :
-    cmpᴳ A
-    → (X → [ A ] , p ⊢ᵐ A)
-    → Δ , q ⊢ᵐ CList₁ p X
-    → Δ , q ⊢ᵐ A
-  foldr₁ᴳ e-nil e-cons e = {!   !}
-  --  e ⨾ᶜ cfoldr₁ (cmpᴳ→cmp e-nil) e-cons
-
 -- module _ where
 --   nil₂ᴳ : q ⋎₀ → ⊤ , q ⊢ᵐ (CList₂ p₁ p₂ X)
 --   nil₂ᴳ split = subst (λ x → ▷[ x ] _ ⊸ _) split (cmp→cmpᴳ cnil₂)
@@ -289,3 +271,41 @@ module _ where
     → A ∷ B ∷ Δ₂ , q₂ ⊢ᵐ C
     → Δ , q ⊢ᵐ C
   splitᴳ {q₂ = q₂} {C = C} S s e k = cutᴳ S s e (subst (λ a → ▷[ q₂ ] a ⊸ C) ⊗-assoc k)
+
+module _ where
+  nilᴳ : cmpᴳ (CList A)
+  nilᴳ = cmp→cmpᴳ cnil
+
+  consᴳ :
+    Δ ≡ Δ₁ ⊔ Δ₂
+    → q ⋎₂ (q₁ , q₂)
+    → Δ₁ , q₁ ⊢ᵐ A
+    → Δ₂ , q₂ ⊢ᵐ CList A
+    → Δ , q ⊢ᵐ CList A
+  consᴳ S s eₕ eₜ = tensorᴳ S s eₕ eₜ ⨾ᶜ ccons
+
+  foldrᴳ :
+    cmpᴳ B
+    → (A ∷ [ B ] , 0ℂ ⊢ᵐ B)
+    → Δ , q ⊢ᵐ CList A
+    → Δ , q ⊢ᵐ B
+  foldrᴳ e[] e∷ = _⨾ᶜ cfoldr (cmpᴳ→cmp e[]) (subst (_⊸ _) (▷/0 ∙ cong (_ ⊗_) ⊗-identityʳ) e∷)
+
+module _ where
+  nil₁ᴳ : cmpᴳ (CList₁ p A)
+  nil₁ᴳ = cmp→cmpᴳ cnil₁
+
+  cons₁ᴳ :
+    Δ ≡ Δ₁ ⊔ Δ₂
+    → q ⋎₂ (p , (q₁ +ℂ q₂))
+    → Δ₁ , q₁ ⊢ᵐ A
+    → Δ₂ , q₂ ⊢ᵐ CList₁ p A
+    → Δ , q ⊢ᵐ CList₁ p A
+  cons₁ᴳ {Δ = Δ} {p = p} S s eₕ eₜ = storeᴳ {Δ = Δ} p s (tensorᴳ S refl eₕ eₜ) ⨾ᶜ ccons₁
+
+  foldr₁ᴳ :
+    cmpᴳ B
+    → (A ∷ [ B ] , p ⊢ᵐ B)
+    → Δ , q ⊢ᵐ CList₁ p A
+    → Δ , q ⊢ᵐ B
+  foldr₁ᴳ {p = p} e[] e∷ = _⨾ᶜ cfoldr₁ (cmpᴳ→cmp e[]) (subst (_⊸ _) (cong (▷[ p ]_) (cong (_ ⊗_) ⊗-identityʳ)) e∷)

@@ -19,7 +19,7 @@ opaque
   cnil = 0 , trivᶜ
 
   ccons : A ⊗ CList A ⊸ CList A
-  ccons {A} = subst (_⊸ CList A) (sym (A⊗[X⋊B]≡X⋊[A⊗B] {X = ℕₛ} {A = A} {B = λ n → ⊗ᵏ n A})) ccons'
+  ccons {A} = subst (_⊸ CList A) (sym (A⊗[X⋊B]≡X⋊[A⊗B] {X = ℕₛ})) ccons'
     where
       ccons' : [ n ∈ ℕₛ ] ⋊ (A ⊗ ⊗ᵏ n A) ⊸ CList A
       ccons' .U (n , as) = suc n , as
