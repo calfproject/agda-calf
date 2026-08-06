@@ -53,10 +53,10 @@ opaque
 
 -- computation list
 opaque
-  open import Cubical.Data.Unit using (Unit; tt)
+  open import Calf.Value.Unit using (tt)
 
   CList : 𝒞 → 𝒞
-  CList A = CList' (λ _ → A) (idfun Unit) tt
+  CList A = CList' (λ _ → A) (λ _ → tt) tt
 
   cnil : U (CList A)
   cnil = cnil'
@@ -76,4 +76,4 @@ opaque
 
   clength : CList A ⊸ ℕₛ ⋊ CList A
   clength {A} =
-    ⋊-splitᶜ {X = ℕₛ} (λ n → ⋊-pairᶜ {X = ℕₛ} {A = λ n → ⊗ᵏ (λ _ → A) (idfun Unit) tt n}  n ⨾ᶜ ⋊-pairᶜ {X = ℕₛ} n)
+    ⋊-splitᶜ {X = ℕₛ} (λ n → ⋊-pairᶜ {X = ℕₛ} {A = λ n → ⊗ᵏ _ _ _ n}  n ⨾ᶜ ⋊-pairᶜ {X = ℕₛ} n)

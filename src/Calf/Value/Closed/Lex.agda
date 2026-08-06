@@ -10,7 +10,7 @@ open import Cubical.Foundations.CartesianKanOps
 
 ●-encode : ∀ {X} → X → ● X → 𝒱
 ●-encode x (η• x') = ● (x ≡ x')
-●-encode x (∗ abs) = ⊤
+●-encode x (∗ abs) = 1ᵛ
 ●-encode x (law x' abs i) = isContr→≡Unit (●-isContr {X = x ≡ x'} abs) i
 
 ●-lex : ∀ {X} {x : X} {y : ● X} → η• x ≡ y → ●-encode x y

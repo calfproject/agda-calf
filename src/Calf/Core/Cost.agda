@@ -42,7 +42,7 @@ opaque
 
 instance
   fromNatℂ : HasFromNat ℂ
-  fromNatℂ = record { Constraint = λ _ → ⊤ ; fromNat = λ n → ℕ→ℂ n }
+  fromNatℂ = record { Constraint = λ _ → 1ᵛ ; fromNat = λ n → ℕ→ℂ n }
 
 variable
   c c' c₁ c₂ : ℂ
