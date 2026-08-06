@@ -109,9 +109,9 @@ module _ where
 ⊗ᵏ zero A = ⊤
 ⊗ᵏ (suc k) A = A ⊗ (⊗ᵏ k A)
 
-⊗ᵏ' : ℕ → (ℕ → 𝒞) → 𝒞
-⊗ᵏ' zero Af = ⊤
-⊗ᵏ' (suc k) Af = (Af k) ⊗ (⊗ᵏ' k Af)
+⊗ᵏ' : ℕ → 𝒞 → (𝒞 → 𝒞) → 𝒞
+⊗ᵏ' zero A₀ Af = ⊤
+⊗ᵏ' (suc k) A₀ Af = A₀ ⊗ (⊗ᵏ' k (Af A₀) Af)
 
 opaque
   unfolding _⊗_
