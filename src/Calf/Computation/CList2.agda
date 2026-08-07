@@ -12,6 +12,7 @@ open import Calf.Computation
 open import Calf.Computation.Credit
 open import Calf.Computation.Tensor
 open import Calf.Computation.CList
+open import Calf.Computation.Copower
 
 opaque
   CList₂ : ℂ → ℂ → 𝒞 → 𝒞
@@ -35,8 +36,7 @@ module _ where
   binom2 (suc n) = n + binom2 n
 
   clist₂-pot : ℂ → ℂ → ℕ → ℂ
-  clist₂-pot c₁ c₂ n =
-    (n ⊙ c₁) +ℂ (binom2 n ⊙ c₂)
+  clist₂-pot c₁ c₂ n = (n ⊙ c₁) +ℂ (binom2 n ⊙ c₂)
 
 module _ where
   clist₂-pot-zero : ∀ c₁ c₂ → clist₂-pot c₁ c₂ zero ≡ 0ℂ
@@ -62,30 +62,35 @@ module _ where
 opaque
   unfolding CList₂
   unfolding CList'
-
-  open import Calf.Computation.Abstraction
-  open import Calf.Computation.Copower
-
-  ⊗ᵏ' : 𝒞 → ℕ → 𝒞
-  ⊗ᵏ' A = ⊗ᵏ (λ _ → A) (λ _ → tt) tt
+  -- unfolding CList
 
   CList₂' : ℂ → ℂ → 𝒞 → 𝒞
-  CList₂' c₁ c₂ A = [ n ∈ ℕₛ ] ⋊ ▷[ clist₂-pot c₁ c₂ n ] (⊗ᵏ' A n)
+  CList₂' c₁ c₂ A = [ n ∈ ℕₛ ] ⋊ ▷[ clist₂-pot c₁ c₂ n ] (⊗ᵏ-fixed A n)
 
   CList₂≡CList₂' : ∀ {c₁ c₂ A} → CList₂ c₁ c₂ A ≡ CList₂' c₁ c₂ A
-  CList₂≡CList₂' {c₁} {c₂} {A} = cong (Σᶜ ℕₛ) (funExt ⊗ᵏ≡⊗ᵏ')
+  CList₂≡CList₂' {c₁} {c₂} {A} = cong (Σᶜ ℕₛ) (funExt ⊗ᵏ▷≡▷⊗ᵏ)
     where
-      ⊗ᵏ≡⊗ᵏ' : ∀ {c₁} → (n : ℕ) →
-        ⊗ᵏ (λ c₁' → ▷[ c₁' ] A) (λ c₁' → c₂ +ℂ c₁') c₁ n ≡ ▷[ clist₂-pot c₁ c₂ n ] (⊗ᵏ' A n)
-      ⊗ᵏ≡⊗ᵏ' {c₁} zero = sym ▷/0 ∙ cong (▷[_] ⊤) (sym (clist₂-pot-zero c₁ c₂))
-      ⊗ᵏ≡⊗ᵏ' {c₁} (suc n) =
+      ⊗ᵏ▷≡▷⊗ᵏ : ∀ {c₁} → (n : ℕ) →
+        ⊗ᵏ (λ c₁' → ▷[ c₁' ] A) (λ c₁' → c₂ +ℂ c₁') c₁ n ≡ ▷[ clist₂-pot c₁ c₂ n ] (⊗ᵏ-fixed A n)
+      ⊗ᵏ▷≡▷⊗ᵏ {c₁} zero = sym ▷/0 ∙ cong (▷[_] ⊤) (sym (clist₂-pot-zero c₁ c₂))
+      ⊗ᵏ▷≡▷⊗ᵏ {c₁} (suc n) =
           (▷[ c₁ ] A) ⊗ ⊗ᵏ (λ c₁' → ▷[ c₁' ] A) (_+ℂ_ c₂) (c₂ +ℂ c₁) n
-        ≡⟨ cong (_ ⊗_) (⊗ᵏ≡⊗ᵏ' n) ⟩
-          (▷[ c₁ ] A) ⊗ (▷[ clist₂-pot (c₂ +ℂ c₁) c₂ n ] ⊗ᵏ' A n)
+        ≡⟨ cong (_ ⊗_) (⊗ᵏ▷≡▷⊗ᵏ n) ⟩
+          (▷[ c₁ ] A) ⊗ (▷[ clist₂-pot (c₂ +ℂ c₁) c₂ n ] ⊗ᵏ-fixed A n)
         ≡⟨ ▷A⊗B≡▷[A⊗B] c₁ ∙ cong (▷[ c₁ ]_) (A⊗▷B≡▷[A⊗B] _) ⟩
-          ▷[ c₁ ] (▷[ clist₂-pot (c₂ +ℂ c₁) c₂ n ] (A ⊗ ⊗ᵏ' A n))
+          ▷[ c₁ ] (▷[ clist₂-pot (c₂ +ℂ c₁) c₂ n ] (A ⊗ ⊗ᵏ-fixed A n))
         ≡⟨ sym ▷/+ ⟩
-          ▷[ c₁ +ℂ clist₂-pot (c₂ +ℂ c₁) c₂ n ] (A ⊗ ⊗ᵏ' A n)
+          ▷[ c₁ +ℂ clist₂-pot (c₂ +ℂ c₁) c₂ n ] (A ⊗ ⊗ᵏ-fixed A n)
         ≡⟨ cong (▷[_] (A ⊗ _)) (sym (clist₂-pot-suc n c₁ c₂)) ⟩
-          ▷[ clist₂-pot c₁ c₂ (suc n) ] (A ⊗ ⊗ᵏ' A n)
+          ▷[ clist₂-pot c₁ c₂ (suc n) ] (A ⊗ ⊗ᵏ-fixed A n)
         ∎
+
+  -- CList₂'' : ℂ → ℂ → 𝒞 → 𝒞
+  -- CList₂'' c₁ c₂ A =
+  --   Abstractionᶜ (CList A) (CList A) charge-pot
+  --     where
+  --     charge-pot : CList A ⊸ CList A
+  --     charge-pot = ⋊-splitᶜ {X = ℕₛ} {A = λ n → ⊗ᵏ _ _ _ n} (λ n → ⋊-pairᶜ {X = ℕₛ} {A = λ n → ⊗ᵏ _ _ _ n} n ⨾ᶜ CHARGE (clist₂-pot c₁ c₂ n))
+
+  -- CList₂'≡CList₂'' : CList₂'' ≡ CList₂'
+  -- CList₂'≡CList₂'' = {!   !}

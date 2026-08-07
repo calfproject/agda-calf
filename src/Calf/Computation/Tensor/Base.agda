@@ -110,6 +110,9 @@ opaque
   ⊗ᵏ Af xf x₀ zero = ⊤
   ⊗ᵏ Af xf x₀ (suc k) = Af x₀ ⊗ (⊗ᵏ Af xf (xf x₀) k)
 
+  ⊗ᵏ-fixed : 𝒞 → ℕ → 𝒞
+  ⊗ᵏ-fixed A = ⊗ᵏ (λ _ → A) (λ _ → tt) tt
+
 opaque
   unfolding _⊗_
 
