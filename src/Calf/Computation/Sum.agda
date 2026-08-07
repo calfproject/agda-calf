@@ -4,6 +4,17 @@ open import Calf.Value
 open import Calf.Value.Sum public
 open import Calf.Computation
 
+0ᶜ : 𝒞
+0ᶜ .U = ⊥
+0ᶜ .is-set = λ ()
+0ᶜ .charge c = λ v → v
+0ᶜ .charge/0 = refl
+0ᶜ .charge/+ = refl
+
+absurdᶜ : 0ᶜ ⊸ C
+absurdᶜ .U = λ ()
+absurdᶜ .charge c = λ ()
+
 _+ᶜ_ : 𝒞 → 𝒞 → 𝒞
 (A +ᶜ B) .U = A .U ⊎ B .U
 (A +ᶜ B) .is-set = isSet⊎ (A .is-set) (B .is-set)

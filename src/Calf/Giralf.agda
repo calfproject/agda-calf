@@ -210,6 +210,11 @@ module _ where
   powappᴳ {X = X} x e = powapp {X = X} e x
 
 module _ where
+  absurdᴳ :
+      Δ , q ⊢ 0ᶜ
+    → Δ , q ⊢ C
+  absurdᴳ = _⨾ᶜ absurdᶜ
+
   inj₁ᴳ :
       Δ , q ⊢ A
     → Δ , q ⊢ A +ᶜ B
