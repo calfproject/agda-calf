@@ -48,10 +48,11 @@ open import Calf.Computation.Credit
         retr = {!   !}
 
 open import Calf.Computation.Tensor
-open import Cubical.HITs.SetTruncation renaming (map to map')
+open import Cubical.HITs.SetTruncation renaming (rec to rec')
 
 opaque
   unfolding _⊗_
+  unfolding map₂
 
   A⊗C+B⊗C≡[A+B]⊗C : (A ⊗ C) +ᶜ (B ⊗ C) ≡ (A +ᶜ B) ⊗ C
   A⊗C+B⊗C≡[A+B]⊗C {A} {C} {B} = conservativity fwd fwd-equiv
@@ -62,15 +63,29 @@ opaque
       fwd-equiv : isEquivᶜ fwd
       fwd-equiv = isoToIsEquiv (iso (fwd .U) inv sect retr)
         where
+          inv-⊛ : ((A +ᶜ B) ⊛ C) → U ((A ⊗ C) +ᶜ (B ⊗ C))
+          inv-⊛ (inj (inj₁ a) c) = inj₁ ∣ inj a c ∣₂
+          inv-⊛ (inj (inj₂ b) c) = inj₂ ∣ inj b c ∣₂
+          inv-⊛ (law c₀ (inj₁ a) c i) = inj₁ ∣ law c₀ a c i ∣₂
+          inv-⊛ (law c₀ (inj₂ b) c i) = inj₂ ∣ law c₀ b c i ∣₂
+
           inv : U ((A +ᶜ B) ⊗ C) → U ((A ⊗ C) +ᶜ (B ⊗ C))
-          inv ∣ inj (inj₁ a) c ∣₂ = inj₁ ∣ inj a c ∣₂
-          inv ∣ inj (inj₂ b) c ∣₂ = inj₂ ∣ inj b c ∣₂
-          inv ∣ law c₀ (inj₁ a) c i ∣₂ = inj₁ ∣ law c₀ a c i ∣₂
-          inv ∣ law c₀ (inj₂ b) c i ∣₂ = inj₂ ∣ law c₀ b c i ∣₂
-          inv (squash₂ a a₁ p q i i₁) = {! a  !}
+          inv = rec' (((A ⊗ C) +ᶜ (B ⊗ C)) .is-set) inv-⊛
 
           sect : ∀ a → fwd .U (inv a) ≡ a
-          sect a = {!  !}
+          sect =
+            ⊛-≡ squash₂ (λ z → fwd .U (inv z)) (λ z → z)
+            (flip $ λ c → λ {
+              (inj₁ a) → refl
+            ; (inj₂ b) → refl
+            })
 
           retr : ∀ z → inv (fwd .U z) ≡ z
-          retr = {!   !}
+          retr (inj₁ a) =
+            ⊛-≡ (((A ⊗ C) +ᶜ (B ⊗ C)) .is-set) (λ z → inv (fwd .U (inj₁ z))) inj₁
+            (λ a c → refl)
+            a
+          retr (inj₂ b) =
+            ⊛-≡ (((A ⊗ C) +ᶜ (B ⊗ C)) .is-set) (λ z → inv (fwd .U (inj₂ z))) inj₂
+            (λ b c → refl)
+            b
