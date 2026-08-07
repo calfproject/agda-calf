@@ -152,16 +152,33 @@ opaque
   ⊗-comm : A ⊗ B ≡ B ⊗ A
   ⊗-comm {A = A} {B = B} = conservativity fwd fwd-equiv
     where
-      fwd-U : A ⊛ B → B ⊛ A
-      fwd-U (inj a b) = inj b a
-      fwd-U (law c a b i) = sym (law c b a) i
+      flip-⊛ : ∀ {C D : 𝒞} → (C ⊛ D) → (D ⊛ C)
+      flip-⊛ (inj c d) = inj d c
+      flip-⊛ (law c₀ c d i) = sym (law c₀ d c) i
+
+      flip-⊛-self-inv : ∀ {C D : 𝒞} (cd : C ⊛ D) → flip-⊛ (flip-⊛ cd) ≡ cd
+      flip-⊛-self-inv (inj _ _) = refl
+      flip-⊛-self-inv (law _ _ _ _) = refl
 
       fwd : A ⊗ B ⊸ B ⊗ A
-      fwd .U = map fwd-U
-      fwd .charge c = {!    !}
+      fwd .U = map (flip-⊛ {C = A} {D = B})
+      fwd .charge c =
+        ⊛-≡ squash₂
+          (λ z → fwd .U ((A ⊗ B) .charge c z))
+          (λ z → (B ⊗ A) .charge c (fwd .U z))
+          (λ a b → cong ∣_∣₂ (sym (law c b a)))
 
       fwd-equiv : isEquivᶜ fwd
-      fwd-equiv = {!   !}
+      fwd-equiv = isoToIsEquiv (iso (fwd .U) inv sect retr)
+        where
+          inv : U (B ⊗ A) → U (A ⊗ B)
+          inv = map (flip-⊛ {C = B} {D = A})
+
+          sect : ∀ a → fwd .U (inv a) ≡ a
+          sect = ∥∥₂-≡ squash₂ (λ z → fwd .U (inv z)) (λ z → z) (λ x → cong ∣_∣₂ (flip-⊛-self-inv x))
+
+          retr : ∀ z → inv (fwd .U z) ≡ z
+          retr = ∥∥₂-≡ squash₂ (λ z → inv (fwd .U z)) (λ z → z) (λ x → cong ∣_∣₂ (flip-⊛-self-inv x))
 
   ⊗-identityˡ : ⊤ ⊗ A ≡ A
   ⊗-identityˡ = ⊗-comm ∙ ⊗-identityʳ
