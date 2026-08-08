@@ -58,10 +58,16 @@ U• : 𝒞• → 𝒱•
 U• A• .fst = ⟨ A• ⟩ᶜ .U
 U• A• .snd = A• .snd
 
+opaque
+  map-charge
+    : (f : A ⊸ B) (c : ℂ) (a• : U (●ᶜ A))
+    → ●.map (f .U) (●ᶜ A .charge c a•) ≡ ●ᶜ B .charge c (●.map (f .U) a•)
+  map-charge f c =
+    ●.elim′ (λ _ → ●-≡-isModal _ _) (λ a → cong η• (f .charge c a))
+
 map : (A ⊸ B) → (●ᶜ A ⊸ ●ᶜ B)
 map f .U = ●.map (f .U)
-map f .charge c =
-  ●.elim′ (λ _ → ●-≡-isModal _ _) (λ a → cong η• (f .charge c a))
+map f .charge = map-charge f
 
 map-∘ : (f : A ⊸ B) (g : B ⊸ C) → map f ⨾ᶜ map g ≡ map (f ⨾ᶜ g)
 map-∘ f g = ⊸-path refl refl (funExt (●.map-∘ (f .U) (g .U)))
