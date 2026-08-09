@@ -209,6 +209,11 @@ conservativity {A} {B} f f-equiv =
 uaᶜ : A ≃ᶜ B → A ≡ B
 uaᶜ = uncurry conservativity
 
+infixr 30 _∙ₑᶜ_
+_∙ₑᶜ_ : A ≃ᶜ B → B ≃ᶜ C → A ≃ᶜ C
+(e ∙ₑᶜ f) .fst = e .fst ⨾ᶜ f .fst
+(e ∙ₑᶜ f) .snd = ((e .fst .U , e .snd) ∙ₑ (f .fst .U , f .snd)) .snd
+
 ⊸-inv : (e : B ⊸ C) → isEquivᶜ e → C ⊸ B
 ⊸-inv e h .U = invIsEq h
 ⊸-inv {B = B} {C = C} e h .charge c x =

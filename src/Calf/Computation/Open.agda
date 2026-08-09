@@ -104,9 +104,11 @@ ABS-◯ᶜeval-equiv abs A =
       (λ _ → refl)
       (λ a◦ → funExt λ abs' → cong a◦ (str ABS abs abs')))
 
+ABS-◯ᶜA≃A : ⟨ ABS ⟩ → ◯ᶜ A ≃ᶜ A
+ABS-◯ᶜA≃A {A} abs = ABS-◯ᶜeval abs A , ABS-◯ᶜeval-equiv abs A
+
 ABS-◯ᶜA≡A : ⟨ ABS ⟩ → ◯ᶜ A ≡ A
-ABS-◯ᶜA≡A {A} abs =
-  conservativity (ABS-◯ᶜeval abs A) (ABS-◯ᶜeval-equiv abs A)
+ABS-◯ᶜA≡A abs = uaᶜ (ABS-◯ᶜA≃A abs)
 
 ABS-◯ᶜmap≡f : ∀ (abs : ⟨ ABS ⟩) (f : A ⊸ B)
   → PathP (λ i → ABS-◯ᶜA≡A {A} abs i ⊸ ABS-◯ᶜA≡A {B} abs i)
