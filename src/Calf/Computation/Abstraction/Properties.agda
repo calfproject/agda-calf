@@ -107,40 +107,6 @@ squareᶜ'-≡ {B-⊤ = B-⊤} {B-abs} {β} {fc = fc} {fc' = fc'} p q =
       (cong (λ f → ●.map (f .U) (a .•)) p)
       (cong (λ f → ◯.map (f .U) (a .◦)) q)
 
--- Abstractionᶜ-Abstractionᶜ-α•-path
---   : ∀ {A-⊤ A-abs α B-⊤ B-abs β f-⊤ f-abs f-coherence}
---   → PathP
---       (λ i →
---         ⟨ 𝒞-glue•-path (Abstractionᶜ-FRAC A-⊤ A-abs α) i ⟩ᶜ
---           ⊸ ●ᶜ ⟨ 𝒞-glue◦-path (Abstractionᶜ-FRAC B-⊤ B-abs β) i ⟩ᶜ)
---       (●ᶜ.map
---         (squareᶜ'-FRAC {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence ⨾ᶜ η◦ᶜ))
---       (●ᶜ.map ((α ⨾ᶜ f-abs) ⨾ᶜ η◦ᶜ))
--- Abstractionᶜ-Abstractionᶜ-α•-path {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} {f-⊤} {f-abs} {f-coherence} =
---   ⊸-path
---     (λ i → ⟨ 𝒞-glue•-path (Abstractionᶜ-FRAC A-⊤ A-abs α) i ⟩ᶜ)
---     (λ i → ●ᶜ ⟨ 𝒞-glue◦-path (Abstractionᶜ-FRAC B-⊤ B-abs β) i ⟩ᶜ)
---     (square-χ•-path
---       (squareᶜ'-FRAC f-⊤ f-abs f-coherence .U)
---       (●ᶜ.map ((α ⨾ᶜ f-abs) ⨾ᶜ η◦ᶜ) .U)
---       (λ g →
---           cong (●.map (◯.map (f-abs .U))) (sym (g .•→◦))
---         ∙ ●.map-∘ ((α ⨾ᶜ η◦ᶜ) .U) (◯.map (f-abs .U)) (g .•)))
-
--- Abstractionᶜ-Abstractionᶜ-FRAC
---   : ∀ {A-⊤ A-abs α B-⊤ B-abs β f-⊤ f-abs f-coherence}
---   → Abstractionᶜ-FRAC
---       (Abstractionᶜ A-⊤ A-abs α)
---       (Abstractionᶜ B-⊤ B-abs β)
---       (squareᶜ'-FRAC {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence)
---     ≡ Abstractionᶜ-FRAC A-⊤ B-abs (α ⨾ᶜ f-abs)
--- Abstractionᶜ-Abstractionᶜ-FRAC {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} {f-⊤} {f-abs} {f-coherence} =
---   𝒞-FRACTURE-path
---     (𝒞-glue•-path (Abstractionᶜ-FRAC A-⊤ A-abs α))
---     (𝒞-glue◦-path (Abstractionᶜ-FRAC B-⊤ B-abs β))
---     (Abstractionᶜ-Abstractionᶜ-α•-path
---       {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} {f-⊤} {f-abs} {f-coherence})
-
 Abstractionᶜ-Abstractionᶜ : ∀ {A-⊤ A-abs α B-⊤ B-abs β f-⊤ f-abs f-coherence} →
   Abstractionᶜ
     (Abstractionᶜ A-⊤ A-abs α)
@@ -148,7 +114,16 @@ Abstractionᶜ-Abstractionᶜ : ∀ {A-⊤ A-abs α B-⊤ B-abs β f-⊤ f-abs f
     (squareᶜ' {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence)
   ≡ Abstractionᶜ A-⊤ B-abs (α ⨾ᶜ f-abs)
 Abstractionᶜ-Abstractionᶜ {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} {f-⊤} {f-abs} {f-coherence} =
-  {!    !}
-  -- cong 𝒞-Glue
-  --   (Abstractionᶜ-Abstractionᶜ-FRAC
-  --     {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} {f-⊤} {f-abs} {f-coherence})
+  cong 𝒞-Glue $
+  𝒞-FRACTURE-path
+    (𝒞-glue•-path (Abstractionᶜ-FRAC A-⊤ A-abs α))
+    (𝒞-glue◦-path (Abstractionᶜ-FRAC B-⊤ B-abs β)) $
+  ⊸-path
+    (λ i → ⟨ 𝒞-glue•-path (Abstractionᶜ-FRAC A-⊤ A-abs α) i ⟩ᶜ)
+    (λ i → ●ᶜ ⟨ 𝒞-glue◦-path (Abstractionᶜ-FRAC B-⊤ B-abs β) i ⟩ᶜ)
+    (square-χ•-path
+      (squareᶜ' f-⊤ f-abs f-coherence .U)
+      (●ᶜ.map ((α ⨾ᶜ f-abs) ⨾ᶜ η◦ᶜ) .U)
+      (λ g →
+          cong (●.map (◯.map (f-abs .U))) (sym (g .•→◦))
+        ∙ ●.map-∘ ((α ⨾ᶜ η◦ᶜ) .U) (◯.map (f-abs .U)) (g .•)))
