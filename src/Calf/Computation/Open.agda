@@ -140,5 +140,18 @@ ABS-◯ᶜpoint≡a {A} abs a◦ a p =
 module _ where
   open import Calf.Computation.Copower
 
+  private 
+    embed : ∀ {X A} → Σᶜ X A .U → Σᶜ X (◯ᶜ ∘ A) .U
+    embed (x , a) = x , η◦ a
+
+  Σᶜ-◯ᶜ-fwd : ∀ {X A} → ◯ᶜ (Σᶜ X A) ⊸ ◯ᶜ (Σᶜ X (◯ᶜ ∘ A))
+  Σᶜ-◯ᶜ-fwd {X} {A} .U = ◯.map (embed {X} {A})
+  Σᶜ-◯ᶜ-fwd .charge _ _ = refl
+
+  Σᶜ-◯ᶜ-fwd-equiv : ∀ {X A} → isEquivᶜ (Σᶜ-◯ᶜ-fwd {X} {A})
+  Σᶜ-◯ᶜ-fwd-equiv {X} {A} =
+    subst isEquiv (funExt⁻ ◯.map′≡map (embed {X} {A})) (invEquiv ○Σ○≃○Σ .snd)
+
   Σᶜ-◯ᶜ : ∀ {X A} → ◯ᶜ (Σᶜ X A) ≡ ◯ᶜ (Σᶜ X (◯ᶜ ∘ A))
-  Σᶜ-◯ᶜ = {!   !}
+  Σᶜ-◯ᶜ {X} {A} =
+    conservativity (Σᶜ-◯ᶜ-fwd {X} {A}) (Σᶜ-◯ᶜ-fwd-equiv {X} {A})

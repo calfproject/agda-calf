@@ -59,22 +59,35 @@ glue◦-charge F c =
         (⟨ F .A◦ ⟩ᶜ .charge)
         (glue◦-charge F)))
 
-𝒞-glue-fracture-section : section 𝒞-Fracture 𝒞-Glue
-𝒞-glue-fracture-section F =
-  𝒞-FRACTURE-path
-    (𝒞-glue•-path F)
-    (𝒞-glue◦-path F)
-    (⊸-path
-      (λ i → ⟨ 𝒞-glue•-path F i ⟩ᶜ)
-      (λ i → ●ᶜ ⟨ 𝒞-glue◦-path F i ⟩ᶜ)
-      (λ i → 𝒱-FRACTURE.χ• (glue-fracture-section (U-FRACTURE F) i)))
+opaque
+  𝒞-glue-fracture-section : section 𝒞-Fracture 𝒞-Glue
+  𝒞-glue-fracture-section F =
+    𝒞-FRACTURE-path
+      (𝒞-glue•-path F)
+      (𝒞-glue◦-path F)
+      (⊸-path
+        (λ i → ⟨ 𝒞-glue•-path F i ⟩ᶜ)
+        (λ i → ●ᶜ ⟨ 𝒞-glue◦-path F i ⟩ᶜ)
+        (λ i → 𝒱-FRACTURE.χ• (glue-fracture-section (U-FRACTURE F) i))) 
+
+  𝒞-glue-fracture-section-α• : (F : 𝒞-FRACTURE) →
+    PathP
+      (λ i →
+        ⟨ 𝒞-glue•-path F (~ i) ⟩ᶜ ⊸
+        ●ᶜ ⟨ 𝒞-glue◦-path F (~ i) ⟩ᶜ)
+      (F .α•)
+      (𝒞-Fracture (𝒞-Glue F) .α•)
+  𝒞-glue-fracture-section-α• F i =
+    𝒞-glue-fracture-section F (~ i) .α•
 
 𝒞-fracture : A ⊸ 𝒞-Glue (𝒞-Fracture A)
 𝒞-fracture .U = fracture
 𝒞-fracture {A} .charge c a = Glue-path (isSet◯ (A .is-set)) refl refl
 
-𝒞-glue-fracture-retract : retract 𝒞-Fracture 𝒞-Glue
-𝒞-glue-fracture-retract A = sym (conservativity (𝒞-fracture {A}) fracture-isEquiv)
+opaque
+  𝒞-glue-fracture-retract : retract 𝒞-Fracture 𝒞-Glue
+  𝒞-glue-fracture-retract A =
+    sym (conservativity (𝒞-fracture {A}) fracture-isEquiv)
 
 𝒞-fracture-and-gluing : 𝒞 ≃ 𝒞-FRACTURE
 𝒞-fracture-and-gluing =

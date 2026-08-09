@@ -60,6 +60,21 @@ proj◦ᶜ F .charge c g = refl
 𝒞-FRACTURE-path A•-path A◦-path α•-path i .A◦ = A◦-path i
 𝒞-FRACTURE-path A•-path A◦-path α•-path i .α• = α•-path i
 
+𝒞-FRACTURE-pathᶜ :
+  {F G : 𝒞-FRACTURE}
+  → (p• : ⟨ F .A• ⟩ᶜ ≡ ⟨ G .A• ⟩ᶜ)
+  → (p◦ : ⟨ F .A◦ ⟩ᶜ ≡ ⟨ G .A◦ ⟩ᶜ)
+  → PathP
+      (λ i → p• i ⊸ ●ᶜ (p◦ i))
+      (F .α•)
+      (G .α•)
+  → F ≡ G
+𝒞-FRACTURE-pathᶜ p• p◦ pα =
+  𝒞-FRACTURE-path
+    (●ᶜ.𝒞•-path p•)
+    (◯ᶜ.𝒞◦-path p◦)
+    pα
+
 U-FRACTURE : 𝒞-FRACTURE → 𝒱-FRACTURE
 U-FRACTURE F =
   record

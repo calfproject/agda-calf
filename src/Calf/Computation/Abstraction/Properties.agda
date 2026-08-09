@@ -22,6 +22,18 @@ open import Calf.Computation.Abstraction.Base
 ◯ᶜ-Abstractionᶜ {A-⊤} {A-abs} {α} =
   cong ⟨_⟩ᶜ (𝒞-glue◦-path (Abstractionᶜ-FRAC A-⊤ A-abs α))
 
+opaque
+  Abstractionᶜ-coherence : ∀ {A-⊤ A-abs α} →
+    PathP
+      (λ i →
+        sym (●ᶜ-Abstractionᶜ {A-⊤} {A-abs} {α}) i ⊸
+        ●ᶜ (sym (◯ᶜ-Abstractionᶜ {A-⊤} {A-abs} {α}) i))
+      (●ᶜ.map (α ⨾ᶜ η◦ᶜ {A = A-abs}))
+      (●ᶜ.map (η◦ᶜ {A = Abstractionᶜ A-⊤ A-abs α}))
+  Abstractionᶜ-coherence {A-⊤} {A-abs} {α} =
+    𝒞-glue-fracture-section-α•
+      (Abstractionᶜ-FRAC A-⊤ A-abs α)
+
 ◯[Abstractionᶜ≃A-abs]
   : ∀ {A-⊤ A-abs α}
   → ⟨ ABS ⟩

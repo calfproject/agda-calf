@@ -78,6 +78,15 @@ open 𝒞-FRACTURE
 ▷-◯ᶜ : (c : ℂ) (A : 𝒞) → ◯ᶜ (▷[ c ] A) ≡ ◯ᶜ A
 ▷-◯ᶜ c A = ◯ᶜ-Abstractionᶜ {A} {A} {CHARGE c}
 
+opaque
+  ▷-coherence : (c : ℂ) (A : 𝒞) →
+    PathP
+      (λ i → sym (▷-●ᶜ c A) i ⊸ ●ᶜ (sym (▷-◯ᶜ c A) i))
+      (●ᶜ.map (CHARGE c ⨾ᶜ η◦ᶜ {A = A}))
+      (●ᶜ.map (η◦ᶜ {A = ▷[ c ] A}))
+  ▷-coherence c A =
+    Abstractionᶜ-coherence {A-⊤ = A} {A-abs = A} {α = CHARGE c}
+
 save : (A : 𝒞) (c : ℂ) → A ⊸ ▷[ c ] A
 save A c = triangle' {B-abs = A} idᶜ
 
