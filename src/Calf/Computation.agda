@@ -41,6 +41,9 @@ open _⊸_ public
 isEquivᶜ : (A ⊸ B) → 𝒱
 isEquivᶜ f = isEquiv (U f)
 
+_≃ᶜ_ : 𝒞 → 𝒞 → 𝒱
+A ≃ᶜ B = Σ (A ⊸ B) isEquivᶜ
+
 idᶜ : A ⊸ A
 idᶜ .U a = a
 idᶜ .charge _ _ = refl
@@ -219,19 +222,6 @@ conservativity {A} {B} f f-equiv =
 
 ⊸-postcomp-≃ : {A B C : 𝒞} (e : B ⊸ C) → isEquivᶜ e → (A ⊸ B) ≃ (A ⊸ C)
 ⊸-postcomp-≃ e h = (_⨾ᶜ e) , ⊸-postcomp-isEquiv e h
-
-module _ where
-  -- a very random transport lemma that is unfortunately needed twice
-  transport-charge
-    : (p : B ≡ C) (d : ℂ) (a : U B)
-    → transport (cong U p) (B .charge d a)
-    ≡ C .charge d (transport (cong U p) a)
-  transport-charge {B = B} =
-    J
-      (λ C p → (d : ℂ) (a : U B) →
-        transport (cong U p) (B .charge d a)
-        ≡ C .charge d (transport (cong U p) a))
-      (λ d a → transportRefl (B .charge d a) ∙ cong (B .charge d) (sym (transportRefl a)))
 
 𝒞WithStr : (B : 𝒞 → 𝒱) → 𝒱₁
 𝒞WithStr B = Σ[ A ∈ 𝒞 ] B A

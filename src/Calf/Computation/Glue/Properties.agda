@@ -84,7 +84,7 @@ fracture-map-fracture {A} {B} f a i .•→◦ =
     F-path : 𝒞-Fracture A ≡ 𝒞-Fracture B
     F-path = 𝒞-FRACTURE-path (●ᶜ.𝒞•-path p•) (◯ᶜ.𝒞◦-path p◦) pα
 
-◯[Glueᶜ≡A◦] : ∀ {A• A◦ α•} → ⟨ ABS ⟩ → (Glueᶜ A• A◦ α• ≡ ⟨ A◦ ⟩ᶜ)
+◯[Glueᶜ≡A◦] : ∀ {A• A◦ α•} → ⟨ ABS ⟩ → Glueᶜ A• A◦ α• ≡ ⟨ A◦ ⟩ᶜ
 ◯[Glueᶜ≡A◦] {A•} {A◦} {α•} abs =
   conservativity (proj◦ᶜ _) {!  something like ◯[Glue≡X◦] abs  !}
 
