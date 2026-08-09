@@ -280,8 +280,6 @@ module Dequeue where
               ∎
 
   opaque
-    unfolding Abstractionᶜ
-
     dequeue'-fst-glue : U BLQ → FractureGlue ℕ
     dequeue'-fst-glue =
       square'
@@ -369,41 +367,38 @@ batched-queue .spec abs i .dequeue =
 
     opaque
       unfolding
-        Abstractionᶜ
-        abstraction-open-eval
-        ◯[Abstractionᶜ≡A-abs]
         Dequeue.dequeue'-fst-glue
         Dequeue.dequeue'
 
-      dequeue'-fst≡dequeueᴸ-fst
-        : (q : U Dequeue.BLQ)
-        → Dequeue.dequeue' .U q .fst
-          ≡ dequeueᴸ .U (abstraction-open-eval {BQ} {LQ} {α} abs .U q) .fst
-      dequeue'-fst≡dequeueᴸ-fst q =
-        cong
-          (λ g → g .◦ abs)
-          (secIsEq fracture-isEquiv (Dequeue.dequeue'-fst-glue q))
+      -- dequeue'-fst≡dequeueᴸ-fst
+      --   : (q : U Dequeue.BLQ)
+      --   → Dequeue.dequeue' .U q .fst
+      --     ≡ dequeueᴸ .U (abstraction-open-eval {BQ} {LQ} {α} abs .U q) .fst
+      -- dequeue'-fst≡dequeueᴸ-fst q =
+      --   cong
+      --     (λ g → g .◦ abs)
+      --     (secIsEq fracture-isEquiv (Dequeue.dequeue'-fst-glue q))
 
-      dequeue'-point≡dequeueᴸ
-        : (q : U Dequeue.BLQ)
-        → PathP
-            (λ i → U (ℕₛ ⋊ ◯[Abstractionᶜ≡A-abs] {BQ} {LQ} {α} abs i))
-            (Dequeue.dequeue' .U q)
-            (dequeueᴸ .U (abstraction-open-eval {BQ} {LQ} {α} abs .U q))
-      dequeue'-point≡dequeueᴸ q =
-        ΣPathP
-          {A = λ _ → ℕ}
-          {B = λ i _ → U (◯[Abstractionᶜ≡A-abs] {BQ} {LQ} {α} abs i)}
-          ( dequeue'-fst≡dequeueᴸ-fst q
-          , λ i →
-              dequeue'-snd≡dequeueᴸ-snd i .U
-                (ua-gluePath
-                  ( abstraction-open-eval {BQ} {LQ} {α} abs .U
-                  , abstraction-open-eval-equiv {BQ} {LQ} {α} abs)
-                  {x = q}
-                  {y = abstraction-open-eval {BQ} {LQ} {α} abs .U q}
-                  refl i)
-          )
+      -- dequeue'-point≡dequeueᴸ
+      --   : (q : U Dequeue.BLQ)
+      --   → PathP
+      --       (λ i → U (ℕₛ ⋊ ◯[Abstractionᶜ≡A-abs] {BQ} {LQ} {α} abs i))
+      --       (Dequeue.dequeue' .U q)
+      --       (dequeueᴸ .U (abstraction-open-eval {BQ} {LQ} {α} abs .U q))
+      -- dequeue'-point≡dequeueᴸ q =
+      --   ΣPathP
+      --     {A = λ _ → ℕ}
+      --     {B = λ i _ → U (◯[Abstractionᶜ≡A-abs] {BQ} {LQ} {α} abs i)}
+      --     ( dequeue'-fst≡dequeueᴸ-fst q
+      --     , λ i →
+      --         dequeue'-snd≡dequeueᴸ-snd i .U
+      --           (ua-gluePath
+      --             ( abstraction-open-eval {BQ} {LQ} {α} abs .U
+      --             , abstraction-open-eval-equiv {BQ} {LQ} {α} abs)
+      --             {x = q}
+      --             {y = abstraction-open-eval {BQ} {LQ} {α} abs .U q}
+      --             refl i)
+      --     )
 
       dequeue'≡dequeueᴸ
         : PathP
@@ -416,9 +411,10 @@ batched-queue .spec abs i .dequeue =
         ⊸-path
           (◯[Abstractionᶜ≡A-abs] {BQ} {LQ} {α} abs)
           (λ i → ℕₛ ⋊ ◯[Abstractionᶜ≡A-abs] {BQ} {LQ} {α} abs i)
-          (ua→
-            {e =
-              ( abstraction-open-eval {BQ} {LQ} {α} abs .U
-              , abstraction-open-eval-equiv {BQ} {LQ} {α} abs)}
-            {B = λ i → U (ℕₛ ⋊ ◯[Abstractionᶜ≡A-abs] {BQ} {LQ} {α} abs i)}
-            dequeue'-point≡dequeueᴸ)
+          ?
+          -- (ua→
+          --   {e =
+          --     ( abstraction-open-eval {BQ} {LQ} {α} abs .U
+          --     , abstraction-open-eval-equiv {BQ} {LQ} {α} abs)}
+          --   {B = λ i → U (ℕₛ ⋊ ◯[Abstractionᶜ≡A-abs] {BQ} {LQ} {α} abs i)}
+          --   dequeue'-point≡dequeueᴸ)
