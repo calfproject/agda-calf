@@ -18,10 +18,11 @@ Abstractionᶜ-FRAC A-⊤ A-abs α .α• = ●ᶜ.map (α ⨾ᶜ η◦ᶜ)
 Abstractionᶜ : (A-⊤ A-abs : 𝒞) → (A-⊤ ⊸ A-abs) → 𝒞
 Abstractionᶜ A-⊤ A-abs α = 𝒞-Glue (Abstractionᶜ-FRAC A-⊤ A-abs α)
 
-Abstractionᶜ-id : Abstractionᶜ A A idᶜ ≡ A
-Abstractionᶜ-id {A} =
-  cong (Glueᶜ (●ᶜ• A) (◯ᶜ◦ A) ∘ ●ᶜ.map) (idᶜ⨾ᶜf≡f η◦ᶜ)
-  ∙ 𝒞-glue-fracture-retract A
+opaque
+  Abstractionᶜ-id : Abstractionᶜ A A idᶜ ≡ A
+  Abstractionᶜ-id {A} =
+    cong (Glueᶜ (●ᶜ• A) (◯ᶜ◦ A) ∘ ●ᶜ.map) (idᶜ⨾ᶜf≡f η◦ᶜ)
+    ∙ 𝒞-glue-fracture-retract A
 
 Abstractionᶜ-path
   : ∀ {A-⊤ A-abs α}

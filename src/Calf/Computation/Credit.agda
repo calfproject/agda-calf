@@ -87,8 +87,8 @@ spend A c = triangle idᶜ
 save⨾spend≡charge : (A : 𝒞) (c : ℂ) → save A c ⨾ᶜ spend A c ≡ CHARGE {A} c
 save⨾spend≡charge A c =
     save A c ⨾ᶜ spend A c
-  ≡⟨ {! refl  !} ⟩
-    {!   !}
+  ≡⟨ refl ⟩
+    save-path i1 ⨾ᶜ spend-path i1
   ≡⟨ sym (fromPathP (λ i → save-path i ⨾ᶜ spend-path i)) ⟩
     transport (λ i → Abstractionᶜ-id {A} i ⊸ Abstractionᶜ-id {A} i) (SQ₁ ⨾ᶜ SQ₂)
   ≡⟨ cong (transport (λ i → Abstractionᶜ-id {A} i ⊸ Abstractionᶜ-id {A} i)) lemma ⟩
