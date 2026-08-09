@@ -167,8 +167,12 @@ module _ where
   fracture-and-gluing =
     isoToEquiv (iso 𝒱-Fracture 𝒱-Glue glue-fracture-section glue-fracture-retract)
 
-◯[Glue≡X◦] : ∀ {X• X◦ χ•} → ⟨ ABS ⟩ → Glue X• X◦ χ• ≡ ⟨ X◦ ⟩
-◯[Glue≡X◦] = {!   !}
+◯[Glue≃X◦] : ∀ {X• X◦ χ•} → ⟨ ABS ⟩ → Glue X• X◦ χ• ≃ ⟨ X◦ ⟩
+◯[Glue≃X◦] abs .fst g = g .◦
+◯[Glue≃X◦] {X• = X•} {X◦ = X◦} {χ• = χ•} abs .snd .equiv-proof x◦ =
+  ◯.isConnected→◯isContr
+    (proj◦-connected (record { X• = X• ; X◦ = X◦ ; χ• = χ• }) x◦)
+    abs
 
 module _ where
   toSquare : (X → Y) → 𝒱-Square (𝒱-Fracture X) (𝒱-Fracture Y)

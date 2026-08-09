@@ -84,12 +84,27 @@ fracture-map-fracture {A} {B} f a i .•→◦ =
     F-path : 𝒞-Fracture A ≡ 𝒞-Fracture B
     F-path = 𝒞-FRACTURE-path (●ᶜ.𝒞•-path p•) (◯ᶜ.𝒞◦-path p◦) pα
 
+◯[Glueᶜ≃A◦] : ∀ {A• A◦ α•} → ⟨ ABS ⟩ → Glueᶜ A• A◦ α• ≃ᶜ ⟨ A◦ ⟩ᶜ
+◯[Glueᶜ≃A◦] {A•} {A◦} {α•} abs =
+  proj◦ᶜ _ , ◯[Glue≃X◦] abs .snd
+
 ◯[Glueᶜ≡A◦] : ∀ {A• A◦ α•} → ⟨ ABS ⟩ → Glueᶜ A• A◦ α• ≡ ⟨ A◦ ⟩ᶜ
-◯[Glueᶜ≡A◦] {A•} {A◦} {α•} abs =
-  conservativity (proj◦ᶜ _) {!  something like ◯[Glue≡X◦] abs  !}
+◯[Glueᶜ≡A◦] abs = uaᶜ (◯[Glueᶜ≃A◦] abs)
 
 ◯[squareᶜ≡f◦] : ∀ {A• A◦ α B• B◦ β f• f◦ coh} (abs : ⟨ ABS ⟩)
   → PathP (λ i → ◯[Glueᶜ≡A◦] {A•} {A◦} {α} abs i ⊸ ◯[Glueᶜ≡A◦] {B•} {B◦} {β} abs i)
-    (squareᶜ f• f◦ coh)
-    f◦
-◯[squareᶜ≡f◦] = {!   !}
+      (squareᶜ f• f◦ coh)
+      f◦
+◯[squareᶜ≡f◦] {A•} {A◦} {α} {B•} {B◦} {β} {f•} {f◦} {coh} abs =
+  ⊸-path
+    (◯[Glueᶜ≡A◦] {A•} {A◦} {α} abs)
+    (◯[Glueᶜ≡A◦] {B•} {B◦} {β} abs)
+    (ua→
+      {e = ◯[Glueᶜ≃A◦] {A•} {A◦} {α} abs .fst .U
+         , ◯[Glueᶜ≃A◦] {A•} {A◦} {α} abs .snd}
+      {B = λ i → U (◯[Glueᶜ≡A◦] {B•} {B◦} {β} abs i)}
+      (λ _ →
+        ua-gluePath
+          ( ◯[Glueᶜ≃A◦] {B•} {B◦} {β} abs .fst .U
+          , ◯[Glueᶜ≃A◦] {B•} {B◦} {β} abs .snd)
+          refl))

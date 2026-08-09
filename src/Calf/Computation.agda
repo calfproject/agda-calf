@@ -206,6 +206,9 @@ conservativity {A} {B} f f-equiv =
     (ua (f .U , f-equiv))
     (charge-path (f .U , f-equiv) (A .charge) (B .charge) (f .charge))
 
+uaᶜ : A ≃ᶜ B → A ≡ B
+uaᶜ = uncurry conservativity
+
 ⊸-inv : (e : B ⊸ C) → isEquivᶜ e → C ⊸ B
 ⊸-inv e h .U = invIsEq h
 ⊸-inv {B = B} {C = C} e h .charge c x =
