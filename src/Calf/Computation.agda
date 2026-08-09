@@ -22,9 +22,10 @@ record 𝒞 : 𝒱₁ where
     charge/0 : ∀ {a} → charge 0ℂ a ≡ a
     charge/+ : ∀ {a c₁ c₂} → charge (c₁ +ℂ c₂) a ≡ charge c₁ (charge c₂ a)
 
-  charge/comm : ∀ {c} {c'} {a}
-    → charge c (charge c' a) ≡ charge c' (charge c a)
-  charge/comm = sym charge/+ ∙ cong (flip charge _) (+ℂ-comm _ _) ∙ charge/+
+  opaque
+    charge/comm : ∀ {c} {c'} {a}
+      → charge c (charge c' a) ≡ charge c' (charge c a)
+    charge/comm = sym charge/+ ∙ cong (flip charge _) (+ℂ-comm _ _) ∙ charge/+
 open 𝒞 public
 
 variable
@@ -51,15 +52,7 @@ _⨾ᶜ_ : (A ⊸ B) → (B ⊸ C) → (A ⊸ C)
 
 CHARGE : ℂ → A ⊸ A
 CHARGE {A} c .U = charge A c
-CHARGE {A} c .charge c' a =
-    A .charge c (A .charge c' a)
-  ≡⟨ sym (A .charge/+) ⟩
-    A .charge (c +ℂ c') a
-  ≡⟨ cong (λ d → A .charge d a) (+ℂ-comm c c') ⟩
-    A .charge (c' +ℂ c) a
-  ≡⟨ A .charge/+ ⟩
-    A .charge c' (A .charge c a)
-  ∎
+CHARGE {A} c .charge c' a = charge/comm A {c} {c'} {a}
 
 opaque
   isPropCharge/0

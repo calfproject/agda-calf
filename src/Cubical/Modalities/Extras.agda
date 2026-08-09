@@ -10,7 +10,7 @@ open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Path
   using (PathP≡Path⁻; PathP≃Path; compPathlEquiv; compPathrEquiv)
 open import Cubical.Foundations.Equiv.Properties using (equivAdjointEquiv)
-open import Cubical.Foundations.Univalence using (ua; ua-gluePath; pathToEquiv; isEquivTransport)
+open import Cubical.Foundations.Univalence using (isEquivTransport)
 open import Cubical.Data.Sigma
 
 open Modality M
@@ -261,17 +261,13 @@ module _ where
   precomp-η-≃ : isModal Y → (◯ X → Y) ≃ (X → Y)
   precomp-η-≃ w = (_∘ η) , precomp-η-isEquiv w
 
-  reflection-≃ : {f : X → Y} (w : isModal Y) (conn : isConnectedMap f) → ◯ X ≃ Y
-  reflection-≃ {f = f} w conn = ◯-rec w f , reflection-isEquiv w conn
+  opaque
+    reflection-≃ : {f : X → Y} (w : isModal Y) (conn : isConnectedMap f) → ◯ X ≃ Y
+    reflection-≃ {f = f} w conn = ◯-rec w f , reflection-isEquiv w conn
 
-  reflection-β : {f : X → Y} (w : isModal Y) (conn : isConnectedMap f) (x : X)
-    → equivFun (reflection-≃ w conn) (η x) ≡ f x
-  reflection-β {f = f} w conn = ◯-rec-β w f
-
-  reflection-ua-gluePath : {f : X → Y} (w : isModal Y) (conn : isConnectedMap f)
-    (x : X) → PathP (λ i → ua (reflection-≃ w conn) i) (η x) (f x)
-  reflection-ua-gluePath w conn x =
-    ua-gluePath (reflection-≃ w conn) (reflection-β w conn x)
+    reflection-β : {f : X → Y} (w : isModal Y) (conn : isConnectedMap f) (x : X)
+      → equivFun (reflection-≃ w conn) (η x) ≡ f x
+    reflection-β {f = f} w conn = ◯-rec-β w f
 
   opaque
     reflection-connected : {f : X → Y} (w : isModal Y)
@@ -342,12 +338,13 @@ module _ (lex : IsLex◯) where
       isConnectedMapΣ isConnectedMapη λ y →
       isConnectedMap-∘ₑ (pe x y) isConnectedMapη
 
-    ◯-pullback-lex
-      : ◯ (Σ[ x ∈ X ] Σ[ y ∈ Y ] (f x ≡ g y))
-      ≃ (Σ[ x◦ ∈ ◯ X ] Σ[ y◦ ∈ ◯ Y ] (map f x◦ ≡ map g y◦))
-    ◯-pullback-lex = reflection-≃ Pullback◯-isModal pullback-η-connected
+    opaque
+      ◯-pullback-lex
+        : ◯ (Σ[ x ∈ X ] Σ[ y ∈ Y ] (f x ≡ g y))
+        ≃ (Σ[ x◦ ∈ ◯ X ] Σ[ y◦ ∈ ◯ Y ] (map f x◦ ≡ map g y◦))
+      ◯-pullback-lex = reflection-≃ Pullback◯-isModal pullback-η-connected
 
-    ◯-pullback-lex-β
-      : (u : Σ[ x ∈ X ] Σ[ y ∈ Y ] (f x ≡ g y))
-      → equivFun ◯-pullback-lex (η u) ≡ pullback-η u
-    ◯-pullback-lex-β = reflection-β Pullback◯-isModal pullback-η-connected
+      ◯-pullback-lex-β
+        : (u : Σ[ x ∈ X ] Σ[ y ∈ Y ] (f x ≡ g y))
+        → equivFun ◯-pullback-lex (η u) ≡ pullback-η u
+      ◯-pullback-lex-β = reflection-β Pullback◯-isModal pullback-η-connected

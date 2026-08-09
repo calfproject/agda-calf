@@ -59,12 +59,13 @@ bind {B = B} k = map k ⨾ᶜ join {B}
     ∙ g .charge c a
     ∙ cong (⟨ B◦ ⟩ᶜ .charge c) (sym (◯.elim-β (λ _ → strᶜ B◦) (g .U) a))
 
-⊸-precomp-η◦ᶜ-isEquiv : {A : 𝒞} (B◦ : 𝒞◦)
-  → isEquiv (λ (f : ◯ᶜ A ⊸ ⟨ B◦ ⟩ᶜ) → η◦ᶜ ⨾ᶜ f)
-⊸-precomp-η◦ᶜ-isEquiv B◦ =
-  isoToIsEquiv (iso (η◦ᶜ ⨾ᶜ_) (◯ᶜ-rec B◦)
-    (λ g → ⊸-path refl refl (funExt (◯.elim-β (λ _ → strᶜ B◦) (g .U))))
-    (λ f → ⊸-path refl refl (sym (◯.◯-rec-unique (strᶜ B◦) refl))))
+opaque
+  ⊸-precomp-η◦ᶜ-isEquiv : {A : 𝒞} (B◦ : 𝒞◦)
+    → isEquiv (λ (f : ◯ᶜ A ⊸ ⟨ B◦ ⟩ᶜ) → η◦ᶜ {A} ⨾ᶜ f)
+  ⊸-precomp-η◦ᶜ-isEquiv B◦ =
+    isoToIsEquiv (iso (η◦ᶜ ⨾ᶜ_) (◯ᶜ-rec B◦)
+      (λ g → ⊸-path refl refl (funExt (◯.elim-β (λ _ → strᶜ B◦) (g .U))))
+      (λ f → ⊸-path refl refl (sym (◯.◯-rec-unique (strᶜ B◦) refl))))
 
 ⊸-precomp-η◦ᶜ-≃ : {A : 𝒞} (B◦ : 𝒞◦) → (◯ᶜ A ⊸ ⟨ B◦ ⟩ᶜ) ≃ (A ⊸ ⟨ B◦ ⟩ᶜ)
 ⊸-precomp-η◦ᶜ-≃ B◦ = (η◦ᶜ ⨾ᶜ_) , ⊸-precomp-η◦ᶜ-isEquiv B◦
@@ -103,11 +104,11 @@ ABS-◯ᶜeval-equiv abs A =
       (λ _ → refl)
       (λ a◦ → funExt λ abs' → cong a◦ (str ABS abs abs')))
 
-ABS-◯ᶜA≡A : {A : 𝒞} → ⟨ ABS ⟩ → ◯ᶜ A ≡ A
+ABS-◯ᶜA≡A : ⟨ ABS ⟩ → ◯ᶜ A ≡ A
 ABS-◯ᶜA≡A {A} abs =
   conservativity (ABS-◯ᶜeval abs A) (ABS-◯ᶜeval-equiv abs A)
 
-ABS-◯ᶜmap≡f : ∀ {A B} (abs : ⟨ ABS ⟩) (f : A ⊸ B)
+ABS-◯ᶜmap≡f : ∀ (abs : ⟨ ABS ⟩) (f : A ⊸ B)
   → PathP (λ i → ABS-◯ᶜA≡A {A} abs i ⊸ ABS-◯ᶜA≡A {B} abs i)
       (map f)
       f
@@ -123,7 +124,7 @@ ABS-◯ᶜmap≡f {A} {B} abs f =
           (ABS-◯ᶜeval abs B .U , ABS-◯ᶜeval-equiv abs B)
           refl))
 
-ABS-◯ᶜpoint≡a : ∀ {A} (abs : ⟨ ABS ⟩) (a◦ : U (◯ᶜ A)) (a : U A)
+ABS-◯ᶜpoint≡a : ∀ (abs : ⟨ ABS ⟩) (a◦ : U (◯ᶜ A)) (a : U A)
   → a◦ abs ≡ a
   → PathP (λ i → U (ABS-◯ᶜA≡A {A} abs i)) a◦ a
 ABS-◯ᶜpoint≡a {A} abs a◦ a p =

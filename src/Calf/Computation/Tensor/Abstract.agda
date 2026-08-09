@@ -37,19 +37,22 @@ import Calf.Value.Open as ◯
     comb : ●.● (U A) → ●.● (U B) → ●.● ∥ A ⊛ B ∥₂
     comb a• b• = ●.bind a• (λ a → ●.map (λ b → ∣ inj {A} {B} a b ∣₂) b•)
 
-    comb-law : ∀ c a• b•
-      → comb (●ᶜ A .charge c a•) b• ≡ comb a• (●ᶜ B .charge c b•)
-    comb-law c a• b• =
-      ●.ind-prop (λ a• → comb (●ᶜ A .charge c a•) b• ≡ comb a• (●ᶜ B .charge c b•))
-        (λ _ → ●.isSet● squash₂ _ _)
-        (λ a →
-          ●.ind-prop (λ b• → comb (●.η• (A .charge c a)) b• ≡ comb (●.η• a) (●ᶜ B .charge c b•))
-            (λ _ → ●.isSet● squash₂ _ _)
-            (λ b → cong (λ w → ●.η• ∣ w ∣₂) (law c a b))
-            (λ abs → refl)
-            b•)
-        (λ abs → refl)
-        a•
+    opaque
+      unfolding ●.elim′
+
+      comb-law : ∀ c a• b•
+        → comb (●ᶜ A .charge c a•) b• ≡ comb a• (●ᶜ B .charge c b•)
+      comb-law c a• b• =
+        ●.ind-prop (λ a• → comb (●ᶜ A .charge c a•) b• ≡ comb a• (●ᶜ B .charge c b•))
+          (λ _ → ●.isSet● squash₂ _ _)
+          (λ a →
+            ●.ind-prop (λ b• → comb (●.η• (A .charge c a)) b• ≡ comb (●.η• a) (●ᶜ B .charge c b•))
+              (λ _ → ●.isSet● squash₂ _ _)
+              (λ b → cong (λ w → ●.η• ∣ w ∣₂) (law c a b))
+              (λ abs → refl)
+              b•)
+          (λ abs → refl)
+          a•
 
     bwd-U₀ : ●ᶜ A ⊛ ●ᶜ B → ●.● ∥ A ⊛ B ∥₂
     bwd-U₀ (inj a• b•) = comb a• b•
@@ -58,18 +61,21 @@ import Calf.Value.Open as ◯
     bwd-U : U (●ᶜ A ⊗ ●ᶜ B) → U (●ᶜ (A ⊗ B))
     bwd-U = rec (●.isSet● squash₂) bwd-U₀
 
-    sect-pt : ∀ a• b• → fwd .U (comb a• b•) ≡ ∣ inj a• b• ∣₂
-    sect-pt a• b• =
-      ●.ind-prop (λ a• → fwd .U (comb a• b•) ≡ ∣ inj a• b• ∣₂)
-        (λ _ → squash₂ _ _)
-        (λ a →
-          ●.ind-prop (λ b• → fwd .U (comb (●.η• a) b•) ≡ ∣ inj (●.η• a) b• ∣₂)
-            (λ _ → squash₂ _ _)
-            (λ b → refl)
-            (λ abs → ⊗•-isProp abs _ _)
-            b•)
-        (λ abs → ⊗•-isProp abs _ _)
-        a•
+    opaque
+      unfolding ●.elim′
+
+      sect-pt : ∀ a• b• → fwd .U (comb a• b•) ≡ ∣ inj a• b• ∣₂
+      sect-pt a• b• =
+        ●.ind-prop (λ a• → fwd .U (comb a• b•) ≡ ∣ inj a• b• ∣₂)
+          (λ _ → squash₂ _ _)
+          (λ a →
+            ●.ind-prop (λ b• → fwd .U (comb (●.η• a) b•) ≡ ∣ inj (●.η• a) b• ∣₂)
+              (λ _ → squash₂ _ _)
+              (λ b → refl)
+              (λ abs → ⊗•-isProp abs _ _)
+              b•)
+          (λ abs → ⊗•-isProp abs _ _)
+          a•
 
     fwd-equiv : isEquivᶜ fwd
     fwd-equiv = isoToIsEquiv (iso (fwd .U) bwd-U sect retr)
@@ -77,8 +83,11 @@ import Calf.Value.Open as ◯
         sect : ∀ y → fwd .U (bwd-U y) ≡ y
         sect = ⊛-≡ squash₂ (λ y → fwd .U (bwd-U y)) (λ y → y) sect-pt
 
-        retr : ∀ x → bwd-U (fwd .U x) ≡ x
-        retr =
-          ●.ind-prop _ (λ _ → ●.isSet● squash₂ _ _)
-            (⊛-≡ (●.isSet● squash₂) (λ w → bwd-U (fwd .U (●.η• w))) ●.η• (λ a b → refl))
-            (λ abs → ●.◯-isProp● abs _ _)
+        opaque
+          unfolding ●.elim′
+
+          retr : ∀ x → bwd-U (fwd .U x) ≡ x
+          retr =
+            ●.ind-prop _ (λ _ → ●.isSet● squash₂ _ _)
+              (⊛-≡ (●.isSet● squash₂) (λ w → bwd-U (fwd .U (●.η• w))) ●.η• (λ a b → refl))
+              (λ abs → ●.◯-isProp● abs _ _)

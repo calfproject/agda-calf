@@ -14,20 +14,20 @@ record Glue (X• : 𝒱•) (X◦ : 𝒱◦) (χ• : ⟨ X• ⟩ → ● ⟨ 
     •→◦ : χ• • ≡ η• ◦
 open Glue public
 
--- glued elements are equal componentwise; the coherence is a path in a set
-Glue-path : ∀ {X• X◦ χ•} {g g' : Glue X• X◦ χ•}
-  → isSet ⟨ X◦ ⟩
-  → g .• ≡ g' .•
-  → g .◦ ≡ g' .◦
-  → g ≡ g'
-Glue-path isSetX◦ p• p◦ i .• = p• i
-Glue-path isSetX◦ p• p◦ i .◦ = p◦ i
-Glue-path {χ• = χ•} {g} {g'} isSetX◦ p• p◦ i .•→◦ =
-  isProp→PathP
-    (λ i → isSet● isSetX◦ (χ• (p• i)) (η• (p◦ i)))
-    (g .•→◦)
-    (g' .•→◦)
-    i
+opaque
+  Glue-path : ∀ {X• X◦ χ•} {g g' : Glue X• X◦ χ•}
+    → isSet ⟨ X◦ ⟩
+    → g .• ≡ g' .•
+    → g .◦ ≡ g' .◦
+    → g ≡ g'
+  Glue-path isSetX◦ p• p◦ i .• = p• i
+  Glue-path isSetX◦ p• p◦ i .◦ = p◦ i
+  Glue-path {χ• = χ•} {g} {g'} isSetX◦ p• p◦ i .•→◦ =
+    isProp→PathP
+      (λ i → isSet● isSetX◦ (χ• (p• i)) (η• (p◦ i)))
+      (g .•→◦)
+      (g' .•→◦)
+      i
 
 Glue-pullback-≃ : ∀ {X• X◦ χ•} →
   Glue X• X◦ χ• ≃ (Σ[ (x◦ , x•) ∈ ⟨ X◦ ⟩ × ⟨ X• ⟩ ] (η• x◦ ≡ χ• x•))
@@ -56,6 +56,19 @@ record 𝒱-FRACTURE : 𝒱₁ where
     X◦ : 𝒱◦
     χ• : ⟨ X• ⟩ → ● ⟨ X◦ ⟩
 open 𝒱-FRACTURE
+
+𝒱-FRACTURE-path
+  : {F G : 𝒱-FRACTURE}
+  → (X•-path : F .X• ≡ G .X•)
+  → (X◦-path : F .X◦ ≡ G .X◦)
+  → PathP
+      (λ i → X•-path i .fst → ● (X◦-path i .fst))
+      (F .χ•)
+      (G .χ•)
+  → F ≡ G
+𝒱-FRACTURE-path X•-path X◦-path χ•-path i .X• = X•-path i
+𝒱-FRACTURE-path X•-path X◦-path χ•-path i .X◦ = X◦-path i
+𝒱-FRACTURE-path X•-path X◦-path χ•-path i .χ• = χ•-path i
 
 𝒱-Glue : 𝒱-FRACTURE → 𝒱
 𝒱-Glue F = Glue (F .X•) (F .X◦) (F .χ•)
