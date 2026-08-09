@@ -336,7 +336,7 @@ module Dequeue where
 
 batched-queue : Queue
 batched-queue .prequeue .Q = Abstractionᶜ BQ LQ α
-batched-queue .prequeue .empty = triangleᶜ' emptyᴮ emptyᴸ empty-coherent
+batched-queue .prequeue .empty = triangleᶜ' {β = α} emptyᴮ emptyᴸ empty-coherent
 batched-queue .prequeue .enqueue e = squareᶜ' (enqueueᴮ e) (enqueueᴸ e) (enqueue-coherent e)
 batched-queue .prequeue .dequeue = Dequeue.dequeue'
 batched-queue .spec abs i .Q =
@@ -411,7 +411,7 @@ batched-queue .spec abs i .dequeue =
         ⊸-path
           (◯[Abstractionᶜ≡A-abs] {BQ} {LQ} {α} abs)
           (λ i → ℕₛ ⋊ ◯[Abstractionᶜ≡A-abs] {BQ} {LQ} {α} abs i)
-          ?
+          {!   !}
           -- (ua→
           --   {e =
           --     ( abstraction-open-eval {BQ} {LQ} {α} abs .U

@@ -28,44 +28,45 @@ open import Calf.Computation.Abstraction.Base
   → Abstractionᶜ A-⊤ A-abs α ≃ᶜ A-abs
 ◯[Abstractionᶜ≃A-abs] abs = ◯[Glueᶜ≃A◦] abs ∙ₑᶜ ABS-◯ᶜA≃A abs
 
-◯[Abstractionᶜ≡A-abs]
-  : ∀ {A-⊤ A-abs α}
-  → ⟨ ABS ⟩
-  → Abstractionᶜ A-⊤ A-abs α ≡ A-abs
-◯[Abstractionᶜ≡A-abs] abs = uaᶜ (◯[Abstractionᶜ≃A-abs] abs)
+opaque
+  ◯[Abstractionᶜ≡A-abs]
+    : ∀ {A-⊤ A-abs α}
+    → ⟨ ABS ⟩
+    → Abstractionᶜ A-⊤ A-abs α ≡ A-abs
+  ◯[Abstractionᶜ≡A-abs] abs = uaᶜ (◯[Abstractionᶜ≃A-abs] abs)
 
-◯[squareᶜ'≡f-abs]
-  : ∀ {A-⊤ A-abs α B-⊤ B-abs β f-⊤ f-abs f-coh}
-  → (abs : ⟨ ABS ⟩)
-  → PathP
-    (λ i →
-      ◯[Abstractionᶜ≡A-abs] {A-⊤} {A-abs} {α} abs i
-        ⊸ ◯[Abstractionᶜ≡A-abs] {B-⊤} {B-abs} {β} abs i)
-    (squareᶜ' f-⊤ f-abs f-coh)
-    f-abs
-◯[squareᶜ'≡f-abs] {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} {f-⊤} {f-abs} {f-coh} abs =
-  ⊸-path
-    (◯[Abstractionᶜ≡A-abs] {A-⊤} {A-abs} {α} abs)
-    (◯[Abstractionᶜ≡A-abs] {B-⊤} {B-abs} {β} abs)
-    (ua→
-      {e = ◯[Abstractionᶜ≃A-abs] {A-⊤} {A-abs} {α} abs .fst .U
-         , ◯[Abstractionᶜ≃A-abs] {A-⊤} {A-abs} {α} abs .snd}
-      {B = λ i → U (◯[Abstractionᶜ≡A-abs] {B-⊤} {B-abs} {β} abs i)}
-      (λ _ →
-        ua-gluePath
-          ( ◯[Abstractionᶜ≃A-abs] {B-⊤} {B-abs} {β} abs .fst .U
-          , ◯[Abstractionᶜ≃A-abs] {B-⊤} {B-abs} {β} abs .snd)
-          refl))
+  ◯[squareᶜ'≡f-abs]
+    : ∀ {A-⊤ A-abs α B-⊤ B-abs β f-⊤ f-abs f-coh}
+    → (abs : ⟨ ABS ⟩)
+    → PathP
+      (λ i →
+        ◯[Abstractionᶜ≡A-abs] {A-⊤} {A-abs} {α} abs i
+          ⊸ ◯[Abstractionᶜ≡A-abs] {B-⊤} {B-abs} {β} abs i)
+      (squareᶜ' f-⊤ f-abs f-coh)
+      f-abs
+  ◯[squareᶜ'≡f-abs] {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} {f-⊤} {f-abs} {f-coh} abs =
+    ⊸-path
+      (◯[Abstractionᶜ≡A-abs] {A-⊤} {A-abs} {α} abs)
+      (◯[Abstractionᶜ≡A-abs] {B-⊤} {B-abs} {β} abs)
+      (ua→
+        {e = ◯[Abstractionᶜ≃A-abs] {A-⊤} {A-abs} {α} abs .fst .U
+           , ◯[Abstractionᶜ≃A-abs] {A-⊤} {A-abs} {α} abs .snd}
+        {B = λ i → U (◯[Abstractionᶜ≡A-abs] {B-⊤} {B-abs} {β} abs i)}
+        (λ _ →
+          ua-gluePath
+            ( ◯[Abstractionᶜ≃A-abs] {B-⊤} {B-abs} {β} abs .fst .U
+            , ◯[Abstractionᶜ≃A-abs] {B-⊤} {B-abs} {β} abs .snd)
+            refl))
 
-◯[triangleᶜ'≡b-abs] : ∀ {B-⊤ B-abs β b-⊤ b-abs b-coh} (abs : ⟨ ABS ⟩) →
-  PathP (λ i → U (◯[Abstractionᶜ≡A-abs] {B-⊤} {B-abs} {β} abs i))
-    (triangleᶜ' {B-⊤} {B-abs} {β} b-⊤ b-abs b-coh)
-    b-abs
-◯[triangleᶜ'≡b-abs] {B-⊤} {B-abs} {β} {b-⊤} {b-abs} {b-coh} abs =
-  ua-gluePath
-    ( ◯[Abstractionᶜ≃A-abs] {B-⊤} {B-abs} {β} abs .fst .U
-    , ◯[Abstractionᶜ≃A-abs] {B-⊤} {B-abs} {β} abs .snd)
-    refl
+  ◯[triangleᶜ'≡b-abs] : ∀ {B-⊤ B-abs β b-⊤ b-abs b-coh} (abs : ⟨ ABS ⟩) →
+    PathP (λ i → U (◯[Abstractionᶜ≡A-abs] {B-⊤} {B-abs} {β} abs i))
+      (triangleᶜ' {B-⊤} {B-abs} {β} b-⊤ b-abs b-coh)
+      b-abs
+  ◯[triangleᶜ'≡b-abs] {B-⊤} {B-abs} {β} {b-⊤} {b-abs} {b-coh} abs =
+    ua-gluePath
+      ( ◯[Abstractionᶜ≃A-abs] {B-⊤} {B-abs} {β} abs .fst .U
+      , ◯[Abstractionᶜ≃A-abs] {B-⊤} {B-abs} {β} abs .snd)
+      refl
 
 
 squareᶜ'-charge
