@@ -77,8 +77,9 @@ opaque
     ⊸-path refl refl
       (funExt (●.ind-prop _ (λ _ → ●.isSet● (A .is-set) _ _) (λ _ → refl) (λ _ → refl)))
 
-map-id-equiv : isEquiv (map (idᶜ {A}) .U)
-map-id-equiv {A} = subst isEquiv (cong (λ h → h .U) (sym (map-id {A}))) (idIsEquiv _)
+opaque
+  map-id-equiv : isEquiv (map (idᶜ {A}) .U)
+  map-id-equiv {A} = subst isEquiv (cong (λ h → h .U) (sym (map-id {A}))) (idIsEquiv _)
 
 opaque
   map-open : ⟨ ABS ⟩ → (f g : A ⊸ B) → map f ≡ map g

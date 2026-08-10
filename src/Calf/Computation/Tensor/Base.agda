@@ -126,18 +126,19 @@ module _ where
                 cong ∣_∣₂ (law c a 0ℂ)
               ∙ cong (λ d → ∣ inj a d ∣₂) (+ℂ-identityʳ c))
 
-map₂-equivᶜ : ∀ {A₁ A₂ B₁ B₂} {f : A₁ ⊸ A₂} {g : B₁ ⊸ B₂}
-  → isEquivᶜ f → isEquivᶜ g
-  → isEquivᶜ (map₂ f g)
-map₂-equivᶜ {f = f} {g = g} fe ge =
-  isoToIsEquiv
-    (iso (map₂ f g .U) (map₂ (invEquivᶜ f fe) (invEquivᶜ g ge) .U)
-      (⊛-≡ squash₂
-        (λ z → map₂ f g .U (map₂ (invEquivᶜ f fe) (invEquivᶜ g ge) .U z)) (λ z → z)
-        (λ a b i → ∣ inj (secEq (f .U , fe) a i) (secEq (g .U , ge) b i) ∣₂))
-      (⊛-≡ squash₂
-        (λ z → map₂ (invEquivᶜ f fe) (invEquivᶜ g ge) .U (map₂ f g .U z)) (λ z → z)
-        (λ a b i → ∣ inj (retEq (f .U , fe) a i) (retEq (g .U , ge) b i) ∣₂)))
+opaque
+  map₂-equivᶜ : ∀ {A₁ A₂ B₁ B₂} {f : A₁ ⊸ A₂} {g : B₁ ⊸ B₂}
+    → isEquivᶜ f → isEquivᶜ g
+    → isEquivᶜ (map₂ f g)
+  map₂-equivᶜ {f = f} {g = g} fe ge =
+    isoToIsEquiv
+      (iso (map₂ f g .U) (map₂ (invEquivᶜ f fe) (invEquivᶜ g ge) .U)
+        (⊛-≡ squash₂
+          (λ z → map₂ f g .U (map₂ (invEquivᶜ f fe) (invEquivᶜ g ge) .U z)) (λ z → z)
+          (λ a b i → ∣ inj (secEq (f .U , fe) a i) (secEq (g .U , ge) b i) ∣₂))
+        (⊛-≡ squash₂
+          (λ z → map₂ (invEquivᶜ f fe) (invEquivᶜ g ge) .U (map₂ f g .U z)) (λ z → z)
+          (λ a b i → ∣ inj (retEq (f .U , fe) a i) (retEq (g .U , ge) b i) ∣₂)))
 
 ⊗-isContr : isContr (U A) → isContr (U B) → isContr (U (A ⊗ B))
 ⊗-isContr {A} {B} cA cB .fst = ∣ inj (cA .fst) (cB .fst) ∣₂

@@ -100,11 +100,12 @@ module _ {A B : 𝒞} where
       (λ a b → refl))
     (λ abs → isContr→isProp (⊗-isContr (◯-isConnected abs) (◯-isConnected abs)) _ _)
 
-●ᶜ-map₂-equiv : {A A' B B' : 𝒞} {f : A ⊸ A'} {g : B ⊸ B'}
-  → isEquiv (●ᶜ.map f .U) → isEquiv (●ᶜ.map g .U)
-  → isEquiv (●ᶜ.map (map₂ f g) .U)
-●ᶜ-map₂-equiv {A} {A'} {B} {B'} {f} {g} fe ge =
-  isEquiv[equivFunA≃B∘f]→isEquiv[f] (●ᶜ.map (map₂ f g) .U) (●ᶜ-⊗-fwd .U , ●ᶜ-⊗-equiv)
-    (subst isEquiv (funExt (●ᶜ-⊗-natural f g))
-      (compEquiv (●ᶜ-⊗-fwd .U , ●ᶜ-⊗-equiv)
-        (map₂ (●ᶜ.map f) (●ᶜ.map g) .U , map₂-equivᶜ {f = ●ᶜ.map f} {g = ●ᶜ.map g} fe ge) .snd))
+opaque
+  ●ᶜ-map₂-equiv : {A A' B B' : 𝒞} {f : A ⊸ A'} {g : B ⊸ B'}
+    → isEquiv (●ᶜ.map f .U) → isEquiv (●ᶜ.map g .U)
+    → isEquiv (●ᶜ.map (map₂ f g) .U)
+  ●ᶜ-map₂-equiv {A} {A'} {B} {B'} {f} {g} fe ge =
+    isEquiv[equivFunA≃B∘f]→isEquiv[f] (●ᶜ.map (map₂ f g) .U) (●ᶜ-⊗-fwd .U , ●ᶜ-⊗-equiv)
+      (subst isEquiv (funExt (●ᶜ-⊗-natural f g))
+        (compEquiv (●ᶜ-⊗-fwd .U , ●ᶜ-⊗-equiv)
+          (map₂ (●ᶜ.map f) (●ᶜ.map g) .U , map₂-equivᶜ {f = ●ᶜ.map f} {g = ●ᶜ.map g} fe ge) .snd))
