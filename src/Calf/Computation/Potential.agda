@@ -107,57 +107,39 @@ module _ where
             ●ᶜ (◯ᶜ (Σᶜ X B)) .charge c (●ᶜ.map (Σᶜ-◯ᶜ-in {X} {B} x) .U (α x .U a))
           ∎
 
-    Σᶜ-fracture-map : ∀ {X : 𝒱ₛ} {A B : ⟨ X ⟩ → 𝒞} →
-      ((x : ⟨ X ⟩) → A x ⊸ B x) →
-      ●ᶜ (Σᶜ X (●ᶜ ∘ A)) ⊸ ●ᶜ (◯ᶜ (Σᶜ X (◯ᶜ ∘ B)))
-    Σᶜ-fracture-map {X} {A} {B} f =
-      Σᶜ-fracture-map' {X} (λ x → ●ᶜ.map (f x ⨾ᶜ η◦ᶜ {B x}))
-
-    Σᶜ-fracture-map-path : ∀ {X : 𝒱ₛ} {A B : ⟨ X ⟩ → 𝒞}
-      → (f : (x : ⟨ X ⟩) → A x ⊸ B x) 
+  private opaque
+    Σᶜ-fracture-map'-path : ∀ {X : 𝒱ₛ} {A B : ⟨ X ⟩ → 𝒞}
+      → (m : Σᶜ X A ⊸ ◯ᶜ (Σᶜ X B))
+      → (α : (x : ⟨ X ⟩) → ●ᶜ (A x) ⊸ ●ᶜ (◯ᶜ (B x)))
+      → ((x : ⟨ X ⟩) (a : U (A x))
+          → ●ᶜ.map (Σᶜ-◯ᶜ-in {X} {◯ᶜ ∘ B} x) .U (α x .U (η• a))
+            ≡ η• (Σᶜ-◯ᶜ-fwd {X} {B} .U (m .U (x , a))))
       → PathP
-        (λ i → Σᶜ-●ᶜ {X} {A} i ⊸ ●ᶜ (Σᶜ-◯ᶜ {X} {B} i))
-          (●ᶜ.map (Σᶜ-map {X} f ⨾ᶜ η◦ᶜ {Σᶜ X B}))
-          (Σᶜ-fracture-map {X} f)
-    Σᶜ-fracture-map-path {X} {A} {B} f =
+          (λ i → Σᶜ-●ᶜ {X} {A} i ⊸ ●ᶜ (Σᶜ-◯ᶜ {X} {B} i))
+          (●ᶜ.map m)
+          (Σᶜ-fracture-map' {X} α)
+    Σᶜ-fracture-map'-path {X} {A} {B} m α coh =
       ⊸-path
         (Σᶜ-●ᶜ {X} {A})
         (cong ●ᶜ (Σᶜ-◯ᶜ {X} {B}))
-        {f₀ = ●ᶜ.map (Σᶜ-map {X} f ⨾ᶜ η◦ᶜ {Σᶜ X B})}
-        {f₁ = Σᶜ-fracture-map {X} f}
+        {f₀ = ●ᶜ.map m}
+        {f₁ = Σᶜ-fracture-map' {X} α}
         (ua→
           {e = Σᶜ-●ᶜ-fwd {X} {A} .U , Σᶜ-●ᶜ-fwd-equiv {X} {A}}
           (λ w →
             ●.elim
               (λ w →
                 ●.isModalPathP ●.isModal●
-                  {x = ●ᶜ.map (Σᶜ-map {X} f ⨾ᶜ η◦ᶜ {Σᶜ X B}) .U w}
-                  {x' = Σᶜ-fracture-map {X} f .U (Σᶜ-●ᶜ-fwd {X} {A} .U w)})
+                  {x = ●ᶜ.map m .U w}
+                  {x' = Σᶜ-fracture-map' {X} α .U (Σᶜ-●ᶜ-fwd {X} {A} .U w)})
               (λ (x , a) →
                 congP (λ _ → η•)
                   (ua-gluePath
                     ( Σᶜ-◯ᶜ-fwd {X} {B} .U , Σᶜ-◯ᶜ-fwd-equiv {X} {B})
-                    {x = η◦ (x , f x .U a)}
-                    refl))
+                    {x = m .U (x , a)}
+                    refl)
+                ▷ sym (coh x a))
               w))
-
-    Σᶜ-fracture-map-id-path : ∀ {X : 𝒱ₛ} {A : ⟨ X ⟩ → 𝒞}
-      → PathP
-        (λ i → Σᶜ-●ᶜ {X} {A} i ⊸ ●ᶜ (Σᶜ-◯ᶜ {X} {A} i))
-          (●ᶜ.map η◦ᶜ)
-          (Σᶜ-fracture-map' {X} (λ x → ●ᶜ.map (η◦ᶜ {A x})))
-    Σᶜ-fracture-map-id-path {X} {A} =
-      (   ●ᶜ.map η◦ᶜ
-        ≡⟨ sym (cong ●ᶜ.map (idᶜ⨾ᶜf≡f η◦ᶜ)) ⟩
-          ●ᶜ.map (idᶜ ⨾ᶜ η◦ᶜ)
-        ≡⟨ sym (cong ●ᶜ.map (cong (_⨾ᶜ η◦ᶜ) (Σᶜ-map-idᶜ {X} {A}))) ⟩
-          ●ᶜ.map (Σᶜ-map {X} (λ x → idᶜ {A x}) ⨾ᶜ η◦ᶜ)
-        ∎)
-      ◁ Σᶜ-fracture-map-path {X} {A} {A} (λ x → idᶜ {A x})
-      ▷ ( Σᶜ-fracture-map' {X} (λ x → ●ᶜ.map (idᶜ {A x} ⨾ᶜ η◦ᶜ {A x}))
-        ≡⟨ cong (Σᶜ-fracture-map' {X}) (funExt λ x → cong ●ᶜ.map (idᶜ⨾ᶜf≡f (η◦ᶜ {A x}))) ⟩
-          Σᶜ-fracture-map' {X} (λ x → ●ᶜ.map (η◦ᶜ {A x}))
-        ∎)
 
   potential-credit : ∀ {X : 𝒱ₛ} Φ →
     Potential Φ ≡ [ x ∈ X ] ⋊ ▷[ Φ x ] ⊤
@@ -198,7 +180,7 @@ module _ where
           ≡⟨ 𝒞-FRACTURE-pathᶜ
                 (cong ●ᶜ F-Σᶜ)
                 (cong ◯ᶜ F-Σᶜ)
-                (λ i → ●ᶜ.map (F-Σᶜ-potential Φ i ⨾ᶜ η◦ᶜ {F-Σᶜ {X} i})) ⟩
+                (congP (λ _ m → ●ᶜ.map (m ⨾ᶜ η◦ᶜ)) (F-Σᶜ-potential {X} Φ)) ⟩
             record
               { A• = ●ᶜ• ([ x ∈ X ] ⋊ ⊤)
               ; A◦ = ◯ᶜ◦ ([ x ∈ X ] ⋊ ⊤)
@@ -207,16 +189,19 @@ module _ where
           ≡⟨ 𝒞-FRACTURE-pathᶜ
                 (Σᶜ-●ᶜ {X} {const ⊤})
                 (Σᶜ-◯ᶜ {X} {const ⊤})
-                (Σᶜ-fracture-map-path {X} {const ⊤} {const ⊤} (λ x → CHARGE (Φ x))) ⟩
+                (Σᶜ-fracture-map'-path {X} {const ⊤} {const ⊤}
+                  (Σᶜ-map {X} {const ⊤} (λ x → CHARGE (Φ x)) ⨾ᶜ η◦ᶜ {[ x ∈ X ] ⋊ ⊤})
+                  (λ x → ●ᶜ.map (CHARGE (Φ x) ⨾ᶜ η◦ᶜ {⊤}))
+                  (λ x a → refl)) ⟩
             record
               { A• = ●ᶜ• ([ x ∈ X ] ⋊ ●ᶜ ⊤)
               ; A◦ = ◯ᶜ◦ ([ x ∈ X ] ⋊ ◯ᶜ ⊤)
-              ; α• = Σᶜ-fracture-map {X} {const ⊤} {const ⊤} (λ x → CHARGE (Φ x))
+              ; α• = Σᶜ-fracture-map' {X} {const (●ᶜ ⊤)} {const (◯ᶜ ⊤)} (λ x → ●ᶜ.map (CHARGE (Φ x) ⨾ᶜ η◦ᶜ {⊤}))
               }
           ≡⟨ 𝒞-FRACTURE-pathᶜ
-                (λ i → ●ᶜ (Σᶜ X (λ x → ▷⊤-●ᶜ x i)))
-                (λ i → ◯ᶜ (Σᶜ X (λ x → ▷⊤-◯ᶜ x i)))
-                (λ i → Σᶜ-fracture-map' {X} {λ x → ▷⊤-●ᶜ x i} {λ x → ▷⊤-◯ᶜ x i} (λ x → ▷⊤-coherence x i)) ⟩
+                (cong (●ᶜ ∘ Σᶜ X) (funExt ▷⊤-●ᶜ))
+                (cong (◯ᶜ ∘ Σᶜ X) (funExt ▷⊤-◯ᶜ))
+                (congP (λ _ → Σᶜ-fracture-map' {X}) (funExt ▷⊤-coherence)) ⟩
             record
               { A• = ●ᶜ• ([ x ∈ X ] ⋊ ●ᶜ (▷[ Φ x ] ⊤))
               ; A◦ = ◯ᶜ◦ ([ x ∈ X ] ⋊ ◯ᶜ (▷[ Φ x ] ⊤))
@@ -225,6 +210,9 @@ module _ where
           ≡⟨ 𝒞-FRACTURE-pathᶜ
                 (sym (Σᶜ-●ᶜ {X} {λ x → ▷[ Φ x ] ⊤}))
                 (sym (Σᶜ-◯ᶜ {X} {λ x → ▷[ Φ x ] ⊤}))
-                (λ i → Σᶜ-fracture-map-id-path {X} {λ x → ▷[ Φ x ] ⊤} (~ i)) ⟩
+                (symP (Σᶜ-fracture-map'-path {X} {λ x → ▷[ Φ x ] ⊤} {λ x → ▷[ Φ x ] ⊤}
+                  (η◦ᶜ {[ x ∈ X ] ⋊ ▷[ Φ x ] ⊤})
+                  (λ x → ●ᶜ.map (η◦ᶜ {▷[ Φ x ] ⊤}))
+                  (λ x a → refl))) ⟩
             𝒞-Fracture ([ x ∈ X ] ⋊ ▷[ Φ x ] ⊤)
           ∎
