@@ -24,7 +24,7 @@ glue•-charge
   → equivFun (glue•-equiv (U-FRACTURE F)) (●ᶜ (𝒞-Glue F) .charge c g•)
   ≡ ⟨ F .A• ⟩ᶜ .charge c (equivFun (glue•-equiv (U-FRACTURE F)) g•)
 glue•-charge F c =
-  ●.elim′ (λ g• → ●.isModal≡ (F .A• .snd)) λ g →
+  ●.elim (λ g• → ●.isModal≡ (F .A• .snd)) λ g →
       glue•-β (U-FRACTURE F) (𝒞-Glue F .charge c g)
     ∙ sym (cong (⟨ F .A• ⟩ᶜ .charge c) (glue•-β (U-FRACTURE F) g))
 

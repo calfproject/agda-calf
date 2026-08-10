@@ -62,7 +62,7 @@ opaque
   map-charge : (f : A ⊸ B) (c : ℂ) (a• : U (●ᶜ A))
     → ●.map (f .U) (●ᶜ A .charge c a•) ≡ ●ᶜ B .charge c (●.map (f .U) a•)
   map-charge f c =
-    ●.elim′ (λ _ → ●-≡-isModal _ _) (λ a → cong η• (f .charge c a))
+    ●.elim (λ _ → ●-≡-isModal _ _) (λ a → cong η• (f .charge c a))
 
 map : (A ⊸ B) → (●ᶜ A ⊸ ●ᶜ B)
 map f .U = ●.map (f .U)
@@ -70,6 +70,15 @@ map f .charge = map-charge f
 
 map-∘ : (f : A ⊸ B) (g : B ⊸ C) → map f ⨾ᶜ map g ≡ map (f ⨾ᶜ g)
 map-∘ f g = ⊸-path refl refl (funExt (●.map-∘ (f .U) (g .U)))
+
+opaque
+  map-id : map (idᶜ {A}) ≡ idᶜ
+  map-id {A} =
+    ⊸-path refl refl
+      (funExt (●.ind-prop _ (λ _ → ●.isSet● (A .is-set) _ _) (λ _ → refl) (λ _ → refl)))
+
+map-id-equiv : isEquiv (map (idᶜ {A}) .U)
+map-id-equiv {A} = subst isEquiv (cong (λ h → h .U) (sym (map-id {A}))) (idIsEquiv _)
 
 opaque
   map-open : ⟨ ABS ⟩ → (f g : A ⊸ B) → map f ≡ map g
@@ -90,7 +99,7 @@ opaque
   join-charge : (c : ℂ) (a•• : U (●ᶜ (●ᶜ A)))
     → ●.join (●ᶜ (●ᶜ A) .charge c a••) ≡ ●ᶜ A .charge c (●.join a••)
   join-charge c =
-    ●.elim′ (λ _ → ●-≡-isModal _ _) (λ _ → refl)
+    ●.elim (λ _ → ●-≡-isModal _ _) (λ _ → refl)
 
 join : ●ᶜ (●ᶜ A) ⊸ ●ᶜ A
 join .U = ●.join
@@ -115,11 +124,15 @@ opaque
   ●ᶜ-rec-charge : (B• : 𝒞•) (g : A ⊸ ⟨ B• ⟩ᶜ) (c : ℂ) (a• : U (●ᶜ A))
     → ●.elim (λ _ → strᶜ B•) (g .U) (●ᶜ A .charge c a•)
     ≡ ⟨ B• ⟩ᶜ .charge c (●.elim (λ _ → strᶜ B•) (g .U) a•)
-  ●ᶜ-rec-charge B• g c = ●.elim′ (λ a• → ●.isModal≡ (strᶜ B•)) (g .charge c)
+  ●ᶜ-rec-charge B• g c = ●.elim (λ a• → ●.isModal≡ (strᶜ B•)) (g .charge c)
 
 ●ᶜ-rec : (B• : 𝒞•) → (A ⊸ ⟨ B• ⟩ᶜ) → (●ᶜ A ⊸ ⟨ B• ⟩ᶜ)
 ●ᶜ-rec B• g .U = ●.elim (λ _ → strᶜ B•) (g .U)
 ●ᶜ-rec B• g .charge = ●ᶜ-rec-charge B• g
+
+●ᶜ-rec-β : (B• : 𝒞•) (g : A ⊸ ⟨ B• ⟩ᶜ) (a : U A)
+  → ●ᶜ-rec B• g .U (η• a) ≡ g .U a
+●ᶜ-rec-β B• g a = refl
 
 opaque
   ⊸-precomp-η•ᶜ-isEquiv : {A : 𝒞} (B• : 𝒞•)
@@ -137,7 +150,7 @@ opaque
   : (c : ℂ) (a• : U (●ᶜ A))
   → map (CHARGE {A = A} c) .U a• ≡ ●ᶜ A .charge c a•
 ●ᶜ-map-CHARGE c =
-  ●.elim′ (λ _ → ●-≡-isModal _ _) (λ _ → refl)
+  ●.elim (λ _ → ●-≡-isModal _ _) (λ _ → refl)
 
 module _ {A B C : 𝒞} where
   open import Calf.Computation.Pullback
@@ -175,14 +188,14 @@ module _ {A B C : 𝒞} where
 module _ where
   open import Calf.Computation.Copower
 
-  private 
+  private
     embed : ∀ {X A} → Σᶜ X A .U → Σᶜ X (●ᶜ ∘ A) .U
     embed (x , a) = x , η• a
 
   Σᶜ-●ᶜ-fwd : ∀ {X A} → ●ᶜ (Σᶜ X A) ⊸ ●ᶜ (Σᶜ X (●ᶜ ∘ A))
   Σᶜ-●ᶜ-fwd {X} {A} .U = ●.map (embed {X} {A})
   Σᶜ-●ᶜ-fwd .charge c =
-    ●.elim′ (λ _ → ●-≡-isModal _ _) λ _ → refl
+    ●.elim (λ _ → ●-≡-isModal _ _) λ _ → refl
 
   Σᶜ-●ᶜ-fwd-equiv : ∀ {X A} → isEquivᶜ (Σᶜ-●ᶜ-fwd {X} {A})
   Σᶜ-●ᶜ-fwd-equiv {X} {A} =

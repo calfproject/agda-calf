@@ -24,3 +24,9 @@ square' {X-⊤ = X-⊤} {X-abs = X-abs} {χ = χ} {Y-⊤ = Y-⊤} {Y-abs = Y-abs
     (●.map f-⊤)
     (◯.map f-abs)
     (●.elim (λ x• → ●-≡-isModal _ _) (λ x → cong (η• ∘ η◦) (f-coherence x)))
+
+triangle : ∀ {X-⊤ X-abs χ}
+  → X-⊤ → Abstraction X-⊤ X-abs χ
+triangle x .• = η• x
+triangle {χ = χ} x .◦ = η◦ (χ x)
+triangle x .•→◦ = refl

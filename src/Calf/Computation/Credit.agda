@@ -96,35 +96,25 @@ opaque
   save⨾spend≡charge : (A : 𝒞) (c : ℂ) → save A c ⨾ᶜ spend A c ≡ CHARGE {A} c
   save⨾spend≡charge A c =
       save A c ⨾ᶜ spend A c
-    ≡⟨ refl ⟩
-      save-path i1 ⨾ᶜ spend-path i1
-    ≡⟨ sym (fromPathP (λ i → save-path i ⨾ᶜ spend-path i)) ⟩
-      transport (λ i → Abstractionᶜ-id {A} i ⊸ Abstractionᶜ-id {A} i) (SQ₁ ⨾ᶜ SQ₂)
-    ≡⟨ cong (transport (λ i → Abstractionᶜ-id {A} i ⊸ Abstractionᶜ-id {A} i)) lemma ⟩
-      transport (λ i → Abstractionᶜ-id {A} i ⊸ Abstractionᶜ-id {A} i) (CHARGE {Abstractionᶜ A A idᶜ} c)
-    ≡⟨ fromPathP (λ i → CHARGE {Abstractionᶜ-id {A} i} c) ⟩
+    ≡⟨ cong (_⨾ᶜ spend A c) (idᶜ⨾ᶜf≡f triangle-Uᶜ) ⟩
+      triangle-Uᶜ ⨾ᶜ spend A c
+    ≡⟨ sym (fromPathP (λ i → triangle-Uᶜ ⨾ᶜ spend-path i)) ⟩
+      transport (λ i → A ⊸ Abstractionᶜ-id {A} i) (triangle-Uᶜ ⨾ᶜ SQ₂)
+    ≡⟨ cong (transport (λ i → A ⊸ Abstractionᶜ-id {A} i)) lemma ⟩
+      transport (λ i → A ⊸ Abstractionᶜ-id {A} i) (CHARGE c ⨾ᶜ triangle-Uᶜ {A} {A} {idᶜ})
+    ≡⟨ fromPathP (λ i → CHARGE {A} c ⨾ᶜ triangle-Uᶜ-id i) ⟩
+      CHARGE c ⨾ᶜ idᶜ
+    ≡⟨ f⨾ᶜidᶜ≡f (CHARGE c) ⟩
       CHARGE {A} c
     ∎
     where
-      ▷ : 𝒞
-      ▷ = Abstractionᶜ A A (CHARGE c)
+      SQ₂ : Abstractionᶜ A A (CHARGE c) ⊸ Abstractionᶜ A A idᶜ
+      SQ₂ = squareᶜ' (CHARGE c ⨾ᶜ idᶜ) idᶜ (λ _ → refl)
 
-      SQ₁ : Abstractionᶜ A A idᶜ ⊸ ▷
-      SQ₁ = squareᶜ' {A} {A} {idᶜ} {A} {A} {CHARGE c} idᶜ (idᶜ ⨾ᶜ CHARGE c) (λ _ → refl)
+      spend-path : PathP (λ i → Abstractionᶜ A A (CHARGE c) ⊸ Abstractionᶜ-id {A} i) SQ₂ (spend A c)
+      spend-path = transport-filler (λ i → Abstractionᶜ A A (CHARGE c) ⊸ Abstractionᶜ-id {A} i) SQ₂
 
-      SQ₂ : ▷ ⊸ Abstractionᶜ A A idᶜ
-      SQ₂ = squareᶜ' {A} {A} {CHARGE c} {A} {A} {idᶜ} (CHARGE c ⨾ᶜ idᶜ) idᶜ (λ _ → refl)
-
-      save-path : PathP (λ i → Abstractionᶜ-id {A} i ⊸ ▷) SQ₁ (save A c)
-      save-path = transport-filler (λ i → Abstractionᶜ-id {A} i ⊸ ▷) SQ₁
-
-      spend-path : PathP (λ i → ▷ ⊸ Abstractionᶜ-id {A} i) SQ₂ (spend A c)
-      spend-path = transport-filler (λ i → ▷ ⊸ Abstractionᶜ-id {A} i) SQ₂
-
-      lemma : SQ₁ ⨾ᶜ SQ₂ ≡ CHARGE {Abstractionᶜ A A idᶜ} c
+      lemma : triangle-Uᶜ ⨾ᶜ SQ₂ ≡ CHARGE c ⨾ᶜ triangle-Uᶜ {A} {A} {idᶜ}
       lemma =
-          squareᶜ'-⨾ᶜ idᶜ (idᶜ ⨾ᶜ CHARGE {A} c) (λ _ → refl) (CHARGE {A} c ⨾ᶜ idᶜ) idᶜ (λ _ → refl)
-        ∙ squareᶜ'-≡
-            (idᶜ⨾ᶜf≡f (CHARGE {A} c ⨾ᶜ idᶜ) ∙ f⨾ᶜidᶜ≡f (CHARGE {A} c))
-            (f⨾ᶜidᶜ≡f (idᶜ ⨾ᶜ CHARGE {A} c) ∙ idᶜ⨾ᶜf≡f (CHARGE {A} c))
-        ∙ squareᶜ'-charge (λ _ → refl)
+          triangle-Uᶜ-natural (CHARGE c ⨾ᶜ idᶜ) idᶜ (λ _ → refl)
+        ∙ cong (_⨾ᶜ triangle-Uᶜ {A} {A} {idᶜ}) (f⨾ᶜidᶜ≡f (CHARGE c))

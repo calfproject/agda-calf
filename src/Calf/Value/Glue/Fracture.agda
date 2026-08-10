@@ -104,7 +104,7 @@ module _ where
     isContr→isProp (proj◦-connected-contract F x◦) _
 
   glue•-out : (F : 𝒱-FRACTURE) → ● (𝒱-Glue F) → ⟨ F .X• ⟩
-  glue•-out F = ●.elim′ (λ _ → F .X• .snd) (λ g → g .•)
+  glue•-out F = ●.elim (λ _ → F .X• .snd) (λ g → g .•)
 
   glue•-in : (F : 𝒱-FRACTURE) → ⟨ F .X• ⟩ → ● (𝒱-Glue F)
   glue•-in F = ●.reflection-inv (F .X• .snd) (proj•-connected F)

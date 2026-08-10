@@ -140,25 +140,14 @@ elim {X} {Y} isModalY f =
         (f x)
         (invIsEq (isModalY (∗ abs)) (∗ abs)))
 
-opaque
-  elim′ : {X : 𝒱} {Y : ● X → 𝒱}
-    → ((x : ● X) → isModal (Y x)) → ((x : X) → Y (η• x)) → (x : ● X) → Y x
-  elim′ = elim
-
-  elim′-β : {X : 𝒱} {Y : ● X → 𝒱}
-    → (isModalY : (x : ● X) → isModal (Y x))
-    → (f : (x : X) → Y (η• x))
-    → (x : X) → elim′ isModalY f (η• x) ≡ f x
-  elim′-β isModalY f x = refl
-
 ●Modality : Modality _
 ●Modality .Modality.◯ = ●
 ●Modality .Modality.η = η•
 ●Modality .Modality.isModal = isModal
 ●Modality .Modality.isPropIsModal = isPropIsEquiv η•
 ●Modality .Modality.◯-isModal = isModal●
-●Modality .Modality.◯-elim = elim′
-●Modality .Modality.◯-elim-β = elim′-β
+●Modality .Modality.◯-elim = elim
+●Modality .Modality.◯-elim-β _ _ _ = refl
 ●Modality .Modality.◯-=-isModal x• x•' =
   isConnected◯→isModal● (isContrΠ λ abs → isContr→isContrPath (◯-isConnected abs) x• x•')
 

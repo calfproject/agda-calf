@@ -2,6 +2,7 @@ module Calf.Computation.Abstraction.Base where
 
 open import Calf.Value
 import Calf.Value.Closed as ●
+import Calf.Value.Abstraction as Abstraction
 open import Calf.Computation
 open import Calf.Computation.Open as ◯ᶜ
 open import Calf.Computation.Closed as ●ᶜ
@@ -61,22 +62,13 @@ triangle {α = α} {B} f-abs =
   subst (_ ⊸_) Abstractionᶜ-id $
   squareᶜ' (α ⨾ᶜ f-abs) f-abs (λ _ → refl)
 
-triangle' : ∀ {A B-⊤ B-abs β}
-  → A ⊸ B-⊤
-  → A ⊸ Abstractionᶜ B-⊤ B-abs β
-triangle' {β = β} f-⊤ =
-  subst (_⊸ _) Abstractionᶜ-id $
-  squareᶜ' f-⊤ (f-⊤ ⨾ᶜ β) (λ _ → refl)
-
 opaque
   unfolding Abstractionᶜ
 
-  triangle-U : ∀ {A-⊤ A-abs α}
-    → U A-⊤
-    → U (Abstractionᶜ A-⊤ A-abs α)
-  triangle-U a-⊤ .• = η• a-⊤
-  triangle-U {α = α} a-⊤ .◦ = η◦ (α .U a-⊤)
-  triangle-U a-⊤ .•→◦ = refl
+  triangle-Uᶜ : ∀ {A-⊤ A-abs α} → A-⊤ ⊸ Abstractionᶜ A-⊤ A-abs α
+  triangle-Uᶜ {A-⊤} {A-abs} {α} .U = Abstraction.triangle
+  triangle-Uᶜ {A-⊤} {A-abs} {α} .charge c a =
+    Glue-path (◯ᶜ A-abs .is-set) refl (cong η◦ (α .charge c a))
 
   triangleᶜ' : ∀ {B-⊤ B-abs β} (b-⊤ : U B-⊤) (b-abs : U B-abs)
     → β .U b-⊤ ≡ b-abs
@@ -85,3 +77,25 @@ opaque
   triangleᶜ' {B-abs = B-abs} b-⊤ b-abs b-coherence .◦ = η◦ᶜ {A = B-abs} .U b-abs
   triangleᶜ' {B-abs = B-abs} b-⊤ b-abs b-coherence .•→◦ =
     cong (λ b → η• (η◦ᶜ {A = B-abs} .U b)) b-coherence
+
+triangle' : ∀ {A B-⊤ B-abs β}
+  → A ⊸ B-⊤
+  → A ⊸ Abstractionᶜ B-⊤ B-abs β
+triangle' f-⊤ = f-⊤ ⨾ᶜ triangle-Uᶜ
+
+opaque
+  unfolding Abstractionᶜ Abstractionᶜ-id 𝒞-glue-fracture-retract triangle-Uᶜ ⊸-path
+
+  triangle-Uᶜ-id : PathP (λ i → A ⊸ Abstractionᶜ-id {A} i) (triangle-Uᶜ {A} {A} {idᶜ}) idᶜ
+  triangle-Uᶜ-id {A} =
+    compPathP' {B = A ⊸_}
+      (⊸-path
+        refl (cong (Glueᶜ (●ᶜ• A) (◯ᶜ◦ A) ∘ ●ᶜ.map) (idᶜ⨾ᶜf≡f η◦ᶜ))
+        {f₀ = triangle-Uᶜ {A} {A} {idᶜ}}
+        {f₁ = 𝒞-fracture {A}}
+        refl)
+      (⊸-path refl (𝒞-glue-fracture-retract A)
+        {f₀ = 𝒞-fracture {A}}
+        {f₁ = idᶜ}
+        (funExt λ a →
+          symP (ua-gluePath (𝒞-fracture {A} .U , fracture-isEquiv) {x = a} refl)))

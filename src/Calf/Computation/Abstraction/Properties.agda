@@ -1,6 +1,7 @@
 module Calf.Computation.Abstraction.Properties where
 
 open import Cubical.Foundations.Univalence using (ua; ua→; ua-gluePath)
+open import Cubical.Foundations.Equiv using (composesToId→Equiv)
 
 open import Calf.Core.Abstract
 open import Calf.Value
@@ -24,6 +25,41 @@ opaque
   ◯ᶜ-Abstractionᶜ : ∀ {A-⊤ A-abs α} → ◯ᶜ (Abstractionᶜ A-⊤ A-abs α) ≡ ◯ᶜ A-abs
   ◯ᶜ-Abstractionᶜ {A-⊤} {A-abs} {α} =
     cong ⟨_⟩ᶜ (𝒞-glue◦-path (Abstractionᶜ-FRAC A-⊤ A-abs α))
+
+opaque
+  unfolding Abstractionᶜ triangle-Uᶜ
+
+  ●ᶜ-triangle-Uᶜ-equiv : ∀ {A-⊤ A-abs α}
+    → isEquiv (●ᶜ.map (triangle-Uᶜ {A-⊤} {A-abs} {α}) .U)
+  ●ᶜ-triangle-Uᶜ-equiv {A-⊤} {A-abs} {α} =
+    composesToId→Equiv (equivFun ge) (●ᶜ.map (triangle-Uᶜ {A-⊤} {A-abs} {α}) .U) (funExt proj-unit) (ge .snd)
+    where
+      ge : U (●ᶜ (Abstractionᶜ A-⊤ A-abs α)) ≃ U (●ᶜ A-⊤)
+      ge = glue•-equiv (U-FRACTURE (Abstractionᶜ-FRAC A-⊤ A-abs α))
+
+      proj-unit : ∀ w → equivFun ge (●ᶜ.map (triangle-Uᶜ {A-⊤} {A-abs} {α}) .U w) ≡ w
+      proj-unit =
+        ●.ind-prop _ (λ _ → ●.isSet● (A-⊤ .is-set) _ _)
+          (λ a → glue•-β (U-FRACTURE (Abstractionᶜ-FRAC A-⊤ A-abs α)) (triangle-Uᶜ {A-⊤} {A-abs} {α} .U a))
+          (λ abs → ●.◯-isProp● abs _ _)
+
+●ᶜ-Abstractionᶜ-≃ᶜ : ∀ {A-⊤ A-abs α} → ●ᶜ A-⊤ ≃ᶜ ●ᶜ (Abstractionᶜ A-⊤ A-abs α)
+●ᶜ-Abstractionᶜ-≃ᶜ = ●ᶜ.map triangle-Uᶜ , ●ᶜ-triangle-Uᶜ-equiv
+
+opaque
+  unfolding Abstractionᶜ squareᶜ' triangle-Uᶜ
+
+  triangle-Uᶜ-natural : ∀ {A-⊤ A-abs α B-⊤ B-abs β}
+    (f-⊤ : A-⊤ ⊸ B-⊤) (f-abs : A-abs ⊸ B-abs)
+    (coh : (a : U A-⊤) → β .U (f-⊤ .U a) ≡ f-abs .U (α .U a))
+    → triangle-Uᶜ {A-⊤} {A-abs} {α} ⨾ᶜ squareᶜ' f-⊤ f-abs coh
+      ≡ f-⊤ ⨾ᶜ triangle-Uᶜ {B-⊤} {B-abs} {β}
+  triangle-Uᶜ-natural {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs coh =
+    ⊸-path refl refl
+      (funExt λ a →
+        Glue-path (◯ᶜ B-abs .is-set)
+          refl
+          (funExt λ _ → sym (coh a)))
 
 opaque
   unfolding Abstractionᶜ ●ᶜ-Abstractionᶜ
