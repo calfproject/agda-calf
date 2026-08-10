@@ -33,7 +33,7 @@ import Calf.Value.Closed using
   ; ∗
   ; law
   ; 𝒱•
-  ; ●-isContr
+  ; ◯-isConnected
   )
 
 {-
@@ -42,9 +42,9 @@ import Calf.Value.Closed using
 -}
 import Calf.Value.Glue using
   ( Glue
-  ; 𝒱-FRAC
-  ; fromFRAC
-  ; toFRAC
+  ; 𝒱-FRACTURE
+  ; 𝒱-Glue
+  ; 𝒱-Fracture
   ; square
   ; fracture-and-gluing
   ; fracture-and-gluing-square
@@ -129,9 +129,9 @@ import Calf.Computation.Tensor using
 -}
 import Calf.Computation.Glue using
   ( Glueᶜ
-  ; 𝒞-FRAC
-  ; 𝒞-fromFRAC
-  ; 𝒞-toFRAC
+  ; 𝒞-FRACTURE
+  ; 𝒞-Glue
+  ; 𝒞-Fracture
   ; squareᶜ
   ; 𝒞-fracture-and-gluing
   ; 𝒞-fracture-and-gluing-square
@@ -198,7 +198,7 @@ import Calf.Computation.Credit using
   ; ▷-◯ᶜ
   ; save
   ; spend
-  ; spend⨾save≡charge
+  ; save⨾spend≡charge
   )
 
 {-

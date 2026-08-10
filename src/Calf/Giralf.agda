@@ -49,14 +49,14 @@ letᴳ :
   → A , q₁ ⊢ B
   → B , q₂ ⊢ C
   → A , q ⊢ C
-letᴳ split e1 e2 =
-  transport (cong (_⊸ _) (sym ▷/+ ∙ cong (▷[_] _) (+ℂ-comm _ _ ∙ split))) ((▷-map e1) ⨾ᶜ e2)
+letᴳ {C = C} split e1 e2 =
+  transport (cong (_⊸ C) (sym ▷/+ ∙ cong (▷[_] _) (+ℂ-comm _ _ ∙ split))) ((▷-map e1) ⨾ᶜ e2)
 
 cmpᴳ : 𝒞 → Type
 cmpᴳ = ⊤ , 0ℂ ⊢_
 
 cmpᴳ→cmp : cmpᴳ A → U A
-cmpᴳ→cmp e = e .U (subst U (sym ▷/0) 0ℂ)
+cmpᴳ→cmp e = e .U (subst U (sym (▷/0 {⊤})) 0ℂ)
 
 cmp→cmpᴳ : U A → cmpᴳ A
 cmp→cmpᴳ {A} e =
@@ -68,7 +68,7 @@ module _ where
     q ≡ q'
     → Δ , q ⊢ A
     → Δ , q' ⊢ A
-  substᵐᴳ qq = subst (_⊸ _) (cong (▷[_] _) qq)
+  substᵐᴳ {A = A} qq = subst (_⊸ A) (cong (▷[_] _) qq)
 
   substᴳ :
     (A : ℂ → 𝒞)
@@ -96,7 +96,7 @@ module _ where
     → q ⋎₂ (p , q')
     → Δ , q' ⊢ A
     → Δ , q ⊢ ▷[ p ] A
-  storeᴳ p split e = subst (_⊸ _) (sym ▷/+ ∙ cong (▷[_] _) split) (▷-map e)
+  storeᴳ {A = A} p split e = subst (_⊸ ▷[ p ] A) (sym ▷/+ ∙ cong (▷[_] _) split) (▷-map e)
 
   releaseᴳ :
     Δ , q ⊢ ▷[ p ] B
@@ -108,20 +108,20 @@ spendᴳ : ∀ p
   → q ⋎₂ (p , q')
   → Δ , q' ⊢ A
   → Δ , q ⊢ A
-spendᴳ p split e = releaseᴳ (storeᴳ p split e) (spend p)
+spendᴳ {A = A} p split e = releaseᴳ (storeᴳ p split e) (spend A p)
 
 module _ where
   getᴳ : ∀ p
     → q' ⋎₂ (p , q)
     → Δ , q' ⊢ A
     → Δ , q ⊢ ◁[ p ] A
-  getᴳ p split = transport (sym (▷⊣◁ ∙ cong (_⊸ _) (sym ▷/+ ∙ cong (▷[_] _) split)))
+  getᴳ {A = A} p split = transport (sym (▷⊣◁ ∙ cong (_⊸ A) (sym ▷/+ ∙ cong (▷[_] _) split)))
 
   payᴳ :
     q ⋎₂ (p , q')
     → Δ , q' ⊢ ◁[ p ] A
     → Δ , q ⊢ A
-  payᴳ split = transport (▷⊣◁ ∙ cong (_⊸ _) (sym ▷/+ ∙ cong (▷[_] _) split))
+  payᴳ {A = A} split = transport (▷⊣◁ ∙ cong (_⊸ A) (sym ▷/+ ∙ cong (▷[_] _) split))
 
 module _ where
   nil₁ᴳ : cmpᴳ (CList₁ p X)
