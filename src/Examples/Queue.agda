@@ -280,6 +280,8 @@ module Dequeue where
               ∎
 
   opaque
+    unfolding Abstractionᶜ
+
     dequeue'-fst-glue : U BLQ → FractureGlue ℕ
     dequeue'-fst-glue =
       square'

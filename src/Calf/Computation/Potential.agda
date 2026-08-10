@@ -185,6 +185,8 @@ module _ where
       ▷⊤-coherence x = ▷-coherence (Φ x) ⊤
 
       opaque
+        unfolding Abstractionᶜ
+
         fracture-proof :
           𝒞-Fracture (Potential Φ) ≡
           𝒞-Fracture ([ x ∈ X ] ⋊ ▷[ Φ x ] ⊤)
