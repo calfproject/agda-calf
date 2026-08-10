@@ -39,7 +39,7 @@ insert p x =
       pairᴳ
         ( getᴳ p refl $
           if x ≤ᵇ y
-            then cons₁ᴳ refl x (cons₁ᴳ (+ℂ-identityʳ p) y (proj₂ᴳ (idᴳ refl)))
+            then cons₁ᴳ refl x (cons₁ᴳ (+ℂ-identityʳ p) y (proj₂ᴳ {A = ◁[ p ] CList₁ p ℕ} (idᴳ refl)))
             else cons₁ᴳ refl y (payᴳ (+ℂ-identityʳ p) (proj₁ᴳ {B = CList₁ p ℕ} (idᴳ refl)))
         )
         (cons₁ᴳ (+ℂ-identityʳ p) y (proj₂ᴳ {A = ◁[ p ] CList₁ p ℕ} (idᴳ refl)))
