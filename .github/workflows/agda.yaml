@@ -2,7 +2,6 @@ name: Agda and Mikan
 
 on:
   push:
-  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -99,14 +98,12 @@ jobs:
         if: matrix.toolchain == 'agda'
         run: echo "$HOME/.cabal/bin" >> "$GITHUB_PATH"
 
-      - name: Restore or build Mikan through Cachix
+      - name: Restore and install Mikan through Cachix
         if: matrix.toolchain == 'mikan'
         run: |
-          nix build \
-            --accept-flake-config \
-            --out-link "$GITHUB_WORKSPACE/mikan-result" \
-            "$GITHUB_WORKSPACE/compiler"
-          echo "$GITHUB_WORKSPACE/mikan-result/bin" >> "$GITHUB_PATH"
+          nix profile add "$GITHUB_WORKSPACE/compiler"
+          "$HOME/.nix-profile/bin/mikan" --version
+          echo "$HOME/.nix-profile/bin" >> "$GITHUB_PATH"
 
       - name: Check out the matching Cubical library
         shell: bash
