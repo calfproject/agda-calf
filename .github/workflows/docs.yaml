@@ -4,52 +4,98 @@ on:
   push:
     branches:
       - main
+  pull_request:
   release:
     types:
       - published
   workflow_dispatch:
     inputs:
       ref:
-        description: main, or a release tag such as v1.0.0
+        description: Source to publish; main becomes /current/
         required: true
         default: main
 
 permissions:
   contents: read
 
-# Every deployment reads and updates the same gh-pages branch. Queue them so
-# two releases cannot overwrite one another's version directory.
+# Every run updates the same versioned site, so serialize complete runs. The
+# version builds inside each run still execute concurrently as a matrix.
 concurrency:
   group: calf-github-pages
   cancel-in-progress: false
 
 jobs:
-  build:
-    name: Build documentation
+  prepare:
+    name: Select documentation versions
     runs-on: ubuntu-latest
-    timeout-minutes: 120
     permissions:
-      contents: write
+      contents: read
+    outputs:
+      matrix: ${{ steps.versions.outputs.matrix }}
 
     steps:
-      - name: Select source and destination
-        id: version
+      - name: Check out documentation configuration
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.sha || github.event.repository.default_branch }}
+          path: workflow-config
+
+      - name: Select versions to build
+        id: versions
         shell: bash
         env:
           EVENT_NAME: ${{ github.event_name }}
+          GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.event.release.tag_name }}
           REQUESTED_REF: ${{ inputs.ref }}
         run: |
+          manifest="$GITHUB_WORKSPACE/workflow-config/.github/docs-toolchains.json"
+
           case "$EVENT_NAME" in
+            pull_request)
+              releases='[]'
+              page=1
+              while true; do
+                response=$(curl --fail-with-body --silent --show-error \
+                  --header "Authorization: Bearer $GH_TOKEN" \
+                  --header 'Accept: application/vnd.github+json' \
+                  --header 'X-GitHub-Api-Version: 2026-03-10' \
+                  "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases?per_page=100&page=$page")
+                releases=$(jq --compact-output \
+                  --argjson previous "$releases" \
+                  '$previous + .' <<< "$response")
+
+                if (( $(jq 'length' <<< "$response") < 100 )); then
+                  break
+                fi
+                ((page += 1))
+              done
+
+              targets=$(jq --compact-output '
+                ["current"] + [
+                  .[]
+                  | select(.draft == false)
+                  | .tag_name
+                  | select(test("^v[0-9]+\\.[0-9]+\\.[0-9]+([.-][0-9A-Za-z.-]+)?$"))
+                ]
+              ' <<< "$releases")
+              ;;
             push)
-              source_ref="$GITHUB_SHA"
-              destination=current
+              targets='["current"]'
               ;;
             release)
-              source_ref="$RELEASE_TAG"
+              targets=$(jq --compact-output --null-input \
+                --arg release "$RELEASE_TAG" \
+                '["current", $release]')
               ;;
             workflow_dispatch)
-              source_ref="$REQUESTED_REF"
+              if [[ "$REQUESTED_REF" == main ]]; then
+                targets='["current"]'
+              else
+                targets=$(jq --compact-output --null-input \
+                  --arg release "$REQUESTED_REF" \
+                  '["current", $release]')
+              fi
               ;;
             *)
               echo "Unsupported event: $EVENT_NAME" >&2
@@ -57,61 +103,57 @@ jobs:
               ;;
           esac
 
-          if [[ -z "${destination:-}" ]]; then
-            if [[ "$source_ref" == main ]]; then
-              destination=current
-            elif [[ "$source_ref" =~ ^v([0-9]+)\.([0-9]+)\.[0-9]+$ ]]; then
-              destination="v${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
-            elif [[ "$source_ref" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-[0-9A-Za-z.-]+$ ]]; then
-              destination="$source_ref"
+          matrix=$(jq --compact-output \
+            --argjson targets "$targets" '
+              . as $toolchains
+              | ([$targets[] | select($toolchains[.] == null)] | first) as $missing
+              | if $missing != null then
+                  error("No toolchain configured for " + $missing)
+                else
+                  {include: [
+                    $targets[] as $target
+                    | {target: $target} + $toolchains[$target]
+                  ]}
+                end
+            ' "$manifest")
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build documentation (${{ matrix.target }})
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+
+    steps:
+      - name: Select source
+        id: version
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          MATRIX_TARGET: ${{ matrix.target }}
+        run: |
+          if [[ "$MATRIX_TARGET" == current ]]; then
+            if [[ "$EVENT_NAME" == push || "$EVENT_NAME" == pull_request ]]; then
+              source_ref="$GITHUB_SHA"
             else
-              echo "Expected main or a semantic-version tag, got: $source_ref" >&2
-              exit 1
+              source_ref=main
             fi
+          else
+            source_ref="$MATRIX_TARGET"
           fi
 
           echo "source_ref=$source_ref" >> "$GITHUB_OUTPUT"
-          echo "destination=$destination" >> "$GITHUB_OUTPUT"
 
       - name: Check out Calf
         uses: actions/checkout@v6
         with:
           ref: ${{ steps.version.outputs.source_ref }}
           path: calf
-
-      - name: Select the matching Agda and library
-        id: toolchain
-        shell: bash
-        run: |
-          dependency=$(sed -n 's/^depend:[[:space:]]*//p' calf/calf.agda-lib)
-
-          case "$dependency" in
-            standard-library-1.7)
-              echo "agda_version=2.6.2.2" >> "$GITHUB_OUTPUT"
-              echo "nixpkgs_ref=ea4c80b39be4c09702b0cb3b42eab59e2ba4f24b" >> "$GITHUB_OUTPUT"
-              echo "dependency_repository=agda/agda-stdlib" >> "$GITHUB_OUTPUT"
-              echo "dependency_ref=v1.7" >> "$GITHUB_OUTPUT"
-              echo "dependency_library=standard-library.agda-lib" >> "$GITHUB_OUTPUT"
-              ;;
-            standard-library)
-              echo "agda_version=2.6.3" >> "$GITHUB_OUTPUT"
-              echo "nixpkgs_ref=70bdadeb94ffc8806c0570eb5c2695ad29f0e421" >> "$GITHUB_OUTPUT"
-              echo "dependency_repository=agda/agda-stdlib" >> "$GITHUB_OUTPUT"
-              echo "dependency_ref=fc473ec905ab1a11a16718a7e8b628f1ab7eb435" >> "$GITHUB_OUTPUT"
-              echo "dependency_library=standard-library.agda-lib" >> "$GITHUB_OUTPUT"
-              ;;
-            cubical-0.9)
-              echo "agda_version=2.8.0" >> "$GITHUB_OUTPUT"
-              echo "nixpkgs_ref=d351d0653aeb7877273920cd3e823994e7579b0b" >> "$GITHUB_OUTPUT"
-              echo "dependency_repository=agda/cubical" >> "$GITHUB_OUTPUT"
-              echo "dependency_ref=b150186d2544e7efeddd31e5d14a8b9ecbb100f7" >> "$GITHUB_OUTPUT"
-              echo "dependency_library=cubical.agda-lib" >> "$GITHUB_OUTPUT"
-              ;;
-            *)
-              echo "Unsupported dependency in calf.agda-lib: $dependency" >&2
-              exit 1
-              ;;
-          esac
 
       - name: Install Nix
         uses: cachix/install-nix-action@v31
@@ -123,28 +165,28 @@ jobs:
       - name: Install the matching Agda from Nixpkgs
         run: |
           nix profile add \
-            "github:NixOS/nixpkgs/${{ steps.toolchain.outputs.nixpkgs_ref }}#agda"
+            "github:NixOS/nixpkgs/${{ matrix.nixpkgs_ref }}#agda"
           "$HOME/.nix-profile/bin/agda" --version
           echo "$HOME/.nix-profile/bin" >> "$GITHUB_PATH"
 
       - name: Check out the matching Agda library
         uses: actions/checkout@v6
         with:
-          repository: ${{ steps.toolchain.outputs.dependency_repository }}
-          ref: ${{ steps.toolchain.outputs.dependency_ref }}
+          repository: ${{ matrix.dependency_repository }}
+          ref: ${{ matrix.dependency_ref }}
           path: dependency
 
       - name: Restore dependency interface cache
         uses: actions/cache@v4
         with:
           path: dependency/_build
-          key: docs-dependency-${{ runner.os }}-${{ runner.arch }}-agda-${{ steps.toolchain.outputs.agda_version }}-${{ steps.toolchain.outputs.dependency_ref }}
+          key: docs-dependency-${{ runner.os }}-${{ runner.arch }}-agda-${{ matrix.agda_version }}-${{ matrix.dependency_ref }}
 
       - name: Register the Agda library
         shell: bash
         run: |
           printf '%s\n' \
-            "$GITHUB_WORKSPACE/dependency/${{ steps.toolchain.outputs.dependency_library }}" \
+            "$GITHUB_WORKSPACE/dependency/${{ matrix.dependency_library }}" \
             > "$GITHUB_WORKSPACE/libraries"
 
       - name: Generate a complete index when the release has none
@@ -169,16 +211,36 @@ jobs:
             src/index.agda
           cp Agda.css docs/Agda.css
 
+      - name: Upload generated documentation
+        uses: actions/upload-artifact@v4
+        with:
+          name: calf-documentation-${{ matrix.target }}
+          path: calf/docs
+
+  publish:
+    name: Save complete versioned site
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+
+    steps:
       - name: Check out the published site
         uses: actions/checkout@v6
         with:
           ref: gh-pages
           path: site
 
-      - name: Add this version to the site
+      - name: Download generated documentation
+        uses: actions/download-artifact@v4
+        with:
+          pattern: calf-documentation-*
+          path: built-docs
+          merge-multiple: false
+
+      - name: Add the generated versions to the site
         shell: bash
-        env:
-          DESTINATION: ${{ steps.version.outputs.destination }}
         run: |
           # Before this workflow, Decalf v2.0 was published directly at the
           # site root. Preserve it during the one-time layout migration.
@@ -190,9 +252,35 @@ jobs:
               -exec mv -t site/v2.0 -- {} +
           fi
 
-          rm -rf "site/$DESTINATION"
-          mkdir -p "site/$DESTINATION"
-          cp -a calf/docs/. "site/$DESTINATION/"
+          mapfile -t artifacts < <(
+            find built-docs -mindepth 1 -maxdepth 1 -type d \
+              -name 'calf-documentation-*' \
+              -print \
+              | LC_ALL=C sort -V
+          )
+          if (( ${#artifacts[@]} == 0 )); then
+            echo 'No documentation artifacts were downloaded.' >&2
+            exit 1
+          fi
+
+          for artifact in "${artifacts[@]}"; do
+            artifact_name="${artifact##*/}"
+            target="${artifact_name#calf-documentation-}"
+            if [[ "$target" == current ]]; then
+              destination=current
+            elif [[ "$target" =~ ^v([0-9]+)\.([0-9]+)\.[0-9]+$ ]]; then
+              destination="v${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
+            elif [[ "$target" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-[0-9A-Za-z.-]+$ ]]; then
+              destination="$target"
+            else
+              echo "Unsafe documentation target: $target" >&2
+              exit 1
+            fi
+
+            rm -rf "site/$destination"
+            mkdir -p "site/$destination"
+            cp -a "$artifact/." "site/$destination/"
+          done
 
           # The previous site lived at the root. Versioned docs are directories,
           # so remove only those old root-level generated files.
@@ -231,16 +319,14 @@ jobs:
 
       - name: Save the complete site on gh-pages
         shell: bash
-        env:
-          DESTINATION: ${{ steps.version.outputs.destination }}
         run: |
           git -C site config user.name github-actions[bot]
           git -C site config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git -C site add -A
           if git -C site diff --cached --quiet; then
-            echo "The $DESTINATION documentation is already up to date."
+            echo 'The versioned documentation is already up to date.'
           else
-            git -C site commit -m "Deploy Calf documentation to $DESTINATION"
+            git -C site commit -m 'Deploy versioned Calf documentation'
             git -C site push origin HEAD:gh-pages
           fi
 
@@ -251,7 +337,7 @@ jobs:
 
   deploy:
     name: Deploy GitHub Pages
-    needs: build
+    needs: publish
     runs-on: ubuntu-latest
     permissions:
       actions: read
