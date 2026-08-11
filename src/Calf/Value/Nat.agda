@@ -11,8 +11,8 @@ opaque
   isDiscreteℕ : isDiscrete ℕ
   isDiscreteℕ = ⊑-beh refl
 
-isPreorderℕ : isPreorder ℕ
-isPreorderℕ = isSet∧isDiscrete→isPreorder isSetℕ isDiscreteℕ
+ℕₛ : 𝒱ₛ
+ℕₛ = ℕ , isSetℕ , isDiscreteℕ
 
 ℕₚ : 𝒱ₚ
-ℕₚ = ℕ , isPreorderℕ
+ℕₚ = ⟨ ℕₛ ⟩ₚ

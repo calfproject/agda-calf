@@ -21,7 +21,7 @@ open import Calf.Directed.Thin
 open import Calf.Directed.Localization
 open import Calf.Directed.Path
 
-private variable X Y : Type
+private variable X Y Z : Type
 
 data Requirements : Type where
   transitive thin hset : Requirements
@@ -60,6 +60,12 @@ isPropIsPreorder = isPropΠ (λ _ → isPropIsPathSplitEquiv _)
 rec : isPreorder Y → (X → Y) → ∥ X ∥ᴾ → Y
 rec = Localization.rec
 
+mapᴾ : (X → Y) → ∥ X ∥ᴾ → ∥ Y ∥ᴾ
+mapᴾ f = rec isPreorderP (ηᴾ ∘ f)
+
+map2ᴾ : (X → Y → Z) → ∥ X ∥ᴾ → ∥ Y ∥ᴾ → ∥ Z ∥ᴾ
+map2ᴾ f = rec (isLocalΠ λ _ → isPreorderP) (mapᴾ ∘ f)
+
 open isPathSplitEquiv
 
 opaque
@@ -91,3 +97,15 @@ rec-unique :
   → ((x : X) → f (ηᴾ x) ≡ g (ηᴾ x))
   → (z : ∥ X ∥ᴾ) → f z ≡ g z
 rec-unique = recUnique
+
+rec-unique2 :
+  isPreorder Z
+  → (f g : ∥ X ∥ᴾ → ∥ Y ∥ᴾ → Z)
+  → ((x : X) (y : Y) → f (ηᴾ x) (ηᴾ y) ≡ g (ηᴾ x) (ηᴾ y))
+  → (x : ∥ X ∥ᴾ) (y : ∥ Y ∥ᴾ) → f x y ≡ g x y
+rec-unique2 isPreorderZ f g p x y =
+  funExt⁻
+    (rec-unique (isLocalΠ λ _ → isPreorderZ) f g
+      (λ x → funExt (rec-unique isPreorderZ (f (ηᴾ x)) (g (ηᴾ x)) (p x)))
+      x)
+    y

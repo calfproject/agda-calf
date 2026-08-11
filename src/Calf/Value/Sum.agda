@@ -14,7 +14,7 @@ isPreorder⊎ : isPreorder X → isPreorder Y → isPreorder (X ⊎ Y)
 isPreorder⊎ isPreorderX isPreorderY =
   subst isPreorder
     (isoToPath lemma)
-    (isPreorderΣ isSetBool isDiscreteBool λ { false → isPreorderX ; true → isPreorderY })
+    (isPreorderΣ Boolₛ λ { false → isPreorderX ; true → isPreorderY })
   where
     open Iso
 

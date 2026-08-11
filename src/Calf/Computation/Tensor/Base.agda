@@ -22,10 +22,6 @@ module _ where
     ( cong (λ z → inj {A} {B} z b) (charge/comm A)
     ∙ law c' (A .charge c a) b ) i
 
-  private
-    mapᴾ : (X → Y) → ∥ X ∥ᴾ → ∥ Y ∥ᴾ
-    mapᴾ f = rec isPreorderP (ηᴾ ∘ f)
-
   module _ {A B : 𝒞} where
     ⊛-elimProp
       : {P : A ⊛ B → 𝒱}
@@ -65,6 +61,10 @@ module _ where
 
   _∥_ : U A → U B → U (A ⊗ B)
   a ∥ b = ηᴾ (inj a b)
+
+  ∥-law : ∀ c (a : U A) (b : U B)
+    → _∥_ {A} {B} (A .charge c a) b ≡ a ∥ B .charge c b
+  ∥-law c a b = cong ηᴾ (law c a b)
 
   ⊗-rec : {A B C : 𝒞}
     → (h : U A → U B → U C)

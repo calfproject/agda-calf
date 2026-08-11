@@ -15,8 +15,15 @@ variable
 id : X → X
 id x = x
 
+𝒱ₛ : 𝒱₁
+𝒱ₛ = TypeWithStr _ λ X → isSet X × isDiscrete X
+  where open import Cubical.Data.Sigma
+
 hPreorder : 𝒱₁
 hPreorder = TypeWithStr _ isPreorder
 
 𝒱ₚ : 𝒱₁
 𝒱ₚ = hPreorder
+
+⟨_⟩ₚ : 𝒱ₛ → 𝒱ₚ
+⟨ X ⟩ₚ = ⟨ X ⟩ , isSet∧isDiscrete→isPreorder (str X .fst) (str X .snd)

@@ -12,15 +12,13 @@ open import Calf.Value
 opaque
   unfolding Fᴾ
 
-  isPreorderΣ : {Y : X → 𝒱}
-    → isSet X
-    → isDiscrete X
-    → ((x : X) → isPreorder (Y x))
-    → isPreorder (Σ X Y)
-  isPreorderΣ {X} isSetX isDiscreteX isPreorderY =
-    isLocalΣ (isSet∧isDiscrete→isPreorder isSetX isDiscreteX) nullT isPreorderY
+  isPreorderΣ : (X : 𝒱ₛ) {Y : ⟨ X ⟩ → 𝒱}
+    → ((x : ⟨ X ⟩) → isPreorder (Y x))
+    → isPreorder (Σ ⟨ X ⟩ Y)
+  isPreorderΣ X isPreorderY =
+    isLocalΣ (isSet∧isDiscrete→isPreorder (str X .fst) (str X .snd)) nullT isPreorderY
     where
-      nullT : (α : Requirements) → isEquiv (const {A = X} {B = Tᴾ α})
-      nullT transitive = null[Δ²] isSetX isDiscreteX
-      nullT thin = null[𝕊Unit] isDiscreteX
+      nullT : (α : Requirements) → isEquiv (const {A = ⟨ X ⟩} {B = Tᴾ α})
+      nullT transitive = null[Δ²] (str X .fst) (str X .snd)
+      nullT thin = null[𝕊Unit] (str X .snd)
       nullT hset = null[Unit]

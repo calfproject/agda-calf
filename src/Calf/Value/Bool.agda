@@ -20,5 +20,8 @@ isDiscreteBool = isLocalRetract inj prj is-retract isDiscreteℕ
     is-retract false = refl
     is-retract true = refl
 
-isPreorderBool : isPreorder Bool
-isPreorderBool = isSet∧isDiscrete→isPreorder isSetBool isDiscreteBool
+Boolₛ : 𝒱ₛ
+Boolₛ = Bool , isSetBool , isDiscreteBool
+
+Boolₚ : 𝒱ₚ
+Boolₚ = ⟨ Boolₛ ⟩ₚ

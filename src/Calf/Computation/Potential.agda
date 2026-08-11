@@ -87,12 +87,12 @@ module _ where
   open import Calf.Computation.Tensor
 
   private
-    Σᶜ-◯ᶜ-in : ∀ {X : 𝒱ₚ} {A : ⟨ X ⟩ → 𝒞} x →
+    Σᶜ-◯ᶜ-in : ∀ {X : 𝒱ₛ} {A : ⟨ X ⟩ → 𝒞} x →
       A x ⊸ ◯ᶜ (Σᶜ X A)
     Σᶜ-◯ᶜ-in x .U a◦ = η◦ (x , a◦)
     Σᶜ-◯ᶜ-in x .charge _ _ = refl
 
-    Σᶜ-fracture-map' : ∀ {X : 𝒱ₚ} {A B : ⟨ X ⟩ → 𝒞} →
+    Σᶜ-fracture-map' : ∀ {X : 𝒱ₛ} {A B : ⟨ X ⟩ → 𝒞} →
       ((x : ⟨ X ⟩) → A x ⊸ ●ᶜ (B x)) →
       ●ᶜ (Σᶜ X A) ⊸ ●ᶜ (◯ᶜ (Σᶜ X B))
     Σᶜ-fracture-map' {X} {A} {B} α = ●ᶜ.bind k
@@ -108,7 +108,7 @@ module _ where
           ∎
 
   private opaque
-    Σᶜ-fracture-map'-path : ∀ {X : 𝒱ₚ} {A B : ⟨ X ⟩ → 𝒞}
+    Σᶜ-fracture-map'-path : ∀ {X : 𝒱ₛ} {A B : ⟨ X ⟩ → 𝒞}
       → (m : Σᶜ X A ⊸ ◯ᶜ (Σᶜ X B))
       → (α : (x : ⟨ X ⟩) → ●ᶜ (A x) ⊸ ●ᶜ (◯ᶜ (B x)))
       → ((x : ⟨ X ⟩) (a : U (A x))
@@ -141,7 +141,7 @@ module _ where
                 ▷ sym (coh x a))
               w))
 
-  potential-credit : ∀ {X : 𝒱ₚ} Φ →
+  potential-credit : ∀ {X : 𝒱ₛ} Φ →
     Potential Φ ≡ [ x ∈ X ] ⋊ ▷[ Φ x ] ⊤
   potential-credit {X = X} Φ =
       Potential Φ
