@@ -209,6 +209,7 @@ jobs:
             --html \
             --html-dir=docs \
             src/index.agda
+          rm -f docs/Agda.css
           cp Agda.css docs/Agda.css
 
       - name: Upload generated documentation
