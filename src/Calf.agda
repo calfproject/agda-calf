@@ -28,6 +28,7 @@ import Calf.Computation.Debit
 import Calf.Computation.Empty
 import Calf.Computation.Free
 import Calf.Computation.Glue
+import Calf.Computation.List
 import Calf.Computation.Lolli
 import Calf.Computation.Open
 import Calf.Computation.Potential

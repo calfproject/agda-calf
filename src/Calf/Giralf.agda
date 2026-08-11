@@ -14,7 +14,7 @@ open import Calf.Computation.Tensor
 open import Calf.Computation.Lolli
 open import Calf.Computation.Credit
 open import Calf.Computation.Debit
-open import Calf.Computation.CList
+open import Calf.Computation.List as Listᶜ
 open import Calf.Computation.CList1
 open import Calf.Computation.CList2
 open import Calf.Computation.Free
@@ -262,23 +262,23 @@ module _ where
   splitᴳ {q₂ = q₂} {C = C} S s e k = cutᴳ S s e (subst (λ a → ▷[ q₂ ] a ⊸ C) ⊗-assoc k)
 
 module _ where
-  nilᴳ : cmpᴳ (CList A)
-  nilᴳ = U→cmpᴳ cnil
+  nilᴳ : cmpᴳ (Listᶜ A)
+  nilᴳ = U→cmpᴳ nil
 
   consᴳ :
     Δ ≡ Δ₁ ⊔ Δ₂
     → q ⋎₂ (q₁ , q₂)
     → Δ₁ , q₁ ⊢ A
-    → Δ₂ , q₂ ⊢ CList A
-    → Δ , q ⊢ CList A
-  consᴳ S s eₕ eₜ = tensorᴳ S s eₕ eₜ ⨾ᶜ ccons
+    → Δ₂ , q₂ ⊢ Listᶜ A
+    → Δ , q ⊢ Listᶜ A
+  consᴳ S s eₕ eₜ = tensorᴳ S s eₕ eₜ ⨾ᶜ cons
 
   foldrᴳ :
     cmpᴳ B
     → (A ∷ [ B ] , 0ℂ ⊢ B)
-    → Δ , q ⊢ CList A
+    → Δ , q ⊢ Listᶜ A
     → Δ , q ⊢ B
-  foldrᴳ e[] e∷ = _⨾ᶜ cfoldr (cmpᴳ→U e[]) (subst (_⊸ _) (▷/0 ∙ cong (_ ⊗_) ⊗-identityʳ) e∷)
+  foldrᴳ e[] e∷ = _⨾ᶜ Listᶜ.foldr (cmpᴳ→U e[]) (subst (_⊸ _) (▷/0 ∙ cong (_ ⊗_) ⊗-identityʳ) e∷)
 
 module _ where
   nil₁ᴳ : cmpᴳ (CList₁ p A)

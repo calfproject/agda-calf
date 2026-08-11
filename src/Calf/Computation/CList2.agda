@@ -11,24 +11,24 @@ open import Calf.Value.Sigma
 open import Calf.Computation
 open import Calf.Computation.Credit
 open import Calf.Computation.Tensor
-open import Calf.Computation.CList
+open import Calf.Computation.List
 open import Calf.Computation.Copower
 
 opaque
   CList₂ : ℂ → ℂ → 𝒞 → 𝒞
-  CList₂ c₁ c₂ A = CList' (λ c₁' → ▷[ c₁' ] A) (λ c₁' → c₂ +ℂ c₁') c₁
+  CList₂ c₁ c₂ A = Listᶜ' (λ c₁' → ▷[ c₁' ] A) (λ c₁' → c₂ +ℂ c₁') c₁
 
   cnil₂ : ∀ {c₁ c₂} → U (CList₂ c₁ c₂ A)
-  cnil₂ {A} {c₁} {c₂} = cnil'
+  cnil₂ {A} {c₁} {c₂} = nil'
 
   ccons₂ : ∀ {c₁ c₂} → ▷[ c₁ ] (A ⊗ CList₂ (c₂ +ℂ c₁) c₂ A) ⊸ CList₂ c₁ c₂ A
-  ccons₂ {A} {c₁} {c₂} = subst (_⊸ CList₂ c₁ c₂ A) (▷A⊗B≡▷[A⊗B] c₁) ccons'
+  ccons₂ {A} {c₁} {c₂} = subst (_⊸ CList₂ c₁ c₂ A) (▷A⊗B≡▷[A⊗B] c₁) cons'
 
   cfoldr₂ : ∀ {c₁ c₂} (B : ℂ → 𝒞)
     → (∀ c₁' → U (B c₁'))
     → (∀ c₁' → (▷[ c₁' ] (A ⊗ B (c₂ +ℂ c₁'))) ⊸ B c₁')
     → CList₂ c₁ c₂ A ⊸ B c₁
-  cfoldr₂ B e[] e∷ = cfoldr' B e[] (λ c₁' → subst (_⊸ _) (sym (▷A⊗B≡▷[A⊗B] c₁')) (e∷ c₁'))
+  cfoldr₂ B e[] e∷ = foldr' B e[] (λ c₁' → subst (_⊸ _) (sym (▷A⊗B≡▷[A⊗B] c₁')) (e∷ c₁'))
 
 module _ where
   binom2 : ℕ → ℕ
@@ -61,8 +61,8 @@ module _ where
 
 opaque
   unfolding CList₂
-  unfolding CList'
-  -- unfolding CList
+  unfolding Listᶜ'
+  -- unfolding Listᶜ
 
   CList₂' : ℂ → ℂ → 𝒞 → 𝒞
   CList₂' c₁ c₂ A = [ n ∈ ℕₛ ] ⋊ ▷[ clist₂-pot c₁ c₂ n ] (⊗ᵏ-fixed A n)
@@ -87,9 +87,9 @@ opaque
 
   -- CList₂'' : ℂ → ℂ → 𝒞 → 𝒞
   -- CList₂'' c₁ c₂ A =
-  --   Abstractionᶜ (CList A) (CList A) charge-pot
+  --   Abstractionᶜ (Listᶜ A) (Listᶜ A) charge-pot
   --     where
-  --     charge-pot : CList A ⊸ CList A
+  --     charge-pot : Listᶜ A ⊸ Listᶜ A
   --     charge-pot = ⋊-splitᶜ {X = ℕₛ} {A = λ n → ⊗ᵏ _ _ _ n} (λ n → ⋊-pairᶜ {X = ℕₛ} {A = λ n → ⊗ᵏ _ _ _ n} n ⨾ᶜ CHARGE (clist₂-pot c₁ c₂ n))
 
   -- CList₂'≡CList₂'' : CList₂'' ≡ CList₂'
