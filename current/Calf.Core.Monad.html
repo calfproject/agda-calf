@@ -1,0 +1,19 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>Calf.Core.Monad</title><link rel="stylesheet" href="Agda.css"></head><body><pre class="Agda"><a id="1" class="Keyword">open</a> <a id="6" class="Keyword">import</a> <a id="13" href="Cubical.Foundations.Prelude.html" class="Module">Cubical.Foundations.Prelude</a>
+<a id="41" class="Keyword">open</a> <a id="46" class="Keyword">import</a> <a id="53" href="Cubical.Foundations.Function.html" class="Module">Cubical.Foundations.Function</a>
+<a id="82" class="Keyword">open</a> <a id="87" class="Keyword">import</a> <a id="94" href="Cubical.Foundations.HLevels.html" class="Module">Cubical.Foundations.HLevels</a>
+<a id="122" class="Keyword">open</a> <a id="127" class="Keyword">import</a> <a id="134" href="Cubical.Foundations.Structure.html" class="Module">Cubical.Foundations.Structure</a>
+<a id="164" class="Keyword">open</a> <a id="169" class="Keyword">import</a> <a id="176" href="Cubical.Data.Sigma.html" class="Module">Cubical.Data.Sigma</a>
+
+<a id="196" class="Keyword">module</a> <a id="203" href="Calf.Core.Monad.html" class="Module">Calf.Core.Monad</a> <a id="219" class="Keyword">where</a>
+
+<a id="226" class="Keyword">open</a> <a id="231" class="Keyword">import</a> <a id="238" href="Calf.Value.html" class="Module">Calf.Value</a>
+<a id="249" class="Keyword">open</a> <a id="254" class="Keyword">import</a> <a id="261" href="Calf.Core.Cost.html" class="Module">Calf.Core.Cost</a> <a id="276" class="Keyword">public</a>
+
+<a id="284" class="Keyword">opaque</a>
+  <a id="M"></a><a id="293" href="Calf.Core.Monad.html#293" class="Function">M</a> <a id="295" class="Symbol">:</a> <a id="297" href="Agda.Primitive.html#388" class="Primitive">𝒱</a> <a id="299" class="Symbol">→</a> <a id="301" href="Agda.Primitive.html#388" class="Primitive">𝒱</a>
+  <a id="305" href="Calf.Core.Monad.html#293" class="Function">M</a> <a id="307" href="Calf.Core.Monad.html#307" class="Bound">X</a> <a id="309" class="Symbol">=</a> <a id="311" href="Calf.Core.Cost.html#617" class="Function">ℂ</a> <a id="313" href="Cubical.Data.Sigma.Base.html#438" class="Function Operator">×</a> <a id="315" href="Calf.Core.Monad.html#307" class="Bound">X</a>
+
+  <a id="retᴹ"></a><a id="320" href="Calf.Core.Monad.html#320" class="Function">retᴹ</a> <a id="325" class="Symbol">:</a> <a id="327" href="Calf.Value.html#361" class="Generalizable">X</a> <a id="329" class="Symbol">→</a> <a id="331" href="Calf.Core.Monad.html#293" class="Function">M</a> <a id="333" href="Calf.Value.html#361" class="Generalizable">X</a>
+  <a id="337" href="Calf.Core.Monad.html#320" class="Function">retᴹ</a> <a id="342" href="Calf.Core.Monad.html#342" class="Bound">x</a> <a id="344" class="Symbol">=</a> <a id="346" href="Calf.Core.Cost.html#672" class="Function">0ℂ</a> <a id="349" href="Agda.Builtin.Sigma.html#235" class="InductiveConstructor Operator">,</a> <a id="351" href="Calf.Core.Monad.html#342" class="Bound">x</a>
+</pre></body></html>

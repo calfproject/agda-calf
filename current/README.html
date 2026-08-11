@@ -1,0 +1,298 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>README</title><link rel="stylesheet" href="Agda.css"></head><body><pre class="Agda"><a id="1" class="Keyword">module</a> <a id="8" href="README.html" class="Module">README</a> <a id="15" class="Keyword">where</a>
+
+<a id="22" class="Comment">{-
+  This file is a curated guide to the PFAT mechanization, ordered by the
+  presentation in the paper.
+
+  The formalization is checked against Agda v2.8.0 with standard library v2.3
+  and cubical library v0.9.
+  The mechanization covers the value- and computation-level
+  modalities, fracture/gluing, potential functions as types, credits/debits,
+  the batched-queue example, and the Giralf as embedded in Calf.
+-}</a>
+
+<a id="440" class="Comment">-- Section 2. The Physicist&#39;s View</a>
+
+<a id="476" class="Comment">-- Section 2.1. Abstraction Functions as Types</a>
+
+<a id="524" class="Comment">{-
+    Definition 2.1. Abstract value types and the open modality.
+-}</a>
+<a id="594" class="Keyword">import</a> <a id="601" href="Calf.Value.Open.html" class="Module">Calf.Value.Open</a> <a id="617" class="Keyword">using</a>
+  <a id="625" class="Symbol">(</a> <a id="627" href="Calf.Value.Open.html#522" class="Function">◯</a>
+  <a id="631" class="Symbol">;</a> <a id="633" href="Calf.Value.Open.html#614" class="Function">η◦</a>
+  <a id="638" class="Symbol">;</a> <a id="640" href="Calf.Value.Open.html#3745" class="Function">𝒱◦</a>
+  <a id="645" class="Symbol">)</a>
+
+<a id="648" class="Comment">{-
+    Definition 2.2. Concrete value types and the closed modality.
+-}</a>
+<a id="720" class="Keyword">import</a> <a id="727" href="Calf.Value.Closed.html" class="Module">Calf.Value.Closed</a> <a id="745" class="Keyword">using</a>
+  <a id="753" class="Symbol">(</a> <a id="755" href="Calf.Value.Closed.html#444" class="Datatype">●</a>
+  <a id="759" class="Symbol">;</a> <a id="761" href="Calf.Value.Closed.html#466" class="InductiveConstructor">η•</a>
+  <a id="766" class="Symbol">;</a> <a id="768" href="Calf.Value.Closed.html#487" class="InductiveConstructor">∗</a>
+  <a id="772" class="Symbol">;</a> <a id="774" href="Calf.Value.Closed.html#515" class="InductiveConstructor">law</a>
+  <a id="780" class="Symbol">;</a> <a id="782" href="Calf.Value.Closed.html#8765" class="Function">𝒱•</a>
+  <a id="787" class="Symbol">;</a> <a id="789" href="Calf.Value.Closed.html#1699" class="Function">◯-isConnected</a>
+  <a id="805" class="Symbol">)</a>
+
+<a id="808" class="Comment">{-
+    Theorem 2.3. Value-level fracture and gluing.
+    Corollary 2.4. Maps out of glued value types are squares.
+-}</a>
+<a id="926" class="Keyword">import</a> <a id="933" href="Calf.Value.Glue.html" class="Module">Calf.Value.Glue</a> <a id="949" class="Keyword">using</a>
+  <a id="957" class="Symbol">(</a> <a id="959" href="Calf.Value.Glue.Base.html#221" class="Record">Glue</a>
+  <a id="966" class="Symbol">;</a> <a id="968" href="Calf.Value.Glue.Base.html#1396" class="Record">𝒱-FRACTURE</a>
+  <a id="981" class="Symbol">;</a> <a id="983" href="Calf.Value.Glue.Base.html#1866" class="Function">𝒱-Glue</a>
+  <a id="992" class="Symbol">;</a> <a id="994" href="Calf.Value.Glue.Base.html#1931" class="Function">𝒱-Fracture</a>
+  <a id="1007" class="Symbol">;</a> <a id="1009" href="Calf.Value.Glue.Base.html#2624" class="Function">square</a>
+  <a id="1018" class="Symbol">;</a> <a id="1020" href="Calf.Value.Glue.Fracture.html#5780" class="Function">fracture-and-gluing</a>
+  <a id="1042" class="Symbol">;</a> <a id="1044" href="Calf.Value.Glue.Fracture.html#6411" class="Function">fracture-and-gluing-square</a>
+  <a id="1073" class="Symbol">)</a>
+
+<a id="1076" class="Comment">{-
+    Definition 2.5. Building an ordinary abstraction function into a value type.
+    Corollary 2.6. Identity abstraction.
+    Lemma 2.7. It suffices to define coherent concrete and abstract maps.
+-}</a>
+<a id="1278" class="Keyword">import</a> <a id="1285" href="Calf.Value.Abstraction.html" class="Module">Calf.Value.Abstraction</a> <a id="1308" class="Keyword">using</a>
+  <a id="1316" class="Symbol">(</a> <a id="1318" href="Calf.Value.Abstraction.html#158" class="Function">Abstraction</a>
+  <a id="1332" class="Symbol">;</a> <a id="1334" href="Calf.Value.Abstraction.html#277" class="Function">Abstraction-id</a>
+  <a id="1351" class="Symbol">;</a> <a id="1353" href="Calf.Value.Abstraction.html#359" class="Function">square&#39;</a>
+  <a id="1363" class="Symbol">)</a>
+
+<a id="1366" class="Comment">-- Section 2.2. Potential Functions as Types</a>
+
+<a id="1412" class="Comment">{-
+    Definition 2.9. Abstract computation types and the open computation
+    modality.
+    Lemma 2.13. U commutes with the open modalities.
+    Lemma 2.14. The modality is lex, preserving pullbacks.
+-}</a>
+<a id="1616" class="Keyword">import</a> <a id="1623" href="Calf.Computation.Open.html" class="Module">Calf.Computation.Open</a> <a id="1645" class="Keyword">using</a>
+  <a id="1653" class="Symbol">(</a> <a id="1655" href="Calf.Computation.Open.html#452" class="Function">◯ᶜ</a>
+  <a id="1660" class="Symbol">;</a> <a id="1662" href="Calf.Computation.Open.html#480" class="Function">η◦ᶜ</a>
+  <a id="1668" class="Symbol">;</a> <a id="1670" href="Calf.Computation.Open.html#576" class="Function">𝒞◦</a>
+  <a id="1675" class="Symbol">;</a> <a id="1677" href="Calf.Computation.Open.html#814" class="Function">U◦</a>
+  <a id="1682" class="Symbol">;</a> <a id="1684" href="Calf.Computation.Open.html#2069" class="Function">lex</a>
+  <a id="1690" class="Symbol">)</a>
+
+<a id="1693" class="Comment">{-
+    Definition 2.10. Concrete computation types and the closed computation
+    modality.
+    Lemma 2.13. U commutes with the open and closed modalities.
+    Lemma 2.14. The modality is lex, preserving pullbacks.
+-}</a>
+<a id="1911" class="Keyword">import</a> <a id="1918" href="Calf.Computation.Closed.html" class="Module">Calf.Computation.Closed</a> <a id="1942" class="Keyword">using</a>
+  <a id="1950" class="Symbol">(</a> <a id="1952" href="Calf.Computation.Closed.html#536" class="Function">●ᶜ</a>
+  <a id="1957" class="Symbol">;</a> <a id="1959" href="Calf.Computation.Closed.html#1172" class="Function">η•ᶜ</a>
+  <a id="1965" class="Symbol">;</a> <a id="1967" href="Calf.Computation.Closed.html#1268" class="Function">𝒞•</a>
+  <a id="1972" class="Symbol">;</a> <a id="1974" href="Calf.Computation.Closed.html#1506" class="Function">U•</a>
+  <a id="1979" class="Symbol">;</a> <a id="1981" href="Calf.Computation.Closed.html#4469" class="Function">lex</a>
+  <a id="1987" class="Symbol">)</a>
+
+<a id="1990" class="Comment">{-
+    Definitions 2.11 and 2.12. Cost algebras, strict homomorphisms, cost effects, and
+    conservativity of the underlying value type functor.
+-}</a>
+<a id="2139" class="Keyword">import</a> <a id="2146" href="Calf.Computation.html" class="Module">Calf.Computation</a> <a id="2163" class="Keyword">using</a>
+  <a id="2171" class="Symbol">(</a> <a id="2173" href="Calf.Computation.html#439" class="Record">𝒞</a>
+  <a id="2177" class="Symbol">;</a> <a id="2179" href="Calf.Computation.html#504" class="Field">charge</a>
+  <a id="2188" class="Symbol">;</a> <a id="2190" href="Calf.Computation.html#871" class="Record Operator">_⊸_</a>
+  <a id="2196" class="Symbol">;</a> <a id="2198" href="Calf.Computation.html#5485" class="Function">conservativity</a>
+  <a id="2215" class="Symbol">)</a>
+
+<a id="2218" class="Comment">{-
+    Supporting computation type formers used by Section 2 examples and later
+    amortized data-structure constructions.
+-}</a>
+<a id="2345" class="Keyword">import</a> <a id="2352" href="Calf.Computation.Free.html" class="Module">Calf.Computation.Free</a> <a id="2374" class="Keyword">using</a>
+  <a id="2382" class="Symbol">(</a> <a id="2384" href="Calf.Computation.Free.html#423" class="Function">F</a>
+  <a id="2388" class="Symbol">)</a>
+<a id="2390" class="Keyword">import</a> <a id="2397" href="Calf.Computation.Copower.html" class="Module">Calf.Computation.Copower</a> <a id="2422" class="Keyword">using</a>
+  <a id="2430" class="Symbol">(</a> <a id="2432" href="Calf.Computation.Copower.html#264" class="Function">Σᶜ</a>
+  <a id="2437" class="Symbol">;</a> <a id="2439" href="Calf.Computation.Copower.html#604" class="Function Operator">_⋊_</a>
+  <a id="2445" class="Symbol">)</a>
+<a id="2447" class="Keyword">import</a> <a id="2454" href="Calf.Computation.Product.html" class="Module">Calf.Computation.Product</a> <a id="2479" class="Keyword">using</a>
+  <a id="2487" class="Symbol">(</a> <a id="2489" href="Calf.Computation.Product.html#146" class="Function Operator">_×ᶜ_</a>
+  <a id="2496" class="Symbol">)</a>
+<a id="2498" class="Keyword">import</a> <a id="2505" href="Calf.Computation.Power.html" class="Module">Calf.Computation.Power</a> <a id="2528" class="Keyword">using</a>
+  <a id="2536" class="Symbol">(</a> <a id="2538" href="Calf.Computation.Power.html#445" class="Function Operator">_⇀_</a>
+  <a id="2544" class="Symbol">)</a>
+<a id="2546" class="Keyword">import</a> <a id="2553" href="Calf.Computation.Tensor.html" class="Module">Calf.Computation.Tensor</a> <a id="2577" class="Keyword">using</a>
+  <a id="2585" class="Symbol">(</a> <a id="2587" href="Calf.Computation.Tensor.Base.html#1343" class="Function Operator">_⊗_</a>
+  <a id="2593" class="Symbol">)</a>
+
+<a id="2596" class="Comment">{-
+    Theorem 2.15. Computation-level fracture and gluing.
+    Corollary 2.16. Homomorphisms out of glued computation types are squares.
+-}</a>
+<a id="2737" class="Keyword">import</a> <a id="2744" href="Calf.Computation.Glue.html" class="Module">Calf.Computation.Glue</a> <a id="2766" class="Keyword">using</a>
+  <a id="2774" class="Symbol">(</a> <a id="2776" href="Calf.Computation.Glue.Base.html#410" class="Function">Glueᶜ</a>
+  <a id="2784" class="Symbol">;</a> <a id="2786" href="Calf.Computation.Glue.Base.html#999" class="Record">𝒞-FRACTURE</a>
+  <a id="2799" class="Symbol">;</a> <a id="2801" href="Calf.Computation.Glue.Base.html#1100" class="Function">𝒞-Glue</a>
+  <a id="2810" class="Symbol">;</a> <a id="2812" href="Calf.Computation.Glue.Base.html#1166" class="Function">𝒞-Fracture</a>
+  <a id="2825" class="Symbol">;</a> <a id="2827" href="Calf.Computation.Glue.Base.html#2466" class="Function">squareᶜ</a>
+  <a id="2837" class="Symbol">;</a> <a id="2839" href="Calf.Computation.Glue.Fracture.html#2882" class="Function">𝒞-fracture-and-gluing</a>
+  <a id="2863" class="Symbol">;</a> <a id="2865" href="Calf.Computation.Glue.Fracture.html#3254" class="Function">𝒞-fracture-and-gluing-square</a>
+  <a id="2896" class="Symbol">)</a>
+
+<a id="2899" class="Comment">{-
+    Definition 2.17. Building a homomorphism, hence a potential function, into
+    a computation type.
+    Corollary 2.18. Identity abstraction.
+    Lemma 2.19. It suffices to define coherent concrete and abstract maps.
+    Corollary 2.23. One-sided maps into or out of glued computation types.
+-}</a>
+<a id="3200" class="Keyword">import</a> <a id="3207" href="Calf.Computation.Abstraction.html" class="Module">Calf.Computation.Abstraction</a> <a id="3236" class="Keyword">using</a>
+  <a id="3244" class="Symbol">(</a> <a id="3246" href="Calf.Computation.Abstraction.Base.html#631" class="Function">Abstractionᶜ</a>
+  <a id="3261" class="Symbol">;</a> <a id="3263" href="Calf.Computation.Abstraction.Base.html#786" class="Function">Abstractionᶜ-id</a>
+  <a id="3281" class="Symbol">;</a> <a id="3283" href="Calf.Computation.Abstraction.Base.html#978" class="Function">squareᶜ&#39;</a>
+  <a id="3294" class="Symbol">;</a> <a id="3296" href="Calf.Computation.Abstraction.Base.html#1834" class="Function">triangle</a>
+  <a id="3307" class="Symbol">;</a> <a id="3309" href="Calf.Computation.Abstraction.Base.html#2646" class="Function">triangle&#39;</a>
+  <a id="3321" class="Symbol">)</a>
+
+<a id="3324" class="Comment">-- Section 2.3. Potential and Abstraction, Independently</a>
+
+<a id="3382" class="Comment">{-
+    Definition 2.21. Potential functions as computation types.
+    Lemma 2.22. Homomorphisms between potential-carrying types follow from the
+    usual potential-conservation equation.
+-}</a>
+<a id="3573" class="Keyword">import</a> <a id="3580" href="Calf.Computation.Potential.html" class="Module">Calf.Computation.Potential</a> <a id="3607" class="Keyword">using</a>
+  <a id="3615" class="Symbol">(</a> <a id="3617" href="Calf.Computation.Potential.html#341" class="Function">Potential</a>
+  <a id="3629" class="Symbol">;</a> <a id="3631" href="Calf.Computation.Potential.html#798" class="Function">square</a>
+  <a id="3640" class="Symbol">)</a>
+
+<a id="3643" class="Comment">{-
+  Section 2 and Section 3. Modularity and the batched-queue case study.
+-}</a>
+<a id="3721" class="Comment">{-
+    Example 2.20. The cost-aware ephemeral batched queue.
+    Example 3.3. Ephemeral queue cost interface.
+-}</a>
+<a id="3834" class="Keyword">import</a> <a id="3841" href="Examples.Queue.html" class="Module">Examples.Queue</a> <a id="3856" class="Keyword">using</a>
+  <a id="3864" class="Symbol">(</a> <a id="3866" href="Examples.Queue.html#532" class="Record">PreQueue</a>
+  <a id="3877" class="Symbol">;</a> <a id="3879" href="Examples.Queue.html#1690" class="Record">Queue</a>
+  <a id="3887" class="Symbol">;</a> <a id="3889" href="Examples.Queue.html#883" class="Function">list-prequeue</a>
+  <a id="3905" class="Symbol">;</a> <a id="3907" href="Examples.Queue.html#2187" class="Function">α</a>
+  <a id="3911" class="Symbol">;</a> <a id="3913" href="Examples.Queue.html#12772" class="Function">batched-queue</a>
+  <a id="3929" class="Symbol">)</a>
+
+<a id="3932" class="Comment">-- Section 4. The Banker&#39;s View</a>
+
+<a id="3965" class="Comment">-- Section 4.1. Credits and Debits</a>
+
+<a id="4001" class="Comment">{-
+    Definition 4.1. The credit operator.
+    Lemma 4.4. Credits are invisible to the modalities.
+    Lemma 4.6. Credits compose monoidally.
+    Definition 4.7. Saving and spending credits.
+    Lemma 4.8. Spending after saving is the cost effect.
+-}</a>
+<a id="4253" class="Keyword">import</a> <a id="4260" href="Calf.Computation.Credit.html" class="Module">Calf.Computation.Credit</a> <a id="4284" class="Keyword">using</a>
+  <a id="4292" class="Symbol">(</a> <a id="4294" href="Calf.Computation.Credit.html#787" class="Function Operator">▷[_]_</a>
+  <a id="4302" class="Symbol">;</a> <a id="4304" href="Calf.Computation.Credit.html#1057" class="Function">▷/0</a>
+  <a id="4310" class="Symbol">;</a> <a id="4312" href="Calf.Computation.Credit.html#1143" class="Function">▷/+</a>
+  <a id="4318" class="Symbol">;</a> <a id="4320" href="Calf.Computation.Credit.html#2370" class="Function">▷-●ᶜ</a>
+  <a id="4327" class="Symbol">;</a> <a id="4329" href="Calf.Computation.Credit.html#2467" class="Function">▷-◯ᶜ</a>
+  <a id="4336" class="Symbol">;</a> <a id="4338" href="Calf.Computation.Credit.html#2825" class="Function">save</a>
+  <a id="4345" class="Symbol">;</a> <a id="4347" href="Calf.Computation.Credit.html#2905" class="Function">spend</a>
+  <a id="4355" class="Symbol">;</a> <a id="4357" href="Calf.Computation.Credit.html#2974" class="Function">save⨾spend≡charge</a>
+  <a id="4377" class="Symbol">)</a>
+
+<a id="4380" class="Comment">{-
+    Definition 4.11. The debit operator.
+    Lemma 4.12. Credit and debit are adjoint.
+-}</a>
+<a id="4473" class="Keyword">import</a> <a id="4480" href="Calf.Computation.Debit.html" class="Module">Calf.Computation.Debit</a> <a id="4503" class="Keyword">using</a>
+  <a id="4511" class="Symbol">(</a> <a id="4513" href="Calf.Computation.Debit.html#427" class="Function Operator">◁[_]_</a>
+  <a id="4521" class="Symbol">;</a> <a id="4523" href="Calf.Computation.Debit.html#475" class="Function">▷⊣◁</a>
+  <a id="4529" class="Symbol">;</a> <a id="4531" href="Calf.Computation.Debit.html#806" class="Function">▷⊣◁-counit</a>
+  <a id="4544" class="Symbol">)</a>
+
+<a id="4547" class="Comment">-- Section 4.2. Credit-Carrying Lists.</a>
+
+<a id="4587" class="Comment">{-
+    Definition 4.13. Linear-credit lists.
+    Definition 4.18. Linear-and-triangular-credit lists.
+-}</a>
+<a id="4692" class="Keyword">import</a> <a id="4699" href="Calf.Computation.CList1.html" class="Module">Calf.Computation.CList1</a> <a id="4723" class="Keyword">using</a>
+  <a id="4731" class="Symbol">(</a> <a id="4733" href="Calf.Computation.CList1.html#782" class="Function">CList₁</a>
+  <a id="4742" class="Symbol">;</a> <a id="4744" href="Calf.Computation.CList1.html#865" class="Function">cnil₁</a>
+  <a id="4752" class="Symbol">;</a> <a id="4754" href="Calf.Computation.CList1.html#1068" class="Function">ccons₁</a>
+  <a id="4763" class="Symbol">;</a> <a id="4765" href="Calf.Computation.CList1.html#3837" class="Function">cfoldr₁</a>
+  <a id="4775" class="Symbol">)</a>
+<a id="4777" class="Keyword">import</a> <a id="4784" href="Calf.Computation.CList2.html" class="Module">Calf.Computation.CList2</a> <a id="4808" class="Keyword">using</a>
+  <a id="4816" class="Symbol">(</a> <a id="4818" href="Calf.Computation.CList2.html#2599" class="Function">CList₂</a>
+  <a id="4827" class="Symbol">;</a> <a id="4829" href="Calf.Computation.CList2.html#2736" class="Function">cnil₂</a>
+  <a id="4837" class="Symbol">;</a> <a id="4839" href="Calf.Computation.CList2.html#3215" class="Function">ccons₂</a>
+  <a id="4848" class="Symbol">;</a> <a id="4850" href="Calf.Computation.CList2.html#7158" class="Function">cfoldr₂</a>
+  <a id="4860" class="Symbol">)</a>
+
+<a id="4863" class="Comment">-- Section 5. Giralf: A Graded, Inferential, Resource-Aware Logical Framework</a>
+
+<a id="4942" class="Comment">-- Section 5.1. A Graded Syntax</a>
+<a id="4974" class="Comment">-- Section 5.2. A Resource-Aware Semantics</a>
+
+<a id="5018" class="Comment">{-
+    Examples 5.2 and 5.3. Insertion and insertion sort.
+    Example 5.4. Resource-aware semantics of credit storage and spending.
+-}</a>
+<a id="5154" class="Keyword">import</a> <a id="5161" href="Calf.Giralf.html" class="Module">Calf.Giralf</a> <a id="5173" class="Keyword">using</a>
+  <a id="5181" class="Symbol">(</a> <a id="5183" href="Calf.Giralf.html#622" class="Function">Context</a>
+  <a id="5193" class="Symbol">;</a> <a id="5195" href="Calf.Giralf.html#672" class="Function Operator">_⋎₀</a>
+  <a id="5201" class="Symbol">;</a> <a id="5203" href="Calf.Giralf.html#706" class="Function Operator">_⋎₂_</a>
+  <a id="5210" class="Symbol">;</a> <a id="5212" href="Calf.Giralf.html#823" class="Function Operator">_⊢_</a>
+  <a id="5218" class="Symbol">;</a> <a id="5220" href="Calf.Giralf.html#874" class="Function">idᴳ</a>
+  <a id="5226" class="Symbol">;</a> <a id="5228" href="Calf.Giralf.html#982" class="Function">letᴳ</a>
+  <a id="5235" class="Symbol">;</a> <a id="5237" href="Calf.Giralf.html#1171" class="Function">cmpᴳ</a>
+  <a id="5244" class="Symbol">;</a> <a id="5246" href="Calf.Giralf.html#1205" class="Function">cmpᴳ→cmp</a>
+  <a id="5257" class="Symbol">;</a> <a id="5259" href="Calf.Giralf.html#1277" class="Function">cmp→cmpᴳ</a>
+  <a id="5270" class="Symbol">;</a> <a id="5272" href="Calf.Giralf.html#1430" class="Function">substᵐᴳ</a>
+  <a id="5282" class="Symbol">;</a> <a id="5284" href="Calf.Giralf.html#1542" class="Function">substᴳ</a>
+  <a id="5293" class="Symbol">;</a> <a id="5295" href="Calf.Giralf.html#1675" class="Function">subst2ᴳ</a>
+  <a id="5305" class="Symbol">;</a> <a id="5307" href="Calf.Giralf.html#1863" class="Function">subst3ᴳ</a>
+  <a id="5317" class="Symbol">;</a> <a id="5319" href="Calf.Giralf.html#2146" class="Function">storeᴳ</a>
+  <a id="5328" class="Symbol">;</a> <a id="5330" href="Calf.Giralf.html#2313" class="Function">releaseᴳ</a>
+  <a id="5341" class="Symbol">;</a> <a id="5343" href="Calf.Giralf.html#2402" class="Function">spendᴳ</a>
+  <a id="5352" class="Symbol">;</a> <a id="5354" href="Calf.Giralf.html#2547" class="Function">getᴳ</a>
+  <a id="5361" class="Symbol">;</a> <a id="5363" href="Calf.Giralf.html#2714" class="Function">payᴳ</a>
+  <a id="5370" class="Symbol">;</a> <a id="5372" href="Calf.Giralf.html#2882" class="Function">nil₁ᴳ</a>
+  <a id="5380" class="Symbol">;</a> <a id="5382" href="Calf.Giralf.html#2936" class="Function">cons₁ᴳ</a>
+  <a id="5391" class="Symbol">;</a> <a id="5393" href="Calf.Giralf.html#3075" class="Function">foldr₁ᴳ</a>
+  <a id="5403" class="Symbol">;</a> <a id="5405" href="Calf.Giralf.html#3241" class="Function">nil₂ᴳ</a>
+  <a id="5413" class="Symbol">;</a> <a id="5415" href="Calf.Giralf.html#3350" class="Function">cons₂ᴳ</a>
+  <a id="5424" class="Symbol">;</a> <a id="5426" href="Calf.Giralf.html#3514" class="Function">foldr₂ᴳ</a>
+  <a id="5436" class="Symbol">;</a> <a id="5438" href="Calf.Giralf.html#3741" class="Function">pairᴳ</a>
+  <a id="5446" class="Symbol">;</a> <a id="5448" href="Calf.Giralf.html#3821" class="Function">proj₁ᴳ</a>
+  <a id="5457" class="Symbol">;</a> <a id="5459" href="Calf.Giralf.html#3908" class="Function">proj₂ᴳ</a>
+  <a id="5468" class="Symbol">;</a> <a id="5470" href="Calf.Giralf.html#4010" class="Function">powlamᴳ</a>
+  <a id="5480" class="Symbol">;</a> <a id="5482" href="Calf.Giralf.html#4098" class="Function">powappᴳ</a>
+  <a id="5492" class="Symbol">)</a>
+<a id="5494" class="Keyword">import</a> <a id="5501" href="Examples.Giralf.Id.html" class="Module">Examples.Giralf.Id</a> <a id="5520" class="Keyword">using</a>
+  <a id="5528" class="Symbol">(</a> <a id="5530" href="Examples.Giralf.Id.html#262" class="Function">id₁</a>
+  <a id="5536" class="Symbol">;</a> <a id="5538" href="Examples.Giralf.Id.html#434" class="Function">id₂</a>
+  <a id="5544" class="Symbol">)</a>
+<a id="5546" class="Keyword">import</a> <a id="5553" href="Examples.Giralf.Reverse.html" class="Module">Examples.Giralf.Reverse</a> <a id="5577" class="Keyword">using</a>
+  <a id="5585" class="Symbol">(</a> <a id="5587" href="Examples.Giralf.Reverse.html#267" class="Function">snoc</a>
+  <a id="5594" class="Symbol">;</a> <a id="5596" href="Examples.Giralf.Reverse.html#592" class="Function">qreverse</a>
+  <a id="5607" class="Symbol">)</a>
+<a id="5609" class="Keyword">import</a> <a id="5616" href="Examples.Giralf.InsertionSort.html" class="Module">Examples.Giralf.InsertionSort</a> <a id="5646" class="Keyword">using</a>
+  <a id="5654" class="Symbol">(</a> <a id="5656" href="Examples.Giralf.InsertionSort.html#714" class="Function">insert</a>
+  <a id="5665" class="Symbol">;</a> <a id="5667" href="Examples.Giralf.InsertionSort.html#1380" class="Function">isort</a>
+  <a id="5675" class="Symbol">)</a>
+
+<a id="5678" class="Comment">-- Section 5.3. An Inference Algorithm</a>
+
+<a id="5718" class="Comment">{-
+    These examples are generated by the inference algorithm.
+-}</a>
+<a id="5785" class="Keyword">import</a> <a id="5792" href="Examples.Giralf.Inference.html" class="Module">Examples.Giralf.Inference</a> <a id="5818" class="Keyword">using</a>
+  <a id="5826" class="Symbol">(</a> <a id="5828" href="Examples.Giralf.Inference.html#6374" class="Function">snoc</a>
+  <a id="5835" class="Symbol">;</a> <a id="5837" href="Examples.Giralf.Inference.html#7439" class="Function">insert</a>
+  <a id="5846" class="Symbol">;</a> <a id="5848" href="Examples.Giralf.Inference.html#10651" class="Function">reverse</a>
+  <a id="5858" class="Symbol">;</a> <a id="5860" href="Examples.Giralf.Inference.html#12685" class="Function">isort</a>
+  <a id="5868" class="Symbol">)</a>
+</pre></body></html>

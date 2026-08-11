@@ -1,0 +1,332 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>Calf.Computation.CList1</title><link rel="stylesheet" href="Agda.css"></head><body><pre class="Agda"><a id="1" class="Symbol">{-#</a> <a id="5" class="Keyword">OPTIONS</a> <a id="13" class="Pragma">--allow-unsolved-metas</a> <a id="36" class="Symbol">#-}</a>
+
+<a id="41" class="Keyword">open</a> <a id="46" class="Keyword">import</a> <a id="53" href="Cubical.Foundations.Prelude.html" class="Module">Cubical.Foundations.Prelude</a>
+<a id="81" class="Keyword">open</a> <a id="86" class="Keyword">import</a> <a id="93" href="Cubical.Foundations.Equiv.html" class="Module">Cubical.Foundations.Equiv</a>
+<a id="119" class="Keyword">open</a> <a id="124" class="Keyword">import</a> <a id="131" href="Cubical.Foundations.Function.html" class="Module">Cubical.Foundations.Function</a>
+<a id="160" class="Keyword">open</a> <a id="165" class="Keyword">import</a> <a id="172" href="Cubical.Foundations.Structure.html" class="Module">Cubical.Foundations.Structure</a>
+
+<a id="203" class="Keyword">module</a> <a id="210" href="Calf.Computation.CList1.html" class="Module">Calf.Computation.CList1</a> <a id="234" class="Keyword">where</a>
+
+<a id="241" class="Keyword">open</a> <a id="246" class="Keyword">import</a> <a id="253" href="Calf.Core.Abstract.html" class="Module">Calf.Core.Abstract</a>
+<a id="272" class="Keyword">open</a> <a id="277" class="Keyword">import</a> <a id="284" href="Calf.Core.Cost.html" class="Module">Calf.Core.Cost</a>
+<a id="299" class="Keyword">open</a> <a id="304" class="Keyword">import</a> <a id="311" href="Calf.Value.html" class="Module">Calf.Value</a>
+<a id="322" class="Keyword">open</a> <a id="327" class="Keyword">import</a> <a id="334" href="Calf.Value.List.html" class="Module">Calf.Value.List</a>
+<a id="350" class="Keyword">open</a> <a id="355" class="Keyword">import</a> <a id="362" href="Calf.Value.Nat.html" class="Module">Calf.Value.Nat</a>
+<a id="377" class="Keyword">import</a> <a id="384" href="Calf.Value.Closed.html" class="Module">Calf.Value.Closed</a> <a id="402" class="Symbol">as</a> <a id="405" class="Module">●</a>
+<a id="407" class="Keyword">import</a> <a id="414" href="Calf.Value.Open.html" class="Module">Calf.Value.Open</a> <a id="430" class="Symbol">as</a> <a id="433" class="Module">◯</a>
+<a id="435" class="Keyword">open</a> <a id="440" class="Keyword">import</a> <a id="447" href="Calf.Computation.html" class="Module">Calf.Computation</a>
+<a id="464" class="Keyword">open</a> <a id="469" class="Keyword">import</a> <a id="476" href="Calf.Computation.Free.html" class="Module">Calf.Computation.Free</a> <a id="498" class="Symbol">as</a> <a id="501" class="Module">F</a>
+<a id="503" class="Keyword">open</a> <a id="508" class="Keyword">import</a> <a id="515" href="Calf.Computation.Copower.html" class="Module">Calf.Computation.Copower</a>
+<a id="540" class="Keyword">open</a> <a id="545" class="Keyword">import</a> <a id="552" href="Calf.Computation.Open.html" class="Module">Calf.Computation.Open</a> <a id="574" class="Symbol">as</a> <a id="577" class="Module">◯ᶜ</a>
+<a id="580" class="Keyword">open</a> <a id="585" class="Keyword">import</a> <a id="592" href="Calf.Computation.Closed.html" class="Module">Calf.Computation.Closed</a> <a id="616" class="Symbol">as</a> <a id="619" class="Module">●ᶜ</a>
+<a id="622" class="Keyword">open</a> <a id="627" class="Keyword">import</a> <a id="634" href="Calf.Computation.Glue.html" class="Module">Calf.Computation.Glue</a>
+<a id="656" class="Keyword">open</a> <a id="661" class="Keyword">import</a> <a id="668" href="Calf.Computation.Abstraction.html" class="Module">Calf.Computation.Abstraction</a>
+<a id="697" class="Keyword">open</a> <a id="702" class="Keyword">import</a> <a id="709" href="Calf.Computation.Potential.html" class="Module">Calf.Computation.Potential</a>
+<a id="736" class="Keyword">open</a> <a id="741" class="Keyword">import</a> <a id="748" href="Calf.Computation.Credit.html" class="Module">Calf.Computation.Credit</a>
+
+<a id="773" class="Keyword">opaque</a>
+  <a id="CList₁"></a><a id="782" href="Calf.Computation.CList1.html#782" class="Function">CList₁</a> <a id="789" class="Symbol">:</a> <a id="791" href="Calf.Core.Cost.html#617" class="Function">ℂ</a> <a id="793" class="Symbol">→</a> <a id="795" href="Agda.Primitive.html#388" class="Primitive">𝒱</a> <a id="797" class="Symbol">→</a> <a id="799" href="Calf.Computation.html#439" class="Record">𝒞</a>
+  <a id="803" href="Calf.Computation.CList1.html#782" class="Function">CList₁</a> <a id="810" href="Calf.Computation.CList1.html#810" class="Bound">c</a> <a id="812" href="Calf.Computation.CList1.html#812" class="Bound">X</a> <a id="814" class="Symbol">=</a> <a id="816" class="Hole">?</a>  <a id="819" class="Comment">-- Potential {List X} (λ l → length l ⊙ c)</a>
+
+  <a id="cnil₁"></a><a id="865" href="Calf.Computation.CList1.html#865" class="Function">cnil₁</a> <a id="871" class="Symbol">:</a> <a id="873" class="Field">U</a> <a id="875" class="Symbol">(</a><a id="876" href="Calf.Computation.CList1.html#782" class="Function">CList₁</a> <a id="883" href="Calf.Core.Cost.html#1143" class="Generalizable">c</a> <a id="885" href="Calf.Value.html#361" class="Generalizable">X</a><a id="886" class="Symbol">)</a>
+  <a id="890" href="Calf.Computation.CList1.html#865" class="Function">cnil₁</a> <a id="896" class="Symbol">{</a><a id="897" href="Calf.Computation.CList1.html#897" class="Bound">c</a><a id="898" class="Symbol">}</a> <a id="900" class="Symbol">=</a> <a id="902" class="Hole">?</a>
+    <a id="908" class="Comment">-- triangleᶜ&#39;</a>
+    <a id="926" class="Comment">--   {F _} {F _} {bind&#39; (λ l → F _ .charge (length l ⊙ c) (ret l))}</a>
+    <a id="998" class="Comment">--   (ret [])</a>
+    <a id="1016" class="Comment">--   (ret [])</a>
+    <a id="1034" class="Comment">--   (bind&#39;/β ∙ F _ .charge/0)</a>
+
+  <a id="ccons₁"></a><a id="1068" href="Calf.Computation.CList1.html#1068" class="Function">ccons₁</a> <a id="1075" class="Symbol">:</a> <a id="1077" href="Calf.Value.html#361" class="Generalizable">X</a> <a id="1079" class="Symbol">→</a> <a id="1081" href="Calf.Computation.Credit.html#787" class="Function Operator">▷[</a> <a id="1084" href="Calf.Core.Cost.html#1143" class="Generalizable">c</a> <a id="1086" href="Calf.Computation.Credit.html#787" class="Function Operator">]</a> <a id="1088" class="Symbol">(</a><a id="1089" href="Calf.Computation.CList1.html#782" class="Function">CList₁</a> <a id="1096" href="Calf.Core.Cost.html#1143" class="Generalizable">c</a> <a id="1098" href="Calf.Value.html#361" class="Generalizable">X</a><a id="1099" class="Symbol">)</a> <a id="1101" href="Calf.Computation.html#871" class="Record Operator">⊸</a> <a id="1103" href="Calf.Computation.CList1.html#782" class="Function">CList₁</a> <a id="1110" href="Calf.Core.Cost.html#1143" class="Generalizable">c</a> <a id="1112" href="Calf.Value.html#361" class="Generalizable">X</a>
+  <a id="1116" href="Calf.Computation.CList1.html#1068" class="Function">ccons₁</a> <a id="1123" class="Symbol">{</a><a id="1124" href="Calf.Computation.CList1.html#1124" class="Bound">X</a><a id="1125" class="Symbol">}</a> <a id="1127" class="Symbol">{</a><a id="1128" href="Calf.Computation.CList1.html#1128" class="Bound">c</a><a id="1129" class="Symbol">}</a> <a id="1131" href="Calf.Computation.CList1.html#1131" class="Bound">x</a> <a id="1133" class="Symbol">=</a> <a id="1135" class="Hole">?</a>
+    <a id="1141" class="Comment">-- subst (_⊸ CList₁ c X)</a>
+    <a id="1170" class="Comment">--   ( Abstractionᶜ (F (List X)) (F (List X)) (CHARGE c ⨾ᶜ bind&#39; (λ l → F _ .charge (length l ⊙ c) (ret l)))</a>
+    <a id="1283" class="Comment">--   ≡⟨ cong (Abstractionᶜ _ _) (CHARGE-commute _ _) ⟩</a>
+    <a id="1342" class="Comment">--     Abstractionᶜ (F (List X)) (F (List X)) (bind&#39; (λ l → F _ .charge (length l ⊙ c) (ret l)) ⨾ᶜ CHARGE c)</a>
+    <a id="1455" class="Comment">--   ≡⟨ sym Abstractionᶜ-Abstractionᶜ ⟩</a>
+    <a id="1499" class="Comment">--     Abstractionᶜ</a>
+    <a id="1523" class="Comment">--       (CList₁ c X)</a>
+    <a id="1549" class="Comment">--       (CList₁ c X)</a>
+    <a id="1575" class="Comment">--       (squareᶜ&#39;</a>
+    <a id="1598" class="Comment">--         (CHARGE c)</a>
+    <a id="1624" class="Comment">--         (CHARGE c)</a>
+    <a id="1650" class="Comment">--         (λ e → bind&#39; (λ l → F _ .charge (length l ⊙ c) (ret l)) .charge c e))</a>
+    <a id="1735" class="Comment">--   ≡⟨ cong (Abstractionᶜ _ _) (squareᶜ&#39;-charge _) ⟩</a>
+    <a id="1793" class="Comment">--     ▷[ c ] (CList₁ c X)</a>
+    <a id="1824" class="Comment">--   ∎) $</a>
+    <a id="1838" class="Comment">-- squareᶜ&#39;</a>
+    <a id="1854" class="Comment">--   (F.map (x ∷_))</a>
+    <a id="1878" class="Comment">--   (F.map (x ∷_))</a>
+    <a id="1902" class="Comment">--   λ e →</a>
+    <a id="1917" class="Comment">--     bind&#39; (λ l → F _ .charge (length l ⊙ c) (ret l)) .U (F.map (x ∷_) .U e)</a>
+    <a id="2000" class="Comment">--   ≡⟨ refl ⟩</a>
+    <a id="2019" class="Comment">--     bind&#39; (λ l → F _ .charge (length l ⊙ c) (ret l)) .U (bind&#39; (ret ∘ (x ∷_)) .U e)</a>
+    <a id="2110" class="Comment">--   ≡⟨ bind&#39;-assoc _ _ _ ⟩</a>
+    <a id="2142" class="Comment">--     bind&#39; (λ l →</a>
+    <a id="2166" class="Comment">--       bind&#39; (λ l →</a>
+    <a id="2192" class="Comment">--         F _ .charge (length l ⊙ c) (ret l))</a>
+    <a id="2243" class="Comment">--       .U (ret (x ∷ l)))</a>
+    <a id="2274" class="Comment">--     .U e</a>
+    <a id="2290" class="Comment">--   ≡⟨ cong (λ h → bind&#39; {A = F _} h .U e) (funExt λ _ → bind&#39;/β) ⟩</a>
+    <a id="2363" class="Comment">--     bind&#39; (λ l →</a>
+    <a id="2387" class="Comment">--       F _ .charge (length (x ∷ l) ⊙ c) (ret (x ∷ l)))</a>
+    <a id="2448" class="Comment">--     .U e</a>
+    <a id="2464" class="Comment">--   ≡⟨ refl ⟩</a>
+    <a id="2483" class="Comment">--     bind&#39; (λ l →</a>
+    <a id="2507" class="Comment">--       F _ .charge (suc (length l) ⊙ c) (ret (x ∷ l)))</a>
+    <a id="2568" class="Comment">--     .U e</a>
+    <a id="2584" class="Comment">--   ≡⟨ refl ⟩</a>
+    <a id="2603" class="Comment">--     bind&#39; (λ l →</a>
+    <a id="2627" class="Comment">--       F _ .charge (c +ℂ (length l ⊙ c)) (ret (x ∷ l)))</a>
+    <a id="2689" class="Comment">--     .U e</a>
+    <a id="2705" class="Comment">--   ≡⟨ cong (λ h → bind&#39; {A = F _} h .U e) (funExt (λ l → F _ .charge/+)) ⟩</a>
+    <a id="2786" class="Comment">--     bind&#39; (λ l →</a>
+    <a id="2810" class="Comment">--       F _ .charge c (F _ .charge (length l ⊙ c) (ret (x ∷ l))))</a>
+    <a id="2881" class="Comment">--     .U e</a>
+    <a id="2897" class="Comment">--   ≡⟨ bind&#39;-charge _ _ _ ⟩</a>
+    <a id="2930" class="Comment">--     bind&#39; (λ l →</a>
+    <a id="2954" class="Comment">--       F _ .charge (length l ⊙ c) (ret (x ∷ l)))</a>
+    <a id="3009" class="Comment">--     .U (F _ .charge c e)</a>
+    <a id="3041" class="Comment">--   ≡⟨ sym</a>
+    <a id="3057" class="Comment">--         (cong (λ h → bind&#39; {A = F _} h .U (F _ .charge c e))</a>
+    <a id="3125" class="Comment">--           (funExt λ l →</a>
+    <a id="3156" class="Comment">--             cong (F _ .charge (length l ⊙ c)) bind&#39;/β)) ⟩</a>
+    <a id="3221" class="Comment">--     bind&#39; (λ l →</a>
+    <a id="3245" class="Comment">--       F _ .charge (length l ⊙ c) (F.map (x ∷_) .U (ret l)))</a>
+    <a id="3312" class="Comment">--     .U (F _ .charge c e)</a>
+    <a id="3344" class="Comment">--   ≡⟨ sym</a>
+    <a id="3360" class="Comment">--         (cong (λ h → bind&#39; {A = F _} h .U (F _ .charge c e))</a>
+    <a id="3428" class="Comment">--           (funExt λ l →</a>
+    <a id="3459" class="Comment">--             F.map (x ∷_) .charge (length l ⊙ c) (ret l))) ⟩</a>
+    <a id="3526" class="Comment">--     bind&#39; (λ l →</a>
+    <a id="3550" class="Comment">--       F.map (x ∷_) .U (F _ .charge (length l ⊙ c) (ret l)))</a>
+    <a id="3617" class="Comment">--     .U (F _ .charge c e)</a>
+    <a id="3649" class="Comment">--   ≡⟨ sym (bind&#39;-assoc _ _ _) ⟩</a>
+    <a id="3687" class="Comment">--     F.map (x ∷_) .U</a>
+    <a id="3714" class="Comment">--       (bind&#39; (λ l →</a>
+    <a id="3741" class="Comment">--         F _ .charge (length l ⊙ c) (ret l))</a>
+    <a id="3792" class="Comment">--       .U (F _ .charge c e))</a>
+    <a id="3827" class="Comment">--   ∎</a>
+
+  <a id="cfoldr₁"></a><a id="3837" href="Calf.Computation.CList1.html#3837" class="Function">cfoldr₁</a> <a id="3845" class="Symbol">:</a>
+      <a id="3853" class="Field">U</a> <a id="3855" href="Calf.Computation.html#841" class="Generalizable">A</a>
+    <a id="3861" class="Symbol">→</a> <a id="3863" class="Symbol">(</a><a id="3864" href="Calf.Value.html#361" class="Generalizable">X</a> <a id="3866" class="Symbol">→</a> <a id="3868" class="Symbol">(</a><a id="3869" href="Calf.Computation.Credit.html#787" class="Function Operator">▷[</a> <a id="3872" href="Calf.Core.Cost.html#1143" class="Generalizable">c</a> <a id="3874" href="Calf.Computation.Credit.html#787" class="Function Operator">]</a> <a id="3876" href="Calf.Computation.html#841" class="Generalizable">A</a> <a id="3878" href="Calf.Computation.html#871" class="Record Operator">⊸</a> <a id="3880" href="Calf.Computation.html#841" class="Generalizable">A</a><a id="3881" class="Symbol">))</a>
+    <a id="3888" class="Symbol">→</a> <a id="3890" href="Calf.Computation.CList1.html#782" class="Function">CList₁</a> <a id="3897" href="Calf.Core.Cost.html#1143" class="Generalizable">c</a> <a id="3899" href="Calf.Value.html#361" class="Generalizable">X</a> <a id="3901" href="Calf.Computation.html#871" class="Record Operator">⊸</a> <a id="3903" href="Calf.Computation.html#841" class="Generalizable">A</a>
+  <a id="3907" href="Calf.Computation.CList1.html#3837" class="Function">cfoldr₁</a> <a id="3915" class="Symbol">{</a><a id="3916" class="Argument">A</a> <a id="3918" class="Symbol">=</a> <a id="3920" href="Calf.Computation.CList1.html#3920" class="Bound">A</a><a id="3921" class="Symbol">}</a> <a id="3923" class="Symbol">{</a><a id="3924" class="Argument">X</a> <a id="3926" class="Symbol">=</a> <a id="3928" href="Calf.Computation.CList1.html#3928" class="Bound">X</a><a id="3929" class="Symbol">}</a> <a id="3931" class="Symbol">{</a><a id="3932" href="Calf.Computation.CList1.html#3932" class="Bound">c</a><a id="3933" class="Symbol">}</a> <a id="3935" href="Calf.Computation.CList1.html#3935" class="Bound">enil</a> <a id="3940" href="Calf.Computation.CList1.html#3940" class="Bound">econs</a> <a id="3946" class="Symbol">=</a> <a id="3948" class="Hole">?</a>
+    <a id="3954" class="Comment">-- subst (CList₁ c X ⊸_) (𝒞-glue-fracture-retract A) $</a>
+    <a id="4013" class="Comment">-- squareᶜ go• go◦ go-•⊸◦</a>
+    <a id="4043" class="Comment">-- where</a>
+    <a id="4056" class="Comment">--   costᶜ : F (List X) ⊸ F (List X)</a>
+    <a id="4097" class="Comment">--   costᶜ =</a>
+    <a id="4114" class="Comment">--     bind&#39; {A = F _} λ l →</a>
+    <a id="4147" class="Comment">--     CHARGE {A = F _} (length l ⊙ c) .U (ret l)</a>
+
+    <a id="4202" class="Comment">--   fold• : (List X) → U (●ᶜ A)</a>
+    <a id="4239" class="Comment">--   fold• =</a>
+    <a id="4256" class="Comment">--     foldr</a>
+    <a id="4273" class="Comment">--       (λ x → ●.map (econs x .U) ∘ transport (cong U (sym (▷-●ᶜ c A))))</a>
+    <a id="4351" class="Comment">--       (η• enil)</a>
+
+    <a id="4375" class="Comment">--   go• : ●ᶜ (F (List X)) ⊸ ●ᶜ A</a>
+    <a id="4413" class="Comment">--   go• =</a>
+    <a id="4428" class="Comment">--     ●ᶜ.bind $</a>
+    <a id="4449" class="Comment">--     bind&#39; fold•</a>
+
+    <a id="4473" class="Comment">--   open-econs : X → ◯ᶜ A ⊸ ◯ᶜ A</a>
+    <a id="4511" class="Comment">--   open-econs x .U a◦ =</a>
+    <a id="4541" class="Comment">--     ◯.map (econs x .U) (transport (cong U (sym (▷-◯ᶜ c A))) a◦)</a>
+    <a id="4612" class="Comment">--   open-econs x .charge d a◦ = funExt λ abs →</a>
+    <a id="4664" class="Comment">--       econs x .U</a>
+    <a id="4688" class="Comment">--         (transport (cong U (sym (▷-◯ᶜ c A)))</a>
+    <a id="4740" class="Comment">--           (◯ᶜ A .charge d a◦)</a>
+    <a id="4777" class="Comment">--           abs)</a>
+    <a id="4799" class="Comment">--     ≡⟨ cong (λ q → econs x .U (q abs))</a>
+    <a id="4845" class="Comment">--           (transport-charge (sym (▷-◯ᶜ c A)) d a◦) ⟩</a>
+    <a id="4905" class="Comment">--       econs x .U</a>
+    <a id="4929" class="Comment">--         ((◯ᶜ (▷[ c ] A) .charge d</a>
+    <a id="4970" class="Comment">--           (transport (cong U (sym (▷-◯ᶜ c A))) a◦)) abs)</a>
+    <a id="5034" class="Comment">--     ≡⟨ econs x .charge d</a>
+    <a id="5066" class="Comment">--           (transport (cong U (sym (▷-◯ᶜ c A))) a◦ abs) ⟩</a>
+    <a id="5130" class="Comment">--       A .charge d</a>
+    <a id="5155" class="Comment">--         (econs x .U (transport (cong U (sym (▷-◯ᶜ c A))) a◦ abs))</a>
+    <a id="5228" class="Comment">--     ∎</a>
+
+    <a id="5242" class="Comment">--   fold◦ : (List X) → U (◯ᶜ A)</a>
+    <a id="5279" class="Comment">--   fold◦ =</a>
+    <a id="5296" class="Comment">--     foldr</a>
+    <a id="5313" class="Comment">--       (λ x → open-econs x .U)</a>
+    <a id="5350" class="Comment">--       (η◦ enil)</a>
+
+    <a id="5374" class="Comment">--   go◦ : ◯ᶜ (F (List X)) ⊸ ◯ᶜ A</a>
+    <a id="5412" class="Comment">--   go◦ =</a>
+    <a id="5427" class="Comment">--     ◯ᶜ.bind {A = F _} {B = A} $</a>
+    <a id="5466" class="Comment">--     bind&#39; fold◦</a>
+
+    <a id="5490" class="Comment">--   fold•ᶜ : F (List X) ⊸ ●ᶜ A</a>
+    <a id="5526" class="Comment">--   fold•ᶜ = bind&#39; fold•</a>
+
+    <a id="5557" class="Comment">--   go-•⊸◦ :</a>
+    <a id="5575" class="Comment">--     go• ⨾ᶜ ●ᶜ.map η◦ᶜ ≡ ●ᶜ.map (costᶜ ⨾ᶜ η◦ᶜ) ⨾ᶜ ●ᶜ.map go◦</a>
+    <a id="5642" class="Comment">--   go-•⊸◦ =</a>
+    <a id="5660" class="Comment">--       go• ⨾ᶜ ●ᶜ.map η◦ᶜ</a>
+    <a id="5691" class="Comment">--     ≡⟨ refl ⟩</a>
+    <a id="5712" class="Comment">--       ●ᶜ.bind fold•ᶜ ⨾ᶜ ●ᶜ.map η◦ᶜ</a>
+    <a id="5754" class="Comment">--     ≡⟨ ●ᶜ.bind-map _ _ ⟩</a>
+    <a id="5786" class="Comment">--       ●ᶜ.bind (fold•ᶜ ⨾ᶜ ●ᶜ.map η◦ᶜ)</a>
+    <a id="5830" class="Comment">--     ≡⟨ cong ●ᶜ.bind (bind&#39;-path _ _ (funExt fold•-coherence)) ⟩</a>
+    <a id="5901" class="Comment">--       ●ᶜ.bind (costᶜ ⨾ᶜ η◦ᶜ ⨾ᶜ go◦ ⨾ᶜ η•ᶜ)</a>
+    <a id="5951" class="Comment">--     ≡⟨ ●ᶜ.bind-η• _ ⟩</a>
+    <a id="5980" class="Comment">--       ●ᶜ.map (costᶜ ⨾ᶜ η◦ᶜ ⨾ᶜ go◦)</a>
+    <a id="6022" class="Comment">--     ≡⟨ sym (●ᶜ.map-∘ _ _) ⟩</a>
+    <a id="6057" class="Comment">--       ●ᶜ.map (costᶜ ⨾ᶜ η◦ᶜ) ⨾ᶜ ●ᶜ.map go◦</a>
+    <a id="6106" class="Comment">--     ∎</a>
+    <a id="6119" class="Comment">--     where</a>
+    <a id="6136" class="Comment">--       cost-cons : ∀ x l →</a>
+    <a id="6169" class="Comment">--         CHARGE {A = F _} c .U (F.map (x ∷_) .U (costᶜ .U (ret l)))</a>
+    <a id="6243" class="Comment">--         ≡ costᶜ .U (ret (x ∷ l))</a>
+    <a id="6283" class="Comment">--       cost-cons x l =</a>
+    <a id="6312" class="Comment">--           CHARGE {A = F _} c .U (F.map (x ∷_) .U (costᶜ .U (ret l)))</a>
+    <a id="6388" class="Comment">--         ≡⟨ cong (λ e → CHARGE {A = F _} c .U (F.map (x ∷_) .U e)) bind&#39;/β ⟩</a>
+    <a id="6471" class="Comment">--           CHARGE {A = F _} c .U</a>
+    <a id="6510" class="Comment">--             (F.map (x ∷_) .U</a>
+    <a id="6546" class="Comment">--               (CHARGE {A = F _} (length l ⊙ c) .U (ret l)))</a>
+    <a id="6613" class="Comment">--         ≡⟨ cong (CHARGE {A = F _} c .U)</a>
+    <a id="6660" class="Comment">--               (cong ((_$ ret l) ∘ U)</a>
+    <a id="6704" class="Comment">--                 (CHARGE-commute</a>
+    <a id="6743" class="Comment">--                   (length l ⊙ c) (F.map (x ∷_)))) ⟩</a>
+    <a id="6802" class="Comment">--           CHARGE {A = F _} c .U</a>
+    <a id="6841" class="Comment">--             (CHARGE {A = F _} (length l ⊙ c) .U</a>
+    <a id="6896" class="Comment">--               (F.map (x ∷_) .U (ret l)))</a>
+    <a id="6944" class="Comment">--         ≡⟨ cong (λ e → CHARGE {A = F _} c .U (CHARGE {A = F _} (length l ⊙ c) .U e)) bind&#39;/β ⟩</a>
+    <a id="7046" class="Comment">--           CHARGE {A = F _} c .U</a>
+    <a id="7085" class="Comment">--             (CHARGE {A = F _} (length l ⊙ c) .U (ret (x ∷ l)))</a>
+    <a id="7155" class="Comment">--         ≡⟨ sym (cong ((_$ ret (x ∷ l)) ∘ U) (CHARGE-+ {A = F _} c (length l ⊙ c))) ⟩</a>
+    <a id="7247" class="Comment">--           CHARGE {A = F _} (length (x ∷ l) ⊙ c) .U (ret (x ∷ l))</a>
+    <a id="7319" class="Comment">--         ≡⟨ sym bind&#39;/β ⟩</a>
+    <a id="7351" class="Comment">--           costᶜ .U (ret (x ∷ l))</a>
+    <a id="7391" class="Comment">--         ∎</a>
+
+    <a id="7409" class="Comment">--       go◦-cons : ∀ x (e : U (F (List X))) →</a>
+    <a id="7460" class="Comment">--         go◦ .U (η◦ᶜ {A = F _} .U (F.map (x ∷_) .U e))</a>
+    <a id="7521" class="Comment">--         ≡ open-econs x .U (go◦ .U (η◦ᶜ {A = F _} .U e))</a>
+    <a id="7584" class="Comment">--       go◦-cons x e =</a>
+    <a id="7612" class="Comment">--           go◦ .U (η◦ᶜ {A = F _} .U (F.map (x ∷_) .U e))</a>
+    <a id="7675" class="Comment">--         ≡⟨ refl ⟩</a>
+    <a id="7700" class="Comment">--           bind&#39; fold◦ .U (F.map (x ∷_) .U e)</a>
+    <a id="7752" class="Comment">--         ≡⟨ bind&#39;-assoc _ _ _ ⟩</a>
+    <a id="7790" class="Comment">--           bind&#39; (λ l →</a>
+    <a id="7820" class="Comment">--             bind&#39; fold◦ .U (ret (x ∷ l)))</a>
+    <a id="7869" class="Comment">--           .U e</a>
+    <a id="7891" class="Comment">--         ≡⟨ cong (λ h → bind&#39; {A = ◯ᶜ A} h .U e) (funExt λ l → bind&#39;/β) ⟩</a>
+    <a id="7971" class="Comment">--           bind&#39; (λ l →</a>
+    <a id="8001" class="Comment">--             open-econs x .U (fold◦ l))</a>
+    <a id="8047" class="Comment">--           .U e</a>
+    <a id="8069" class="Comment">--         ≡⟨ sym (bind&#39;-map (open-econs x) _ _) ⟩</a>
+    <a id="8124" class="Comment">--           open-econs x .U (bind&#39; fold◦ .U e)</a>
+    <a id="8176" class="Comment">--         ≡⟨ refl ⟩</a>
+    <a id="8201" class="Comment">--           open-econs x .U (go◦ .U (η◦ᶜ {A = F _} .U e))</a>
+    <a id="8264" class="Comment">--         ∎</a>
+
+    <a id="8282" class="Comment">--       open-cons-charge : ∀ x l →</a>
+    <a id="8322" class="Comment">--         ◯.map (econs x .U)</a>
+    <a id="8356" class="Comment">--           (transport (cong U (sym (▷-◯ᶜ c A)))</a>
+    <a id="8410" class="Comment">--             (CHARGE {A = ◯ᶜ A} c .U</a>
+    <a id="8453" class="Comment">--               ((costᶜ ⨾ᶜ η◦ᶜ ⨾ᶜ go◦) .U (ret l))))</a>
+    <a id="8511" class="Comment">--         ≡ (costᶜ ⨾ᶜ η◦ᶜ ⨾ᶜ go◦) .U (ret (x ∷ l))</a>
+    <a id="8567" class="Comment">--       open-cons-charge x l =</a>
+    <a id="8603" class="Comment">--         let</a>
+    <a id="8622" class="Comment">--           e = costᶜ .U (ret l)</a>
+    <a id="8660" class="Comment">--           r = go◦ .U (η◦ᶜ {A = F _} .U e)</a>
+    <a id="8709" class="Comment">--         in</a>
+    <a id="8727" class="Comment">--           open-econs x .U (CHARGE {A = ◯ᶜ A} c .U r)</a>
+    <a id="8787" class="Comment">--         ≡⟨ cong ((_$ r) ∘ U) (CHARGE-commute c (open-econs x)) ⟩</a>
+    <a id="8859" class="Comment">--           CHARGE {A = ◯ᶜ A} c .U (open-econs x .U r)</a>
+    <a id="8919" class="Comment">--         ≡⟨ cong (CHARGE {A = ◯ᶜ A} c .U) (sym (go◦-cons x e)) ⟩</a>
+    <a id="8990" class="Comment">--           CHARGE {A = ◯ᶜ A} c .U</a>
+    <a id="9030" class="Comment">--             (go◦ .U (η◦ᶜ {A = F _} .U (F.map (x ∷_) .U e)))</a>
+    <a id="9097" class="Comment">--         ≡⟨ sym (cong ((_$ η◦ᶜ {A = F _} .U (F.map (x ∷_) .U e)) ∘ U)</a>
+    <a id="9173" class="Comment">--               (CHARGE-commute c go◦)) ⟩</a>
+    <a id="9220" class="Comment">--           go◦ .U</a>
+    <a id="9244" class="Comment">--             (η◦ᶜ {A = F _} .U</a>
+    <a id="9281" class="Comment">--               (CHARGE {A = F _} c .U (F.map (x ∷_) .U e)))</a>
+    <a id="9347" class="Comment">--         ≡⟨ cong (λ e → go◦ .U (η◦ᶜ {A = F _} .U e)) (cost-cons x l) ⟩</a>
+    <a id="9424" class="Comment">--           go◦ .U (η◦ᶜ {A = F _} .U (costᶜ .U (ret (x ∷ l))))</a>
+    <a id="9492" class="Comment">--         ∎</a>
+
+    <a id="9510" class="Comment">--       fold•-coherence : ∀ l →</a>
+    <a id="9547" class="Comment">--         (fold•ᶜ ⨾ᶜ ●ᶜ.map η◦ᶜ) .U (ret l)</a>
+    <a id="9596" class="Comment">--         ≡ (costᶜ ⨾ᶜ η◦ᶜ ⨾ᶜ go◦ ⨾ᶜ η•ᶜ) .U (ret l)</a>
+    <a id="9653" class="Comment">--       fold•-coherence [] =</a>
+    <a id="9687" class="Comment">--           (fold•ᶜ ⨾ᶜ ●ᶜ.map η◦ᶜ) .U (ret [])</a>
+    <a id="9739" class="Comment">--         ≡⟨ cong (●.map (η◦ᶜ {A = A} .U)) bind&#39;/β ⟩</a>
+    <a id="9797" class="Comment">--           η•ᶜ {A = ◯ᶜ A} .U (η◦ᶜ {A = A} .U enil)</a>
+    <a id="9854" class="Comment">--         ≡⟨ cong (η•ᶜ {A = ◯ᶜ A} .U) (sym bind&#39;/β) ⟩</a>
+    <a id="9913" class="Comment">--           η•ᶜ {A = ◯ᶜ A} .U</a>
+    <a id="9948" class="Comment">--             (bind&#39; fold◦ .U (ret []))</a>
+    <a id="9993" class="Comment">--         ≡⟨ refl ⟩</a>
+    <a id="10018" class="Comment">--           η•ᶜ {A = ◯ᶜ A} .U</a>
+    <a id="10053" class="Comment">--             (go◦ .U (η◦ᶜ {A = F _} .U (ret [])))</a>
+    <a id="10109" class="Comment">--         ≡⟨ cong</a>
+    <a id="10132" class="Comment">--               (λ e → η•ᶜ {A = ◯ᶜ A} .U (go◦ .U (η◦ᶜ {A = F _} .U e)))</a>
+    <a id="10209" class="Comment">--               (sym (cong ((_$ ret []) ∘ U) (CHARGE-0 {A = F _}))) ⟩</a>
+    <a id="10284" class="Comment">--           η•ᶜ {A = ◯ᶜ A} .U</a>
+    <a id="10319" class="Comment">--             (go◦ .U (η◦ᶜ {A = F _} .U</a>
+    <a id="10364" class="Comment">--               (CHARGE {A = F _} 0ℂ .U (ret []))))</a>
+    <a id="10421" class="Comment">--         ≡⟨ cong</a>
+    <a id="10444" class="Comment">--               (λ e → η•ᶜ {A = ◯ᶜ A} .U</a>
+    <a id="10490" class="Comment">--                 (go◦ .U (η◦ᶜ {A = F _} .U e)))</a>
+    <a id="10544" class="Comment">--               (sym bind&#39;/β) ⟩</a>
+    <a id="10581" class="Comment">--           η•ᶜ {A = ◯ᶜ A} .U</a>
+    <a id="10616" class="Comment">--             (go◦ .U (η◦ᶜ {A = F _} .U</a>
+    <a id="10661" class="Comment">--               (costᶜ .U (ret []))))</a>
+    <a id="10704" class="Comment">--         ≡⟨ refl ⟩</a>
+    <a id="10729" class="Comment">--           (costᶜ ⨾ᶜ η◦ᶜ ⨾ᶜ go◦ ⨾ᶜ η•ᶜ) .U (ret [])</a>
+    <a id="10787" class="Comment">--         ∎</a>
+    <a id="10804" class="Comment">--       fold•-coherence (x ∷ l) =</a>
+    <a id="10843" class="Comment">--           (fold•ᶜ ⨾ᶜ ●ᶜ.map η◦ᶜ) .U (ret (x ∷ l))</a>
+    <a id="10900" class="Comment">--         ≡⟨ cong (●.map (η◦ᶜ {A = A} .U)) bind&#39;/β ⟩</a>
+    <a id="10958" class="Comment">--           ●.map (η◦ᶜ {A = A} .U)</a>
+    <a id="10998" class="Comment">--             (●.map (econs x .U)</a>
+    <a id="11037" class="Comment">--               (transport (cong U (sym (▷-●ᶜ c A)))</a>
+    <a id="11095" class="Comment">--                 (fold• l)))</a>
+    <a id="11130" class="Comment">--         ≡⟨ cong</a>
+    <a id="11153" class="Comment">--             (λ q → ●.map (η◦ᶜ {A = A} .U)</a>
+    <a id="11202" class="Comment">--               (●.map (econs x .U)</a>
+    <a id="11243" class="Comment">--                 (transport (cong U (sym (▷-●ᶜ c A))) q)))</a>
+    <a id="11308" class="Comment">--             (sym bind&#39;/β) ⟩</a>
+    <a id="11343" class="Comment">--           ●.map (η◦ᶜ {A = A} .U)</a>
+    <a id="11383" class="Comment">--             (●.map (econs x .U)</a>
+    <a id="11422" class="Comment">--               (transport (cong U (sym (▷-●ᶜ c A)))</a>
+    <a id="11480" class="Comment">--                 (fold•ᶜ .U (ret l))))</a>
+    <a id="11525" class="Comment">--         ≡⟨ (</a>
+    <a id="11545" class="Comment">--           let</a>
+    <a id="11566" class="Comment">--               q▷• = transport (cong U (sym (▷-●ᶜ c A))) (fold•ᶜ .U (ret l))</a>
+    <a id="11649" class="Comment">--               q▷◦ = transport (cong U (sym (▷-◯ᶜ c A))) (CHARGE {A = ◯ᶜ A} c .U ((costᶜ ⨾ᶜ η◦ᶜ ⨾ᶜ go◦) .U (ret l)))</a>
+
+    <a id="11773" class="Comment">--               q▷-coh : ●ᶜ.map (η◦ᶜ {A = ▷[ c ] A}) .U q▷• ≡ η• q▷◦</a>
+    <a id="11847" class="Comment">--               q▷-coh =</a>
+    <a id="11877" class="Comment">--                   ●ᶜ.map (η◦ᶜ {A = ▷[ c ] A}) .U q▷•</a>
+    <a id="11937" class="Comment">--                 ≡⟨ ? ⟩  -- transport-▷ c A (fold•ᶜ .U (ret l)) ⟩</a>
+    <a id="12009" class="Comment">--                   transport (cong (λ C → U (●ᶜ C)) (sym (▷-◯ᶜ c A)))</a>
+    <a id="12085" class="Comment">--                     ((▷-FRAC c A .𝒞-FRACTURE.α•) .U (fold•ᶜ .U (ret l)))</a>
+    <a id="12165" class="Comment">--                 ≡⟨ cong</a>
+    <a id="12196" class="Comment">--                     (transport (cong (λ C → U (●ᶜ C)) (sym (▷-◯ᶜ c A))))</a>
+    <a id="12276" class="Comment">--                     (sym (●.map-∘ (η◦ᶜ {A = A} .U) (◯ᶜ A .charge c) (fold•ᶜ .U (ret l))) ) ⟩</a>
+    <a id="12376" class="Comment">--                   transport (cong (λ C → U (●ᶜ C)) (sym (▷-◯ᶜ c A)))</a>
+    <a id="12452" class="Comment">--                     (●.map (CHARGE {A = ◯ᶜ A} c .U)</a>
+    <a id="12511" class="Comment">--                       ((fold•ᶜ ⨾ᶜ ●ᶜ.map η◦ᶜ) .U (ret l)))</a>
+    <a id="12577" class="Comment">--                 ≡⟨ cong</a>
+    <a id="12608" class="Comment">--                     (transport (cong (λ C → U (●ᶜ C)) (sym (▷-◯ᶜ c A))))</a>
+    <a id="12688" class="Comment">--                     (cong (●.map (CHARGE {A = ◯ᶜ A} c .U)) (fold•-coherence l)) ⟩</a>
+    <a id="12777" class="Comment">--                   η• q▷◦</a>
+    <a id="12809" class="Comment">--                 ∎</a>
+    <a id="12834" class="Comment">--             in</a>
+    <a id="12856" class="Comment">--             fracture-map-coh (econs x) q▷• q▷◦ q▷-coh</a>
+    <a id="12917" class="Comment">--         ) ⟩</a>
+    <a id="12936" class="Comment">--           η•ᶜ {A = ◯ᶜ A} .U (◯.map (econs x .U)</a>
+    <a id="12991" class="Comment">--             (transport (cong U (sym (▷-◯ᶜ c A)))</a>
+    <a id="13047" class="Comment">--               (CHARGE {A = ◯ᶜ A} c .U ((costᶜ ⨾ᶜ η◦ᶜ ⨾ᶜ go◦) .U (ret l)))))</a>
+    <a id="13130" class="Comment">--         ≡⟨ cong (η•ᶜ {A = ◯ᶜ A} .U) (open-cons-charge x l) ⟩</a>
+    <a id="13198" class="Comment">--           (costᶜ ⨾ᶜ η◦ᶜ ⨾ᶜ go◦ ⨾ᶜ η•ᶜ) .U (ret (x ∷ l))</a>
+    <a id="13261" class="Comment">--         ∎</a>
+</pre></body></html>
