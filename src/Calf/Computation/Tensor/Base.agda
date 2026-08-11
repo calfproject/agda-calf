@@ -262,7 +262,6 @@ opaque
               (λ b c → refl)
             )
 
-opaque
   map₂-equivᶜ : ∀ {A₁ A₂ B₁ B₂} {f : A₁ ⊸ A₂} {g : B₁ ⊸ B₂}
     → isEquivᶜ f → isEquivᶜ g
     → isEquivᶜ (map₂ f g)
@@ -276,8 +275,11 @@ opaque
           (λ z → map₂ (invEquivᶜ f fe) (invEquivᶜ g ge) .U (map₂ f g .U z)) (λ z → z)
           (λ a b i → ∣ inj (retEq (f .U , fe) a i) (retEq (g .U , ge) b i) ∣₂)))
 
-⊗-isContr : isContr (U A) → isContr (U B) → isContr (U (A ⊗ B))
-⊗-isContr {A} {B} cA cB .fst = ∣ inj (cA .fst) (cB .fst) ∣₂
-⊗-isContr {A} {B} cA cB .snd =
-  ⊛-≡ squash₂ (λ _ → ∣ inj (cA .fst) (cB .fst) ∣₂) (λ w → w)
-    (λ a b i → ∣ inj (cA .snd a i) (cB .snd b i) ∣₂)
+opaque
+  unfolding _⊗_
+
+  ⊗-isContr : isContr (U A) → isContr (U B) → isContr (U (A ⊗ B))
+  ⊗-isContr {A} {B} cA cB .fst = ∣ inj (cA .fst) (cB .fst) ∣₂
+  ⊗-isContr {A} {B} cA cB .snd =
+    ⊛-≡ squash₂ (λ _ → ∣ inj (cA .fst) (cB .fst) ∣₂) (λ w → w)
+      (λ a b i → ∣ inj (cA .snd a i) (cB .snd b i) ∣₂)
