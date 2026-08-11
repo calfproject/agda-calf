@@ -243,16 +243,6 @@ jobs:
       - name: Add the generated versions to the site
         shell: bash
         run: |
-          # Before this workflow, Decalf v2.0 was published directly at the
-          # site root. Preserve it during the one-time layout migration.
-          if [[ ! -d site/v2.0 && -f site/Calf.CBPV.html ]]; then
-            mkdir -p site/v2.0
-            find site -maxdepth 1 -type f \
-              ! -name CNAME \
-              ! -name .nojekyll \
-              -exec mv -t site/v2.0 -- {} +
-          fi
-
           mapfile -t artifacts < <(
             find built-docs -mindepth 1 -maxdepth 1 -type d \
               -name 'calf-documentation-*' \
@@ -330,25 +320,3 @@ jobs:
             git -C site commit -m 'Deploy versioned Calf documentation'
             git -C site push origin HEAD:gh-pages
           fi
-
-      - name: Upload the complete site
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: site
-
-  deploy:
-    name: Deploy GitHub Pages
-    needs: publish
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: Deploy
-        id: deployment
-        uses: actions/deploy-pages@v4
