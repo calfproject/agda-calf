@@ -21,15 +21,13 @@ jobs:
             toolchain: agda
             command: agda
             typecheck-command: agda --cubical --guardedness --library-file="$GITHUB_WORKSPACE/libraries" --build-library
-            compiler-url: https://github.com/agda/agda.git
-            compiler-ref: 3d04bacca842729f9c0869b9287256321b5f450f
+            compiler-ref: d351d0653aeb7877273920cd3e823994e7579b0b
             cubical-url: https://github.com/agda/cubical.git
             cubical-ref: b150186d2544e7efeddd31e5d14a8b9ecbb100f7
           - name: Mikan + Mikan Cubical
             toolchain: mikan
             command: mikan
             typecheck-command: mikan --library-file="$GITHUB_WORKSPACE/libraries" --build-library
-            compiler-url: https://codeberg.org/1lab/mikan.git
             compiler-ref: 0513ea707f9879fd60fedcd868aae36c208d5f9d
             cubical-url: https://codeberg.org/1lab/agda-cubical.git
             cubical-ref: 7a99d6e2834053b72b33a051d2798e673bbbae76
@@ -40,27 +38,7 @@ jobs:
         with:
           path: calf
 
-      - name: Set up Haskell
-        if: matrix.toolchain == 'agda'
-        uses: haskell-actions/setup@v2
-        with:
-          ghc-version: 9.12.2
-          cabal-version: 3.12.1.0
-          cabal-update: false
-
-      - name: Restore Agda compiler cache
-        if: matrix.toolchain == 'agda'
-        id: agda-cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cabal/bin
-            ~/.cabal/packages
-            ~/.cabal/store
-          key: agda-${{ runner.os }}-${{ runner.arch }}-ghc-9.12.2-cabal-3.12.1.0-${{ matrix.compiler-ref }}
-
       - name: Install Nix
-        if: matrix.toolchain == 'mikan'
         uses: cachix/install-nix-action@v31
         with:
           extra_nix_config: |
@@ -75,33 +53,19 @@ jobs:
           name: mikan
           skipPush: true
 
-      - name: Check out ${{ matrix.toolchain }}
-        if: matrix.toolchain == 'mikan' || steps.agda-cache.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          git init compiler
-          git -C compiler remote add origin "${{ matrix.compiler-url }}"
-          git -C compiler fetch --depth=1 origin "${{ matrix.compiler-ref }}"
-          git -C compiler checkout --detach FETCH_HEAD
-
-      - name: Build and install Agda
-        if: matrix.toolchain == 'agda' && steps.agda-cache.outputs.cache-hit != 'true'
-        working-directory: compiler
-        run: |
-          cabal update
-          cabal install \
-            --overwrite-policy=always \
-            --ghc-options='-O1 +RTS -M6G -RTS' \
-            exe:agda
-
-      - name: Add Agda to PATH
+      - name: Restore and install Agda from Nixpkgs
         if: matrix.toolchain == 'agda'
-        run: echo "$HOME/.cabal/bin" >> "$GITHUB_PATH"
+        run: |
+          nix profile add \
+            "github:NixOS/nixpkgs/${{ matrix.compiler-ref }}#agda"
+          "$HOME/.nix-profile/bin/agda" --version
+          echo "$HOME/.nix-profile/bin" >> "$GITHUB_PATH"
 
       - name: Restore and install Mikan through Cachix
         if: matrix.toolchain == 'mikan'
         run: |
-          nix profile add "$GITHUB_WORKSPACE/compiler"
+          nix profile add \
+            "git+https://codeberg.org/1lab/mikan.git?rev=${{ matrix.compiler-ref }}"
           "$HOME/.nix-profile/bin/mikan" --version
           echo "$HOME/.nix-profile/bin" >> "$GITHUB_PATH"
 
