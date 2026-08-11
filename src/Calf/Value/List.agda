@@ -21,15 +21,10 @@ open import Cubical.Data.Nat
 open import Cubical.Data.Sigma
 open import Cubical.Data.Unit
 
-isSetList : isSet X → isSet (List X)
-isSetList {X} isSetX = subst isSet (ua ΣVec≃List) (isSetΣ isSetℕ isSetVec)
-  where
+module _ {X : 𝒱} where
+  private
     Vec : ℕ → Type
     Vec n = iter n (X ×_) Unit
-
-    isSetVec : (n : ℕ) → isSet (Vec n)
-    isSetVec zero = isSetUnit
-    isSetVec (suc n) = isSet× isSetX (isSetVec n)
 
     fwd : Σ ℕ Vec → List X
     fwd (zero , tt) = []
@@ -52,5 +47,16 @@ isSetList {X} isSetX = subst isSet (ua ΣVec≃List) (isSetΣ isSetℕ isSetVec)
     ΣVec≃List .fst = fwd
     ΣVec≃List .snd = isoToIsEquiv (iso fwd bwd fwd-bwd bwd-fwd)
 
-isPreorderList : isPreorder X → isPreorder (List X)
-isPreorderList = {!   !}
+  isSetList : isSet X → isSet (List X)
+  isSetList isSetX = subst isSet (ua ΣVec≃List) (isSetΣ isSetℕ isSetVec)
+    where
+      isSetVec : (n : ℕ) → isSet (Vec n)
+      isSetVec zero = isSetUnit
+      isSetVec (suc n) = isSet× isSetX (isSetVec n)
+
+  isPreorderList : isPreorder X → isPreorder (List X)
+  isPreorderList isPreorderX = subst isPreorder (ua ΣVec≃List) (isPreorderΣ ℕₛ isPreorderVec)
+    where
+      isPreorderVec : (n : ℕ) → isPreorder (Vec n)
+      isPreorderVec zero = isPreorder⊤
+      isPreorderVec (suc n) = isPreorder× isPreorderX (isPreorderVec n)
