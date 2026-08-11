@@ -8,7 +8,17 @@ open import Cubical.Data.Nat.Literals public
 import Cubical.Data.Nat.Properties as Nat
 
 module _ {A : Type} where
-  open import Algebra.Definitions {A = A} _≡_ public
+  LeftIdentity : A → (A → A → A) → Type
+  LeftIdentity e _∙_ = ∀ x → e ∙ x ≡ x
+
+  RightIdentity : A → (A → A → A) → Type
+  RightIdentity e _∙_ = ∀ x → x ∙ e ≡ x
+
+  Associative : (A → A → A) → Type
+  Associative _∙_ = ∀ x y z → (x ∙ y) ∙ z ≡ x ∙ (y ∙ z)
+
+  Commutative : (A → A → A) → Type
+  Commutative _∙_ = ∀ x y → x ∙ y ≡ y ∙ x
 
 `_ = fromNat
 

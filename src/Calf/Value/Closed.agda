@@ -6,7 +6,7 @@ open import Calf.Value.Open as ◯ using (◯)
 open import Calf.Value.Sigma
 open import Calf.Value.Unit
 
-open import 1Lab.Set.Pi
+open import 1Lab.Type.Pi
 open import Cubical.Foundations.CartesianKanOps
 open import Cubical.Foundations.Path using (compPathlEquiv; compPathrEquiv)
 open import Cubical.Foundations.Univalence using (hPropExt)

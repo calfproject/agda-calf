@@ -16,7 +16,7 @@ open import Calf.Giralf
 open import Cubical.Data.Bool
 open import Cubical.Data.Nat
 import Cubical.Data.Nat.Properties as Nat
-open import Cubical.Data.Nat.Order
+open import Cubical.Data.Nat.Order using (≤Dec)
 open import Cubical.Relation.Nullary
 
 _≤ᵇ_ : ℕ → ℕ → Bool

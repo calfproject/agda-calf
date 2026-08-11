@@ -135,11 +135,19 @@ opaque
   : Iso (A ⊸ B)
       (Σ[ h ∈ (U A → U B) ]
         ((c : ℂ) (a : U A) → h (A .charge c a) ≡ B .charge c (h a)))
-⊸-Σ-Iso .Iso.fun f = f .U , f .charge
-⊸-Σ-Iso .Iso.inv (h , ch) .U = h
-⊸-Σ-Iso .Iso.inv (h , ch) .charge = ch
-⊸-Σ-Iso .Iso.rightInv _ = refl
-⊸-Σ-Iso .Iso.leftInv _ = refl
+⊸-Σ-Iso = iso to from (λ _ → refl) (λ _ → refl)
+  where
+    to : (A ⊸ B) →
+      (Σ[ h ∈ (U A → U B) ]
+        ((c : ℂ) (a : U A) → h (A .charge c a) ≡ B .charge c (h a)))
+    to f = f .U , f .charge
+
+    from :
+      (Σ[ h ∈ (U A → U B) ]
+        ((c : ℂ) (a : U A) → h (A .charge c a) ≡ B .charge c (h a)))
+      → (A ⊸ B)
+    from (h , ch) .U = h
+    from (h , ch) .charge = ch
 
 opaque
   isSet⊸ : isSet (A ⊸ B)
