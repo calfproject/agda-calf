@@ -1,101 +1,143 @@
-name: Compile Agda and Deploy HTML
+name: Agda and Mikan
+
 on:
   push:
-    branches:
-      - main
   pull_request:
-    types:
-      - opened
-      - synchronize
-      - reopened
-      - ready_for_review
+  workflow_dispatch:
 
+permissions:
+  contents: read
 
 jobs:
-  build:
+  typecheck:
+    name: Typecheck with ${{ matrix.name }}
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
-    timeout-minutes: 60
+    timeout-minutes: 90
 
     strategy:
+      fail-fast: false
       matrix:
-        agda-ref: ["v2.6.3"]
-        stdlib-ref: ["v2.0"]
-        ghc-ver: ["8.10.2"]
-        cabal-ver: ["3.4.0.0"]
+        include:
+          - name: Agda 2.8.0 + Cubical 0.9
+            toolchain: agda
+            command: agda
+            typecheck-command: agda --cubical --guardedness --library-file="$GITHUB_WORKSPACE/libraries" --build-library
+            compiler-url: https://github.com/agda/agda.git
+            compiler-ref: 3d04bacca842729f9c0869b9287256321b5f450f
+            cubical-url: https://github.com/agda/cubical.git
+            cubical-ref: b150186d2544e7efeddd31e5d14a8b9ecbb100f7
+          - name: Mikan + Mikan Cubical
+            toolchain: mikan
+            command: mikan
+            typecheck-command: mikan --library-file="$GITHUB_WORKSPACE/libraries" --build-library
+            compiler-url: https://codeberg.org/1lab/mikan.git
+            compiler-ref: 0513ea707f9879fd60fedcd868aae36c208d5f9d
+            cubical-url: https://codeberg.org/1lab/agda-cubical.git
+            cubical-ref: 7a99d6e2834053b72b33a051d2798e673bbbae76
+
     steps:
-    - uses: actions/cache@v2
-      name: Cache cabal packages
-      id: cache-cabal
-      with:
-        path: |
-          ~/.cabal/packages
-          ~/.cabal/store
-          ~/.cabal/bin
-          ~/.local/bin
-          dist-newstyle
-        key: ${{ runner.os }}-${{ matrix.ghc-ver }}-${{ matrix.cabal-ver }}-${{ matrix.agda-ref }}
-    - name: Install cabal
-      if: steps.cache-cabal.outputs.cache-hit != 'true'
-      uses: actions/setup-haskell@v1.1.3
-      with:
-        ghc-version: ${{ matrix.ghc-ver }}
-        cabal-version: ${{ matrix.cabal-ver }}
-    - name: Put cabal programs in PATH
-      run: echo "~/.cabal/bin" >> $GITHUB_PATH
-    - name: Download Agda from github
-      if: steps.cache-cabal.outputs.cache-hit != 'true'
-      uses: actions/checkout@v2
-      with:
-        repository: agda/agda
-        path: agda
-        ref: ${{ matrix.agda-ref }}
+      - name: Check out calf
+        uses: actions/checkout@v4
+        with:
+          path: calf
 
-    - name: Install Agda
-      if: steps.cache-cabal.outputs.cache-hit != 'true'
-      run: |
-        cabal update
-        cabal install --overwrite-policy=always --ghc-options='-O2 +RTS -M6G -RTS' alex-3.2.5
-        cabal install --overwrite-policy=always --ghc-options='-O2 +RTS -M6G -RTS' happy-1.19.12
-        cd agda
-        mkdir -p doc
-        touch doc/user-manual.pdf
-        cabal install --overwrite-policy=always --ghc-options='-O1 +RTS -M6G -RTS'
+      - name: Set up Haskell
+        if: matrix.toolchain == 'agda'
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: 9.12.2
+          cabal-version: 3.12.1.0
+          cabal-update: false
 
+      - name: Restore Agda compiler cache
+        if: matrix.toolchain == 'agda'
+        id: agda-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cabal/bin
+            ~/.cabal/packages
+            ~/.cabal/store
+          key: agda-${{ runner.os }}-${{ runner.arch }}-ghc-9.12.2-cabal-3.12.1.0-${{ matrix.compiler-ref }}
 
-    - name: Checkout standard library
-      uses: actions/checkout@v2
-      with:
-        repository: agda/agda-stdlib
-        path: stdlib
-        ref: ${{ matrix.stdlib-ref }}
+      - name: Install Nix
+        if: matrix.toolchain == 'mikan'
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            accept-flake-config = true
+            cores = 4
+            max-jobs = 1
 
-    - name: Put standard library in Agda library list
-      run: |
-        mkdir -p ~/.agda/
-        touch ~/.agda/libraries
-        echo "$GITHUB_WORKSPACE/stdlib/standard-library.agda-lib" > ~/.agda/libraries
+      - name: Enable the Mikan binary cache
+        if: matrix.toolchain == 'mikan'
+        uses: cachix/cachix-action@v17
+        with:
+          name: mikan
+          skipPush: true
 
+      - name: Check out ${{ matrix.toolchain }}
+        if: matrix.toolchain == 'mikan' || steps.agda-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          git init compiler
+          git -C compiler remote add origin "${{ matrix.compiler-url }}"
+          git -C compiler fetch --depth=1 origin "${{ matrix.compiler-ref }}"
+          git -C compiler checkout --detach FETCH_HEAD
 
-    - name: Checkout main
-      uses: actions/checkout@v2
-      with:
-        path: main
+      - name: Build and install Agda
+        if: matrix.toolchain == 'agda' && steps.agda-cache.outputs.cache-hit != 'true'
+        working-directory: compiler
+        run: |
+          cabal update
+          cabal install \
+            --overwrite-policy=always \
+            --ghc-options='-O1 +RTS -M6G -RTS' \
+            exe:agda
 
-    - name: Compile main library
-      run: |
-        mkdir -p ~/main-build/_build
-        cp -f -R ~/main-build/_build $GITHUB_WORKSPACE/main/_build
-        rm -r ~/main-build
-        cd main
-        agda --html --html-dir=docs src/index.agda
-        cp Agda.css docs/
-        cd ..
-        cp -f -R main/ ~/main-build/
+      - name: Add Agda to PATH
+        if: matrix.toolchain == 'agda'
+        run: echo "$HOME/.cabal/bin" >> "$GITHUB_PATH"
 
-    - name: Deploy html to github pages
-      if: ${{ github.event_name == 'push' }}
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: main/docs
+      - name: Restore or build Mikan through Cachix
+        if: matrix.toolchain == 'mikan'
+        run: |
+          nix build \
+            --accept-flake-config \
+            --out-link "$GITHUB_WORKSPACE/mikan-result" \
+            "$GITHUB_WORKSPACE/compiler"
+          echo "$GITHUB_WORKSPACE/mikan-result/bin" >> "$GITHUB_PATH"
+
+      - name: Check out the matching Cubical library
+        shell: bash
+        run: |
+          git init cubical
+          git -C cubical remote add origin "${{ matrix.cubical-url }}"
+          git -C cubical fetch --depth=1 origin "${{ matrix.cubical-ref }}"
+          git -C cubical checkout --detach FETCH_HEAD
+
+      - name: Register the Cubical library
+        shell: bash
+        run: |
+          printf '%s\n' "$GITHUB_WORKSPACE/cubical/cubical.agda-lib" > "$GITHUB_WORKSPACE/libraries"
+
+      - name: Remove Agda-only flags for Mikan
+        if: matrix.toolchain == 'mikan'
+        run: sed -i '/^flags:/d' calf/calf.agda-lib
+
+      - name: Restore compiler interface cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            calf/_build
+            cubical/_build
+          key: interfaces-${{ runner.os }}-${{ runner.arch }}-${{ matrix.toolchain }}-${{ matrix.compiler-ref }}-${{ matrix.cubical-ref }}-${{ hashFiles('calf/**/*.agda', 'calf/**/*.agda-lib') }}
+          restore-keys: |
+            interfaces-${{ runner.os }}-${{ runner.arch }}-${{ matrix.toolchain }}-${{ matrix.compiler-ref }}-${{ matrix.cubical-ref }}-
+
+      - name: Show compiler version
+        run: ${{ matrix.command }} --version
+
+      - name: Typecheck calf
+        working-directory: calf
+        run: ${{ matrix.typecheck-command }}
