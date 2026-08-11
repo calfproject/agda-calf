@@ -31,7 +31,7 @@ opaque
   +ℂ-identityˡ = +-identityˡ
 
   +ℂ-identityʳ : RightIdentity 0ℂ _+ℂ_
-  +ℂ-identityʳ = {!   !}
+  +ℂ-identityʳ = +-identityʳ
 
   +ℂ-assoc : Associative _+ℂ_
   +ℂ-assoc = +-assoc
@@ -41,6 +41,9 @@ opaque
 
   ℕ→ℂ : ℕ → ℂ
   ℕ→ℂ n = ` n
+
+  ℕ→ℂ-+ : ∀ m n → ℕ→ℂ (m +ℕ n) ≡ ℕ→ℂ m +ℂ ℕ→ℂ n
+  ℕ→ℂ-+ = ℕ→ω-+
 
   ≤⇒⊑ℂ : ∀ {m n} → m ≤ n → ℕ→ℂ m ⊑ ℕ→ℂ n
   ≤⇒⊑ℂ = ≤⇒⊑

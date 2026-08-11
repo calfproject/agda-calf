@@ -3,7 +3,6 @@ module Examples.Queue where
 open import Calf.Core.Abstract
 open import Calf.Core.Cost
 open import Calf.Core.Monad using (M)
-open import Cubical.HITs.SetTruncation using (∣_∣₂)
 open import Calf.Value hiding (empty)
 open import Calf.Value.List
 open import Calf.Value.Nat
@@ -147,7 +146,7 @@ opaque
               (sym (List.++-assoc front (reverse back) [ e ])) ⟩
           LQ .charge (` length (e ∷ back)) (ret ((front ++ reverse back) ++ [ e ]))
         ≡⟨ cong (λ c → LQ .charge c (ret ((front ++ reverse back) ++ [ e ])))
-              (sym (Nat.+-comm (length back) 1)) ⟩
+              (cong ℕ→ℂ (Nat.+-comm 1 (length back)) ∙ ℕ→ℂ-+ (length back) 1) ⟩
           LQ .charge ((` length back) +ℂ 1) (ret ((front ++ reverse back) ++ [ e ]))
         ≡⟨ LQ .charge/+ ⟩
           LQ .charge (` length back) (LQ .charge 1 (ret ((front ++ reverse back) ++ [ e ])))
@@ -245,8 +244,8 @@ module Dequeue where
               ≡ dequeueᴸ .U (LQ .charge (` length back) (ret (reverse back)))
             lemma with reverse back | length-reverse back
             ... | [] | h =
-                0 , α .U (BQ .charge (length back) (ret ([] , [])))
-              ≡⟨ cong (λ c → _,_ {B = const _} 0 $ α .U (BQ .charge c (ret ([] , [])))) h ⟩
+                0 , α .U (BQ .charge (` length back) (ret ([] , [])))
+              ≡⟨ cong (λ c → _,_ {B = const _} 0 $ α .U (BQ .charge c (ret ([] , [])))) (cong ℕ→ℂ h) ⟩
                 0 , α .U (BQ .charge 0 (ret ([] , [])))
               ≡⟨ cong (λ e → 0 , α .U e) (BQ .charge/0) ⟩
                 0 , α .U (ret ([] , []))
@@ -258,25 +257,25 @@ module Dequeue where
                 dequeueᴸ .U (ret [])
               ≡⟨ sym (cong (dequeueᴸ .U) (LQ .charge/0)) ⟩
                 dequeueᴸ .U (LQ .charge 0 (ret []))
-              ≡⟨ sym (cong (λ c → dequeueᴸ .U (LQ .charge c (ret []))) h) ⟩
-                dequeueᴸ .U (LQ .charge (length back) (ret []))
+              ≡⟨ sym (cong (λ c → dequeueᴸ .U (LQ .charge c (ret []))) (cong ℕ→ℂ h)) ⟩
+                dequeueᴸ .U (LQ .charge (` length back) (ret []))
               ∎
             ... | x ∷ front | _ =
-                x , α .U (BQ .charge (length back) (ret ([] , front)))
-              ≡⟨ cong (x ,_) (α .charge (length back) _) ⟩
-                x , F _ .charge (length back) (α .U (ret ([] , front)))
-              ≡⟨ cong (λ e → x , F _ .charge (length back) e) bind'/β ⟩
-                x , F _ .charge (length back) (LQ .charge 0 (ret (front ++ [])))
-              ≡⟨ cong (λ e → x , F _ .charge (length back) e) (LQ .charge/0) ⟩
-                x , F _ .charge (length back) (ret (front ++ []))
-              ≡⟨ cong (λ l → x , F _ .charge (length back) (ret l)) (List.++-unit-r front) ⟩
-                x , F _ .charge (length back) (ret front)
+                x , α .U (BQ .charge (` length back) (ret ([] , front)))
+              ≡⟨ cong (x ,_) (α .charge (` length back) _) ⟩
+                x , F _ .charge (` length back) (α .U (ret ([] , front)))
+              ≡⟨ cong (λ e → x , F _ .charge (` length back) e) bind'/β ⟩
+                x , F _ .charge (` length back) (LQ .charge 0 (ret (front ++ [])))
+              ≡⟨ cong (λ e → x , F _ .charge (` length back) e) (LQ .charge/0) ⟩
+                x , F _ .charge (` length back) (ret (front ++ []))
+              ≡⟨ cong (λ l → x , F _ .charge (` length back) (ret l)) (List.++-unit-r front) ⟩
+                x , F _ .charge (` length back) (ret front)
               ≡⟨ refl ⟩
-                (ℕₚ ⋊ LQ) .charge (length back) (x , ret front)
-              ≡⟨ sym (cong ((ℕₚ ⋊ LQ) .charge (length back)) bind'/β) ⟩
-                (ℕₚ ⋊ LQ) .charge (length back) (dequeueᴸ .U (ret (x ∷ front)))
-              ≡⟨ sym (dequeueᴸ .charge (length back) _) ⟩
-                dequeueᴸ .U (LQ .charge (length back) (ret (x ∷ front)))
+                (ℕₚ ⋊ LQ) .charge (` length back) (x , ret front)
+              ≡⟨ sym (cong ((ℕₚ ⋊ LQ) .charge (` length back)) bind'/β) ⟩
+                (ℕₚ ⋊ LQ) .charge (` length back) (dequeueᴸ .U (ret (x ∷ front)))
+              ≡⟨ sym (dequeueᴸ .charge (` length back) _) ⟩
+                dequeueᴸ .U (LQ .charge (` length back) (ret (x ∷ front)))
               ∎
 
   opaque

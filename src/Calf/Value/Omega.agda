@@ -2,7 +2,7 @@ module Calf.Value.Omega where
 
 open import Calf.Core.Directed
 open import Calf.Value
-open import Cubical.Data.Nat using (ℕ; zero; suc; HasFromNat)
+open import Cubical.Data.Nat using (ℕ; zero; suc; HasFromNat) renaming (_+_ to _+ℕ_)
 open import Cubical.Data.Nat.Order
 open import Cubical.Foundations.Prelude
 open import Data.Unit
@@ -39,12 +39,23 @@ rel-1𝟚 n i + m = rel-1𝟚 (n + m) i
 +-identityˡ : LeftIdentity zero _+_
 +-identityˡ _ = refl
 
++-identityʳ : RightIdentity zero _+_
++-identityʳ zero = refl
++-identityʳ (suc n) = cong suc (+-identityʳ n)
++-identityʳ (rel 𝕚 n) = cong (rel 𝕚) (+-identityʳ n)
++-identityʳ (rel-0𝟚 n i) = cong (λ x → rel-0𝟚 x i) (+-identityʳ n)
++-identityʳ (rel-1𝟚 n i) = cong (λ x → rel-1𝟚 x i) (+-identityʳ n)
+
 +-assoc : Associative _+_
 +-assoc zero         _ _ = refl
 +-assoc (suc m)      n o = cong suc (+-assoc m n o)
 +-assoc (rel 𝕚 m)    n o = cong (rel 𝕚) (+-assoc m n o)
 +-assoc (rel-0𝟚 m i) n o = cong (λ x → rel-0𝟚 x i) (+-assoc m n o)
 +-assoc (rel-1𝟚 m i) n o = cong (λ x → rel-1𝟚 x i) (+-assoc m n o)
+
+ℕ→ω-+ : ∀ m n → ℕ→ω (m +ℕ n) ≡ ℕ→ω m + ℕ→ω n
+ℕ→ω-+ zero n = refl
+ℕ→ω-+ (suc m) n = cong suc (ℕ→ω-+ m n)
 
 ≤⇒⊑ : ∀ {m n} → m ≤ n → ℕ→ω m ⊑ ℕ→ω n
 ≤⇒⊑ (zero , p+m≡n) = ≡⇒⊑ (cong ℕ→ω p+m≡n)
