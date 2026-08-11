@@ -165,7 +165,7 @@ spendᴳ : ∀ p
   → q ⋎₂ (p , q')
   → Δ , q' ⊢ A
   → Δ , q ⊢ A
-spendᴳ {q = q} {A = A} p split e = letᴳ split (spend p) e
+spendᴳ {q = q} {Δ = Δ} {A = A} p split e = letᴳ split (spend (Tensorfy Δ) p) e
 
 
 module _ where
