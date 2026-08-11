@@ -13,8 +13,47 @@ open import Calf.Computation.Tensor.Base
 opaque
   unfolding F
 
-  F-monoidal : (F X ⊗ F Y) ≡ F (X × Y)
-  F-monoidal {X} {Y} = {!   !}
+  F-monoidal : F X ⊗ F Y ≡ F (X × Y)
+  F-monoidal {X} {Y} = sym (conservativity bwd bwd-equiv)
+    where
+      bwd : F (X × Y) ⊸ F X ⊗ F Y
+      bwd = bind' (λ (x , y) → ret x ∥ ret y)
+
+      fwd : U (F X ⊗ F Y) → U (F (X × Y))
+      fwd = rec (F (X × Y) .is-preorder) λ
+        { (inj (c₁ , x) (c₂ , y)) → (c₁ +ℂ c₂) , map2ᴾ _,_ x y
+        ; (law c (c₁ , x) (c₂ , y) i) →
+            cong (_, map2ᴾ _,_ x y)
+              ( cong (_+ℂ c₂) (+ℂ-comm c c₁) ∙ +ℂ-assoc c₁ c c₂ ) i
+        }
+
+      charge-ret : (c : ℂ) (z : Z) → F Z .charge c (ret z) ≡ (c , ηᴾ z)
+      charge-ret c z = cong (_, ηᴾ z) (+ℂ-identityʳ c)
+
+      bwd-sect : ∀ v → bwd .U (fwd v) ≡ v
+      bwd-sect =
+        ⊛-≡ isPreorderP (λ v → bwd .U (fwd v)) (λ v → v)
+          (λ (c₁ , x) (c₂ , y) →
+            rec-unique2 isPreorderP
+              (λ x y → bwd .U ((c₁ +ℂ c₂) , map2ᴾ _,_ x y))
+              (λ x y → ηᴾ (inj (c₁ , x) (c₂ , y)))
+              (λ x y →
+                  (F X ⊗ F Y) .charge/+ {ret x ∥ ret y} {c₁} {c₂}
+                ∙ cong ((F X ⊗ F Y) .charge c₁) (∥-law {A = F X} {B = F Y} c₂ (ret x) (ret y))
+                ∙ cong₂ _∥_ (charge-ret c₁ x) (charge-ret c₂ y))
+              x y)
+
+      bwd-retr : ∀ u → fwd (bwd .U u) ≡ u
+      bwd-retr (c , w) =
+        rec-unique (F (X × Y) .is-preorder)
+          (λ w → fwd (bwd .U (c , w)))
+          (c ,_)
+          (λ (x , y) →
+            cong (_, ηᴾ (x , y)) (cong (_+ℂ 0ℂ) (+ℂ-identityʳ c) ∙ +ℂ-identityʳ c))
+          w
+
+      bwd-equiv : isEquivᶜ bwd
+      bwd-equiv = isoToIsEquiv (iso (bwd .U) fwd bwd-sect bwd-retr)
 
 par : U (F X) → U (F Y) → U (F (X × Y))
 par ex ey = transport (cong U F-monoidal) (ex ∥ ey)
