@@ -23,7 +23,7 @@ open import Calf.Computation.Tensor.Closed
 open 𝒞-FRACTURE
 
 opaque
-  unfolding ▷[_]_ triangle-Uᶜ
+  unfolding _⊗_ map₂ ⊗-rec ▷[_]_ triangle-Uᶜ
 
   A⊗▷B≡▷[A⊗B] : ∀ c → (A ⊗ (▷[ c ] B)) ≡ (▷[ c ] (A ⊗ B))
   A⊗▷B≡▷[A⊗B] {A} {B} c =
