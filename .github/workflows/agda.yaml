@@ -86,15 +86,11 @@ jobs:
         if: matrix.toolchain == 'mikan'
         run: sed -i '/^flags:/d' calf/calf.agda-lib
 
-      - name: Restore compiler interface cache
+      - name: Restore Cubical interface cache
         uses: actions/cache@v4
         with:
-          path: |
-            calf/_build
-            cubical/_build
-          key: interfaces-${{ runner.os }}-${{ runner.arch }}-${{ matrix.toolchain }}-${{ matrix.compiler-ref }}-${{ matrix.cubical-ref }}-${{ hashFiles('calf/**/*.agda', 'calf/**/*.agda-lib') }}
-          restore-keys: |
-            interfaces-${{ runner.os }}-${{ runner.arch }}-${{ matrix.toolchain }}-${{ matrix.compiler-ref }}-${{ matrix.cubical-ref }}-
+          path: cubical/_build
+          key: cubical-interfaces-${{ runner.os }}-${{ runner.arch }}-${{ matrix.toolchain }}-${{ matrix.compiler-ref }}-${{ matrix.cubical-ref }}
 
       - name: Show compiler version
         run: ${{ matrix.command }} --version
