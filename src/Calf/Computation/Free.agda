@@ -126,10 +126,12 @@ F-adjoint = bind' , bind'-isEquiv
 ret' : (F X ⊸ A) → (X → U A)
 ret' e x = e .U (ret x)
 
-bindᶜ : (A ⊸ F X) → (X → U A) → (A ⊸ A)
+private variable Δ : 𝒞
+
+bindᶜ : (Δ ⊸ F X) → (X → U A) → (Δ ⊸ A)
 bindᶜ e k = e ⨾ᶜ bind' k
 
--- syntax bindᶜ e (λ x → k) = bind x ← e ⨾ k
+syntax bindᶜ e (λ x → k) = bind x ← e ⨾ k
 
 map : (X → Y) → (F X ⊸ F Y)
 map f = bind' (ret ∘ f)
