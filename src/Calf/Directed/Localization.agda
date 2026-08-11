@@ -116,94 +116,101 @@ recUnique {X = X} isLocalY f g p = elim
                       (λ i′ → secCongDep' α (base α u v q) (endpt α u) (endpt α v) .snd (input α u v q) i′ j s)
                       i)
 
-isLocalUnit : isLocal F Unit
-isLocalUnit α =
-  fromIsEquiv _ $ equivIsEquiv $
-  isContr→Equiv (isContrΠ λ _ → isContrUnit) (isContrΠ λ _ → isContrUnit)
+opaque
+  isLocalUnit : isLocal F Unit
+  isLocalUnit α =
+    fromIsEquiv _ $ equivIsEquiv $
+    isContr→Equiv (isContrΠ λ _ → isContrUnit) (isContrΠ λ _ → isContrUnit)
 
-isLocal× : isLocal F X → isLocal F Y → isLocal F (X × Y)
-isLocal× {X} {Y} isLocalX isLocalY α = fromIsEquiv _ (equivIsEquiv equiv)
-  where
-    equiv : (T α → X × Y) ≃ (S α → X × Y)
-    equiv =
-      (T α → X × Y)         ≃⟨ Σ-Π-≃ ⟩
-      (T α → X) × (T α → Y) ≃⟨ ≃-× (_ , toIsEquiv _ (isLocalX α)) (_ , toIsEquiv _ (isLocalY α)) ⟩
-      (S α → X) × (S α → Y) ≃⟨ invEquiv Σ-Π-≃ ⟩
-      (S α → X × Y)         ■
+opaque
+  isLocal× : isLocal F X → isLocal F Y → isLocal F (X × Y)
+  isLocal× {X} {Y} isLocalX isLocalY α = fromIsEquiv _ (equivIsEquiv equiv)
+    where
+      equiv : (T α → X × Y) ≃ (S α → X × Y)
+      equiv =
+        (T α → X × Y)         ≃⟨ Σ-Π-≃ ⟩
+        (T α → X) × (T α → Y) ≃⟨ ≃-× (_ , toIsEquiv _ (isLocalX α)) (_ , toIsEquiv _ (isLocalY α)) ⟩
+        (S α → X) × (S α → Y) ≃⟨ invEquiv Σ-Π-≃ ⟩
+        (S α → X × Y)         ■
 
-isLocalΠ : {Y : X → Type} → ((x : X) → isLocal F (Y x)) → isLocal F ((x : X) → Y x)
-isLocalΠ {X} {Y} isLocalY α = fromIsEquiv _ (equivIsEquiv equiv)
-  where
-    flip≃ : (W : Type) → (W → (x : X) → Y x) ≃ ((x : X) → W → Y x)
-    flip≃ W = isoToEquiv (iso flip flip (λ _ → refl) (λ _ → refl))
+opaque
+  isLocalΠ : {Y : X → Type} → ((x : X) → isLocal F (Y x)) → isLocal F ((x : X) → Y x)
+  isLocalΠ {X} {Y} isLocalY α = fromIsEquiv _ (equivIsEquiv equiv)
+    where
+      flip≃ : (W : Type) → (W → (x : X) → Y x) ≃ ((x : X) → W → Y x)
+      flip≃ W = isoToEquiv (iso flip flip (λ _ → refl) (λ _ → refl))
 
-    equiv : (T α → (x : X) → Y x) ≃ (S α → (x : X) → Y x)
-    equiv =
-      (T α → (x : X) → Y x) ≃⟨ flip≃ (T α) ⟩
-      ((x : X) → T α → Y x) ≃⟨ equivΠCod (λ x → _ , toIsEquiv _ (isLocalY x α)) ⟩
-      ((x : X) → S α → Y x) ≃⟨ invEquiv (flip≃ (S α)) ⟩
-      (S α → (x : X) → Y x) ■
+      equiv : (T α → (x : X) → Y x) ≃ (S α → (x : X) → Y x)
+      equiv =
+        (T α → (x : X) → Y x) ≃⟨ flip≃ (T α) ⟩
+        ((x : X) → T α → Y x) ≃⟨ equivΠCod (λ x → _ , toIsEquiv _ (isLocalY x α)) ⟩
+        ((x : X) → S α → Y x) ≃⟨ invEquiv (flip≃ (S α)) ⟩
+        (S α → (x : X) → Y x) ■
 
-isLocalEqualizer :
-  isLocal F X → isLocal F Y → (φ ψ : X → Y)
-  → isLocal F (Σ[ x ∈ X ] φ x ≡ ψ x)
-isLocalEqualizer {X} {Y} isLocalX isLocalY φ ψ α = fromIsEquiv _ (equivIsEquiv equiv)
-  where
-    equiv : (T α → Σ[ x ∈ X ] φ x ≡ ψ x) ≃ (S α → Σ[ x ∈ X ] φ x ≡ ψ x)
-    equiv =
-        (T α → Σ[ x ∈ X ] φ x ≡ ψ x)
-      ≃⟨ Σ-Π-≃ ⟩
-        Σ[ g ∈ (T α → X) ] ((t : T α) → φ (g t) ≡ ψ (g t))
-      ≃⟨
-        Σ-cong-equiv
-          (_ , toIsEquiv _ (isLocalX α))
-          (λ g → _ , toIsEquiv _ (isLocalPathFun isLocalY α (φ ∘ g) (ψ ∘ g)))
-      ⟩
-        Σ[ h ∈ (S α → X) ] ((s : S α) → φ (h s) ≡ ψ (h s))
-      ≃⟨ invEquiv Σ-Π-≃ ⟩
-        (S α → Σ[ x ∈ X ] φ x ≡ ψ x)
-      ■
+opaque
+  isLocalEqualizer :
+    isLocal F X → isLocal F Y → (φ ψ : X → Y)
+    → isLocal F (Σ[ x ∈ X ] φ x ≡ ψ x)
+  isLocalEqualizer {X} {Y} isLocalX isLocalY φ ψ α = fromIsEquiv _ (equivIsEquiv equiv)
+    where
+      equiv : (T α → Σ[ x ∈ X ] φ x ≡ ψ x) ≃ (S α → Σ[ x ∈ X ] φ x ≡ ψ x)
+      equiv =
+          (T α → Σ[ x ∈ X ] φ x ≡ ψ x)
+        ≃⟨ Σ-Π-≃ ⟩
+          Σ[ g ∈ (T α → X) ] ((t : T α) → φ (g t) ≡ ψ (g t))
+        ≃⟨
+          Σ-cong-equiv
+            (_ , toIsEquiv _ (isLocalX α))
+            (λ g → _ , toIsEquiv _ (isLocalPathFun isLocalY α (φ ∘ g) (ψ ∘ g)))
+        ⟩
+          Σ[ h ∈ (S α → X) ] ((s : S α) → φ (h s) ≡ ψ (h s))
+        ≃⟨ invEquiv Σ-Π-≃ ⟩
+          (S α → Σ[ x ∈ X ] φ x ≡ ψ x)
+        ■
 
-isLocalPullback :
-  isLocal F X → isLocal F Y → isLocal F Z → (f : X → Z) (g : Y → Z)
-  → isLocal F (Σ[ (x , y) ∈ X × Y ] f x ≡ g y)
-isLocalPullback isLocalX isLocalY isLocalZ f g =
-  isLocalEqualizer (isLocal× isLocalX isLocalY) isLocalZ (λ (x , y) → f x) (λ (x , y) → g y)
+opaque
+  isLocalPullback :
+    isLocal F X → isLocal F Y → isLocal F Z → (f : X → Z) (g : Y → Z)
+    → isLocal F (Σ[ (x , y) ∈ X × Y ] f x ≡ g y)
+  isLocalPullback isLocalX isLocalY isLocalZ f g =
+    isLocalEqualizer (isLocal× isLocalX isLocalY) isLocalZ (λ (x , y) → f x) (λ (x , y) → g y)
 
-isLocalComma :
-  isLocal F X → isLocal F Y → isLocal F Z → (f : X → Z) (g : Y → Z)
-  → isLocal F (Σ[ (x , y) ∈ X × Y ] f x ⊑ g y)
-isLocalComma isLocalX isLocalY isLocalZ f g =
-  isLocalRetract
-    (λ ((x , y) , q) → ((x , y) , q .path) , λ i → q .path₀ i , q .path₁ i)
-    (λ (((x , y) , p) , e) → (x , y) , record { path = p ; path₀ = cong fst e ; path₁ = cong snd e })
-    (λ _ → refl)
-    (isLocalEqualizer
-      (isLocal× (isLocal× isLocalX isLocalY) (isLocalΠ λ _ → isLocalZ))
-      (isLocal× isLocalZ isLocalZ)
-      (λ ((x , y) , p) → p 0𝟚 , p 1𝟚)
-      (λ ((x , y) , p) → f x , g y))
+opaque
+  isLocalComma :
+    isLocal F X → isLocal F Y → isLocal F Z → (f : X → Z) (g : Y → Z)
+    → isLocal F (Σ[ (x , y) ∈ X × Y ] f x ⊑ g y)
+  isLocalComma isLocalX isLocalY isLocalZ f g =
+    isLocalRetract
+      (λ ((x , y) , q) → ((x , y) , q .path) , λ i → q .path₀ i , q .path₁ i)
+      (λ (((x , y) , p) , e) → (x , y) , record { path = p ; path₀ = cong fst e ; path₁ = cong snd e })
+      (λ _ → refl)
+      (isLocalEqualizer
+        (isLocal× (isLocal× isLocalX isLocalY) (isLocalΠ λ _ → isLocalZ))
+        (isLocal× isLocalZ isLocalZ)
+        (λ ((x , y) , p) → p 0𝟚 , p 1𝟚)
+        (λ ((x , y) , p) → f x , g y))
 
-isLocalΣ : {Y : X → Type}
-  → isLocal F X
-  → ((α : A) → isEquiv (const {A = X} {B = T α}))
-  → ((x : X) → isLocal F (Y x))
-  → isLocal F (Σ X Y)
-isLocalΣ {X} {Y} isLocalX nullT isLocalY α = fromIsEquiv _ (equivIsEquiv equiv)
-  where
-    fiber-isEquiv : (f : T α → X) → isEquiv (λ (h : (t : T α) → Y (f t)) → h ∘ F α)
-    fiber-isEquiv f =
-      subst (λ f' → isEquiv (λ (h : (t : T α) → Y (f' t)) → h ∘ F α))
-        (secEq (const , nullT α) f)
-        (toIsEquiv _ (isLocalY (invEq (const , nullT α) f) α))
+opaque
+  isLocalΣ : {Y : X → Type}
+    → isLocal F X
+    → ((α : A) → isEquiv (const {A = X} {B = T α}))
+    → ((x : X) → isLocal F (Y x))
+    → isLocal F (Σ X Y)
+  isLocalΣ {X} {Y} isLocalX nullT isLocalY α = fromIsEquiv _ (equivIsEquiv equiv)
+    where
+      fiber-isEquiv : (f : T α → X) → isEquiv (λ (h : (t : T α) → Y (f t)) → h ∘ F α)
+      fiber-isEquiv f =
+        subst (λ f' → isEquiv (λ (h : (t : T α) → Y (f' t)) → h ∘ F α))
+          (secEq (const , nullT α) f)
+          (toIsEquiv _ (isLocalY (invEq (const , nullT α) f) α))
 
-    equiv : (T α → Σ X Y) ≃ (S α → Σ X Y)
-    equiv =
-        (T α → Σ X Y)
-      ≃⟨ Σ-Π-≃ ⟩
-        Σ[ f ∈ (T α → X) ] ((t : T α) → Y (f t))
-      ≃⟨ Σ-cong-equiv (_ , toIsEquiv _ (isLocalX α)) (λ f → _ , fiber-isEquiv f) ⟩
-        Σ[ g ∈ (S α → X) ] ((s : S α) → Y (g s))
-      ≃⟨ invEquiv Σ-Π-≃ ⟩
-        (S α → Σ X Y)
-      ■
+      equiv : (T α → Σ X Y) ≃ (S α → Σ X Y)
+      equiv =
+          (T α → Σ X Y)
+        ≃⟨ Σ-Π-≃ ⟩
+          Σ[ f ∈ (T α → X) ] ((t : T α) → Y (f t))
+        ≃⟨ Σ-cong-equiv (_ , toIsEquiv _ (isLocalX α)) (λ f → _ , fiber-isEquiv f) ⟩
+          Σ[ g ∈ (S α → X) ] ((s : S α) → Y (g s))
+        ≃⟨ invEquiv Σ-Π-≃ ⟩
+          (S α → Σ X Y)
+        ■

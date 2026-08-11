@@ -1,5 +1,6 @@
 open import Calf.Core.Abstract
 open import Calf.Value
+open import Calf.Value.Product
 open import Calf.Value.Sigma
 
 open import Cubical.Foundations.Equiv
@@ -126,11 +127,11 @@ isPreorder◯ : isPreorder X → isPreorder (◯ X)
 isPreorder◯ isPreorderX = isLocalΠ λ _ → isPreorderX
 
 ◯-pullback : {X Y Z : 𝒱} {f : X → Z} {g : Y → Z} →
-  ◯ (Σ[ x ∈ X ] Σ[ y ∈ Y ] (f x ≡ g y))
-  ≃ (Σ[ x◦ ∈ ◯ X ] Σ[ y◦ ∈ ◯ Y ] (map f x◦ ≡ map g y◦))
+  ◯ (Σ[ (x , y) ∈ X × Y ] (f x ≡ g y))
+  ≃ (Σ[ (x◦ , y◦) ∈ ◯ X × ◯ Y ] (map f x◦ ≡ map g y◦))
 ◯-pullback {X} {Y} {Z} {f} {g} =
   ◯-pullback-lex isLex◯
-  ∙ₑ Σ-cong-equiv-snd λ x◦ → Σ-cong-equiv-snd λ y◦ →
+  ∙ₑ Σ-cong-equiv-snd λ (x◦ , y◦) →
       compPathrEquiv (funExt⁻ (funExt⁻ map′≡map g) y◦)
     ∙ₑ compPathlEquiv (sym (funExt⁻ (funExt⁻ map′≡map f) x◦))
 

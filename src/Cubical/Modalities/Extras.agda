@@ -324,27 +324,28 @@ module _ (lex : IsLex◯) where
       pe : (x : X) (y : Y) → ◯ (f x ≡ g y) ≃ (map f (η x) ≡ map g (η y))
       pe x y = ◯-≡-≃ ∙ₑ compPathrEquiv (sym (◯-map-β g y)) ∙ₑ compPathlEquiv (◯-map-β f x)
 
-      Pullback◯-isModal : isModal (Σ[ x◦ ∈ ◯ X ] Σ[ y◦ ∈ ◯ Y ] (map f x◦ ≡ map g y◦))
-      Pullback◯-isModal = isModalΣ ◯-isModal λ _ → isModalΣ ◯-isModal λ _ → ◯-=-isModal _ _
+      Pullback◯-isModal : isModal (Σ[ (x◦ , y◦) ∈ ◯ X × ◯ Y ] (map f x◦ ≡ map g y◦))
+      Pullback◯-isModal =
+        isModalΣ (isModalΣ ◯-isModal λ _ → ◯-isModal) λ _ → ◯-=-isModal _ _
 
     pullback-η
-      : Σ[ x ∈ X ] Σ[ y ∈ Y ] (f x ≡ g y)
-      → Σ[ x◦ ∈ ◯ X ] Σ[ y◦ ∈ ◯ Y ] (map f x◦ ≡ map g y◦)
-    pullback-η = map-Σ η λ x → map-Σ η λ y → equivFun (pe x y) ∘ η
+      : Σ[ (x , y) ∈ X × Y ] (f x ≡ g y)
+      → Σ[ (x◦ , y◦) ∈ ◯ X × ◯ Y ] (map f x◦ ≡ map g y◦)
+    pullback-η = map-Σ (map-Σ η λ _ → η) λ (x , y) → equivFun (pe x y) ∘ η
 
     pullback-η-connected : isConnectedMap pullback-η
     pullback-η-connected =
-      isConnectedMapΣ isConnectedMapη λ x →
-      isConnectedMapΣ isConnectedMapη λ y →
-      isConnectedMap-∘ₑ (pe x y) isConnectedMapη
+      isConnectedMapΣ
+        (isConnectedMapΣ isConnectedMapη λ _ → isConnectedMapη)
+        (λ (x , y) → isConnectedMap-∘ₑ (pe x y) isConnectedMapη)
 
     opaque
       ◯-pullback-lex
-        : ◯ (Σ[ x ∈ X ] Σ[ y ∈ Y ] (f x ≡ g y))
-        ≃ (Σ[ x◦ ∈ ◯ X ] Σ[ y◦ ∈ ◯ Y ] (map f x◦ ≡ map g y◦))
+        : ◯ (Σ[ (x , y) ∈ X × Y ] (f x ≡ g y))
+        ≃ (Σ[ (x◦ , y◦) ∈ ◯ X × ◯ Y ] (map f x◦ ≡ map g y◦))
       ◯-pullback-lex = reflection-≃ Pullback◯-isModal pullback-η-connected
 
       ◯-pullback-lex-β
-        : (u : Σ[ x ∈ X ] Σ[ y ∈ Y ] (f x ≡ g y))
+        : (u : Σ[ (x , y) ∈ X × Y ] (f x ≡ g y))
         → equivFun ◯-pullback-lex (η u) ≡ pullback-η u
       ◯-pullback-lex-β = reflection-β Pullback◯-isModal pullback-η-connected

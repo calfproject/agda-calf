@@ -160,31 +160,30 @@ module _ {A B C : 𝒞} where
   lex f g = conservativity fwd (equivIsEquiv e)
     where
       e : U (●ᶜ (Pullback f g)) ≃ U (Pullback (map f) (map g))
-      e = ●.●-pullback
+      e = ? -- ●.●-pullback
 
-      isProp-at : ⟨ ABS ⟩ → isProp (U (Pullback (map f) (map g)))
-      isProp-at abs =
-        isPropΣ (◯-isProp● abs) λ _ →
-        isPropΣ (◯-isProp● abs) λ _ →
-        isProp→isSet (◯-isProp● abs) _ _
+  --     isProp-at : ⟨ ABS ⟩ → isProp (U (Pullback (map f) (map g)))
+  --     isProp-at abs =
+  --       isPropΣ (isProp× (◯-isProp● abs) (◯-isProp● abs)) λ _ →
+  --       isProp→isSet (◯-isProp● abs) _ _
 
-      fwd-charge : (c : ℂ) (a• : U (●ᶜ (Pullback f g)))
-        → equivFun e (●ᶜ (Pullback f g) .charge c a•)
-        ≡ Pullback (map f) (map g) .charge c (equivFun e a•)
-      fwd-charge c =
-        ind-prop _ (λ _ → is-set (Pullback (map f) (map g)) _ _)
-          (λ t → ΣPathP
-            ( ●.●-pullback-β₁ (Pullback f g .charge c t)
-              ∙ sym (cong (●ᶜ A .charge c) (●.●-pullback-β₁ t))
-            , ΣPathP
-              ( ●.●-pullback-β₂ (Pullback f g .charge c t)
-                ∙ sym (cong (●ᶜ B .charge c) (●.●-pullback-β₂ t))
-              , isProp→PathP (λ i → is-set (●ᶜ C) _ _) _ _)))
-          (λ abs → isProp-at abs _ _)
+  --     fwd-charge : (c : ℂ) (a• : U (●ᶜ (Pullback f g)))
+  --       → equivFun e (●ᶜ (Pullback f g) .charge c a•)
+  --       ≡ Pullback (map f) (map g) .charge c (equivFun e a•)
+  --     fwd-charge c =
+  --       ind-prop _ (λ _ → is-set (Pullback (map f) (map g)) _ _)
+  --         (λ t → ΣPathP
+  --           ( ΣPathP
+  --             ( ●.●-pullback-β₁ (Pullback f g .charge c t)
+  --               ∙ sym (cong (●ᶜ A .charge c) (●.●-pullback-β₁ t))
+  --             , ●.●-pullback-β₂ (Pullback f g .charge c t)
+  --               ∙ sym (cong (●ᶜ B .charge c) (●.●-pullback-β₂ t)) )
+  --           , isProp→PathP (λ i → is-set (●ᶜ C) _ _) _ _))
+  --         (λ abs → isProp-at abs _ _)
 
       fwd : ●ᶜ (Pullback f g) ⊸ Pullback (map f) (map g)
-      fwd .U = equivFun e
-      fwd .charge = fwd-charge
+      fwd .U = ? -- equivFun e
+      fwd .charge = ? -- fwd-charge
 
 module _ where
   open import Calf.Computation.Copower

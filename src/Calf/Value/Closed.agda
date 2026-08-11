@@ -3,6 +3,7 @@ module Calf.Value.Closed where
 open import Calf.Core.Abstract
 open import Calf.Value
 open import Calf.Value.Open as ◯ using (◯)
+open import Calf.Value.Product
 open import Calf.Value.Sigma
 open import Calf.Value.Unit
 
@@ -273,23 +274,23 @@ opaque
 
 module _ {X Y Z : 𝒱} {f : X → Z} {g : Y → Z} where
   ●-pullback :
-      ● (Σ[ x ∈ X ] Σ[ y ∈ Y ] (f x ≡ g y))
-    ≃ (Σ[ x• ∈ ● X ] Σ[ y• ∈ ● Y ] (map f x• ≡ map g y•))
+      ● (Σ[ (x , y) ∈ X × Y ] (f x ≡ g y))
+    ≃ (Σ[ (x• , y•) ∈ ● X × ● Y ] (map f x• ≡ map g y•))
   ●-pullback =
     ◯-pullback-lex isLex●
-    ∙ₑ Σ-cong-equiv-snd λ x• → Σ-cong-equiv-snd λ y• →
+    ∙ₑ Σ-cong-equiv-snd λ (x• , y•) →
         compPathrEquiv (funExt⁻ (funExt⁻ map′≡map g) y•)
       ∙ₑ compPathlEquiv (sym (funExt⁻ (funExt⁻ map′≡map f) x•))
 
   ●-pullback-β₁ :
-    (u : Σ[ x ∈ X ] Σ[ y ∈ Y ] (f x ≡ g y))
-    → equivFun ●-pullback (η• u) .fst ≡ η• (u .fst)
-  ●-pullback-β₁ u = cong fst (◯-pullback-lex-β isLex● u)
+    (u : Σ[ (x , y) ∈ X × Y ] (f x ≡ g y))
+    → equivFun ●-pullback (η• u) .fst .fst ≡ η• (u .fst .fst)
+  ●-pullback-β₁ u = cong (fst ∘ fst) (◯-pullback-lex-β isLex● u)
 
   ●-pullback-β₂ :
-    (u : Σ[ x ∈ X ] Σ[ y ∈ Y ] (f x ≡ g y))
-    → equivFun ●-pullback (η• u) .snd .fst ≡ η• (u .snd .fst)
-  ●-pullback-β₂ u = cong (fst ∘ snd) (◯-pullback-lex-β isLex● u)
+    (u : Σ[ (x , y) ∈ X × Y ] (f x ≡ g y))
+    → equivFun ●-pullback (η• u) .fst .snd ≡ η• (u .fst .snd)
+  ●-pullback-β₂ u = cong (snd ∘ fst) (◯-pullback-lex-β isLex● u)
 
 
 𝒱• : 𝒱₁

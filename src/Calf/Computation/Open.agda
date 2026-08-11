@@ -78,13 +78,13 @@ module _ where
     where
       fwd : ◯ᶜ (Pullback f g) ⊸ Pullback (map f) (map g)
       fwd .U e =
-        (λ abs → e abs .fst) , (λ abs → e abs .snd .fst) ,
-        funExt (λ abs → e abs .snd .snd)
+        ((λ abs → e abs .fst .fst) , (λ abs → e abs .fst .snd)) ,
+        funExt (λ abs → e abs .snd)
       fwd .charge c e =
-        ΣPathP (refl , ΣPathP (refl , isProp→PathP (λ i → is-set (◯ᶜ C) _ _) _ _))
+        ΣPathP (refl , isProp→PathP (λ i → is-set (◯ᶜ C) _ _) _ _)
 
       inv : U (Pullback (map f) (map g)) → U (◯ᶜ (Pullback f g))
-      inv (a◦ , b◦ , p) abs = a◦ abs , b◦ abs , funExt⁻ p abs
+      inv ((a◦ , b◦) , p) abs = (a◦ abs , b◦ abs) , funExt⁻ p abs
 
       fwd-equiv : isEquivᶜ fwd
       fwd-equiv = isoToIsEquiv (iso (fwd .U) inv (λ _ → refl) (λ _ → refl))

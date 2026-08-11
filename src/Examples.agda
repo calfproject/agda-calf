@@ -4,7 +4,15 @@ import Examples.Giralf.Id
 import Examples.Giralf.InsertionSort
 import Examples.Giralf.Reverse
 
-import Examples.Giralf.Inference
+-- import Examples.Giralf.Inference
+
+open import Calf.Core.Cost
+open import Calf.Value
+open import Calf.Value.Nat
+open import Calf.Computation
+open import Calf.Computation.Free
+open import Calf.Computation.Power
+import Cubical.Data.Nat.Order as Nat
 
 double : U (ℕ ⇀ F ℕ)
 double zero = ret 0
