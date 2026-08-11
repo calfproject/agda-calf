@@ -14,7 +14,7 @@ open import Calf.Computation.Tensor
 open import Calf.Computation.Lolli
 open import Calf.Computation.Credit
 open import Calf.Computation.Debit
-open import Calf.Computation.CList
+open import Calf.Computation.List as Listᶜ
 open import Calf.Computation.CList1
 open import Calf.Computation.CList2
 open import Calf.Computation.Free
@@ -173,17 +173,17 @@ record Giralf : Set₂ where
       → A ∷ B ∷ Δ₂ ⨾ q₂ ⊢ C
       → Δ ⨾ q ⊢ C
 
-    nilᴳ : cmpᴳ (CList A)
+    nilᴳ : cmpᴳ (Listᶜ A)
     consᴳ :
       Δ ≡ Δ₁ ⊔ Δ₂
       → q ⋎₂ (q₁ , q₂)
       → Δ₁ ⨾ q₁ ⊢ A
-      → Δ₂ ⨾ q₂ ⊢ CList A
-      → Δ ⨾ q ⊢ CList A
+      → Δ₂ ⨾ q₂ ⊢ Listᶜ A
+      → Δ ⨾ q ⊢ Listᶜ A
     foldrᴳ :
       cmpᴳ B
       → (A ∷ [ B ] ⨾ 0ℂ ⊢ B)
-      → Δ ⨾ q ⊢ CList A
+      → Δ ⨾ q ⊢ Listᶜ A
       → Δ ⨾ q ⊢ B
 
     nil₁ᴳ : cmpᴳ (CList₁ p A)
@@ -304,9 +304,9 @@ std .checkᴳ S s e k = S ∣ s ⋎ e ⨾ᴳ (subst (λ a → ▷[ _ ] a ⊸ _) 
 std .tensorᴳ {q₂ = q₂} S s e₁ e₂ = S ∣ s ⋎ e₁ ⨾ᴳ (subst (_⊸ _) (A⊗▷B≡▷[A⊗B] q₂) (map₂ idᶜ e₂))
 std .splitᴳ {q₂ = q₂} {C = C} S s e k = S ∣ s ⋎ e ⨾ᴳ (subst (λ a → ▷[ q₂ ] a ⊸ C) ⊗-assoc k)
 
-std .nilᴳ = U→cmpᴳ cnil
-std .consᴳ S s eₕ eₜ = std .tensorᴳ S s eₕ eₜ ⨾ᶜ ccons
-std .foldrᴳ e[] e∷ = _⨾ᶜ cfoldr (cmpᴳ→U e[]) (subst (_⊸ _) (▷/0 ∙ cong (_ ⊗_) ⊗-identityʳ) e∷)
+std .nilᴳ = U→cmpᴳ nil
+std .consᴳ S s eₕ eₜ = std .tensorᴳ S s eₕ eₜ ⨾ᶜ cons
+std .foldrᴳ e[] e∷ = _⨾ᶜ Listᶜ.foldr (cmpᴳ→U e[]) (subst (_⊸ _) (▷/0 ∙ cong (_ ⊗_) ⊗-identityʳ) e∷)
 
 std .nil₁ᴳ = U→cmpᴳ cnil₁
 std .cons₁ᴳ {Δ = Δ} {p = p} S s eₕ eₜ =

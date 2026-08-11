@@ -10,29 +10,29 @@ open import Calf.Value.Nat
 open import Calf.Computation
 open import Calf.Computation.Credit
 open import Calf.Computation.Tensor
-open import Calf.Computation.CList
+open import Calf.Computation.List
 open import Calf.Computation.Copower
 
 opaque
   CList₁ : ℂ → 𝒞 → 𝒞
-  CList₁ c A = CList (▷[ c ] A)
+  CList₁ c A = Listᶜ (▷[ c ] A)
 
   cnil₁ : U (CList₁ c A)
-  cnil₁ {c} = cnil
+  cnil₁ {c} = nil
 
   ccons₁ : ▷[ c ] (A ⊗ CList₁ c A) ⊸ CList₁ c A
-  ccons₁ {c} {A} = subst (_⊸ CList₁ c A) (▷A⊗B≡▷[A⊗B] c) ccons
+  ccons₁ {c} {A} = subst (_⊸ CList₁ c A) (▷A⊗B≡▷[A⊗B] c) cons
 
   cfoldr₁ :
       U B
     → (▷[ c ] (A ⊗ B) ⊸ B)
     → CList₁ c A ⊸ B
-  cfoldr₁ {B} {c} e[] e∷ = cfoldr e[] (subst (_⊸ B) (sym (▷A⊗B≡▷[A⊗B] c)) e∷)
+  cfoldr₁ {B} {c} e[] e∷ = foldr e[] (subst (_⊸ B) (sym (▷A⊗B≡▷[A⊗B] c)) e∷)
 
 opaque
   unfolding CList₁
-  unfolding CList
-  unfolding CList'
+  unfolding Listᶜ
+  unfolding Listᶜ'
 
   CList₁' : ℂ → 𝒞 → 𝒞
   CList₁' c A = [ n ∈ ℕₛ ] ⋊ ▷[ n ⊙ c ] (⊗ᵏ-fixed A n)
