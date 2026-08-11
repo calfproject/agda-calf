@@ -92,26 +92,31 @@ opaque
   _∥_ : U A → U B → U (A ⊗ B)
   a ∥ b = ∣ inj a b ∣₂
 
-  map₂ : ∀ {A₁ A₂ B₁ B₂}
-    → (A₁ ⊸ B₁)
-    → (A₂ ⊸ B₂)
-    → (A₁ ⊗ A₂ ⊸ B₁ ⊗ B₂)
-  map₂ {A₁} {A₂} {B₁} {B₂} f g = mk
+  ⊗-rec : {A B C : 𝒞}
+    → (h : U A → U B → U C)
+    → (∀ c a b → h (A .charge c a) b ≡ C .charge c (h a b))
+    → (∀ c a b → h a (B .charge c b) ≡ C .charge c (h a b))
+    → (A ⊗ B) ⊸ C
+  ⊗-rec {A} {B} {C} h hl hr .U = rec (C .is-set) h₀
     where
-      h : A₁ ⊛ A₂ → B₁ ⊛ B₂
-      h (inj a₁ a₂) = inj (f .U a₁) (g .U a₂)
-      h (law c a₁ a₂ i) =
-        ( cong (λ z → inj z (g .U a₂)) (f .charge c a₁)
-        ∙ law c (f .U a₁) (g .U a₂)
-        ∙ cong (inj (f .U a₁)) (sym (g .charge c a₂)) ) i
+      h₀ : A ⊛ B → U C
+      h₀ (inj a b) = h a b
+      h₀ (law c a b i) = (hl c a b ∙ sym (hr c a b)) i
+  ⊗-rec {A} {B} {C} h hl hr .charge c =
+    ⊛-≡ (C .is-set)
+      (λ w → ⊗-rec {A} {B} {C} h hl hr .U ((A ⊗ B) .charge c w))
+      (λ w → C .charge c (⊗-rec {A} {B} {C} h hl hr .U w))
+      (hl c)
 
-      mk : A₁ ⊗ A₂ ⊸ B₁ ⊗ B₂
-      mk .U = map h
-      mk .charge c =
-        ⊛-≡ squash₂
-          (λ z → mk .U ((A₁ ⊗ A₂) .charge c z))
-          (λ z → (B₁ ⊗ B₂) .charge c (mk .U z))
-          (λ a₁ a₂ → cong (λ z → ∣ inj z (g .U a₂) ∣₂) (f .charge c a₁))
+  map₂ : ∀ {A₁ A₂ B₁ B₂}
+    → (A₁ ⊸ A₂) → (B₁ ⊸ B₂)
+    → (A₁ ⊗ B₁) ⊸ (A₂ ⊗ B₂)
+  map₂ {A₁} {A₂} {B₁} {B₂} f g =
+    ⊗-rec (λ a b → ∣ inj (f .U a) (g .U b) ∣₂)
+      (λ c a b → cong (λ z → ∣ inj z (g .U b) ∣₂) (f .charge c a))
+      (λ c a b →
+          cong (λ z → ∣ inj (f .U a) z ∣₂) (g .charge c b)
+        ∙ sym (cong ∣_∣₂ (law c (f .U a) (g .U b))))
 
   ⊗-identityʳ : A ⊗ ⊤ ≡ A
   ⊗-identityʳ {A = A} = conservativity fwd fwd-equiv
@@ -145,6 +150,7 @@ opaque
               (λ a c →
                   cong ∣_∣₂ (law c a 0ℂ)
                 ∙ cong (λ d → ∣ inj a d ∣₂) (+ℂ-identityʳ c))
+
 
   ⊗-comm-fun : A ⊗ B ⊸ B ⊗ A
   ⊗-comm-fun {A} {B} = fwd
@@ -255,3 +261,23 @@ opaque
               ⊛-≡ squash₂ (λ z → inv (fwd .U ∣ inj a z ∣₂)) (λ z → ∣ inj a z ∣₂)
               (λ b c → refl)
             )
+
+opaque
+  map₂-equivᶜ : ∀ {A₁ A₂ B₁ B₂} {f : A₁ ⊸ A₂} {g : B₁ ⊸ B₂}
+    → isEquivᶜ f → isEquivᶜ g
+    → isEquivᶜ (map₂ f g)
+  map₂-equivᶜ {f = f} {g = g} fe ge =
+    isoToIsEquiv
+      (iso (map₂ f g .U) (map₂ (invEquivᶜ f fe) (invEquivᶜ g ge) .U)
+        (⊛-≡ squash₂
+          (λ z → map₂ f g .U (map₂ (invEquivᶜ f fe) (invEquivᶜ g ge) .U z)) (λ z → z)
+          (λ a b i → ∣ inj (secEq (f .U , fe) a i) (secEq (g .U , ge) b i) ∣₂))
+        (⊛-≡ squash₂
+          (λ z → map₂ (invEquivᶜ f fe) (invEquivᶜ g ge) .U (map₂ f g .U z)) (λ z → z)
+          (λ a b i → ∣ inj (retEq (f .U , fe) a i) (retEq (g .U , ge) b i) ∣₂)))
+
+⊗-isContr : isContr (U A) → isContr (U B) → isContr (U (A ⊗ B))
+⊗-isContr {A} {B} cA cB .fst = ∣ inj (cA .fst) (cB .fst) ∣₂
+⊗-isContr {A} {B} cA cB .snd =
+  ⊛-≡ squash₂ (λ _ → ∣ inj (cA .fst) (cB .fst) ∣₂) (λ w → w)
+    (λ a b i → ∣ inj (cA .snd a i) (cB .snd b i) ∣₂)

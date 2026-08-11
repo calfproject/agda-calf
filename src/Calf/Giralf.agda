@@ -120,7 +120,7 @@ module _ where
     q ≡ q'
     → Δ , q ⊢ A
     → Δ , q' ⊢ A
-  substᵐᴳ qq = subst (_⊸ _) (cong (▷[_] _) qq)
+  substᵐᴳ {A = A} qq = subst (_⊸ A) (cong (▷[_] _) qq)
 
   substᴳ :
     (A : ℂ → 𝒞)
@@ -148,7 +148,7 @@ module _ where
     → q ⋎₂ (p , q')
     → Δ , q' ⊢ A
     → Δ , q ⊢ ▷[ p ] A
-  storeᴳ p split e = subst (_⊸ _) (sym ▷/+ ∙ cong (▷[_] _) split) (▷-map e)
+  storeᴳ {A = A} p split e = subst (_⊸ ▷[ p ] A) (sym ▷/+ ∙ cong (▷[_] _) split) (▷-map e)
 
   releaseᴳ :
     Δ ≡ Δ₁ ⊔ Δ₂
@@ -173,13 +173,13 @@ module _ where
     → q' ⋎₂ (p , q)
     → Δ , q' ⊢ A
     → Δ , q ⊢ ◁[ p ] A
-  getᴳ p split = transport (sym (▷⊣◁ ∙ cong (_⊸ _) (sym ▷/+ ∙ cong (▷[_] _) split)))
+  getᴳ {A = A} p split = transport (sym (▷⊣◁ ∙ cong (_⊸ A) (sym ▷/+ ∙ cong (▷[_] _) split)))
 
   payᴳ :
     q ⋎₂ (p , q')
     → Δ , q' ⊢ ◁[ p ] A
     → Δ , q ⊢ A
-  payᴳ split = transport (▷⊣◁ ∙ cong (_⊸ _) (sym ▷/+ ∙ cong (▷[_] _) split))
+  payᴳ {A = A} split = transport (▷⊣◁ ∙ cong (_⊸ A) (sym ▷/+ ∙ cong (▷[_] _) split))
 
 module _ where
   pairᴳ :

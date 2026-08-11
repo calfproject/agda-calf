@@ -1,5 +1,6 @@
 module Calf.Computation.Glue.Properties where
 
+open import Calf.Core.Abstract
 open import Calf.Core.Cost
 open import Calf.Value
 import Calf.Value.Open as ◯
@@ -12,11 +13,11 @@ open import Cubical.Foundations.Univalence using (ua→; ua-gluePath)
 
 open import Calf.Computation.Glue.Base
 open import Calf.Computation.Glue.Fracture
-open 𝒞-FRAC
+open 𝒞-FRACTURE
 
 fracture-map
   : (f : A ⊸ B)
-  → 𝒞-fromFRAC (𝒞-toFRAC A) ⊸ 𝒞-fromFRAC (𝒞-toFRAC B)
+  → 𝒞-Glue (𝒞-Fracture A) ⊸ 𝒞-Glue (𝒞-Fracture B)
 fracture-map {A} {B} f .U q .• =
   ●ᶜ.map f .U (q .•)
 fracture-map {A} {B} f .U q .◦ =
@@ -39,8 +40,8 @@ fracture-map {A} {B} f .charge c q i .•→◦ =
     (λ i → ●ᶜ (◯ᶜ B) .is-set
       (●ᶜ.map (η◦ᶜ {A = B}) .U (●ᶜ.map f .charge c (q .•) i))
       (η• (λ p → f .charge c (q .◦ p) i)))
-    (fracture-map {A} {B} f .U (𝒞-fromFRAC (𝒞-toFRAC A) .charge c q) .•→◦)
-    (𝒞-fromFRAC (𝒞-toFRAC B) .charge c (fracture-map f .U q) .•→◦)
+    (fracture-map {A} {B} f .U (𝒞-Glue (𝒞-Fracture A) .charge c q) .•→◦)
+    (𝒞-Glue (𝒞-Fracture B) .charge c (fracture-map f .U q) .•→◦)
     i
 
 fracture-map-coh
@@ -69,28 +70,6 @@ fracture-map-fracture {A} {B} f a i .•→◦ =
     refl
     i
 
-fracture-map-same
-  : (f : A ⊸ B)
-  → PathP
-      (λ i → 𝒞-glue-fracture-retract A i ⊸ 𝒞-glue-fracture-retract B i)
-      (fracture-map f)
-      f
-fracture-map-same {A} {B} f =
-  ⊸-path
-    (𝒞-glue-fracture-retract A)
-    (𝒞-glue-fracture-retract B)
-    (λ i →
-      ua→
-        {e = 𝒞-fracture {A = A} .U , fracture-isEquiv}
-        {B = λ i → U (conservativity (𝒞-fracture {A = B}) fracture-isEquiv i)}
-        {f₀ = f .U}
-        {f₁ = fracture-map f .U}
-        (λ a →
-          ua-gluePath
-            (𝒞-fracture {A = B} .U , fracture-isEquiv)
-            (sym (fracture-map-fracture f a)))
-        (~ i))
-
 𝒞-fracture-≡
   : {A B : 𝒞}
   → (p• : ●ᶜ A ≡ ●ᶜ B)
@@ -99,5 +78,33 @@ fracture-map-same {A} {B} f =
   → A ≡ B
 𝒞-fracture-≡ {A} {B} p• p◦ pα =
     sym (𝒞-glue-fracture-retract A)
-  ∙ cong 𝒞-fromFRAC (𝒞-FRAC-path (●ᶜ.𝒞•-path p•) (◯ᶜ.𝒞◦-path p◦) pα)
+  ∙ cong 𝒞-Glue F-path
   ∙ 𝒞-glue-fracture-retract B
+  where
+    F-path : 𝒞-Fracture A ≡ 𝒞-Fracture B
+    F-path = 𝒞-FRACTURE-path (●ᶜ.𝒞•-path p•) (◯ᶜ.𝒞◦-path p◦) pα
+
+◯[Glueᶜ≃A◦] : ∀ {A• A◦ α•} → ⟨ ABS ⟩ → Glueᶜ A• A◦ α• ≃ᶜ ⟨ A◦ ⟩ᶜ
+◯[Glueᶜ≃A◦] {A•} {A◦} {α•} abs =
+  proj◦ᶜ _ , ◯[Glue≃X◦] abs .snd
+
+◯[Glueᶜ≡A◦] : ∀ {A• A◦ α•} → ⟨ ABS ⟩ → Glueᶜ A• A◦ α• ≡ ⟨ A◦ ⟩ᶜ
+◯[Glueᶜ≡A◦] abs = uaᶜ (◯[Glueᶜ≃A◦] abs)
+
+◯[squareᶜ≡f◦] : ∀ {A• A◦ α B• B◦ β f• f◦ coh} (abs : ⟨ ABS ⟩)
+  → PathP (λ i → ◯[Glueᶜ≡A◦] {A•} {A◦} {α} abs i ⊸ ◯[Glueᶜ≡A◦] {B•} {B◦} {β} abs i)
+      (squareᶜ f• f◦ coh)
+      f◦
+◯[squareᶜ≡f◦] {A•} {A◦} {α} {B•} {B◦} {β} {f•} {f◦} {coh} abs =
+  ⊸-path
+    (◯[Glueᶜ≡A◦] {A•} {A◦} {α} abs)
+    (◯[Glueᶜ≡A◦] {B•} {B◦} {β} abs)
+    (ua→
+      {e = ◯[Glueᶜ≃A◦] {A•} {A◦} {α} abs .fst .U
+         , ◯[Glueᶜ≃A◦] {A•} {A◦} {α} abs .snd}
+      {B = λ i → U (◯[Glueᶜ≡A◦] {B•} {B◦} {β} abs i)}
+      (λ _ →
+        ua-gluePath
+          ( ◯[Glueᶜ≃A◦] {B•} {B◦} {β} abs .fst .U
+          , ◯[Glueᶜ≃A◦] {B•} {B◦} {β} abs .snd)
+          refl))

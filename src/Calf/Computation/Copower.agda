@@ -36,6 +36,23 @@ X ⋊ A = [ _ ∈ X ] ⋊ A
 ⋊-splitᶜ : ∀ {X : 𝒱ₛ} {A : (⟨ X ⟩ → 𝒞)} {B : 𝒞} → ((x : ⟨ X ⟩) → A x ⊸ B) → (Σᶜ X A ⊸ B)
 ⋊-splitᶜ {X} h = transport (sym ([X⋊A]⊸B≡X→A⊸B {X})) h
 
+
+Σᶜ-map : ∀ {X A B} → ((x : ⟨ X ⟩) → A x ⊸ B x) → Σᶜ X A ⊸ Σᶜ X B
+Σᶜ-map f .U (x , a) = x , f x .U a
+Σᶜ-map f .charge c (x , a) = cong (x ,_) (f x .charge c a)
+
+Σᶜ-map-idᶜ : ∀ {X : 𝒱ₛ} {A : ⟨ X ⟩ → 𝒞} →
+  Σᶜ-map {X = X} (λ x → idᶜ {A = A x}) ≡ idᶜ
+Σᶜ-map-idᶜ = ⊸-path refl refl refl
+
+Σᶜ-map-⨾ᶜ :
+  ∀ {X : 𝒱ₛ} {A B C : ⟨ X ⟩ → 𝒞}
+  (f : (x : ⟨ X ⟩) → A x ⊸ B x)
+  (g : (x : ⟨ X ⟩) → B x ⊸ C x) →
+  Σᶜ-map {X = X} f ⨾ᶜ Σᶜ-map {X = X} g ≡
+  Σᶜ-map {X = X} (λ x → f x ⨾ᶜ g x)
+Σᶜ-map-⨾ᶜ f g = ⊸-path refl refl refl
+
 open import Calf.Computation.Tensor.Base
 
 A⊗[X⋊B]≡X⋊[A⊗B] : ∀ {X : 𝒱ₛ} {A : 𝒞} {B : (⟨ X ⟩ → 𝒞)} → (A ⊗ Σᶜ X B) ≡ (Σᶜ X λ x → A ⊗ B x)
