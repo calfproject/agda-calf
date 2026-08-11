@@ -1,5 +1,9 @@
 module Calf.Computation.Abstraction.Properties where
 
+open import Cubical.Foundations.Univalence using (ua; ua→; ua-gluePath)
+open import Cubical.Foundations.Equiv using (composesToId→Equiv)
+
+open import Calf.Core.Abstract
 open import Calf.Value
 import Calf.Value.Open as ◯
 import Calf.Value.Closed as ●
@@ -7,9 +11,7 @@ open import Calf.Computation
 open import Calf.Computation.Open as ◯ᶜ
 open import Calf.Computation.Closed as ●ᶜ
 open import Calf.Computation.Glue as Glueᶜ hiding (squareᶜ)
-open import Cubical.Foundations.Univalence using (ua→; ua-gluePath)
-open import Cubical.Functions.Embedding
-open 𝒞-FRAC
+open 𝒞-FRACTURE
 
 open import Calf.Computation.Abstraction.Base
 
@@ -17,39 +19,129 @@ opaque
   unfolding Abstractionᶜ
 
   ●ᶜ-Abstractionᶜ : ∀ {A-⊤ A-abs α} → ●ᶜ (Abstractionᶜ A-⊤ A-abs α) ≡ ●ᶜ A-⊤
-  ●ᶜ-Abstractionᶜ = {!   !}
+  ●ᶜ-Abstractionᶜ {A-⊤} {A-abs} {α} =
+    cong ⟨_⟩ᶜ (𝒞-glue•-path (Abstractionᶜ-FRAC A-⊤ A-abs α))
 
   ◯ᶜ-Abstractionᶜ : ∀ {A-⊤ A-abs α} → ◯ᶜ (Abstractionᶜ A-⊤ A-abs α) ≡ ◯ᶜ A-abs
-  ◯ᶜ-Abstractionᶜ = {!   !}
+  ◯ᶜ-Abstractionᶜ {A-⊤} {A-abs} {α} =
+    cong ⟨_⟩ᶜ (𝒞-glue◦-path (Abstractionᶜ-FRAC A-⊤ A-abs α))
+
+opaque
+  unfolding Abstractionᶜ triangle-Uᶜ
+
+  ●ᶜ-triangle-Uᶜ-equiv : ∀ {A-⊤ A-abs α}
+    → isEquiv (●ᶜ.map (triangle-Uᶜ {A-⊤} {A-abs} {α}) .U)
+  ●ᶜ-triangle-Uᶜ-equiv {A-⊤} {A-abs} {α} =
+    composesToId→Equiv (equivFun ge) (●ᶜ.map (triangle-Uᶜ {A-⊤} {A-abs} {α}) .U) (funExt proj-unit) (ge .snd)
+    where
+      ge : U (●ᶜ (Abstractionᶜ A-⊤ A-abs α)) ≃ U (●ᶜ A-⊤)
+      ge = glue•-equiv (U-FRACTURE (Abstractionᶜ-FRAC A-⊤ A-abs α))
+
+      proj-unit : ∀ w → equivFun ge (●ᶜ.map (triangle-Uᶜ {A-⊤} {A-abs} {α}) .U w) ≡ w
+      proj-unit =
+        ●.ind-prop _ (λ _ → ●.isSet● (is-set A-⊤) _ _)
+          (λ a → glue•-β (U-FRACTURE (Abstractionᶜ-FRAC A-⊤ A-abs α)) (triangle-Uᶜ {A-⊤} {A-abs} {α} .U a))
+          (λ abs → ●.◯-isProp● abs _ _)
+
+●ᶜ-Abstractionᶜ-≃ᶜ : ∀ {A-⊤ A-abs α} → ●ᶜ A-⊤ ≃ᶜ ●ᶜ (Abstractionᶜ A-⊤ A-abs α)
+●ᶜ-Abstractionᶜ-≃ᶜ = ●ᶜ.map triangle-Uᶜ , ●ᶜ-triangle-Uᶜ-equiv
+
+opaque
+  unfolding Abstractionᶜ squareᶜ' triangle-Uᶜ
+
+  triangle-Uᶜ-natural : ∀ {A-⊤ A-abs α B-⊤ B-abs β}
+    (f-⊤ : A-⊤ ⊸ B-⊤) (f-abs : A-abs ⊸ B-abs)
+    (coh : (a : U A-⊤) → β .U (f-⊤ .U a) ≡ f-abs .U (α .U a))
+    → triangle-Uᶜ {A-⊤} {A-abs} {α} ⨾ᶜ squareᶜ' f-⊤ f-abs coh
+      ≡ f-⊤ ⨾ᶜ triangle-Uᶜ {B-⊤} {B-abs} {β}
+  triangle-Uᶜ-natural {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs coh =
+    ⊸-path refl refl
+      (funExt λ a →
+        Glue-path (is-set (◯ᶜ B-abs))
+          refl
+          (funExt λ _ → sym (coh a)))
+
+opaque
+  unfolding Abstractionᶜ ●ᶜ-Abstractionᶜ
+
+  Abstractionᶜ-coherence : ∀ {A-⊤ A-abs α} →
+    PathP
+      (λ i →
+        sym (●ᶜ-Abstractionᶜ {A-⊤} {A-abs} {α}) i ⊸
+        ●ᶜ (sym (◯ᶜ-Abstractionᶜ {A-⊤} {A-abs} {α}) i))
+      (●ᶜ.map (α ⨾ᶜ η◦ᶜ {A = A-abs}))
+      (●ᶜ.map (η◦ᶜ {A = Abstractionᶜ A-⊤ A-abs α}))
+  Abstractionᶜ-coherence {A-⊤} {A-abs} {α} =
+    𝒞-glue-fracture-section-α•
+      (Abstractionᶜ-FRAC A-⊤ A-abs α)
+
+opaque
+  unfolding Abstractionᶜ
+
+  ◯[Abstractionᶜ≃A-abs]
+    : ∀ {A-⊤ A-abs α}
+    → ⟨ ABS ⟩
+    → Abstractionᶜ A-⊤ A-abs α ≃ᶜ A-abs
+  ◯[Abstractionᶜ≃A-abs] abs = ◯[Glueᶜ≃A◦] abs ∙ₑᶜ ABS-◯ᶜA≃A abs
+
+opaque
+  unfolding Abstractionᶜ squareᶜ' triangleᶜ' ◯[Abstractionᶜ≃A-abs]
+
+  ◯[Abstractionᶜ≡A-abs]
+    : ∀ {A-⊤ A-abs α}
+    → ⟨ ABS ⟩
+    → Abstractionᶜ A-⊤ A-abs α ≡ A-abs
+  ◯[Abstractionᶜ≡A-abs] abs = uaᶜ (◯[Abstractionᶜ≃A-abs] abs)
+
+  ◯[squareᶜ'≡f-abs]
+    : ∀ {A-⊤ A-abs α B-⊤ B-abs β f-⊤ f-abs f-coh}
+    → (abs : ⟨ ABS ⟩)
+    → PathP
+      (λ i →
+        ◯[Abstractionᶜ≡A-abs] {A-⊤} {A-abs} {α} abs i
+          ⊸ ◯[Abstractionᶜ≡A-abs] {B-⊤} {B-abs} {β} abs i)
+      (squareᶜ' f-⊤ f-abs f-coh)
+      f-abs
+  ◯[squareᶜ'≡f-abs] {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} {f-⊤} {f-abs} {f-coh} abs =
+    ⊸-path
+      (◯[Abstractionᶜ≡A-abs] {A-⊤} {A-abs} {α} abs)
+      (◯[Abstractionᶜ≡A-abs] {B-⊤} {B-abs} {β} abs)
+      (ua→
+        {e = ◯[Abstractionᶜ≃A-abs] {A-⊤} {A-abs} {α} abs .fst .U
+           , ◯[Abstractionᶜ≃A-abs] {A-⊤} {A-abs} {α} abs .snd}
+        {B = λ i → U (◯[Abstractionᶜ≡A-abs] {B-⊤} {B-abs} {β} abs i)}
+        (λ _ →
+          ua-gluePath
+            ( ◯[Abstractionᶜ≃A-abs] {B-⊤} {B-abs} {β} abs .fst .U
+            , ◯[Abstractionᶜ≃A-abs] {B-⊤} {B-abs} {β} abs .snd)
+            refl))
+
+  ◯[triangleᶜ'≡b-abs] : ∀ {B-⊤ B-abs β b-⊤ b-abs b-coh} (abs : ⟨ ABS ⟩) →
+    PathP (λ i → U (◯[Abstractionᶜ≡A-abs] {B-⊤} {B-abs} {β} abs i))
+      (triangleᶜ' {B-⊤} {B-abs} {β} b-⊤ b-abs b-coh)
+      b-abs
+  ◯[triangleᶜ'≡b-abs] {B-⊤} {B-abs} {β} {b-⊤} {b-abs} {b-coh} abs =
+    ua-gluePath
+      ( ◯[Abstractionᶜ≃A-abs] {B-⊤} {B-abs} {β} abs .fst .U
+      , ◯[Abstractionᶜ≃A-abs] {B-⊤} {B-abs} {β} abs .snd)
+      refl
+
+
+opaque
+  unfolding Abstractionᶜ squareᶜ'
 
   squareᶜ'-charge
     : ∀ {A-⊤ A-abs α c}
     → (α-charge : (a : U A-⊤) → α .U (A-⊤ .charge c a) ≡ A-abs .charge c (α .U a))
     → squareᶜ'
-        (CHARGE c) (CHARGE c)
+        (CHARGE {A-⊤} c) (CHARGE {A-abs} c)
         α-charge
-      ≡ CHARGE {A = Abstractionᶜ A-⊤ A-abs α} c
+      ≡ CHARGE {Abstractionᶜ A-⊤ A-abs α} c
   squareᶜ'-charge {A-⊤} {A-abs} {α} {c} α-charge =
     ⊸-path
-      refl refl
-      (funExt λ q → λ i → record
-        { • = ●ᶜ-map-CHARGE c (q .•) i
-        ; ◦ = λ p → A-abs .charge c (q .◦ p)
-        ; •→◦ =
-            isProp→PathP
-              (λ i → is-set (●ᶜ (◯ᶜ A-abs))
-                (●ᶜ.map (α ⨾ᶜ η◦ᶜ) .U
-                  (●ᶜ-map-CHARGE {A = A-⊤} c (q .•) i))
-                (η• (λ p → A-abs .charge c (q .◦ p))))
-              (squareᶜ'
-                {A-⊤ = A-⊤} {A-abs = A-abs} {α = α}
-                {B-⊤ = A-⊤} {B-abs = A-abs} {β = α}
-                (CHARGE c) (CHARGE c)
-                α-charge
-                .U q .•→◦)
-              (Abstractionᶜ A-⊤ A-abs α .charge c q .•→◦)
-              i
-        })
+      refl
+      refl
+      (funExt λ _ → Glue-path (is-set (◯ᶜ A-abs)) refl refl)
 
   squareᶜ'-⨾ᶜ : ∀ {A-⊤ A-abs α B-⊤ B-abs β C-⊤ C-abs γ}
     (f-⊤ : A-⊤ ⊸ B-⊤) (f-abs : A-abs ⊸ B-abs)
@@ -59,25 +151,11 @@ opaque
     → squareᶜ' {α = α} {β = β} f-⊤ f-abs fc ⨾ᶜ squareᶜ' {α = β} {β = γ} g-⊤ g-abs gc
       ≡ squareᶜ' {α = α} {β = γ} (f-⊤ ⨾ᶜ g-⊤) (f-abs ⨾ᶜ g-abs)
           (λ a → gc (f-⊤ .U a) ∙ cong (g-abs .U) (fc a))
-  squareᶜ'-⨾ᶜ {A-⊤ = A-⊤} {A-abs = A-abs} {α = α} {β = β} {C-abs = C-abs} {γ = γ}
-              f-⊤ f-abs fc g-⊤ g-abs gc =
-    ⊸-path refl refl (funExt sq)
-    where
-      sq : (q : U (Abstractionᶜ A-⊤ A-abs α))
-        → (squareᶜ' {α = α} {β = β} f-⊤ f-abs fc ⨾ᶜ squareᶜ' {α = β} {β = γ} g-⊤ g-abs gc) .U q
-          ≡ squareᶜ' {α = α} {β = γ} (f-⊤ ⨾ᶜ g-⊤) (f-abs ⨾ᶜ g-abs)
-              (λ a → gc (f-⊤ .U a) ∙ cong (g-abs .U) (fc a)) .U q
-      sq q i .• = ●ᶜ.map-∘ f-⊤ g-⊤ i .U (q .•)
-      sq q i .◦ = ◯ᶜ.map-∘ f-abs g-abs i .U (q .◦)
-      sq q i .•→◦ =
-        isProp→PathP
-          (λ i → is-set (●ᶜ (◯ᶜ C-abs))
-            (●ᶜ.map (γ ⨾ᶜ η◦ᶜ {A = C-abs}) .U (sq q i .•))
-            (η• (sq q i .◦)))
-          ((squareᶜ' {α = α} {β = β} f-⊤ f-abs fc ⨾ᶜ squareᶜ' {α = β} {β = γ} g-⊤ g-abs gc) .U q .•→◦)
-          (squareᶜ' {α = α} {β = γ} (f-⊤ ⨾ᶜ g-⊤) (f-abs ⨾ᶜ g-abs)
-            (λ a → gc (f-⊤ .U a) ∙ cong (g-abs .U) (fc a)) .U q .•→◦)
-          i
+  squareᶜ'-⨾ᶜ {C-⊤ = C-⊤} {C-abs} {γ} f-⊤ f-abs fc g-⊤ g-abs gc =
+    ⊸-path refl refl $ funExt λ a →
+      Glue-path (is-set (◯ᶜ C-abs))
+        (●.map-∘ (f-⊤ .U) (g-⊤ .U) (a .•))
+        (◯.map-∘ (f-abs .U) (g-abs .U) (a .◦))
 
   squareᶜ'-≡ : ∀ {A-⊤ A-abs α B-⊤ B-abs β}
     {f-⊤ f-⊤' : A-⊤ ⊸ B-⊤} {f-abs f-abs' : A-abs ⊸ B-abs}
@@ -85,159 +163,29 @@ opaque
     {fc' : (a : U A-⊤) → β .U (f-⊤' .U a) ≡ f-abs' .U (α .U a)}
     → f-⊤ ≡ f-⊤' → f-abs ≡ f-abs'
     → squareᶜ' {α = α} {β = β} f-⊤ f-abs fc ≡ squareᶜ' f-⊤' f-abs' fc'
-  squareᶜ'-≡ {α = α} {B-abs = B-abs} {β = β} {fc = fc} {fc' = fc'} p q i =
-    squareᶜ' (p i) (q i)
-      (isProp→PathP
-        (λ i u v → funExt λ a → is-set B-abs (β .U (p i .U a)) (q i .U (α .U a)) (u a) (v a))
-        fc fc' i)
-
-  Abstractionᶜ-glue•-out-square
-    : ∀ {A-⊤ A-abs α B-⊤ B-abs β f-⊤ f-abs f-coherence}
-    → (q• : U (●ᶜ (𝒞-fromFRAC (Abstractionᶜ-FRAC A-⊤ A-abs α))))
-    → glue•-out
-        (𝒞-FRAC→𝒱-FRAC (Abstractionᶜ-FRAC B-⊤ B-abs β))
-        (●ᶜ.map (squareᶜ'-FRAC {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence) .U q•)
-      ≡ ●ᶜ.map f-⊤ .U
-        (glue•-out
-          (𝒞-FRAC→𝒱-FRAC (Abstractionᶜ-FRAC A-⊤ A-abs α))
-          q•)
-  Abstractionᶜ-glue•-out-square {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} {f-⊤} {f-abs} {f-coherence} q• =
-    isEmbedding→Inj
-      (isEquiv→isEmbedding (Abstractionᶜ-FRAC B-⊤ B-abs β .A• .snd))
-      (glue•-out
-        (𝒞-FRAC→𝒱-FRAC (Abstractionᶜ-FRAC B-⊤ B-abs β))
-        (●ᶜ.map (squareᶜ'-FRAC {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence) .U q•))
-      (●ᶜ.map f-⊤ .U
-        (glue•-out
-          (𝒞-FRAC→𝒱-FRAC (Abstractionᶜ-FRAC A-⊤ A-abs α))
-          q•))
-      (  η•
-          (glue•-out
-            (𝒞-FRAC→𝒱-FRAC (Abstractionᶜ-FRAC B-⊤ B-abs β))
-            (●ᶜ.map (squareᶜ'-FRAC {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence) .U q•))
-       ≡⟨ secIsEq
-          (Abstractionᶜ-FRAC B-⊤ B-abs β .A• .snd)
-          (●ᶜ.map (proj•ᶜ (Abstractionᶜ-FRAC B-⊤ B-abs β)) .U
-            (●ᶜ.map (squareᶜ'-FRAC {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence) .U q•)) ⟩
-         ●ᶜ.map (proj•ᶜ (Abstractionᶜ-FRAC B-⊤ B-abs β)) .U
-           (●ᶜ.map (squareᶜ'-FRAC {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence) .U q•)
-       ≡⟨ ●.map-∘
-          (squareᶜ'-FRAC {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence .U)
-          (proj•ᶜ (Abstractionᶜ-FRAC B-⊤ B-abs β) .U)
-          q• ⟩
-         ●.map (λ q → ●ᶜ.map f-⊤ .U (q .•)) q•
-       ≡⟨ sym (●.map-∘
-          (proj•ᶜ (Abstractionᶜ-FRAC A-⊤ A-abs α) .U)
-          (●ᶜ.map f-⊤ .U)
-          q•) ⟩
-         ●ᶜ.map (●ᶜ.map f-⊤) .U
-           (●ᶜ.map (proj•ᶜ (Abstractionᶜ-FRAC A-⊤ A-abs α)) .U q•)
-       ≡⟨ cong (●.map (●ᶜ.map f-⊤ .U))
-          (sym (secIsEq
-            (Abstractionᶜ-FRAC A-⊤ A-abs α .A• .snd)
-            (●ᶜ.map (proj•ᶜ (Abstractionᶜ-FRAC A-⊤ A-abs α)) .U q•))) ⟩
-         η•
-           (●ᶜ.map f-⊤ .U
-             (glue•-out
-               (𝒞-FRAC→𝒱-FRAC (Abstractionᶜ-FRAC A-⊤ A-abs α))
-               q•))
-       ∎)
-
-  Abstractionᶜ-Abstractionᶜ-α•-path
-    : ∀ {A-⊤ A-abs α B-⊤ B-abs β f-⊤ f-abs f-coherence}
-    → PathP
-        (λ i →
-          𝒞-glue•-path (Abstractionᶜ-FRAC A-⊤ A-abs α) i .fst
-            ⊸ ●ᶜ (𝒞-glue◦-path (Abstractionᶜ-FRAC B-⊤ B-abs β) i .fst))
-        (●ᶜ.map
-          (squareᶜ'-FRAC {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence
-            ⨾ᶜ η◦ᶜ {A = 𝒞-fromFRAC (Abstractionᶜ-FRAC B-⊤ B-abs β)}))
-        (●ᶜ.map ((α ⨾ᶜ f-abs) ⨾ᶜ η◦ᶜ {A = B-abs}))
-  Abstractionᶜ-Abstractionᶜ-α•-path {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} {f-⊤} {f-abs} {f-coherence} =
-    ⊸-path
-      (λ i → 𝒞-glue•-path (Abstractionᶜ-FRAC A-⊤ A-abs α) i .fst)
-      (λ i → ●ᶜ (𝒞-glue◦-path (Abstractionᶜ-FRAC B-⊤ B-abs β) i .fst))
-      (ua→
-        {e = glue•-equiv (𝒞-FRAC→𝒱-FRAC (Abstractionᶜ-FRAC A-⊤ A-abs α))}
-        λ q• →
-          toPathP
-            (  transport
-                (λ i → U (●ᶜ (𝒞-glue◦-path (Abstractionᶜ-FRAC B-⊤ B-abs β) i .fst)))
-                (●.map
-                  (η◦ᶜ {A = 𝒞-fromFRAC (Abstractionᶜ-FRAC B-⊤ B-abs β)} .U
-                    ∘ squareᶜ'-FRAC {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence .U)
-                  q•)
-             ≡⟨ cong
-                  (transport
-                    (λ i → U (●ᶜ (𝒞-glue◦-path (Abstractionᶜ-FRAC B-⊤ B-abs β) i .fst))))
-                  (sym (●.map-∘
-                    (squareᶜ'-FRAC {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence .U)
-                    (η◦ᶜ {A = 𝒞-fromFRAC (Abstractionᶜ-FRAC B-⊤ B-abs β)} .U)
-                    q•)) ⟩
-               transport
-                (λ i → U (●ᶜ (𝒞-glue◦-path (Abstractionᶜ-FRAC B-⊤ B-abs β) i .fst)))
-                (●.map (η◦ᶜ {A = 𝒞-fromFRAC (Abstractionᶜ-FRAC B-⊤ B-abs β)} .U)
-                  (●.map
-                    (squareᶜ'-FRAC {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence .U)
-                    q•))
-             ≡⟨ fromPathP
-                (glue-χ-path-base
-                  (𝒞-FRAC→𝒱-FRAC (Abstractionᶜ-FRAC B-⊤ B-abs β))
-                  (●ᶜ.map (squareᶜ'-FRAC {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence) .U q•)) ⟩
-               Abstractionᶜ-FRAC B-⊤ B-abs β .α• .U
-                (glue•-out
-                  (𝒞-FRAC→𝒱-FRAC (Abstractionᶜ-FRAC B-⊤ B-abs β))
-                  (●ᶜ.map (squareᶜ'-FRAC {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence) .U q•))
-             ≡⟨ cong
-                (λ q → Abstractionᶜ-FRAC B-⊤ B-abs β .α• .U q)
-                (Abstractionᶜ-glue•-out-square
-                  {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} {f-⊤} {f-abs} {f-coherence}
-                  q•) ⟩
-               Abstractionᶜ-FRAC B-⊤ B-abs β .α• .U
-                (●ᶜ.map f-⊤ .U
-                  (glue•-out
-                    (𝒞-FRAC→𝒱-FRAC (Abstractionᶜ-FRAC A-⊤ A-abs α))
-                    q•))
-             ≡⟨ ●.map-∘
-                (f-⊤ .U)
-                ((β ⨾ᶜ η◦ᶜ {A = B-abs}) .U)
-                (glue•-out
-                  (𝒞-FRAC→𝒱-FRAC (Abstractionᶜ-FRAC A-⊤ A-abs α))
-                  q•) ⟩
-               ●.map (((β ⨾ᶜ η◦ᶜ {A = B-abs}) .U) ∘ f-⊤ .U)
-                (glue•-out
-                  (𝒞-FRAC→𝒱-FRAC (Abstractionᶜ-FRAC A-⊤ A-abs α))
-                  q•)
-             ≡⟨ cong
-                (λ h → ●.map h
-                  (glue•-out
-                    (𝒞-FRAC→𝒱-FRAC (Abstractionᶜ-FRAC A-⊤ A-abs α))
-                    q•))
-                (funExt λ a →
-                  cong (η◦ᶜ {A = B-abs} .U) (f-coherence a)) ⟩
-               ●.map (((α ⨾ᶜ f-abs) ⨾ᶜ η◦ᶜ {A = B-abs}) .U)
-                (glue•-out
-                  (𝒞-FRAC→𝒱-FRAC (Abstractionᶜ-FRAC A-⊤ A-abs α))
-                  q•)
-             ∎))
-
-  Abstractionᶜ-Abstractionᶜ-FRAC
-    : ∀ {A-⊤ A-abs α B-⊤ B-abs β f-⊤ f-abs f-coherence}
-    → Abstractionᶜ-FRAC
-        (𝒞-fromFRAC (Abstractionᶜ-FRAC A-⊤ A-abs α))
-        (𝒞-fromFRAC (Abstractionᶜ-FRAC B-⊤ B-abs β))
-        (squareᶜ'-FRAC {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence)
-      ≡ Abstractionᶜ-FRAC A-⊤ B-abs (α ⨾ᶜ f-abs)
-  Abstractionᶜ-Abstractionᶜ-FRAC {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} {f-⊤} {f-abs} {f-coherence} =
-    𝒞-FRAC-path
-      (𝒞-glue•-path (Abstractionᶜ-FRAC A-⊤ A-abs α))
-      (𝒞-glue◦-path (Abstractionᶜ-FRAC B-⊤ B-abs β))
-      (Abstractionᶜ-Abstractionᶜ-α•-path {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} {f-⊤} {f-abs} {f-coherence})
+  squareᶜ'-≡ {B-⊤ = B-⊤} {B-abs} {β} {fc = fc} {fc' = fc'} p q =
+    ⊸-path refl refl $ funExt λ a →
+      Glue-path (is-set (◯ᶜ B-abs))
+        (cong (λ f → ●.map (f .U) (a .•)) p)
+        (cong (λ f → ◯.map (f .U) (a .◦)) q)
 
   Abstractionᶜ-Abstractionᶜ : ∀ {A-⊤ A-abs α B-⊤ B-abs β f-⊤ f-abs f-coherence} →
-    Abstractionᶜ (Abstractionᶜ A-⊤ A-abs α) (Abstractionᶜ B-⊤ B-abs β) (squareᶜ' {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence)
+    Abstractionᶜ
+      (Abstractionᶜ A-⊤ A-abs α)
+      (Abstractionᶜ B-⊤ B-abs β)
+      (squareᶜ' {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs f-coherence)
     ≡ Abstractionᶜ A-⊤ B-abs (α ⨾ᶜ f-abs)
   Abstractionᶜ-Abstractionᶜ {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} {f-⊤} {f-abs} {f-coherence} =
-      cong 𝒞-fromFRAC
-        (Abstractionᶜ-Abstractionᶜ-FRAC
-          {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} {f-⊤} {f-abs} {f-coherence})
+    cong 𝒞-Glue $
+    𝒞-FRACTURE-path
+      (𝒞-glue•-path (Abstractionᶜ-FRAC A-⊤ A-abs α))
+      (𝒞-glue◦-path (Abstractionᶜ-FRAC B-⊤ B-abs β)) $
+    ⊸-path
+      (λ i → ⟨ 𝒞-glue•-path (Abstractionᶜ-FRAC A-⊤ A-abs α) i ⟩ᶜ)
+      (λ i → ●ᶜ ⟨ 𝒞-glue◦-path (Abstractionᶜ-FRAC B-⊤ B-abs β) i ⟩ᶜ)
+      (square-χ•-path
+        (squareᶜ' f-⊤ f-abs f-coherence .U)
+        (●ᶜ.map ((α ⨾ᶜ f-abs) ⨾ᶜ η◦ᶜ) .U)
+        (λ g →
+            cong (●.map (◯.map (f-abs .U))) (sym (g .•→◦))
+          ∙ ●.map-∘ ((α ⨾ᶜ η◦ᶜ) .U) (◯.map (f-abs .U)) (g .•)))

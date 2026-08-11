@@ -4,6 +4,7 @@ open import Cubical.Data.Sigma
   using (Σ; _,_; ΣPathP)
   renaming (fst to proj₁; snd to proj₂)
   public
+open import Cubical.Data.Sigma.Properties public
 open import Cubical.Foundations.HLevels using (isSetΣ) public
 open import Cubical.Foundations.Equiv using (isEquiv)
 open import Calf.Value

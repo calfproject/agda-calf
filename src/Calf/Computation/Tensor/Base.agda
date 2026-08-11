@@ -6,7 +6,7 @@ open import Calf.Computation
 
 ⊤ : 𝒞
 ⊤ .U = ℂ
-⊤ .is-preorder = {!   !}
+⊤ .is-preorder = isPreorderℂ
 ⊤ .charge = _+ℂ_
 ⊤ .charge/0 = +ℂ-identityˡ _
 ⊤ .charge/+ = +ℂ-assoc _ _ _
@@ -22,12 +22,9 @@ module _ where
     ( cong (λ z → inj {A} {B} z b) (charge/comm A)
     ∙ law c' (A .charge c a) b ) i
 
-  ∥∥ᴾ-≡
-    : isSet Y
-    → (f g : ∥ X ∥ᴾ → Y)
-    → (∀ x → f (ηᴾ x) ≡ g (ηᴾ x))
-    → ∀ z → f z ≡ g z
-  ∥∥ᴾ-≡ isSetY f g p = {!   !} -- elim (λ z → isProp→isSet (isSetY (f z) (g z))) p
+  private
+    mapᴾ : (X → Y) → ∥ X ∥ᴾ → ∥ Y ∥ᴾ
+    mapᴾ f = rec isPreorderP (ηᴾ ∘ f)
 
   module _ {A B : 𝒞} where
     ⊛-elimProp
@@ -43,48 +40,57 @@ module _ where
         i
 
     ⊛-≡
-      : isSet Y
+      : isPreorder Y
       → (f g : ∥ A ⊛ B ∥ᴾ → Y)
       → (∀ a b → f (ηᴾ (inj a b)) ≡ g (ηᴾ (inj a b)))
       → ∀ z → f z ≡ g z
-    ⊛-≡ isSetY f g p = ∥∥ᴾ-≡ isSetY f g (⊛-elimProp (λ _ → isSetY _ _) p)
+    ⊛-≡ isPreorderY f g p =
+      rec-unique isPreorderY f g
+        (⊛-elimProp (λ _ → isPreorder→isSet isPreorderY _ _) p)
 
   _⊗_ : 𝒞 → 𝒞 → 𝒞
   (A ⊗ B) .U = ∥ A ⊛ B ∥ᴾ
-  (A ⊗ B) .is-preorder = {!   !}
-  (A ⊗ B) .charge c = {!   !} -- map (charge⊛ c)
-  (A ⊗ B) .charge/0 {x} = {!   !}
-    -- ⊛-≡ squash₂ (map (charge⊛ 0ℂ)) (λ z → z)
-    --   (λ a b → cong (λ z → ∣ inj {A} z b ∣₂) (A .charge/0 {a}))
-    --   x
-  (A ⊗ B) .charge/+ {x} {c₁} {c₂} = {!   !}
-    -- ⊛-≡ squash₂ (map (charge⊛ (c₁ +ℂ c₂))) (λ z → map (charge⊛ c₁) (map (charge⊛ c₂) z))
-    --   (λ a b → cong (λ z → ∣ inj {A} z b ∣₂) (A .charge/+ {a} {c₁} {c₂}))
-    --   x
+  (A ⊗ B) .is-preorder = isPreorderP
+  (A ⊗ B) .charge c = mapᴾ (charge⊛ c)
+  (A ⊗ B) .charge/0 {x} =
+    ⊛-≡ isPreorderP (mapᴾ (charge⊛ 0ℂ)) (λ z → z)
+      (λ a b → cong (λ z → ηᴾ (inj {A} z b)) (A .charge/0 {a}))
+      x
+  (A ⊗ B) .charge/+ {x} {c₁} {c₂} =
+    ⊛-≡ isPreorderP
+      (mapᴾ (charge⊛ (c₁ +ℂ c₂)))
+      (λ z → mapᴾ (charge⊛ c₁) (mapᴾ (charge⊛ c₂) z))
+      (λ a b → cong (λ z → ηᴾ (inj {A} z b)) (A .charge/+ {a} {c₁} {c₂}))
+      x
 
   _∥_ : U A → U B → U (A ⊗ B)
   a ∥ b = ηᴾ (inj a b)
 
-  map₂ : ∀ {A₁ A₂ B₁ B₂}
-    → (A₁ ⊸ B₁)
-    → (A₂ ⊸ B₂)
-    → (A₁ ⊗ A₂ ⊸ B₁ ⊗ B₂)
-  map₂ {A₁} {A₂} {B₁} {B₂} f g = mk
-    where
-      h : A₁ ⊛ A₂ → B₁ ⊛ B₂
-      h (inj a₁ a₂) = inj (f .U a₁) (g .U a₂)
-      h (law c a₁ a₂ i) =
-        ( cong (λ z → inj z (g .U a₂)) (f .charge c a₁)
-        ∙ law c (f .U a₁) (g .U a₂)
-        ∙ cong (inj (f .U a₁)) (sym (g .charge c a₂)) ) i
+  ⊗-rec : {A B C : 𝒞}
+    → (h : U A → U B → U C)
+    → (∀ c a b → h (A .charge c a) b ≡ C .charge c (h a b))
+    → (∀ c a b → h a (B .charge c b) ≡ C .charge c (h a b))
+    → (A ⊗ B) ⊸ C
+  ⊗-rec {A} {B} {C} h hl hr .U =
+    rec (C .is-preorder) λ
+      { (inj a b) → h a b
+      ; (law c a b i) → (hl c a b ∙ sym (hr c a b)) i
+      }
+  ⊗-rec {A} {B} {C} h hl hr .charge c =
+    ⊛-≡ (C .is-preorder)
+      (λ w → ⊗-rec {A} {B} {C} h hl hr .U ((A ⊗ B) .charge c w))
+      (λ w → C .charge c (⊗-rec {A} {B} {C} h hl hr .U w))
+      (hl c)
 
-      mk : A₁ ⊗ A₂ ⊸ B₁ ⊗ B₂
-      mk .U = {!   !} -- map h
-      mk .charge c = {!   !}
-        -- ⊛-≡ squash₂
-        --   (λ z → mk .U ((A₁ ⊗ A₂) .charge c z))
-        --   (λ z → (B₁ ⊗ B₂) .charge c (mk .U z))
-        --   (λ a₁ a₂ → cong (λ z → ∣ inj z (g .U a₂) ∣₂) (f .charge c a₁))
+  map₂ : ∀ {A₁ A₂ B₁ B₂}
+    → (A₁ ⊸ A₂) → (B₁ ⊸ B₂)
+    → (A₁ ⊗ B₁) ⊸ (A₂ ⊗ B₂)
+  map₂ {A₁} {A₂} {B₁} {B₂} f g =
+    ⊗-rec (λ a b → ηᴾ (inj (f .U a) (g .U b)))
+      (λ c a b → cong (λ z → ηᴾ (inj z (g .U b))) (f .charge c a))
+      (λ c a b →
+          cong (λ z → ηᴾ (inj (f .U a) z)) (g .charge c b)
+        ∙ sym (cong ηᴾ (law c (f .U a) (g .U b))))
 
 ⊗-identityʳ : A ⊗ ⊤ ≡ A
 ⊗-identityʳ {A = A} = conservativity fwd fwd-equiv
@@ -96,12 +102,12 @@ module _ where
       ∙ cong (λ d → A .charge d a) (+ℂ-comm c c') ) i
 
     fwd : A ⊗ ⊤ ⊸ A
-    fwd .U = {!   !} -- rec (A .is-preorder) fwd-U
-    fwd .charge c₀ = {!   !}
-      -- ⊛-≡ (A .is-preorder)
-      --   (λ z → fwd .U ((A ⊗ ⊤) .charge c₀ z))
-      --   (λ z → A .charge c₀ (fwd .U z))
-      --   (λ a c → charge/comm A)
+    fwd .U = rec (A .is-preorder) fwd-U
+    fwd .charge c₀ =
+      ⊛-≡ (A .is-preorder)
+        (λ z → fwd .U ((A ⊗ ⊤) .charge c₀ z))
+        (λ z → A .charge c₀ (fwd .U z))
+        (λ a c → charge/comm A)
 
     fwd-equiv : isEquivᶜ fwd
     fwd-equiv = isoToIsEquiv (iso (fwd .U) inv sect retr)
@@ -113,8 +119,28 @@ module _ where
         sect a = A .charge/0
 
         retr : ∀ z → inv (fwd .U z) ≡ z
-        retr = {!   !}
-          -- ⊛-≡ squash₂ (λ z → inv (fwd .U z)) (λ z → z)
-          --   (λ a c →
-          --       cong ∣_∣₂ (law c a 0ℂ)
-          --     ∙ cong (λ d → ∣ inj a d ∣₂) (+ℂ-identityʳ c))
+        retr =
+          ⊛-≡ isPreorderP (λ z → inv (fwd .U z)) (λ z → z)
+            (λ a c →
+                cong ηᴾ (law c a 0ℂ)
+              ∙ cong (λ d → ηᴾ (inj a d)) (+ℂ-identityʳ c))
+
+opaque
+  map₂-equivᶜ : ∀ {A₁ A₂ B₁ B₂} {f : A₁ ⊸ A₂} {g : B₁ ⊸ B₂}
+    → isEquivᶜ f → isEquivᶜ g
+    → isEquivᶜ (map₂ f g)
+  map₂-equivᶜ {f = f} {g = g} fe ge =
+    isoToIsEquiv
+      (iso (map₂ f g .U) (map₂ (invEquivᶜ f fe) (invEquivᶜ g ge) .U)
+        (⊛-≡ isPreorderP
+          (λ z → map₂ f g .U (map₂ (invEquivᶜ f fe) (invEquivᶜ g ge) .U z)) (λ z → z)
+          (λ a b i → ηᴾ (inj (secEq (f .U , fe) a i) (secEq (g .U , ge) b i))))
+        (⊛-≡ isPreorderP
+          (λ z → map₂ (invEquivᶜ f fe) (invEquivᶜ g ge) .U (map₂ f g .U z)) (λ z → z)
+          (λ a b i → ηᴾ (inj (retEq (f .U , fe) a i) (retEq (g .U , ge) b i)))))
+
+⊗-isContr : isContr (U A) → isContr (U B) → isContr (U (A ⊗ B))
+⊗-isContr {A} {B} cA cB .fst = ηᴾ (inj (cA .fst) (cB .fst))
+⊗-isContr {A} {B} cA cB .snd =
+  ⊛-≡ isPreorderP (λ _ → ηᴾ (inj (cA .fst) (cB .fst))) (λ w → w)
+    (λ a b i → ηᴾ (inj (cA .snd a i) (cB .snd b i)))

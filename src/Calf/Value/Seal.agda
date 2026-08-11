@@ -19,13 +19,13 @@ record DGlue (X• : 𝒱•) (X◦ : 𝒱◦) (χ• : ⟨ X• ⟩ → ● ⟨
     •→◦ : χ• • ⊑ η• ◦
 open DGlue public
 
-open 𝒱-FRAC
+open 𝒱-FRACTURE
 
-DfromFRAC : 𝒱-FRAC → 𝒱
+DfromFRAC : 𝒱-FRACTURE → 𝒱
 DfromFRAC F = DGlue (F .X•) (F .X◦) (F .χ•)
 
 Seal : 𝒱 → 𝒱
-Seal = DfromFRAC ∘ toFRAC
+Seal = DfromFRAC ∘ 𝒱-Fracture
 
 isPreorderSeal : isPreorder X → isPreorder (Seal X)
 isPreorderSeal = {!   !}
