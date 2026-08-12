@@ -348,7 +348,7 @@ module _ where
   alt-▷ : ▷-Laws
   alt-▷ .▷ⁱ[_]_ c A = A
   alt-▷ .◁ⁱ[_]_ c A = A
-  alt-▷ .spendⁱ A c = idᶜ
+  alt-▷ .spendⁱ A c = CHARGE c
   alt-▷ .▷ⁱ⊣◁ⁱ = refl
   alt-▷ .▷ⁱ-map f = f
   alt-▷ .▷ⁱ/0 = refl
