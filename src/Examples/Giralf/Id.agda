@@ -17,7 +17,7 @@ module _ (impl : Giralf) where
   open Giralf impl
   open Perm-Split
 
-  id₁ : [ CList₁ (1 +ℂ p) A ] ⨾ 0ℂ ⊢ CList₁ p A
+  id₁ : [ CList₁ᴳ (1 +ℂ p) A ] ⨾ 0ℂ ⊢ CList₁ᴳ p A
   id₁ {p} =
     foldr₁ᴳ
       nil₁ᴳ
@@ -29,10 +29,10 @@ module _ (impl : Giralf) where
       )
       (idᴳ refl)
 
-  id₂ : ∀ p → [ CList₂ p 1 A ] ⨾ 0ℂ ⊢ CList₁ p A
+  id₂ : ∀ p → [ CList₂ᴳ p 1 A ] ⨾ 0ℂ ⊢ CList₁ᴳ p A
   id₂ {A} p =
     foldr₂ᴳ
-      (λ r → CList₁ r A)
+      (λ r → CList₁ᴳ r A)
       (λ r → nil₁ᴳ)
       (λ r → cons₁ᴳ (left all-right) (cong (r +ℂ_) (+ℂ-identityʳ 0ℂ) ∙ +ℂ-identityʳ r) (idᴳ refl) id₁)
       (idᴳ refl)

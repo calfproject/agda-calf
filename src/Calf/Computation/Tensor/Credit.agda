@@ -78,3 +78,6 @@ opaque
 
 ▷A⊗B≡▷[A⊗B] : ∀ c → ((▷[ c ] A) ⊗ B) ≡ (▷[ c ] (A ⊗ B))
 ▷A⊗B≡▷[A⊗B] {A} {B} c = ⊗-comm ∙ A⊗▷B≡▷[A⊗B] c ∙ cong (▷[ c ]_) ⊗-comm
+
+▷A⊗▷B≡▷[A⊗B] : ∀ c₁ c₂ → ((▷[ c₁ ] A) ⊗ (▷[ c₂ ] B)) ≡ (▷[ c₁ +ℂ c₂ ] (A ⊗ B))
+▷A⊗▷B≡▷[A⊗B] {A} {B} c₁ c₂ = (▷A⊗B≡▷[A⊗B] c₁) ∙ cong (▷[ c₁ ]_) (A⊗▷B≡▷[A⊗B] c₂) ∙ sym ▷/+
