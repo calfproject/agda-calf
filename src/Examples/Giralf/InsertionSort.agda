@@ -4,6 +4,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
 open import Calf.Core.Cost
 open import Calf.Value
+open import Calf.Value.List
 open import Calf.Computation
 open import Calf.Computation.Product
 open import Calf.Computation.Tensor
@@ -11,6 +12,7 @@ open import Calf.Computation.Credit
 open import Calf.Computation.Debit
 open import Calf.Computation.CList1
 open import Calf.Computation.CList2
+open import Calf.Computation.Free
 open import Calf.Giralf
 
 open import Cubical.Data.Bool
@@ -24,32 +26,43 @@ m ≤ᵇ n with ≤Dec m n
 ... | yes p = true
 ... | no ¬p = false
 
-insert : ∀ p → ℕ → CList₁ (1 +ℂ p) ℕ , p ⊢ CList₁ p ℕ
-insert p x =
-  payᴳ (+ℂ-identityʳ p) $
-  proj₁ᴳ {B = CList₁ p ℕ} $
-  foldr₁ᴳ
-    {A = (◁[ p ] CList₁ p ℕ) ×ᶜ CList₁ p ℕ}
-    (pairᴳ
-      (getᴳ p (+ℂ-identityʳ p) (cons₁ᴳ (+ℂ-identityʳ p) x nil₁ᴳ))
-      nil₁ᴳ
-    )
-    (λ y →
-      spendᴳ 1 refl $
-      pairᴳ
-        ( getᴳ p refl $
-          if x ≤ᵇ y
-            then cons₁ᴳ refl x (cons₁ᴳ (+ℂ-identityʳ p) y (proj₂ᴳ {A = ◁[ p ] CList₁ p ℕ} (idᴳ refl)))
-            else cons₁ᴳ refl y (payᴳ (+ℂ-identityʳ p) (proj₁ᴳ {B = CList₁ p ℕ} (idᴳ refl)))
-        )
-        (cons₁ᴳ (+ℂ-identityʳ p) y (proj₂ᴳ {A = ◁[ p ] CList₁ p ℕ} (idᴳ refl)))
-    )
-    (idᴳ refl)
+module _ (impl : Giralf) where
+  open Giralf impl
+  open Perm-Split
 
-isort : CList₂ 0 1 ℕ , 0ℂ ⊢ CList₁ 0 ℕ
-isort =
-  foldr₂ᴳ
-    (λ r → CList₁ r ℕ)
-    (λ r → nil₁ᴳ)
-    insert
-    (idᴳ refl)
+  insert : ∀ p → ℕ → ([ (CList₁ᴳ (1 +ℂ p) (F ℕ)) ] ⨾ p ⊢ (CList₁ᴳ p (F ℕ)))
+  insert p x =
+    payᴳ (+ℂ-identityʳ p) $
+    proj₁ᴳ {B = CList₁ᴳ p (F ℕ)} $
+    foldr₁ᴳ
+      {B = ◁ᴳ[ p ] CList₁ᴳ p (F ℕ) ×ᶜ CList₁ᴳ p (F ℕ)}
+      (pairᴳ
+        (getᴳ p (+ℂ-identityʳ p) (cons₁ᴳ base (cong (p +ℂ_) (+ℂ-identityʳ 0ℂ) ∙ +ℂ-identityʳ p) (retᴳ x) nil₁ᴳ))
+        nil₁ᴳ
+      )
+      (
+        spendᴳ 1 refl $
+        pairᴳ
+          (
+            bindᴳ (left all-right) (+ℂ-identityˡ p) (idᴳ refl) $ λ y →
+            getᴳ p refl $
+            if x ≤ᵇ y
+            then (
+              cons₁ᴳ all-right {!   !} (retᴳ x) $
+              cons₁ᴳ all-right (cong (p +ℂ_) (+ℂ-identityʳ 0ℂ) ∙ +ℂ-identityʳ p) (retᴳ y) (proj₂ᴳ {A = ◁ᴳ[ p ] CList₁ᴳ p (F ℕ)} (idᴳ refl))
+            ) else (
+              cons₁ᴳ all-right {!   !} (retᴳ y) $
+              payᴳ (+ℂ-identityʳ p) (proj₁ᴳ {B = CList₁ᴳ p (F ℕ)} (idᴳ refl))
+            )
+          )
+          (cons₁ᴳ (left all-right) {!   !} (idᴳ refl) (proj₂ᴳ {A = ◁ᴳ[ p ] CList₁ᴳ p (F ℕ)} (idᴳ refl)))
+      )
+      (idᴳ refl)
+
+  isort : [ CList₂ᴳ 0 1 (F ℕ) ] ⨾ 0ℂ ⊢ CList₁ᴳ 0 (F ℕ)
+  isort =
+    foldr₂ᴳ
+      (λ r → CList₁ᴳ r (F ℕ))
+      (λ r → nil₁ᴳ)
+      (λ r → bindᴳ (left all-right) (+ℂ-identityˡ r) (idᴳ refl) (insert r))
+      (idᴳ refl)

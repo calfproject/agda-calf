@@ -105,6 +105,13 @@ record Giralf : 𝒱₂ where
       → Δ ⨾ q' ⊢ ◁ᴳ[ p ] A
       → Δ ⨾ q ⊢ A
 
+    retᴳ : X → cmpᴳ (F X)
+    bindᴳ : Δ ≡ Δ₁ ⊔ Δ₂
+      → q ⋎₂ (q₁ , q₂)
+      → Δ₁ ⨾ q₁ ⊢ (F X)
+      → (X → Δ₂ ⨾ q₂ ⊢ A)
+      → Δ ⨾ q ⊢ A
+
     pairᴳ :
         Δ ⨾ q ⊢ A
       → Δ ⨾ q ⊢ B
@@ -293,6 +300,12 @@ module _ (▷-impl : ▷-Laws) where
 
   impl .getᴳ {A = A} p split = transport (sym (▷ⁱ⊣◁ⁱ ∙ cong (_⊸ A) (sym ▷ⁱ/+ ∙ cong (▷ⁱ[_] _) split)))
   impl .payᴳ {p = p} {q' = q'} {A = A} split = transport (▷ⁱ⊣◁ⁱ ∙ cong (_⊸ A) (sym ▷ⁱ/+ ∙ cong (▷ⁱ[_] _) split))
+
+  impl .retᴳ x = U→cmpᴳ (ret x)
+  impl .bindᴳ {Δ₂ = Δ₂} {q₂ = q₂} {X = X} {A = A} S s e k = S ∣ s ⋎ e ⨾ᴳ k'
+    where
+      k' : F X ∷ Δ₂ ⨾ q₂ ⊢ˢ A
+      k' = transport (sym lolli-currying ∙ cong (_⊸ A) (A⊗▷ⁱB≡▷ⁱ[A⊗B] q₂)) (bind' k)
 
   impl .pairᴳ = pairᶜ
   impl .proj₁ᴳ {B = B} = _⨾ᶜ proj₁ᶜ {B = B}
