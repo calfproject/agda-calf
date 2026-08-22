@@ -30,7 +30,7 @@ module _ where
   _⋎₂_ : ℂ → (ℂ × ℂ) → 𝒱
   q ⋎₂ (q₁ , q₂) = q₁ +ℂ q₂ ≡ q
 
-module Perm-Split {E : 𝒱₁} where
+module _ {E : 𝒱₁} where
   data _≡_⊔_ : List E → List E → List E → 𝒱₂ where
     base : [] ≡ [] ⊔ []
     left : {Δ Δ₁ Δ₂ : List E} {A : E} → Δ ≡ Δ₁ ⊔ Δ₂ → (A ∷ Δ) ≡ (A ∷ Δ₁) ⊔ Δ₂
@@ -48,8 +48,6 @@ module Perm-Split {E : 𝒱₁} where
   switch base = base
   switch (left S) = right (switch S)
   switch (right S) = left (switch S)
-
-open Perm-Split
 
 import Cubical.Data.List as List
 Tensorfy : List 𝒞 → 𝒞
@@ -123,12 +121,21 @@ record Giralf : 𝒱₂ where
         Δ ⨾ q ⊢ A ×ᶜ B
       → Δ ⨾ q ⊢ B
 
-    powlamᴳ :
+    ⇀-lamᴳ :
       (X → Δ ⨾ q ⊢ A)
       → Δ ⨾ q ⊢ X ⇀ A
-    powappᴳ :
+    ⇀-appᴳ :
       X → Δ ⨾ q ⊢ X ⇀ A
       → Δ ⨾ q ⊢ A
+
+    ⊸-lamᴳ :
+      A ∷ Δ ⨾ q ⊢ B
+      → Δ ⨾ q ⊢ A ⊸ᶜ B
+    ⊸-appᴳ : Δ ≡ Δ₁ ⊔ Δ₂
+      → q ⋎₂ (q₁ , q₂)
+      → Δ₁ ⨾ q₁ ⊢ A
+      → Δ₂ ⨾ q₂ ⊢ A ⊸ᶜ B
+      → Δ ⨾ q ⊢ B
 
     absurdᴳ :
         Δ ⨾ q ⊢ 0ᶜ
@@ -165,7 +172,7 @@ record Giralf : 𝒱₂ where
       → A ∷ B ∷ Δ₂ ⨾ q₂ ⊢ C
       → Δ ⨾ q ⊢ C
 
-    nilᴳ : cmpᴳ (Listᶜ A)
+    nilᴳ : q ⋎₀ → [] ⨾ q ⊢ (Listᶜ A)
     consᴳ :
       Δ ≡ Δ₁ ⊔ Δ₂
       → q ⋎₂ (q₁ , q₂)
@@ -178,7 +185,7 @@ record Giralf : 𝒱₂ where
       → Δ ⨾ q ⊢ Listᶜ A
       → Δ ⨾ q ⊢ B
 
-    nil₁ᴳ : cmpᴳ (CList₁ᴳ p A)
+    nil₁ᴳ : q ⋎₀ → [] ⨾ q ⊢ (CList₁ᴳ p A)
     cons₁ᴳ :
       Δ ≡ Δ₁ ⊔ Δ₂
       → q ⋎₂ (p , (q₁ +ℂ q₂))
@@ -237,7 +244,7 @@ record Giralf : 𝒱₂ where
 
 open Giralf
 
--- implementation of standard Giralf semantics
+-- implementation of Giralf semantics into Calf, parametrized on credit implementation
 module _ (▷-impl : ▷-Laws) where
   open ▷-Laws ▷-impl
 
@@ -251,6 +258,12 @@ module _ (▷-impl : ▷-Laws) where
 
   U→cmpᴳ : U A → ([] ⨾ 0ℂ ⊢ˢ A)
   U→cmpᴳ {A} e = subst (_⊸ A) (sym ▷ⁱ/0) (U→cmp e)
+
+  UA→q⊢A : q ⋎₀ → U A → ([] ⨾ q ⊢ˢ A)
+  UA→q⊢A split e = subst (λ x → ▷ⁱ[ x ] _ ⊸ _) split (U→cmpᴳ e)
+
+  ⊸-left-invertible : (A ∷ Δ ⨾ q ⊢ˢ B) ≡ (Δ ⨾ q ⊢ˢ A ⊸ᶜ B)
+  ⊸-left-invertible = cong (_⊸ _) (sym (A⊗▷ⁱB≡▷ⁱ[A⊗B] _) ∙ ⊗-comm) ∙ ⊸-currying
 
   -- composition with credit splitting
   _⋎_⨾ᴳ_ :
@@ -293,51 +306,52 @@ module _ (▷-impl : ▷-Laws) where
   impl .cutᴳ = _∣_⋎_⨾ᴳ_
 
   impl .storeᴳ {A = A} p split e = subst (_⊸ ▷ⁱ[ p ] A) (sym ▷ⁱ/+ ∙ cong (▷ⁱ[_] _) split) (▷ⁱ-map e)
-  impl .releaseᴳ {Δ₂ = Δ₂} {q₂ = q₂} {p = p} {B = B} {A = A} S s e k = S ∣ s ⋎ e ⨾ᴳ k'
-    where
-      k' : (▷ⁱ[ p ] B) ∷ Δ₂ ⨾ q₂ ⊢ˢ A
-      k' = subst (_⊸ _) (▷ⁱ/+ ∙ cong (▷ⁱ[ q₂ ]_) (sym (▷ⁱA⊗B≡▷ⁱ[A⊗B] p))) k
+  impl .releaseᴳ {p = p} S s e k =
+    S ∣ s ⋎ e ⨾ᴳ subst (_⊸ _) (▷ⁱ/+ ∙ cong (▷ⁱ[ _ ]_) (sym (▷ⁱA⊗B≡▷ⁱ[A⊗B] p))) k
 
   impl .getᴳ {A = A} p split = transport (sym (▷ⁱ⊣◁ⁱ ∙ cong (_⊸ A) (sym ▷ⁱ/+ ∙ cong (▷ⁱ[_] _) split)))
   impl .payᴳ {p = p} {q' = q'} {A = A} split = transport (▷ⁱ⊣◁ⁱ ∙ cong (_⊸ A) (sym ▷ⁱ/+ ∙ cong (▷ⁱ[_] _) split))
 
   impl .retᴳ x = U→cmpᴳ (ret x)
-  impl .bindᴳ {Δ₂ = Δ₂} {q₂ = q₂} {X = X} {A = A} S s e k = S ∣ s ⋎ e ⨾ᴳ k'
+  impl .bindᴳ {q₂ = q₂} {X = X} {A = A} S s e k = S ∣ s ⋎ e ⨾ᴳ transport help (bind' k)
     where
-      k' : F X ∷ Δ₂ ⨾ q₂ ⊢ˢ A
-      k' = transport (sym lolli-currying ∙ cong (_⊸ A) (A⊗▷ⁱB≡▷ⁱ[A⊗B] q₂)) (bind' k)
+      help : (F X ⊸ (▷ⁱ[ q₂ ] _ ⊸ᶜ A)) ≡ (▷ⁱ[ q₂ ] (F X ⊗ _) ⊸ A)
+      help = sym ⊸-currying ∙ cong (_⊸ A) (A⊗▷ⁱB≡▷ⁱ[A⊗B] q₂)
 
   impl .pairᴳ = pairᶜ
   impl .proj₁ᴳ {B = B} = _⨾ᶜ proj₁ᶜ {B = B}
   impl .proj₂ᴳ {A = A} = _⨾ᶜ proj₂ᶜ {A = A}
 
-  impl .powlamᴳ {X = X} = powlam {X = X}
-  impl .powappᴳ {X = X} x e = powapp {X = X} e x
+  impl .⇀-lamᴳ {X = X} = powlam {X = X}
+  impl .⇀-appᴳ {X = X} x e = powapp {X = X} e x
+
+  impl .⊸-lamᴳ {Δ = Δ} e = transport (⊸-left-invertible {Δ = Δ}) e
+  impl .⊸-appᴳ {Δ₂ = Δ₂} S s e₁ e₂ = S ∣ s ⋎ e₁ ⨾ᴳ transport (sym (⊸-left-invertible {Δ = Δ₂})) e₂
 
   impl .absurdᴳ = _⨾ᶜ absurdᶜ
   impl .inj₁ᴳ {B = B} = _⨾ᶜ inj₁ᶜ {B = B}
   impl .inj₂ᴳ {A = A} = _⨾ᶜ inj₂ᶜ {A = A}
-  impl .caseᴳ {Δ₂ = Δ₂} {q₂ = q₂} {A = A} {B} {C} S s e e₁ e₂ = S ∣ s ⋎ e ⨾ᴳ k'
+  impl .caseᴳ {q₂ = q₂} {A = A} {B} {C} S s e e₁ e₂ = S ∣ s ⋎ e ⨾ᴳ subst (_⊸ _) help (caseᶜ e₁ e₂)
     where
-      k' : (A +ᶜ B) ∷ Δ₂ ⨾ q₂ ⊢ˢ C
-      k' = subst (_⊸ _) (▷ⁱA+▷ⁱB≡▷ⁱ[A+B] q₂ ∙ cong (▷ⁱ[ q₂ ]_) A⊗C+B⊗C≡[A+B]⊗C) (caseᶜ e₁ e₂)
+      help : (▷ⁱ[ q₂ ] (A ⊗ _)) +ᶜ (▷ⁱ[ q₂ ] (B ⊗ _)) ≡ ▷ⁱ[ q₂ ] ((A +ᶜ B) ⊗ _)
+      help = (▷ⁱA+▷ⁱB≡▷ⁱ[A+B] q₂ ∙ cong (▷ⁱ[ q₂ ]_) A⊗C+B⊗C≡[A+B]⊗C)
 
   impl .trivᴳ = U→cmpᴳ trivᶜ
   impl .checkᴳ S s e k = S ∣ s ⋎ e ⨾ᴳ (subst (λ a → ▷ⁱ[ _ ] a ⊸ _) (sym ⊗-identityˡ) k)
   impl .tensorᴳ {q₂ = q₂} S s e₁ e₂ = S ∣ s ⋎ e₁ ⨾ᴳ (subst (_⊸ _) (A⊗▷ⁱB≡▷ⁱ[A⊗B] q₂) (map₂ idᶜ e₂))
   impl .splitᴳ {q₂ = q₂} {C = C} S s e k = S ∣ s ⋎ e ⨾ᴳ (subst (λ a → ▷ⁱ[ q₂ ] a ⊸ C) ⊗-assoc k)
 
-  impl .nilᴳ = U→cmpᴳ nil
+  impl .nilᴳ split = UA→q⊢A split nil
   impl .consᴳ S s eₕ eₜ = impl .tensorᴳ S s eₕ eₜ ⨾ᶜ cons
   impl .foldrᴳ e[] e∷ = _⨾ᶜ Listᶜ.foldr (cmpᴳ→U e[]) (subst (_⊸ _) (▷ⁱ/0 ∙ cong (_ ⊗_) ⊗-identityʳ) e∷)
 
-  impl .nil₁ᴳ = U→cmpᴳ (cnil₁ ▷-impl)
+  impl .nil₁ᴳ split = UA→q⊢A split (cnil₁ ▷-impl)
   impl .cons₁ᴳ {Δ = Δ} {p = p} S s eₕ eₜ =
     impl .storeᴳ {Δ = Δ} p s (impl .tensorᴳ S refl eₕ eₜ) ⨾ᶜ (ccons₁ ▷-impl)
   impl .foldr₁ᴳ {B = B} {p = p} e[] e∷ =
     _⨾ᶜ cfoldr₁ ▷-impl (cmpᴳ→U e[]) (subst (λ C →  ▷ⁱ[ p ] (_ ⊗ C) ⊸ B) ⊗-identityʳ e∷)
 
-  impl .nil₂ᴳ split = subst (λ x → ▷ⁱ[ x ] _ ⊸ _) split (U→cmpᴳ (cnil₂ ▷-impl))
+  impl .nil₂ᴳ split = UA→q⊢A split (cnil₂ ▷-impl)
   impl .cons₂ᴳ {Δ = Δ} {p₁ = p₁} S s eₕ eₜ =
     impl .storeᴳ {Δ = Δ} p₁ s (impl .tensorᴳ S refl eₕ eₜ) ⨾ᶜ ccons₂ ▷-impl -- ccons₂
   impl .foldr₂ᴳ B e[] e∷ =
@@ -361,7 +375,7 @@ module _ where
   alt-▷ : ▷-Laws
   alt-▷ .▷ⁱ[_]_ c A = A
   alt-▷ .◁ⁱ[_]_ c A = A
-  alt-▷ .spendⁱ A c = CHARGE c
+  alt-▷ .spendⁱ A = CHARGE
   alt-▷ .▷ⁱ⊣◁ⁱ = refl
   alt-▷ .▷ⁱ-map f = f
   alt-▷ .▷ⁱ/0 = refl

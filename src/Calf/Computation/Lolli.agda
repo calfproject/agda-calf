@@ -12,7 +12,7 @@ open import Calf.Value
 open import Calf.Computation
 open import Calf.Computation.Tensor
 
-infix 1 _⊸ᶜ_
+infix 2 _⊸ᶜ_
 
 _⊸ᶜ_ : 𝒞 → 𝒞 → 𝒞
 (A ⊸ᶜ B) .U = A ⊸ B
@@ -34,8 +34,8 @@ _⊸ᶜ_ : 𝒞 → 𝒞 → 𝒞
 opaque
   unfolding _⊗_ _∥_
 
-  lolli-currying : (A ⊗ B ⊸ C) ≡ (A ⊸ (B ⊸ᶜ C))
-  lolli-currying {A} {B} {C} =
+  ⊸-currying : (A ⊗ B ⊸ C) ≡ (A ⊸ (B ⊸ᶜ C))
+  ⊸-currying {A} {B} {C} =
     ua (isoToEquiv (iso curryᶜ uncurryᶜ curryᶜ-uncurryᶜ uncurryᶜ-curryᶜ))
     where
       curryᶜ : (A ⊗ B ⊸ C) → (A ⊸ (B ⊸ᶜ C))

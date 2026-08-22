@@ -14,6 +14,7 @@ open import Calf.Computation.CList1
 open import Calf.Computation.CList2
 open import Calf.Computation.Free
 open import Calf.Giralf
+open import Calf.Solver.Nat using (solveNat0)
 
 open import Cubical.Data.Bool
 open import Cubical.Data.Nat
@@ -28,41 +29,57 @@ m ≤ᵇ n with ≤Dec m n
 
 module _ (impl : Giralf) where
   open Giralf impl
-  open Perm-Split
 
-  insert : ∀ p → ℕ → ([ (CList₁ᴳ (1 +ℂ p) (F ℕ)) ] ⨾ p ⊢ (CList₁ᴳ p (F ℕ)))
-  insert p x =
-    payᴳ (+ℂ-identityʳ p) $
-    proj₁ᴳ {B = CList₁ᴳ p (F ℕ)} $
-    foldr₁ᴳ
-      {B = ◁ᴳ[ p ] CList₁ᴳ p (F ℕ) ×ᶜ CList₁ᴳ p (F ℕ)}
-      (pairᴳ
-        (getᴳ p (+ℂ-identityʳ p) (cons₁ᴳ base (cong (p +ℂ_) (+ℂ-identityʳ 0ℂ) ∙ +ℂ-identityʳ p) (retᴳ x) nil₁ᴳ))
-        nil₁ᴳ
-      )
-      (
-        spendᴳ 1 refl $
-        pairᴳ
-          (
-            bindᴳ (left all-right) (+ℂ-identityˡ p) (idᴳ refl) $ λ y →
-            getᴳ p refl $
-            if x ≤ᵇ y
-            then (
-              cons₁ᴳ all-right {!   !} (retᴳ x) $
-              cons₁ᴳ all-right (cong (p +ℂ_) (+ℂ-identityʳ 0ℂ) ∙ +ℂ-identityʳ p) (retᴳ y) (proj₂ᴳ {A = ◁ᴳ[ p ] CList₁ᴳ p (F ℕ)} (idᴳ refl))
-            ) else (
-              cons₁ᴳ all-right {!   !} (retᴳ y) $
-              payᴳ (+ℂ-identityʳ p) (proj₁ᴳ {B = CList₁ᴳ p (F ℕ)} (idᴳ refl))
+  opaque
+    unfolding ℂ
+
+    insert : ∀ p → ℕ → ([ (CList₁ᴳ (1 +ℂ p) (F ℕ)) ] ⨾ p ⊢ (CList₁ᴳ p (F ℕ)))
+    insert p x =
+      payᴳ (+ℂ-identityʳ p) $
+      proj₁ᴳ {B = CList₁ᴳ p (F ℕ)} $
+      foldr₁ᴳ
+        {B = ◁ᴳ[ p ] CList₁ᴳ p (F ℕ) ×ᶜ CList₁ᴳ p (F ℕ)}
+        (pairᴳ
+          (getᴳ p refl (cons₁ᴳ base refl (retᴳ x) (nil₁ᴳ refl)))
+          (nil₁ᴳ refl)
+        )
+        (
+          spendᴳ 1 refl $
+          pairᴳ
+            (
+              bindᴳ (left all-right) (+ℂ-identityˡ p) (idᴳ refl) $ λ y →
+              getᴳ p refl $
+              if x ≤ᵇ y
+              then (
+                cons₁ᴳ all-right arith-0 (retᴳ x) $
+                cons₁ᴳ all-right arith-1 (retᴳ y) $
+                proj₂ᴳ {A = ◁ᴳ[ p ] CList₁ᴳ p (F ℕ)} (idᴳ refl)
+              ) else (
+                cons₁ᴳ all-right arith-2 (retᴳ y) $
+                payᴳ refl $
+                proj₁ᴳ {B = CList₁ᴳ p (F ℕ)} (idᴳ refl)
+              )
             )
-          )
-          (cons₁ᴳ (left all-right) {!   !} (idᴳ refl) (proj₂ᴳ {A = ◁ᴳ[ p ] CList₁ᴳ p (F ℕ)} (idᴳ refl)))
-      )
-      (idᴳ refl)
+            (
+              cons₁ᴳ (left all-right) arith-1 (idᴳ refl) $
+              proj₂ᴳ {A = ◁ᴳ[ p ] CList₁ᴳ p (F ℕ)} (idᴳ refl)
+            )
+        )
+        (idᴳ refl)
+      where
+        arith-0 : (p +ℂ p) ⋎₂ (p , (0ℂ +ℂ p))
+        arith-0 = solveNat0
 
-  isort : [ CList₂ᴳ 0 1 (F ℕ) ] ⨾ 0ℂ ⊢ CList₁ᴳ 0 (F ℕ)
-  isort =
-    foldr₂ᴳ
-      (λ r → CList₁ᴳ r (F ℕ))
-      (λ r → nil₁ᴳ)
-      (λ r → bindᴳ (left all-right) (+ℂ-identityˡ r) (idᴳ refl) (insert r))
-      (idᴳ refl)
+        arith-1 : p ⋎₂ (p , (0ℂ +ℂ 0ℂ))
+        arith-1 = solveNat0
+
+        arith-2 : (p +ℂ p) ⋎₂ (p , (0ℂ +ℂ (p +ℂ 0ℂ)))
+        arith-2 = solveNat0
+
+    isort : [ CList₂ᴳ 0 1 (F ℕ) ] ⨾ 0ℂ ⊢ CList₁ᴳ 0 (F ℕ)
+    isort =
+      foldr₂ᴳ
+        (λ r → CList₁ᴳ r (F ℕ))
+        (λ r → (nil₁ᴳ refl))
+        (λ r → bindᴳ (left all-right) (+ℂ-identityˡ r) (idᴳ refl) (insert r))
+        (idᴳ refl)

@@ -15,7 +15,6 @@ open import Calf.Giralf
 
 module _ (impl : Giralf) where
   open Giralf impl
-  open Perm-Split
 
   id₁ : [ CList₁ᴳ (1 +ℂ p) A ] ⨾ 0ℂ ⊢ CList₁ᴳ p A
   id₁ {p} =
