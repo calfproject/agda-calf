@@ -19,19 +19,19 @@ module _ (impl : Giralf) where
   id₁ : [ CList₁ᴳ (1 +ℂ p) A ] ⨾ 0ℂ ⊢ CList₁ᴳ p A
   id₁ {p} =
     foldr₁ᴳ
-      nil₁ᴳ
+      (nil₁ᴳ refl)
       (
         spendᴳ 1 refl $
         cons₁ᴳ (left all-right) (cong (p +ℂ_) (+ℂ-identityʳ 0ℂ) ∙ +ℂ-identityʳ p)
-          (idᴳ refl)
-          (idᴳ refl)
+          idᴳ
+          idᴳ
       )
-      (idᴳ refl)
+      idᴳ
 
   id₂ : ∀ p → [ CList₂ᴳ p 1 A ] ⨾ 0ℂ ⊢ CList₁ᴳ p A
   id₂ {A} p =
     foldr₂ᴳ
       (λ r → CList₁ᴳ r A)
-      (λ r → nil₁ᴳ)
-      (λ r → cons₁ᴳ (left all-right) (cong (r +ℂ_) (+ℂ-identityʳ 0ℂ) ∙ +ℂ-identityʳ r) (idᴳ refl) id₁)
-      (idᴳ refl)
+      (λ r → nil₁ᴳ refl)
+      (λ r → cons₁ᴳ (left all-right) (cong (r +ℂ_) (+ℂ-identityʳ 0ℂ) ∙ +ℂ-identityʳ r) idᴳ id₁)
+      idᴳ

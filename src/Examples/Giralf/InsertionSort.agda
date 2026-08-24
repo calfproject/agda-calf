@@ -47,25 +47,25 @@ module _ (impl : Giralf) where
           spendᴳ 1 refl $
           pairᴳ
             (
-              bindᴳ (left all-right) (+ℂ-identityˡ p) (idᴳ refl) $ λ y →
+              bindᴳ (left all-right) (+ℂ-identityˡ p) idᴳ $ λ y →
               getᴳ p refl $
               if x ≤ᵇ y
               then (
                 cons₁ᴳ all-right arith-0 (retᴳ x) $
                 cons₁ᴳ all-right arith-1 (retᴳ y) $
-                proj₂ᴳ {A = ◁ᴳ[ p ] CList₁ᴳ p (F ℕ)} (idᴳ refl)
+                proj₂ᴳ {A = ◁ᴳ[ p ] CList₁ᴳ p (F ℕ)} idᴳ
               ) else (
                 cons₁ᴳ all-right arith-2 (retᴳ y) $
                 payᴳ refl $
-                proj₁ᴳ {B = CList₁ᴳ p (F ℕ)} (idᴳ refl)
+                proj₁ᴳ {B = CList₁ᴳ p (F ℕ)} idᴳ
               )
             )
             (
-              cons₁ᴳ (left all-right) arith-1 (idᴳ refl) $
-              proj₂ᴳ {A = ◁ᴳ[ p ] CList₁ᴳ p (F ℕ)} (idᴳ refl)
+              cons₁ᴳ (left all-right) arith-1 idᴳ $
+              proj₂ᴳ {A = ◁ᴳ[ p ] CList₁ᴳ p (F ℕ)} idᴳ
             )
         )
-        (idᴳ refl)
+        idᴳ
       where
         arith-0 : (p +ℂ p) ⋎₂ (p , (0ℂ +ℂ p))
         arith-0 = solveNat0
@@ -81,5 +81,5 @@ module _ (impl : Giralf) where
       foldr₂ᴳ
         (λ r → CList₁ᴳ r (F ℕ))
         (λ r → (nil₁ᴳ refl))
-        (λ r → bindᴳ (left all-right) (+ℂ-identityˡ r) (idᴳ refl) (insert r))
-        (idᴳ refl)
+        (λ r → bindᴳ (left all-right) (+ℂ-identityˡ r) idᴳ (insert r))
+        idᴳ

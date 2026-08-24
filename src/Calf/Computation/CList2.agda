@@ -70,22 +70,22 @@ module _ (▷-impl : ▷-Laws) where
     -- unfolding Listᶜ
 
     CList₂' : ℂ → ℂ → 𝒞 → 𝒞
-    CList₂' c₁ c₂ A = [ n ∈ ℕₛ ] ⋊ ▷ⁱ[ clist₂-pot c₁ c₂ n ] (⊗ᵏ-fixed A n)
+    CList₂' c₁ c₂ A = [ n ∈ ℕₛ ] ⋊ ▷ⁱ[ clist₂-pot c₁ c₂ n ] (Vecᶜ A n)
 
     CList₂≡CList₂' : ∀ {c₁ c₂ A} → CList₂ c₁ c₂ A ≡ CList₂' c₁ c₂ A
     CList₂≡CList₂' {c₁} {c₂} {A} = cong (Σᶜ ℕₛ) (funExt ⊗ᵏ▷ⁱ≡▷ⁱ⊗ᵏ)
       where
         ⊗ᵏ▷ⁱ≡▷ⁱ⊗ᵏ : ∀ {c₁} → (n : ℕ) →
-          ⊗ᵏ (λ c₁' → ▷ⁱ[ c₁' ] A) (λ c₁' → c₂ +ℂ c₁') c₁ n ≡ ▷ⁱ[ clist₂-pot c₁ c₂ n ] (⊗ᵏ-fixed A n)
+          ⊗ᵏ (λ c₁' → ▷ⁱ[ c₁' ] A) (λ c₁' → c₂ +ℂ c₁') c₁ n ≡ ▷ⁱ[ clist₂-pot c₁ c₂ n ] (Vecᶜ A n)
         ⊗ᵏ▷ⁱ≡▷ⁱ⊗ᵏ {c₁} zero = sym ▷ⁱ/0 ∙ cong (▷ⁱ[_] ⊤) (sym (clist₂-pot-zero c₁ c₂))
         ⊗ᵏ▷ⁱ≡▷ⁱ⊗ᵏ {c₁} (suc n) =
             (▷ⁱ[ c₁ ] A) ⊗ ⊗ᵏ (λ c₁' → ▷ⁱ[ c₁' ] A) (_+ℂ_ c₂) (c₂ +ℂ c₁) n
           ≡⟨ cong (_ ⊗_) (⊗ᵏ▷ⁱ≡▷ⁱ⊗ᵏ n) ⟩
-            (▷ⁱ[ c₁ ] A) ⊗ (▷ⁱ[ clist₂-pot (c₂ +ℂ c₁) c₂ n ] ⊗ᵏ-fixed A n)
+            (▷ⁱ[ c₁ ] A) ⊗ (▷ⁱ[ clist₂-pot (c₂ +ℂ c₁) c₂ n ] Vecᶜ A n)
           ≡⟨ ▷ⁱA⊗▷ⁱB≡▷ⁱ[A⊗B] c₁ (clist₂-pot (c₂ +ℂ c₁) c₂ n) ⟩
-            ▷ⁱ[ c₁ +ℂ clist₂-pot (c₂ +ℂ c₁) c₂ n ] (A ⊗ ⊗ᵏ-fixed A n)
+            ▷ⁱ[ c₁ +ℂ clist₂-pot (c₂ +ℂ c₁) c₂ n ] (A ⊗ Vecᶜ A n)
           ≡⟨ cong (▷ⁱ[_] (A ⊗ _)) (sym (clist₂-pot-suc n c₁ c₂)) ⟩
-            ▷ⁱ[ clist₂-pot c₁ c₂ (suc n) ] (A ⊗ ⊗ᵏ-fixed A n)
+            ▷ⁱ[ clist₂-pot c₁ c₂ (suc n) ] (A ⊗ Vecᶜ A n)
           ∎
 
     -- CList₂'' : ℂ → ℂ → 𝒞 → 𝒞

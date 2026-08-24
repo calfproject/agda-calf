@@ -21,19 +21,19 @@ module _ (impl : Giralf) where
     snoc : ∀ p → A ∷ [ CList₁ᴳ (1 +ℂ p) A ] ⨾ p ⊢ CList₁ᴳ p A
     snoc {A} p =
       ⊸-appᴳ (left all-right) (+ℂ-identityʳ p)
-        (storeᴳ p (+ℂ-identityʳ p) (idᴳ refl)) $
+        (storeᴳ p (+ℂ-identityʳ p) idᴳ) $
         foldr₁ᴳ
           {B = ▷ᴳ[ p ] A ⊸ᶜ CList₁ᴳ p A}
           (
-            ⊸-lamᴳ $ releaseᴳ all-left (+ℂ-identityˡ _) (idᴳ refl) $
-            cons₁ᴳ all-left arith (idᴳ refl) (nil₁ᴳ refl)
+            ⊸-lamᴳ $ releaseᴳ all-left (+ℂ-identityˡ _) idᴳ $
+            cons₁ᴳ all-left arith idᴳ (nil₁ᴳ refl)
           )
           (
             spendᴳ 1 refl $
-            ⊸-lamᴳ $ cons₁ᴳ (right (left all-right)) arith (idᴳ refl) $
-            ⊸-appᴳ (left all-right) refl (idᴳ refl) (idᴳ refl)
+            ⊸-lamᴳ $ cons₁ᴳ (right (left all-right)) arith idᴳ $
+            ⊸-appᴳ (left all-right) refl idᴳ idᴳ
           )
-          (idᴳ refl)
+          idᴳ
       where
         arith : p ⋎₂ (p , (0ℂ +ℂ (0ℂ +ℂ 0ℂ)))
         arith = solveNat0
@@ -45,4 +45,4 @@ module _ (impl : Giralf) where
         (λ r → CList₁ᴳ r A)
         (λ r → nil₁ᴳ refl)
         snoc
-        (idᴳ refl)
+        idᴳ

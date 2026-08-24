@@ -76,8 +76,8 @@ record Giralf : 𝒱₂ where
       → q ⋎₂ (p , q')
       → Δ ⨾ q' ⊢ A
       → Δ ⨾ q ⊢ A
-    idᴳ : ∀ {q : ℂ} {A : 𝒞} → q ⋎₀ → [ A ] ⨾ q ⊢ A
-    cutᴳ : Δ ≡ Δ₁ ⊔ Δ₂
+    idᴳ : [ A ] ⨾ 0ℂ ⊢ A
+    letᴳ : Δ ≡ Δ₁ ⊔ Δ₂
       → q ⋎₂ (q₁ , q₂)
       → Δ₁ ⨾ q₁ ⊢ A
       → A ∷ Δ₂ ⨾ q₂ ⊢ B
@@ -302,8 +302,8 @@ module _ (▷-impl : ▷-Laws) where
 
   impl .spendᴳ {q = q} {Δ = Δ} {A = A} p split e = split ⋎ spendⁱ (Tensorfy Δ) p ⨾ᴳ e
 
-  impl .idᴳ {q} {A} split = subst (_⊸ A) (sym ▷ⁱ/0 ∙ cong₂ (▷ⁱ[_]_) split (sym ⊗-identityʳ)) idᶜ
-  impl .cutᴳ = _∣_⋎_⨾ᴳ_
+  impl .idᴳ {A} = subst (_⊸ A) (sym ▷ⁱ/0 ∙ cong (▷ⁱ[ _ ]_) (sym ⊗-identityʳ)) idᶜ
+  impl .letᴳ = _∣_⋎_⨾ᴳ_
 
   impl .storeᴳ {A = A} p split e = subst (_⊸ ▷ⁱ[ p ] A) (sym ▷ⁱ/+ ∙ cong (▷ⁱ[_] _) split) (▷ⁱ-map e)
   impl .releaseᴳ {p = p} S s e k =
@@ -356,35 +356,6 @@ module _ (▷-impl : ▷-Laws) where
     impl .storeᴳ {Δ = Δ} p₁ s (impl .tensorᴳ S refl eₕ eₜ) ⨾ᶜ ccons₂ ▷-impl -- ccons₂
   impl .foldr₂ᴳ B e[] e∷ =
     _⨾ᶜ cfoldr₂ ▷-impl B (cmpᴳ→U ∘ e[]) (λ c-lin' → subst (λ C →  ▷ⁱ[ c-lin' ] (_ ⊗ C) ⊸ _) ⊗-identityʳ (e∷ c-lin'))
-
-module _ where
-  open ▷-Laws
-  std-▷ : ▷-Laws
-  std-▷ .▷ⁱ[_]_ = ▷[_]_
-  std-▷ .◁ⁱ[_]_ = ◁[_]_
-  std-▷ .spendⁱ = spend
-  std-▷ .▷ⁱ⊣◁ⁱ = ▷⊣◁
-  std-▷ .▷ⁱ-map = ▷-map
-  std-▷ .▷ⁱ/0 = ▷/0
-  std-▷ .▷ⁱ/+ = ▷/+
-  std-▷ .▷ⁱA⊗▷ⁱB≡▷ⁱ[A⊗B] = ▷A⊗▷B≡▷[A⊗B]
-  std-▷ .▷ⁱA⊗B≡▷ⁱ[A⊗B] = ▷A⊗B≡▷[A⊗B]
-  std-▷ .A⊗▷ⁱB≡▷ⁱ[A⊗B] = A⊗▷B≡▷[A⊗B]
-  std-▷ .▷ⁱA+▷ⁱB≡▷ⁱ[A+B] = ▷A+▷B≡▷[A+B]
-
-  alt-▷ : ▷-Laws
-  alt-▷ .▷ⁱ[_]_ c A = A
-  alt-▷ .◁ⁱ[_]_ c A = A
-  alt-▷ .spendⁱ A = CHARGE
-  alt-▷ .▷ⁱ⊣◁ⁱ = refl
-  alt-▷ .▷ⁱ-map f = f
-  alt-▷ .▷ⁱ/0 = refl
-  alt-▷ .▷ⁱ/+ = refl
-  alt-▷ .▷ⁱA⊗▷ⁱB≡▷ⁱ[A⊗B] c₁ c₂ = refl
-  alt-▷ .▷ⁱA⊗B≡▷ⁱ[A⊗B] c = refl
-  alt-▷ .A⊗▷ⁱB≡▷ⁱ[A⊗B] c = refl
-  alt-▷ .▷ⁱA+▷ⁱB≡▷ⁱ[A+B] c = refl
-
 
 std-giralf : Giralf
 std-giralf = impl std-▷

@@ -40,17 +40,17 @@ module _ (▷-impl : ▷-Laws) where
     unfolding Listᶜ'
 
     CList₁' : ℂ → 𝒞 → 𝒞
-    CList₁' c A = [ n ∈ ℕₛ ] ⋊ ▷ⁱ[ n ⊙ c ] (⊗ᵏ-fixed A n)
+    CList₁' c A = [ n ∈ ℕₛ ] ⋊ ▷ⁱ[ n ⊙ c ] (Vecᶜ A n)
 
     CList₁≡CList₁' : ∀ {c A} → CList₁ c A ≡ CList₁' c A
     CList₁≡CList₁' {c} {A} = cong (Σᶜ ℕₛ) (funExt ⊗ᵏ▷ⁱ≡▷ⁱ⊗ᵏ)
       where
-        ⊗ᵏ▷ⁱ≡▷ⁱ⊗ᵏ : (n : ℕ) → ⊗ᵏ-fixed (▷ⁱ[ c ] A) n ≡ ▷ⁱ[ n ⊙ c ] (⊗ᵏ-fixed A n)
+        ⊗ᵏ▷ⁱ≡▷ⁱ⊗ᵏ : (n : ℕ) → Vecᶜ (▷ⁱ[ c ] A) n ≡ ▷ⁱ[ n ⊙ c ] (Vecᶜ A n)
         ⊗ᵏ▷ⁱ≡▷ⁱ⊗ᵏ zero = sym ▷ⁱ/0
         ⊗ᵏ▷ⁱ≡▷ⁱ⊗ᵏ (suc n) =
-            (▷ⁱ[ c ] A) ⊗ ⊗ᵏ-fixed (▷ⁱ[ c ] A) n
+            (▷ⁱ[ c ] A) ⊗ Vecᶜ (▷ⁱ[ c ] A) n
           ≡⟨ cong (_ ⊗_) (⊗ᵏ▷ⁱ≡▷ⁱ⊗ᵏ n) ⟩
-            (▷ⁱ[ c ] A) ⊗ (▷ⁱ[ n ⊙ c ] (⊗ᵏ-fixed A n))
+            (▷ⁱ[ c ] A) ⊗ (▷ⁱ[ n ⊙ c ] (Vecᶜ A n))
           ≡⟨ ▷ⁱA⊗▷ⁱB≡▷ⁱ[A⊗B] c (n ⊙ c) ⟩
-            ▷ⁱ[ c +ℂ (n ⊙ c) ] ⊗ᵏ-fixed A (suc n)
+            ▷ⁱ[ c +ℂ (n ⊙ c) ] Vecᶜ A (suc n)
           ∎

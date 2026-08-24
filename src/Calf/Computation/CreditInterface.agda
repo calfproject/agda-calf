@@ -9,6 +9,8 @@ module Calf.Computation.CreditInterface where
 open import Calf.Value
 open import Calf.Core.Cost
 open import Calf.Computation
+open import Calf.Computation.Credit
+open import Calf.Computation.Debit
 open import Calf.Computation.Sum
 open import Calf.Computation.Tensor
 
@@ -28,3 +30,31 @@ record ▷-Laws : 𝒱₁ where
     ▷ⁱA⊗B≡▷ⁱ[A⊗B] : ∀ c → ((▷ⁱ[ c ] A) ⊗ B) ≡ (▷ⁱ[ c ] (A ⊗ B))
     A⊗▷ⁱB≡▷ⁱ[A⊗B] : ∀ c → (A ⊗ (▷ⁱ[ c ] B)) ≡ (▷ⁱ[ c ] (A ⊗ B))
     ▷ⁱA+▷ⁱB≡▷ⁱ[A+B] : ∀ c → ((▷ⁱ[ c ] A) +ᶜ (▷ⁱ[ c ] B)) ≡ (▷ⁱ[ c ] (A +ᶜ B))
+
+open ▷-Laws
+
+std-▷ : ▷-Laws
+std-▷ .▷ⁱ[_]_ = ▷[_]_
+std-▷ .◁ⁱ[_]_ = ◁[_]_
+std-▷ .spendⁱ = spend
+std-▷ .▷ⁱ⊣◁ⁱ = ▷⊣◁
+std-▷ .▷ⁱ-map = ▷-map
+std-▷ .▷ⁱ/0 = ▷/0
+std-▷ .▷ⁱ/+ = ▷/+
+std-▷ .▷ⁱA⊗▷ⁱB≡▷ⁱ[A⊗B] = ▷A⊗▷B≡▷[A⊗B]
+std-▷ .▷ⁱA⊗B≡▷ⁱ[A⊗B] = ▷A⊗B≡▷[A⊗B]
+std-▷ .A⊗▷ⁱB≡▷ⁱ[A⊗B] = A⊗▷B≡▷[A⊗B]
+std-▷ .▷ⁱA+▷ⁱB≡▷ⁱ[A+B] = ▷A+▷B≡▷[A+B]
+
+alt-▷ : ▷-Laws
+alt-▷ .▷ⁱ[_]_ c A = A
+alt-▷ .◁ⁱ[_]_ c A = A
+alt-▷ .spendⁱ A = CHARGE
+alt-▷ .▷ⁱ⊣◁ⁱ = refl
+alt-▷ .▷ⁱ-map f = f
+alt-▷ .▷ⁱ/0 = refl
+alt-▷ .▷ⁱ/+ = refl
+alt-▷ .▷ⁱA⊗▷ⁱB≡▷ⁱ[A⊗B] c₁ c₂ = refl
+alt-▷ .▷ⁱA⊗B≡▷ⁱ[A⊗B] c = refl
+alt-▷ .A⊗▷ⁱB≡▷ⁱ[A⊗B] c = refl
+alt-▷ .▷ⁱA+▷ⁱB≡▷ⁱ[A+B] c = refl
