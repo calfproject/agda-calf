@@ -1,439 +1,99 @@
-{-# OPTIONS --allow-unsolved-metas #-}
-
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Function
-open import Cubical.Foundations.Univalence using (ua)
-open import Cubical.Data.Equality.Conversion using (eqToPath)
-open import Cubical.Data.Nat
+open import Cubical.Foundations.Structure
 
 module Calf.Computation.CList2 where
 
 open import Calf.Core.Cost
-open import Calf.Value
-open import Calf.Value.List
 open import Calf.Value.Nat
-import Calf.Value.Closed as ●
-import Calf.Value.Open as ◯
+open import Calf.Value.Sigma
 open import Calf.Computation
-open import Calf.Computation.Free as F
-open import Calf.Computation.Copower
-open import Calf.Computation.Open as ◯ᶜ
-open import Calf.Computation.Closed as ●ᶜ
-open import Calf.Computation.Glue
-open import Calf.Computation.Abstraction
-open import Calf.Computation.Potential
 open import Calf.Computation.Credit
+open import Calf.Computation.Tensor
+open import Calf.Computation.List
+open import Calf.Computation.Copower
+open import Calf.Computation.CreditInterface
 
--- binom2 : ℕ → ℕ
--- binom2 zero = zero
--- binom2 (suc n) = n + binom2 n
 
--- clist₂-potential : ℂ → ℂ → ℕ → ℂ
--- clist₂-potential c-linear c-quadratic n =
---   (n ⊙ c-linear) +ℂ (binom2 n ⊙ c-quadratic)
+module _ (▷-impl : ▷-Laws) where
+  open ▷-Laws ▷-impl
 
--- module _ where
---   clist₂-potential-suc
---     : ∀ n c-linear c-quadratic
---     → clist₂-potential c-linear c-quadratic (suc n)
---       ≡ c-linear +ℂ clist₂-potential (c-quadratic +ℂ c-linear) c-quadratic n
---   clist₂-potential-suc n c-linear c-quadratic =
---       clist₂-potential c-linear c-quadratic (suc n)
---     ≡⟨ refl ⟩
---       (c-linear +ℂ (n ⊙ c-linear))
---         +ℂ ((n + binom2 n) ⊙ c-quadratic)
---     ≡⟨ cong
---         ((c-linear +ℂ (n ⊙ c-linear)) +ℂ_)
---         (⊙-+-left n (binom2 n) c-quadratic) ⟩
---       (c-linear +ℂ (n ⊙ c-linear))
---         +ℂ ((n ⊙ c-quadratic) +ℂ (binom2 n ⊙ c-quadratic))
---     ≡⟨ +ℂ-assoc c-linear (n ⊙ c-linear)
---         ((n ⊙ c-quadratic) +ℂ (binom2 n ⊙ c-quadratic)) ⟩
---       c-linear +ℂ
---         ((n ⊙ c-linear)
---           +ℂ ((n ⊙ c-quadratic) +ℂ (binom2 n ⊙ c-quadratic)))
---     ≡⟨ cong (c-linear +ℂ_)
---         (sym (+ℂ-assoc (n ⊙ c-linear) (n ⊙ c-quadratic) (binom2 n ⊙ c-quadratic))) ⟩
---       c-linear +ℂ
---         (((n ⊙ c-linear) +ℂ (n ⊙ c-quadratic))
---           +ℂ (binom2 n ⊙ c-quadratic))
---     ≡⟨ cong
---         (λ c → c-linear +ℂ (c +ℂ (binom2 n ⊙ c-quadratic)))
---         (+ℂ-comm (n ⊙ c-linear) (n ⊙ c-quadratic)) ⟩
---       c-linear +ℂ
---         (((n ⊙ c-quadratic) +ℂ (n ⊙ c-linear))
---           +ℂ (binom2 n ⊙ c-quadratic))
---     ≡⟨ cong (c-linear +ℂ_)
---         (cong (_+ℂ (binom2 n ⊙ c-quadratic))
---           (sym (⊙-+ n c-quadratic c-linear))) ⟩
---       c-linear +ℂ clist₂-potential (c-quadratic +ℂ c-linear) c-quadratic n
---     ∎
+  opaque
+    CList₂ : ℂ → ℂ → 𝒞 → 𝒞
+    CList₂ c₁ c₂ A = Listᶜ' (λ c₁' → ▷ⁱ[ c₁' ] A) (λ c₁' → c₂ +ℂ c₁') c₁
 
-opaque
-  CList₂ : ℂ → ℂ → 𝒱 → 𝒞
-  CList₂ c-linear c-quadratic X = ?
-    -- Potential {List X} (clist₂-potential c-linear c-quadratic ∘ length)
+    cnil₂ : ∀ {c₁ c₂} → U (CList₂ c₁ c₂ A)
+    cnil₂ {A} {c₁} {c₂} = nil'
 
-  cnil₂ : ∀ {c-lin c-quad} → U (CList₂ c-lin c-quad X)
-  cnil₂ {X} {c-lin} {c-quad} = ?
-    -- triangleᶜ'
-    --   (ret [])
-    --   (ret [])
-    --   $
-    --     bind' (λ l → F _ .charge (clist₂-potential c-lin c-quad (length l)) (ret l)) .U (ret [])
-    --   ≡⟨ bind'/β ⟩
-    --     F _ .charge (0ℂ +ℂ 0ℂ) (ret [])
-    --   ≡⟨ cong (λ c → F _ .charge c (ret [])) (+ℂ-identityˡ 0ℂ) ⟩
-    --     F _ .charge 0ℂ (ret [])
-    --   ≡⟨ F _ .charge/0 ⟩
-    --     ret []
-    --   ∎
+    ccons₂ : ∀ {c₁ c₂} → ▷ⁱ[ c₁ ] (A ⊗ CList₂ (c₂ +ℂ c₁) c₂ A) ⊸ CList₂ c₁ c₂ A
+    ccons₂ {A} {c₁} {c₂} = subst (_⊸ CList₂ c₁ c₂ A) (▷ⁱA⊗B≡▷ⁱ[A⊗B] c₁) cons'
 
-  ccons₂ : ∀ {c-lin c-quad} → X → ▷[ c-lin ] (CList₂ (c-quad +ℂ c-lin) c-quad X) ⊸ CList₂ c-lin c-quad X
-  ccons₂ {X} {c-lin} {c-quad} x = ?
-    -- subst (_⊸ CList₂ c-lin c-quad X)
-    --   ( Abstractionᶜ (F (List X)) (F (List X))
-    --       (CHARGE c-lin ⨾ᶜ bind' (λ l → F _ .charge (clist₂-potential (c-quad +ℂ c-lin) c-quad (length l)) (ret l)))
-    --   ≡⟨ cong (Abstractionᶜ _ _) (CHARGE-commute _ _) ⟩
-    --     Abstractionᶜ (F (List X)) (F (List X))
-    --       (bind' (λ l → F _ .charge (clist₂-potential (c-quad +ℂ c-lin) c-quad (length l)) (ret l)) ⨾ᶜ CHARGE c-lin)
-    --   ≡⟨ sym Abstractionᶜ-Abstractionᶜ ⟩
-    --     Abstractionᶜ
-    --       (CList₂ (c-quad +ℂ c-lin) c-quad X)
-    --       (CList₂ (c-quad +ℂ c-lin) c-quad X)
-    --       (squareᶜ'
-    --         (CHARGE c-lin)
-    --         (CHARGE c-lin)
-    --         (λ e → bind' (λ l → F _ .charge (clist₂-potential (c-quad +ℂ c-lin) c-quad (length l)) (ret l)) .charge c-lin e))
-    --   ≡⟨ cong (Abstractionᶜ _ _) (squareᶜ'-charge _) ⟩
-    --     ▷[ c-lin ] (CList₂ (c-quad +ℂ c-lin) c-quad X)
-    --   ∎) $
-    -- squareᶜ'
-    --   (F.map (x ∷_))
-    --   (F.map (x ∷_))
-    --   λ e →
-    --     bind' (λ l → F (List X) .charge (clist₂-potential c-lin c-quad (length l)) (ret l)) .U (F.map (x ∷_) .U e)
-    --   ≡⟨ refl ⟩
-    --     bind' (λ l → F (List X) .charge (clist₂-potential c-lin c-quad (length l)) (ret l)) .U (bind' (ret ∘ (x ∷_)) .U e)
-    --   ≡⟨ bind'-assoc _ _ _ ⟩
-    --     bind' (λ l →
-    --       bind' (λ l →
-    --         F (List X) .charge (clist₂-potential c-lin c-quad (length l)) (ret l))
-    --       .U (ret (x ∷ l)))
-    --     .U e
-    --   ≡⟨ cong (λ h → bind' {A = F (List X)} h .U e) (funExt λ _ → bind'/β) ⟩
-    --     bind' (λ l →
-    --       F (List X) .charge (clist₂-potential c-lin c-quad (length (x ∷ l))) (ret (x ∷ l)))
-    --     .U e
-    --   ≡⟨ cong (λ h → bind' {A = F (List X)} h .U e)
-    --         (funExt λ l →
-    --           cong (λ c → F (List X) .charge c (ret (x ∷ l)))
-    --             (clist₂-potential-suc (length l) c-lin c-quad)) ⟩
-    --     bind' (λ l →
-    --       F (List X) .charge
-    --         (c-lin +ℂ clist₂-potential (c-quad +ℂ c-lin) c-quad (length l))
-    --         (ret (x ∷ l)))
-    --     .U e
-    --   ≡⟨ cong (λ h → bind' {A = F (List X)} h .U e) (funExt λ l → F (List X) .charge/+) ⟩
-    --     bind' (λ l →
-    --       F (List X) .charge c-lin
-    --         (F (List X) .charge
-    --           (clist₂-potential (c-quad +ℂ c-lin) c-quad (length l))
-    --           (ret (x ∷ l))))
-    --     .U e
-    --   ≡⟨ bind'-charge _ _ _ ⟩
-    --     bind' (λ l →
-    --       F (List X) .charge
-    --         (clist₂-potential (c-quad +ℂ c-lin) c-quad (length l))
-    --         (ret (x ∷ l)))
-    --     .U (F (List X) .charge c-lin e)
-    --   ≡⟨ sym
-    --         (cong (λ h → bind' {A = F (List X)} h .U (F (List X) .charge c-lin e))
-    --           (funExt λ l →
-    --             cong (F (List X) .charge (clist₂-potential (c-quad +ℂ c-lin) c-quad (length l))) bind'/β)) ⟩
-    --     bind' (λ l →
-    --       F (List X) .charge
-    --         (clist₂-potential (c-quad +ℂ c-lin) c-quad (length l))
-    --         (F.map (x ∷_) .U (ret l)))
-    --     .U (F (List X) .charge c-lin e)
-    --   ≡⟨ sym
-    --         (cong (λ h → bind' {A = F (List X)} h .U (F (List X) .charge c-lin e))
-    --           (funExt λ l →
-    --             F.map (x ∷_) .charge (clist₂-potential (c-quad +ℂ c-lin) c-quad (length l)) (ret l))) ⟩
-    --     bind' (λ l →
-    --       F.map (x ∷_) .U
-    --         (F (List X) .charge (clist₂-potential (c-quad +ℂ c-lin) c-quad (length l)) (ret l)))
-    --     .U (F (List X) .charge c-lin e)
-    --   ≡⟨ sym (bind'-assoc _ _ _) ⟩
-    --     F.map (x ∷_) .U
-    --       (bind' (λ l →
-    --         F (List X) .charge (clist₂-potential (c-quad +ℂ c-lin) c-quad (length l)) (ret l))
-    --       .U (F (List X) .charge c-lin e))
-    --   ∎
+    cfoldr₂ : ∀ {c₁ c₂} (B : ℂ → 𝒞)
+      → (∀ c₁' → U (B c₁'))
+      → (∀ c₁' → (▷ⁱ[ c₁' ] (A ⊗ B (c₂ +ℂ c₁'))) ⊸ B c₁')
+      → CList₂ c₁ c₂ A ⊸ B c₁
+    cfoldr₂ B e[] e∷ = foldr' B e[] (λ c₁' → subst (_⊸ _) (sym (▷ⁱA⊗B≡▷ⁱ[A⊗B] c₁')) (e∷ c₁'))
 
-  cfoldr₂ : ∀ {c-lin c-quad} (A : ℂ → 𝒞)
-    → (∀ c-lin → U (A c-lin))
-    → (∀ c-lin → X → (▷[ c-lin ] (A (c-quad +ℂ c-lin))) ⊸ A c-lin)
-    → CList₂ c-lin c-quad X ⊸ A c-lin
-  cfoldr₂ {X = X} {c-lin = c-lin} {c-quad = c-quad} A e-nil e-cons = ?
-    -- subst (CList₂ c-lin c-quad X ⊸_) (𝒞-glue-fracture-retract (A c-lin)) $
-    -- squareᶜ (go• c-lin) (go◦ c-lin) go-•⊸◦
-    -- where
-    --   costᶜ-at : ℂ → F (List X) ⊸ F (List X)
-    --   costᶜ-at c =
-    --     bind' {A = F _} λ l →
-    --     CHARGE {A = F _} (clist₂-potential c c-quad (length l)) .U (ret l)
+  module _ where
+    binom2 : ℕ → ℕ
+    binom2 zero = zero
+    binom2 (suc n) = n + binom2 n
 
-    --   costᶜ : F (List X) ⊸ F (List X)
-    --   costᶜ = costᶜ-at c-lin
+    clist₂-pot : ℂ → ℂ → ℕ → ℂ
+    clist₂-pot c₁ c₂ n = (n ⊙ c₁) +ℂ (binom2 n ⊙ c₂)
 
-    --   fold• : (List X) → (c : ℂ) → U (●ᶜ (A c))
-    --   fold• =
-    --     foldr
-    --       (λ x rec c →
-    --         ●.map (e-cons c x .U)
-    --           (transport
-    --             (cong U (sym (▷-●ᶜ c (A (c-quad +ℂ c)))))
-    --             (rec (c-quad +ℂ c))))
-    --       (λ c → η• (e-nil c))
+  module _ where
+    clist₂-pot-zero : ∀ c₁ c₂ → clist₂-pot c₁ c₂ zero ≡ 0ℂ
+    clist₂-pot-zero c₁ c₂ = +ℂ-identityʳ 0ℂ
 
-    --   go• : (c : ℂ) → ●ᶜ (F (List X)) ⊸ ●ᶜ (A c)
-    --   go• c =
-    --     ●ᶜ.bind $
-    --     bind' (λ l → fold• l c)
+    clist₂-pot-suc : ∀ n c₁ c₂ → clist₂-pot c₁ c₂ (suc n) ≡ c₁ +ℂ clist₂-pot (c₂ +ℂ c₁) c₂ n
+    clist₂-pot-suc n c₁ c₂ =
+        clist₂-pot c₁ c₂ (suc n)
+      ≡⟨ refl ⟩
+        (c₁ +ℂ (n ⊙ c₁)) +ℂ ((n + binom2 n) ⊙ c₂)
+      ≡⟨ cong ((c₁ +ℂ (n ⊙ c₁)) +ℂ_) (⊙-+-left n (binom2 n) c₂) ⟩
+        (c₁ +ℂ (n ⊙ c₁)) +ℂ ((n ⊙ c₂) +ℂ (binom2 n ⊙ c₂))
+      ≡⟨ +ℂ-assoc c₁ (n ⊙ c₁) ((n ⊙ c₂) +ℂ (binom2 n ⊙ c₂)) ⟩
+        c₁ +ℂ ((n ⊙ c₁) +ℂ ((n ⊙ c₂) +ℂ (binom2 n ⊙ c₂)))
+      ≡⟨ cong (c₁ +ℂ_) (sym (+ℂ-assoc (n ⊙ c₁) (n ⊙ c₂) (binom2 n ⊙ c₂))) ⟩
+        c₁ +ℂ (((n ⊙ c₁) +ℂ (n ⊙ c₂)) +ℂ (binom2 n ⊙ c₂))
+      ≡⟨ cong (λ c → c₁ +ℂ (c +ℂ (binom2 n ⊙ c₂))) (+ℂ-comm (n ⊙ c₁) (n ⊙ c₂)) ⟩
+        c₁ +ℂ (((n ⊙ c₂) +ℂ (n ⊙ c₁)) +ℂ (binom2 n ⊙ c₂))
+      ≡⟨ cong (c₁ +ℂ_) (cong (_+ℂ (binom2 n ⊙ c₂)) (sym (⊙-+ n c₂ c₁))) ⟩
+        c₁ +ℂ clist₂-pot (c₂ +ℂ c₁) c₂ n
+      ∎
 
-    --   open-econs : (c : ℂ) → X → ◯ᶜ (A (c-quad +ℂ c)) ⊸ ◯ᶜ (A c)
-    --   open-econs c x .U a◦ =
-    --     ◯.map (e-cons c x .U)
-    --       (transport (cong U (sym (▷-◯ᶜ c (A (c-quad +ℂ c))))) a◦)
-    --   open-econs c x .charge d a◦ = funExt λ abs →
-    --       e-cons c x .U
-    --         (transport (cong U (sym (▷-◯ᶜ c (A (c-quad +ℂ c)))))
-    --           (◯ᶜ (A (c-quad +ℂ c)) .charge d a◦)
-    --           abs)
-    --     ≡⟨ cong (λ q → e-cons c x .U (q abs))
-    --           (transport-charge (sym (▷-◯ᶜ c (A (c-quad +ℂ c)))) d a◦) ⟩
-    --       e-cons c x .U
-    --         ((◯ᶜ (▷[ c ] (A (c-quad +ℂ c))) .charge d
-    --           (transport (cong U (sym (▷-◯ᶜ c (A (c-quad +ℂ c))))) a◦)) abs)
-    --     ≡⟨ e-cons c x .charge d
-    --           (transport (cong U (sym (▷-◯ᶜ c (A (c-quad +ℂ c))))) a◦ abs) ⟩
-    --       A c .charge d
-    --         (e-cons c x .U
-    --           (transport (cong U (sym (▷-◯ᶜ c (A (c-quad +ℂ c))))) a◦ abs))
-    --     ∎
+  opaque
+    unfolding CList₂
+    unfolding Listᶜ'
+    -- unfolding Listᶜ
 
-    --   fold◦ : (List X) → (c : ℂ) → U (◯ᶜ (A c))
-    --   fold◦ =
-    --     foldr
-    --       (λ x rec c → open-econs c x .U (rec (c-quad +ℂ c)))
-    --       (λ c → η◦ (e-nil c))
+    CList₂' : ℂ → ℂ → 𝒞 → 𝒞
+    CList₂' c₁ c₂ A = [ n ∈ ℕₛ ] ⋊ ▷ⁱ[ clist₂-pot c₁ c₂ n ] (Vecᶜ A n)
 
-    --   go◦ : (c : ℂ) → ◯ᶜ (F (List X)) ⊸ ◯ᶜ (A c)
-    --   go◦ c =
-    --     ◯ᶜ.bind {A = F _} {B = A c} $
-    --     bind' (λ l → fold◦ l c)
+    CList₂≡CList₂' : ∀ {c₁ c₂ A} → CList₂ c₁ c₂ A ≡ CList₂' c₁ c₂ A
+    CList₂≡CList₂' {c₁} {c₂} {A} = cong (Σᶜ ℕₛ) (funExt ⊗ᵏ▷ⁱ≡▷ⁱ⊗ᵏ)
+      where
+        ⊗ᵏ▷ⁱ≡▷ⁱ⊗ᵏ : ∀ {c₁} → (n : ℕ) →
+          ⊗ᵏ (λ c₁' → ▷ⁱ[ c₁' ] A) (λ c₁' → c₂ +ℂ c₁') c₁ n ≡ ▷ⁱ[ clist₂-pot c₁ c₂ n ] (Vecᶜ A n)
+        ⊗ᵏ▷ⁱ≡▷ⁱ⊗ᵏ {c₁} zero = sym ▷ⁱ/0 ∙ cong (▷ⁱ[_] ⊤) (sym (clist₂-pot-zero c₁ c₂))
+        ⊗ᵏ▷ⁱ≡▷ⁱ⊗ᵏ {c₁} (suc n) =
+            (▷ⁱ[ c₁ ] A) ⊗ ⊗ᵏ (λ c₁' → ▷ⁱ[ c₁' ] A) (_+ℂ_ c₂) (c₂ +ℂ c₁) n
+          ≡⟨ cong (_ ⊗_) (⊗ᵏ▷ⁱ≡▷ⁱ⊗ᵏ n) ⟩
+            (▷ⁱ[ c₁ ] A) ⊗ (▷ⁱ[ clist₂-pot (c₂ +ℂ c₁) c₂ n ] Vecᶜ A n)
+          ≡⟨ ▷ⁱA⊗▷ⁱB≡▷ⁱ[A⊗B] c₁ (clist₂-pot (c₂ +ℂ c₁) c₂ n) ⟩
+            ▷ⁱ[ c₁ +ℂ clist₂-pot (c₂ +ℂ c₁) c₂ n ] (A ⊗ Vecᶜ A n)
+          ≡⟨ cong (▷ⁱ[_] (A ⊗ _)) (sym (clist₂-pot-suc n c₁ c₂)) ⟩
+            ▷ⁱ[ clist₂-pot c₁ c₂ (suc n) ] (A ⊗ Vecᶜ A n)
+          ∎
 
-    --   fold•ᶜ : (c : ℂ) → F (List X) ⊸ ●ᶜ (A c)
-    --   fold•ᶜ c = bind' (λ l → fold• l c)
-
-    --   go-•⊸◦ :
-    --     go• c-lin ⨾ᶜ ●ᶜ.map η◦ᶜ ≡ ●ᶜ.map (costᶜ ⨾ᶜ η◦ᶜ) ⨾ᶜ ●ᶜ.map (go◦ c-lin)
-    --   go-•⊸◦ =
-    --       go• c-lin ⨾ᶜ ●ᶜ.map η◦ᶜ
-    --     ≡⟨ refl ⟩
-    --       ●ᶜ.bind (fold•ᶜ c-lin) ⨾ᶜ ●ᶜ.map η◦ᶜ
-    --     ≡⟨ ●ᶜ.bind-map _ _ ⟩
-    --       ●ᶜ.bind (fold•ᶜ c-lin ⨾ᶜ ●ᶜ.map η◦ᶜ)
-    --     ≡⟨ cong ●ᶜ.bind (bind'-path _ _ (funExt (fold•-coherence c-lin))) ⟩
-    --       ●ᶜ.bind (costᶜ ⨾ᶜ η◦ᶜ ⨾ᶜ go◦ c-lin ⨾ᶜ η•ᶜ)
-    --     ≡⟨ ●ᶜ.bind-η• _ ⟩
-    --       ●ᶜ.map (costᶜ ⨾ᶜ η◦ᶜ ⨾ᶜ go◦ c-lin)
-    --     ≡⟨ sym (●ᶜ.map-∘ _ _) ⟩
-    --       ●ᶜ.map (costᶜ ⨾ᶜ η◦ᶜ) ⨾ᶜ ●ᶜ.map (go◦ c-lin)
-    --     ∎
+    -- CList₂'' : ℂ → ℂ → 𝒞 → 𝒞
+    -- CList₂'' c₁ c₂ A =
+    --   Abstractionᶜ (Listᶜ A) (Listᶜ A) charge-pot
     --     where
-    --       cost-nil : ∀ c → costᶜ-at c .U (ret []) ≡ ret []
-    --       cost-nil c =
-    --           costᶜ-at c .U (ret [])
-    --         ≡⟨ bind'/β ⟩
-    --           F (List X) .charge (0ℂ +ℂ 0ℂ) (ret [])
-    --         ≡⟨ cong (λ c → F (List X) .charge c (ret [])) (+ℂ-identityˡ 0ℂ) ⟩
-    --           F (List X) .charge 0ℂ (ret [])
-    --         ≡⟨ F (List X) .charge/0 ⟩
-    --           ret []
-    --         ∎
+    --     charge-pot : Listᶜ A ⊸ Listᶜ A
+    --     charge-pot = ⋊-splitᶜ {X = ℕₛ} {A = λ n → ⊗ᵏ _ _ _ n} (λ n → ⋊-pairᶜ {X = ℕₛ} {A = λ n → ⊗ᵏ _ _ _ n} n ⨾ᶜ CHARGE (clist₂-pot c₁ c₂ n))
 
-    --       cost-cons : ∀ c x l →
-    --         CHARGE {A = F _} c .U
-    --           (F.map (x ∷_) .U (costᶜ-at (c-quad +ℂ c) .U (ret l)))
-    --         ≡ costᶜ-at c .U (ret (x ∷ l))
-    --       cost-cons c x l =
-    --           CHARGE {A = F _} c .U
-    --             (F.map (x ∷_) .U (costᶜ-at (c-quad +ℂ c) .U (ret l)))
-    --         ≡⟨ cong (λ e → CHARGE {A = F _} c .U (F.map (x ∷_) .U e)) bind'/β ⟩
-    --           CHARGE {A = F _} c .U
-    --             (F.map (x ∷_) .U
-    --               (CHARGE {A = F _} (clist₂-potential (c-quad +ℂ c) c-quad (length l)) .U (ret l)))
-    --         ≡⟨ cong (CHARGE {A = F _} c .U)
-    --               (cong ((_$ ret l) ∘ U)
-    --                 (CHARGE-commute
-    --                   (clist₂-potential (c-quad +ℂ c) c-quad (length l))
-    --                   (F.map (x ∷_)))) ⟩
-    --           CHARGE {A = F _} c .U
-    --             (CHARGE {A = F _} (clist₂-potential (c-quad +ℂ c) c-quad (length l)) .U
-    --               (F.map (x ∷_) .U (ret l)))
-    --         ≡⟨ cong (λ e → CHARGE {A = F _} c .U
-    --               (CHARGE {A = F _} (clist₂-potential (c-quad +ℂ c) c-quad (length l)) .U e))
-    --               bind'/β ⟩
-    --           CHARGE {A = F _} c .U
-    --             (CHARGE {A = F _} (clist₂-potential (c-quad +ℂ c) c-quad (length l)) .U
-    --               (ret (x ∷ l)))
-    --         ≡⟨ sym (cong ((_$ ret (x ∷ l)) ∘ U)
-    --               (CHARGE-+ {A = F _} c (clist₂-potential (c-quad +ℂ c) c-quad (length l)))) ⟩
-    --           CHARGE {A = F _}
-    --             (c +ℂ clist₂-potential (c-quad +ℂ c) c-quad (length l)) .U
-    --             (ret (x ∷ l))
-    --         ≡⟨ cong (λ c → CHARGE {A = F _} c .U (ret (x ∷ l)))
-    --               (sym (clist₂-potential-suc (length l) c c-quad)) ⟩
-    --           CHARGE {A = F _}
-    --             (clist₂-potential c c-quad (length (x ∷ l))) .U
-    --             (ret (x ∷ l))
-    --         ≡⟨ sym bind'/β ⟩
-    --           costᶜ-at c .U (ret (x ∷ l))
-    --         ∎
-
-    --       go◦-cons : ∀ c x (e : U (F (List X))) →
-    --         go◦ c .U (η◦ᶜ {A = F _} .U (F.map (x ∷_) .U e))
-    --         ≡ open-econs c x .U (go◦ (c-quad +ℂ c) .U (η◦ᶜ {A = F _} .U e))
-    --       go◦-cons c x e =
-    --           go◦ c .U (η◦ᶜ {A = F _} .U (F.map (x ∷_) .U e))
-    --         ≡⟨ refl ⟩
-    --           bind' (λ l → fold◦ l c) .U (F.map (x ∷_) .U e)
-    --         ≡⟨ bind'-assoc _ _ _ ⟩
-    --           bind' (λ l →
-    --             bind' (λ l → fold◦ l c) .U (ret (x ∷ l)))
-    --           .U e
-    --         ≡⟨ cong (λ h → bind' {A = ◯ᶜ (A c)} h .U e) (funExt λ l → bind'/β) ⟩
-    --           bind' (λ l →
-    --             open-econs c x .U (fold◦ l (c-quad +ℂ c)))
-    --           .U e
-    --         ≡⟨ sym (bind'-map (open-econs c x) _ _) ⟩
-    --           open-econs c x .U (bind' (λ l → fold◦ l (c-quad +ℂ c)) .U e)
-    --         ≡⟨ refl ⟩
-    --           open-econs c x .U (go◦ (c-quad +ℂ c) .U (η◦ᶜ {A = F _} .U e))
-    --         ∎
-
-    --       open-cons-charge : ∀ c x l →
-    --         ◯.map (e-cons c x .U)
-    --           (transport (cong U (sym (▷-◯ᶜ c (A (c-quad +ℂ c)))))
-    --             (CHARGE {A = ◯ᶜ (A (c-quad +ℂ c))} c .U
-    --               ((costᶜ-at (c-quad +ℂ c) ⨾ᶜ η◦ᶜ ⨾ᶜ go◦ (c-quad +ℂ c)) .U (ret l))))
-    --         ≡ (costᶜ-at c ⨾ᶜ η◦ᶜ ⨾ᶜ go◦ c) .U (ret (x ∷ l))
-    --       open-cons-charge c x l =
-    --         let
-    --           e = costᶜ-at (c-quad +ℂ c) .U (ret l)
-    --           s = go◦ (c-quad +ℂ c) .U (η◦ᶜ {A = F _} .U e)
-    --         in
-    --           open-econs c x .U (CHARGE {A = ◯ᶜ (A (c-quad +ℂ c))} c .U s)
-    --         ≡⟨ cong ((_$ s) ∘ U) (CHARGE-commute c (open-econs c x)) ⟩
-    --           CHARGE {A = ◯ᶜ (A c)} c .U (open-econs c x .U s)
-    --         ≡⟨ cong (CHARGE {A = ◯ᶜ (A c)} c .U)
-    --               (sym (go◦-cons c x e)) ⟩
-    --           CHARGE {A = ◯ᶜ (A c)} c .U
-    --             (go◦ c .U (η◦ᶜ {A = F _} .U (F.map (x ∷_) .U e)))
-    --         ≡⟨ sym (cong ((_$ η◦ᶜ {A = F _} .U (F.map (x ∷_) .U e)) ∘ U)
-    --               (CHARGE-commute c (go◦ c))) ⟩
-    --           go◦ c .U
-    --             (η◦ᶜ {A = F _} .U
-    --               (CHARGE {A = F _} c .U (F.map (x ∷_) .U e)))
-    --         ≡⟨ cong (λ e → go◦ c .U (η◦ᶜ {A = F _} .U e)) (cost-cons c x l) ⟩
-    --           go◦ c .U (η◦ᶜ {A = F _} .U (costᶜ-at c .U (ret (x ∷ l))))
-    --         ∎
-
-    --       fold•-coherence : ∀ c l →
-    --         (fold•ᶜ c ⨾ᶜ ●ᶜ.map η◦ᶜ) .U (ret l)
-    --         ≡ (costᶜ-at c ⨾ᶜ η◦ᶜ ⨾ᶜ go◦ c ⨾ᶜ η•ᶜ) .U (ret l)
-    --       fold•-coherence c [] =
-    --           (fold•ᶜ c ⨾ᶜ ●ᶜ.map η◦ᶜ) .U (ret [])
-    --         ≡⟨ cong (●.map (η◦ᶜ {A = A c} .U)) bind'/β ⟩
-    --           η•ᶜ {A = ◯ᶜ (A c)} .U (η◦ᶜ {A = A c} .U (e-nil c))
-    --         ≡⟨ cong (η•ᶜ {A = ◯ᶜ (A c)} .U) (sym bind'/β) ⟩
-    --           η•ᶜ {A = ◯ᶜ (A c)} .U
-    --             (bind' (λ l → fold◦ l c) .U (ret []))
-    --         ≡⟨ refl ⟩
-    --           η•ᶜ {A = ◯ᶜ (A c)} .U
-    --             (go◦ c .U (η◦ᶜ {A = F _} .U (ret [])))
-    --         ≡⟨ cong
-    --               (λ e → η•ᶜ {A = ◯ᶜ (A c)} .U
-    --                 (go◦ c .U (η◦ᶜ {A = F _} .U e)))
-    --               (sym (cost-nil c)) ⟩
-    --           η•ᶜ {A = ◯ᶜ (A c)} .U
-    --             (go◦ c .U (η◦ᶜ {A = F _} .U
-    --               (costᶜ-at c .U (ret []))))
-    --         ≡⟨ refl ⟩
-    --           (costᶜ-at c ⨾ᶜ η◦ᶜ ⨾ᶜ go◦ c ⨾ᶜ η•ᶜ) .U (ret [])
-    --         ∎
-    --       fold•-coherence c (x ∷ l) =
-    --           (fold•ᶜ c ⨾ᶜ ●ᶜ.map η◦ᶜ) .U (ret (x ∷ l))
-    --         ≡⟨ cong (●.map (η◦ᶜ {A = A c} .U)) bind'/β ⟩
-    --           ●.map (η◦ᶜ {A = A c} .U)
-    --             (●.map (e-cons c x .U)
-    --               (transport (cong U (sym (▷-●ᶜ c (A (c-quad +ℂ c)))))
-    --                 (fold• l (c-quad +ℂ c))))
-    --         ≡⟨ cong
-    --             (λ q → ●.map (η◦ᶜ {A = A c} .U)
-    --               (●.map (e-cons c x .U)
-    --                 (transport (cong U (sym (▷-●ᶜ c (A (c-quad +ℂ c))))) q)))
-    --             (sym bind'/β) ⟩
-    --           ●.map (η◦ᶜ {A = A c} .U)
-    --             (●.map (e-cons c x .U)
-    --               (transport (cong U (sym (▷-●ᶜ c (A (c-quad +ℂ c)))))
-    --                 (fold•ᶜ (c-quad +ℂ c) .U (ret l))))
-    --         ≡⟨ (
-    --           let
-    --               q▷• =
-    --                 transport
-    --                   (cong U (sym (▷-●ᶜ c (A (c-quad +ℂ c)))))
-    --                   (fold•ᶜ (c-quad +ℂ c) .U (ret l))
-    --               q▷◦ =
-    --                 transport
-    --                   (cong U (sym (▷-◯ᶜ c (A (c-quad +ℂ c)))))
-    --                   (CHARGE {A = ◯ᶜ (A (c-quad +ℂ c))} c .U
-    --                     ((costᶜ-at (c-quad +ℂ c) ⨾ᶜ η◦ᶜ ⨾ᶜ go◦ (c-quad +ℂ c)) .U (ret l)))
-    --               tr▷◦ =
-    --                 transport
-    --                   (cong (λ C → U (●ᶜ C)) (sym (▷-◯ᶜ c (A (c-quad +ℂ c)))))
-
-    --               q▷-coh : ●ᶜ.map (η◦ᶜ {A = ▷[ c ] (A (c-quad +ℂ c))}) .U q▷• ≡ η• q▷◦
-    --               q▷-coh =
-    --                   ●ᶜ.map (η◦ᶜ {A = ▷[ c ] (A (c-quad +ℂ c))}) .U q▷•
-    --                 ≡⟨ ? ⟩  -- transport-▷ c (A (c-quad +ℂ c)) (fold•ᶜ (c-quad +ℂ c) .U (ret l)) ⟩
-    --                   tr▷◦
-    --                     ((▷-FRAC c (A (c-quad +ℂ c)) .𝒞-FRACTURE.α•) .U
-    --                       (fold•ᶜ (c-quad +ℂ c) .U (ret l)))
-    --                 ≡⟨ cong tr▷◦
-    --                     (sym (●.map-∘
-    --                       (η◦ᶜ {A = A (c-quad +ℂ c)} .U)
-    --                       (◯ᶜ (A (c-quad +ℂ c)) .charge c)
-    --                       (fold•ᶜ (c-quad +ℂ c) .U (ret l)))) ⟩
-    --                   tr▷◦
-    --                     (●.map (CHARGE {A = ◯ᶜ (A (c-quad +ℂ c))} c .U)
-    --                       ((fold•ᶜ (c-quad +ℂ c) ⨾ᶜ ●ᶜ.map η◦ᶜ) .U (ret l)))
-    --                 ≡⟨ cong tr▷◦
-    --                     (cong (●.map (CHARGE {A = ◯ᶜ (A (c-quad +ℂ c))} c .U))
-    --                       (fold•-coherence (c-quad +ℂ c) l)) ⟩
-    --                   η• q▷◦
-    --                 ∎
-    --             in
-    --             fracture-map-coh (e-cons c x) q▷• q▷◦ q▷-coh
-    --         ) ⟩
-    --           η•ᶜ {A = ◯ᶜ (A c)} .U
-    --             (◯.map (e-cons c x .U)
-    --               (transport (cong U (sym (▷-◯ᶜ c (A (c-quad +ℂ c)))))
-    --                 (CHARGE {A = ◯ᶜ (A (c-quad +ℂ c))} c .U
-    --                   ((costᶜ-at (c-quad +ℂ c) ⨾ᶜ η◦ᶜ ⨾ᶜ go◦ (c-quad +ℂ c)) .U (ret l)))))
-    --         ≡⟨ cong (η•ᶜ {A = ◯ᶜ (A c)} .U) (open-cons-charge c x l) ⟩
-    --           (costᶜ-at c ⨾ᶜ η◦ᶜ ⨾ᶜ go◦ c ⨾ᶜ η•ᶜ) .U (ret (x ∷ l))
-    --         ∎
+    -- CList₂'≡CList₂'' : CList₂'' ≡ CList₂'
+    -- CList₂'≡CList₂'' = {!   !}

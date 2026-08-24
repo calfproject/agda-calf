@@ -19,6 +19,24 @@ syntax Σᶜ X (λ x → A) = [ x ∈ X ] ⋊ A
 _⋊_ : 𝒱ₛ → 𝒞 → 𝒞
 X ⋊ A = [ _ ∈ X ] ⋊ A
 
+[X⋊A]⊸B≡X→A⊸B : ∀ {X : 𝒱ₛ} {A : (⟨ X ⟩ → 𝒞)} {B : 𝒞} → (Σᶜ X A ⊸ B) ≡ ((x : ⟨ X ⟩) → A x ⊸ B)
+[X⋊A]⊸B≡X→A⊸B {X} {A} {B} = isoToPath (iso fwd bwd (λ _ → refl) (λ _ → refl))
+  where
+    fwd : (Σᶜ X A ⊸ B) → ((x : ⟨ X ⟩) → A x ⊸ B)
+    fwd h x .U a = h .U (x , a)
+    fwd h x .charge c a = h .charge c (x , a)
+
+    bwd : ((x : ⟨ X ⟩) → A x ⊸ B) → (Σᶜ X A ⊸ B)
+    bwd h .U (x , a) = h x .U a
+    bwd h .charge c (x , a) = h x .charge c a
+
+⋊-pairᶜ : ∀ {X : 𝒱ₛ} {A : (⟨ X ⟩ → 𝒞)} → (x : ⟨ X ⟩) → (A x ⊸ Σᶜ X A)
+⋊-pairᶜ {X} = transport ([X⋊A]⊸B≡X→A⊸B {X}) idᶜ
+
+⋊-splitᶜ : ∀ {X : 𝒱ₛ} {A : (⟨ X ⟩ → 𝒞)} {B : 𝒞} → ((x : ⟨ X ⟩) → A x ⊸ B) → (Σᶜ X A ⊸ B)
+⋊-splitᶜ {X} h = transport (sym ([X⋊A]⊸B≡X→A⊸B {X})) h
+
+
 Σᶜ-map : ∀ {X A B} → ((x : ⟨ X ⟩) → A x ⊸ B x) → Σᶜ X A ⊸ Σᶜ X B
 Σᶜ-map f .U (x , a) = x , f x .U a
 Σᶜ-map f .charge c (x , a) = cong (x ,_) (f x .charge c a)
@@ -34,3 +52,8 @@ X ⋊ A = [ _ ∈ X ] ⋊ A
   Σᶜ-map {X = X} f ⨾ᶜ Σᶜ-map {X = X} g ≡
   Σᶜ-map {X = X} (λ x → f x ⨾ᶜ g x)
 Σᶜ-map-⨾ᶜ f g = ⊸-path refl refl refl
+
+open import Calf.Computation.Tensor.Base
+
+A⊗[X⋊B]≡X⋊[A⊗B] : ∀ {X : 𝒱ₛ} {A : 𝒞} {B : (⟨ X ⟩ → 𝒞)} → (A ⊗ Σᶜ X B) ≡ (Σᶜ X λ x → A ⊗ B x)
+A⊗[X⋊B]≡X⋊[A⊗B] = {!   !}

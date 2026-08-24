@@ -23,7 +23,7 @@ open import Calf.Computation.Tensor.Closed
 open 𝒞-FRACTURE
 
 opaque
-  unfolding ▷[_]_ triangle-Uᶜ
+  unfolding _⊗_ map₂ ⊗-rec ▷[_]_ triangle-Uᶜ
 
   A⊗▷B≡▷[A⊗B] : ∀ c → (A ⊗ (▷[ c ] B)) ≡ (▷[ c ] (A ⊗ B))
   A⊗▷B≡▷[A⊗B] {A} {B} c =
@@ -75,3 +75,9 @@ opaque
         Abstractionᶜ-FRAC (A ⊗ B) (A ⊗ B) (CHARGE c) ≡
         𝒞-Fracture (A ⊗ (▷[ c ] B))
       fracture-proof = 𝒞-FRACTURE-pathᶜ q• q◦ qα
+
+▷A⊗B≡▷[A⊗B] : ∀ c → ((▷[ c ] A) ⊗ B) ≡ (▷[ c ] (A ⊗ B))
+▷A⊗B≡▷[A⊗B] {A} {B} c = ⊗-comm ∙ A⊗▷B≡▷[A⊗B] c ∙ cong (▷[ c ]_) ⊗-comm
+
+▷A⊗▷B≡▷[A⊗B] : ∀ c₁ c₂ → ((▷[ c₁ ] A) ⊗ (▷[ c₂ ] B)) ≡ (▷[ c₁ +ℂ c₂ ] (A ⊗ B))
+▷A⊗▷B≡▷[A⊗B] {A} {B} c₁ c₂ = (▷A⊗B≡▷[A⊗B] c₁) ∙ cong (▷[ c₁ ]_) (A⊗▷B≡▷[A⊗B] c₂) ∙ sym ▷/+

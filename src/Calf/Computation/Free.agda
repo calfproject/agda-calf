@@ -42,9 +42,6 @@ opaque
 
   syntax bind {A = A} e (λ x → k) = bind[ A ] x ← e ⨾ k
 
-  variable
-    Δ : 𝒞
-
   bind' : (X → U A) → (F X ⊸ A)
   bind' {A = A} k .U (c , x) = rec (A .is-set) (A .charge c ∘ k) x
   bind' {A = A} _ .charge _ (c , x) =
@@ -103,7 +100,7 @@ opaque
       (f : A ⊸ B)
     → (h : X → U A)
     → (e : U (F X))
-    → f .U (bind' {A = A} h .U e) 
+    → f .U (bind' {A = A} h .U e)
       ≡ bind' {A = B} (λ x → f .U (h x)) .U e
   bind'-map {A = A} {B = B} f h (c , x) =
     elim
@@ -129,10 +126,12 @@ F-adjoint = bind' , bind'-isEquiv
 ret' : (F X ⊸ A) → (X → U A)
 ret' e x = e .U (ret x)
 
+private variable Δ : 𝒞
+
 bindᶜ : (Δ ⊸ F X) → (X → U A) → (Δ ⊸ A)
 bindᶜ e k = e ⨾ᶜ bind' k
 
--- syntax bindᶜ e (λ x → k) = bind x ← e ⨾ k
+syntax bindᶜ e (λ x → k) = bind x ← e ⨾ k
 
 map : (X → Y) → (F X ⊸ F Y)
 map f = bind' (ret ∘ f)

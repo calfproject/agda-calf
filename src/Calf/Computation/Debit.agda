@@ -22,7 +22,7 @@ opaque
       (A ⊸ (◁[ c ] B))
     ≡⟨ refl ⟩
       (A ⊸ (▷[ c ] ⊤ ⊸ᶜ B))
-    ≡⟨ sym lolli-currying ⟩
+    ≡⟨ sym ⊸-currying ⟩
       ((A ⊗ (▷[ c ] ⊤)) ⊸ B)
     ≡⟨ cong (_⊸ B) (A⊗▷B≡▷[A⊗B] _) ⟩
       (▷[ c ] (A ⊗ ⊤) ⊸ B)
