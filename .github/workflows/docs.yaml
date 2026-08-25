@@ -1,0 +1,289 @@
+name: Publish versioned documentation
+
+on:
+  push:
+    branches:
+      - main
+  release:
+    types:
+      - published
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release tag to publish, such as v2.0.0
+        required: true
+
+permissions:
+  contents: read
+
+# Every run updates the same versioned site, so serialize complete runs.
+concurrency:
+  group: calf-github-pages
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: Select documentation versions
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      matrix: ${{ steps.versions.outputs.matrix }}
+
+    steps:
+      - name: Check out documentation configuration
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          path: workflow-config
+
+      - name: Select versions to build
+        id: versions
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          REQUESTED_VERSION: ${{ inputs.version }}
+        run: |
+          manifest="$GITHUB_WORKSPACE/workflow-config/.github/docs-toolchains.json"
+
+          case "$EVENT_NAME" in
+            push)
+              targets='["current"]'
+              ;;
+            release)
+              if [[ ! "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+                echo "Expected a semantic-version release tag, got: $RELEASE_TAG" >&2
+                exit 1
+              fi
+              targets=$(jq --compact-output --null-input \
+                --arg release "$RELEASE_TAG" \
+                '[$release]')
+              ;;
+            workflow_dispatch)
+              if [[ ! "$REQUESTED_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+                echo "Expected a semantic-version release tag, got: $REQUESTED_VERSION" >&2
+                exit 1
+              fi
+              targets=$(jq --compact-output --null-input \
+                --arg release "$REQUESTED_VERSION" \
+                '[$release]')
+              ;;
+            *)
+              echo "Unsupported event: $EVENT_NAME" >&2
+              exit 1
+              ;;
+          esac
+
+          matrix=$(jq --compact-output \
+            --argjson targets "$targets" '
+              . as $toolchains
+              | ([$targets[] | select($toolchains[.] == null)] | first) as $missing
+              | if $missing != null then
+                  error("No toolchain configured for " + $missing)
+                else
+                  {include: [
+                    $targets[] as $target
+                    | {target: $target} + $toolchains[$target]
+                  ]}
+                end
+            ' "$manifest")
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build documentation (${{ matrix.target }})
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+
+    steps:
+      - name: Select source
+        id: version
+        shell: bash
+        env:
+          MATRIX_TARGET: ${{ matrix.target }}
+        run: |
+          if [[ "$MATRIX_TARGET" == current ]]; then
+            source_ref="$GITHUB_SHA"
+          else
+            source_ref="$MATRIX_TARGET"
+          fi
+
+          echo "source_ref=$source_ref" >> "$GITHUB_OUTPUT"
+
+      - name: Check out Calf
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ steps.version.outputs.source_ref }}
+          path: calf
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            cores = 4
+            max-jobs = 1
+
+      - name: Install the matching Agda from Nixpkgs
+        run: |
+          nix profile add \
+            "github:NixOS/nixpkgs/${{ matrix.nixpkgs_ref }}#agda"
+          "$HOME/.nix-profile/bin/agda" --version
+          echo "$HOME/.nix-profile/bin" >> "$GITHUB_PATH"
+
+      - name: Check out the matching Agda library
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ matrix.dependency_repository }}
+          ref: ${{ matrix.dependency_ref }}
+          path: dependency
+
+      - name: Restore dependency interface cache
+        uses: actions/cache@v4
+        with:
+          path: dependency/_build
+          key: docs-dependency-${{ runner.os }}-${{ runner.arch }}-agda-${{ matrix.agda_version }}-${{ matrix.dependency_ref }}
+
+      - name: Register the Agda library
+        shell: bash
+        run: |
+          printf '%s\n' \
+            "$GITHUB_WORKSPACE/dependency/${{ matrix.dependency_library }}" \
+            > "$GITHUB_WORKSPACE/libraries"
+
+      - name: Generate a complete index when the release has none
+        working-directory: calf
+        shell: bash
+        run: |
+          if [[ ! -f src/index.agda ]]; then
+            printf 'module index where\n\n' > src/index.agda
+            find src -type f -name '*.agda' ! -path 'src/index.agda' -print \
+              | sed -e 's#^src/##' -e 's#\.agda$##' -e 's#/#.#g' \
+              | LC_ALL=C sort \
+              | sed 's/^/import /' >> src/index.agda
+          fi
+
+      - name: Build HTML
+        working-directory: calf
+        run: |
+          agda \
+            --library-file="$GITHUB_WORKSPACE/libraries" \
+            --html \
+            --html-dir=docs \
+            src/index.agda
+          rm -f docs/Agda.css
+          cp Agda.css docs/Agda.css
+
+      - name: Upload generated documentation
+        uses: actions/upload-artifact@v4
+        with:
+          name: calf-documentation-${{ matrix.target }}
+          path: calf/docs
+
+  publish:
+    name: Save complete versioned site
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+
+    steps:
+      - name: Check out the published site
+        uses: actions/checkout@v6
+        with:
+          ref: gh-pages
+          path: site
+
+      - name: Download generated documentation
+        uses: actions/download-artifact@v4
+        with:
+          pattern: calf-documentation-*
+          path: built-docs
+          merge-multiple: false
+
+      - name: Add the generated versions to the site
+        shell: bash
+        run: |
+          mapfile -t artifacts < <(
+            find built-docs -mindepth 1 -maxdepth 1 -type d \
+              -name 'calf-documentation-*' \
+              -print \
+              | LC_ALL=C sort -V
+          )
+          if (( ${#artifacts[@]} == 0 )); then
+            echo 'No documentation artifacts were downloaded.' >&2
+            exit 1
+          fi
+
+          for artifact in "${artifacts[@]}"; do
+            artifact_name="${artifact##*/}"
+            target="${artifact_name#calf-documentation-}"
+            if [[ "$target" == current ]]; then
+              destination=current
+            elif [[ "$target" =~ ^v([0-9]+)\.([0-9]+)\.[0-9]+$ ]]; then
+              destination="v${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
+            elif [[ "$target" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-[0-9A-Za-z.-]+$ ]]; then
+              destination="$target"
+            else
+              echo "Unsafe documentation target: $target" >&2
+              exit 1
+            fi
+
+            rm -rf "site/$destination"
+            mkdir -p "site/$destination"
+            cp -a "$artifact/." "site/$destination/"
+          done
+
+          # The previous site lived at the root. Versioned docs are directories,
+          # so remove only those old root-level generated files.
+          find site -maxdepth 1 -type f \
+            ! -name CNAME \
+            ! -name .nojekyll \
+            -delete
+          touch site/.nojekyll
+
+          {
+            printf '%s\n' \
+              '<!doctype html>' \
+              '<html lang="en">' \
+              '<head>' \
+              '  <meta charset="utf-8">' \
+              '  <meta name="viewport" content="width=device-width, initial-scale=1">' \
+              '  <title>Calf documentation</title>' \
+              '</head>' \
+              '<body>' \
+              '  <h1>Calf documentation</h1>' \
+              '  <ul>'
+
+            find site -mindepth 1 -maxdepth 1 -type d \
+              \( -name current -o -name 'v*' \) \
+              -printf '%f\n' \
+              | LC_ALL=C sort -V \
+              | while IFS= read -r version; do
+                  printf '    <li><a href="./%s/">%s</a></li>\n' "$version" "$version"
+                done
+
+            printf '%s\n' \
+              '  </ul>' \
+              '</body>' \
+              '</html>'
+          } > site/index.html
+
+      - name: Save the complete site on gh-pages
+        shell: bash
+        run: |
+          git -C site config user.name github-actions[bot]
+          git -C site config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git -C site add -A
+          if git -C site diff --cached --quiet; then
+            echo 'The versioned documentation is already up to date.'
+          else
+            git -C site commit -m 'Deploy versioned Calf documentation'
+            git -C site push origin HEAD:gh-pages
+          fi

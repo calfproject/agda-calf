@@ -25,9 +25,12 @@ isSetList {X} isSetX = subst isSet (ua ΣVec≃List) (isSetΣ isSetℕ isSetVec)
     isSetVec zero = isSetUnit
     isSetVec (suc n) = isSet× isSetX (isSetVec n)
 
+    fwd′ : (n : ℕ) → Vec n → List X
+    fwd′ zero tt = []
+    fwd′ (suc n) (x , xs) = x ∷ fwd′ n xs
+
     fwd : Σ ℕ Vec → List X
-    fwd (zero , tt) = []
-    fwd (suc n , x , xs) = x ∷ fwd (n , xs)
+    fwd (n , xs) = fwd′ n xs
 
     bwd : List X → Σ ℕ Vec
     bwd [] = 0 , tt
@@ -37,10 +40,13 @@ isSetList {X} isSetX = subst isSet (ua ΣVec≃List) (isSetΣ isSetℕ isSetVec)
     fwd-bwd [] = refl
     fwd-bwd (x ∷ l) = cong (x ∷_) (fwd-bwd l)
 
+    bwd-fwd′ : (n : ℕ) (v : Vec n) → bwd (fwd′ n v) ≡ (n , v)
+    bwd-fwd′ zero tt = refl
+    bwd-fwd′ (suc n) (x , v) i =
+      suc (bwd-fwd′ n v i .fst) , x , bwd-fwd′ n v i .snd
+
     bwd-fwd : retract fwd bwd
-    bwd-fwd (zero , tt) = refl
-    bwd-fwd (suc n , x , v) i .fst = suc (bwd-fwd (n , v) i .fst)
-    bwd-fwd (suc n , x , v) i .snd = x , bwd-fwd (n , v) i .snd
+    bwd-fwd (n , v) = bwd-fwd′ n v
 
     ΣVec≃List : Σ ℕ Vec ≃ List X
     ΣVec≃List .fst = fwd

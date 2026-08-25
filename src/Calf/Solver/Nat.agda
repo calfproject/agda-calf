@@ -2,6 +2,7 @@
 module Calf.Solver.Nat where
 
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Function using (case_of_)
 open import Cubical.Data.Bool using (Bool; true; false; if_then_else_; _and_)
 open import Cubical.Data.Maybe using (Maybe; just; nothing)
 open import Cubical.Data.List using (_++_)
@@ -19,10 +20,16 @@ open import Cubical.Tactics.NatSolver.Solver using (module EqualityToNormalform)
 
 open import Agda.Builtin.List using (List; []; _∷_)
 open import Agda.Builtin.Nat using () renaming (_==_ to _=ℕ_)
-open import Agda.Builtin.Reflection hiding (Type)
+open import Agda.Builtin.Reflection using
+  ( Name; Term; Arg; Literal; TC
+  ; var; con; def; lit; meta
+  ; nat; name
+  ; primQNameEquality; primMetaEquality
+  ; normalise; returnTC; typeError; strErr; termErr
+  ; inferType; checkType; unify
+  )
 open import Agda.Builtin.String using (String)
 open import Agda.Builtin.Unit using (⊤)
-open import Function using (case_of_)
 
 open EqualityToNormalform renaming (solve to natSolve)
 open import Calf.Solver.Nat.Arithmetic public
@@ -59,7 +66,7 @@ private
 
   visibleTerms : List (Arg Term) → List Term
   visibleTerms [] = []
-  visibleTerms (arg (arg-info visible _) t ∷ args) = t ∷ visibleTerms args
+  visibleTerms (varg t ∷ args) = t ∷ visibleTerms args
   visibleTerms (_ ∷ args) = visibleTerms args
 
   visible2 : List (Arg Term) → Maybe (Term × Term)
@@ -128,14 +135,14 @@ private
 
     argListShapeEq : List (Arg Term) → List (Arg Term) → Bool
     argListShapeEq [] [] = true
-    argListShapeEq [] (arg (arg-info visible _) _ ∷ _) = false
+    argListShapeEq [] (varg _ ∷ _) = false
     argListShapeEq [] (_ ∷ args′) = argListShapeEq [] args′
-    argListShapeEq (arg (arg-info visible _) _ ∷ _) [] = false
+    argListShapeEq (varg _ ∷ _) [] = false
     argListShapeEq (_ ∷ args) [] = argListShapeEq args []
-    argListShapeEq (arg (arg-info visible _) t ∷ args)
-                   (arg (arg-info visible _) u ∷ args′) =
+    argListShapeEq (varg t ∷ args)
+                   (varg u ∷ args′) =
       termShapeEq t u and argListShapeEq args args′
-    argListShapeEq (a@(arg (arg-info visible _) _) ∷ args) (_ ∷ args′) =
+    argListShapeEq (a@(varg _) ∷ args) (_ ∷ args′) =
       argListShapeEq (a ∷ args) args′
     argListShapeEq (_ ∷ args) args′ = argListShapeEq args args′
 

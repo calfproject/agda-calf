@@ -1,0 +1,30 @@
+{
+  "current": {
+    "agda_version": "2.8.0",
+    "nixpkgs_ref": "d351d0653aeb7877273920cd3e823994e7579b0b",
+    "dependency_repository": "agda/cubical",
+    "dependency_ref": "b150186d2544e7efeddd31e5d14a8b9ecbb100f7",
+    "dependency_library": "cubical.agda-lib"
+  },
+  "v1.0.0": {
+    "agda_version": "2.6.2.2",
+    "nixpkgs_ref": "ea4c80b39be4c09702b0cb3b42eab59e2ba4f24b",
+    "dependency_repository": "agda/agda-stdlib",
+    "dependency_ref": "v1.7",
+    "dependency_library": "standard-library.agda-lib"
+  },
+  "v1.1.0": {
+    "agda_version": "2.6.3",
+    "nixpkgs_ref": "70bdadeb94ffc8806c0570eb5c2695ad29f0e421",
+    "dependency_repository": "agda/agda-stdlib",
+    "dependency_ref": "fc473ec905ab1a11a16718a7e8b628f1ab7eb435",
+    "dependency_library": "standard-library.agda-lib"
+  },
+  "v2.0.0": {
+    "agda_version": "2.6.3",
+    "nixpkgs_ref": "70bdadeb94ffc8806c0570eb5c2695ad29f0e421",
+    "dependency_repository": "agda/agda-stdlib",
+    "dependency_ref": "fc473ec905ab1a11a16718a7e8b628f1ab7eb435",
+    "dependency_library": "standard-library.agda-lib"
+  }
+}

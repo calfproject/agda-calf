@@ -13,7 +13,7 @@ open import Calf.Computation.Product
 open import Calf.Giralf
 
 open import Cubical.Data.Nat
-open import Cubical.Data.Nat.Order using (_≤_)
+open import Cubical.Data.Nat.Order using (_≤_; ≤Dec)
 open import Cubical.Data.Vec
 open import Calf.Computation
 
@@ -21,7 +21,6 @@ open import Calf.Solver.Nat using (solveNat0; solveNat)
 
 open import Cubical.Data.Bool hiding (_≤_)
 import Cubical.Data.Nat.Properties as Nat
-open import Cubical.Data.Nat.Order
 open import Cubical.Relation.Nullary
 
 arithmetic-0 : ∀ {l1 q2 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ l1
