@@ -40,11 +40,11 @@ open 𝒞-FRACTURE
 𝒞-Fracture A .α• = ●ᶜ.map η◦ᶜ
 
 proj•ᶜ : (F : 𝒞-FRACTURE) → 𝒞-Glue F ⊸ ⟨ F .A• ⟩ᶜ
-proj•ᶜ F .U g = • g
+proj•ᶜ F .U = •
 proj•ᶜ F .charge c g = refl
 
 proj◦ᶜ : (F : 𝒞-FRACTURE) → 𝒞-Glue F ⊸ ⟨ F .A◦ ⟩ᶜ
-proj◦ᶜ F .U g = ◦ g
+proj◦ᶜ F .U = ◦
 proj◦ᶜ F .charge c g = refl
 
 𝒞-FRACTURE-path

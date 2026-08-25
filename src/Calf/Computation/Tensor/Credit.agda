@@ -71,7 +71,9 @@ opaque
                         (funExt λ abs →
                           cong ηᴾ (law c a b)
                           ◁ congP (λ _ q → ηᴾ (inj a q))
-                              (symP (◯[triangleᶜ'≡b-abs] {b-⊤ = b} {b-abs = B .charge c b} {b-coh = refl} abs))))))
+                              (symP (◯[triangleᶜ'≡b-abs]
+                                {B-⊤ = B} {B-abs = B} {β = CHARGE c}
+                                {b-⊤ = b} {b-abs = B .charge c b} {b-coh = refl} abs))))))
                   w))
               (λ abs → λ i → ●.∗ abs)))
 
