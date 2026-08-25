@@ -13,13 +13,13 @@ open import Calf.Value.Closed
 open import Calf.Value.Open
 open import Calf.Value.Glue
 
-Glueᵈ : (X• : 𝒱•) (X◦ : 𝒱◦) (χ• : ⟨ X• ⟩ → ● ⟨ X◦ ⟩) → 𝒱
-Glueᵈ X• X◦ χ• = Σ[ (x• , x◦) ∈ ⟨ X• ⟩ × ⟨ X◦ ⟩ ] χ• x• ⊑ η• x◦
+Glueᵈ : (X• X◦ : 𝒱) (χ• : X• → ● X◦) → 𝒱
+Glueᵈ X• X◦ χ• = Σ[ (x• , x◦) ∈ X• × X◦ ] χ• x• ⊑ η• x◦
 
 opaque
   isPreorderGlueᵈ : ∀ {X• X◦ χ•}
-    → isPreorder ⟨ X• ⟩
-    → isPreorder ⟨ X◦ ⟩
+    → isPreorder X•
+    → isPreorder X◦
     → isPreorder (Glueᵈ X• X◦ χ•)
   isPreorderGlueᵈ isPreorderX• isPreorderX◦ =
     isLocalComma isPreorderX• isPreorderX◦ (isPreorder● isPreorderX◦)
@@ -27,7 +27,7 @@ opaque
 open 𝒱-FRACTURE
 
 𝒱-Glueᵈ : 𝒱-FRACTURE → 𝒱
-𝒱-Glueᵈ F = Glueᵈ (F .X•) (F .X◦) (F .χ•)
+𝒱-Glueᵈ F = Glueᵈ ⟨ F .X• ⟩ ⟨ F .X◦ ⟩ (F .χ•)
 
 Seal : 𝒱 → 𝒱
 Seal = 𝒱-Glueᵈ ∘ 𝒱-Fracture
@@ -35,7 +35,7 @@ Seal = 𝒱-Glueᵈ ∘ 𝒱-Fracture
 opaque
   isPreorderSeal : isPreorder X → isPreorder (Seal X)
   isPreorderSeal {X} isPreorderX =
-    isPreorderGlueᵈ {●• X} {◯◦ X} (isPreorder● isPreorderX) (isPreorder◯ isPreorderX)
+    isPreorderGlueᵈ {● X} {◯ X} (isPreorder● isPreorderX) (isPreorder◯ isPreorderX)
 
 -- squareᶜ'≤ : ∀ {A-⊤ A-abs α B-⊤ B-abs β} (f-⊤ : A-⊤ ⊸ B-⊤) (f-abs : A-abs ⊸ B-abs)
 --   → ((a-⊤ : cmp A-⊤) → U β (U f-⊤ a-⊤) ⊑[ U B-abs ] U f-abs (U α a-⊤))

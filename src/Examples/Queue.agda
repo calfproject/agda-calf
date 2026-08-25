@@ -79,8 +79,8 @@ open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Univalence using (ua→; ua-gluePath)
 open import Calf.Value.Open as ◯
 open import Calf.Value.Closed as ●
-open import Calf.Value.Glue
-open import Calf.Value.Abstraction using (square')
+open import Calf.Value.Glue hiding (square)
+open import Calf.Value.Abstraction using (square)
 open import Calf.Computation.Open as ◯ᶜ
 open import Calf.Computation.Closed as ●ᶜ hiding (law)
 open import Calf.Computation.Abstraction
@@ -283,7 +283,7 @@ module Dequeue where
 
     dequeue'-fst-glue : U BLQ → FractureGlue ℕ
     dequeue'-fst-glue =
-      square'
+      square
         (λ bq → fst (dequeueᴮ .U bq))
         (λ lq → fst (dequeueᴸ .U lq))
         (λ q → cong fst (dequeue-coherent q))
@@ -310,8 +310,8 @@ module Dequeue where
       → dequeue'-fst-glue (BLQ .charge c q) ≡ dequeue'-fst-glue q
     dequeue'-fst-glue-charge c q =
       Glue-path (isSet◯ isSetℕ)
-        (dequeueᴮ-fst-●-charge c (q .•))
-        (dequeueᴸ-fst-◯-charge c (q .◦))
+        (dequeueᴮ-fst-●-charge c (• q))
+        (dequeueᴸ-fst-◯-charge c (◦ q))
 
     open import Cubical.Data.Sigma using (ΣPathP)
 
@@ -378,7 +378,7 @@ batched-queue .spec abs i .dequeue =
           ≡ dequeueᴸ .U (◯[Abstractionᶜ≃A-abs] {BQ} {LQ} {α} abs .fst .U q) .fst
       dequeue'-fst≡dequeueᴸ-fst q =
         cong
-          (λ g → g .◦ abs)
+          (λ g → ◦ g abs)
           (secIsEq fracture-isEquiv (Dequeue.dequeue'-fst-glue q))
 
       dequeue'-point≡dequeueᴸ

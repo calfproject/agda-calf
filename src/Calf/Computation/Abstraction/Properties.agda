@@ -82,7 +82,8 @@ opaque
     : ∀ {A-⊤ A-abs α}
     → ⟨ ABS ⟩
     → Abstractionᶜ A-⊤ A-abs α ≃ᶜ A-abs
-  ◯[Abstractionᶜ≃A-abs] abs = ◯[Glueᶜ≃A◦] abs ∙ₑᶜ ABS-◯ᶜA≃A abs
+  ◯[Abstractionᶜ≃A-abs] {A-⊤} {A-abs} {α} abs =
+    ◯[Glueᶜ≃A◦] (Abstractionᶜ-FRAC A-⊤ A-abs α) abs ∙ₑᶜ ABS-◯ᶜA≃A abs
 
 opaque
   unfolding Abstractionᶜ squareᶜ' triangleᶜ' ◯[Abstractionᶜ≃A-abs]
@@ -154,8 +155,8 @@ opaque
   squareᶜ'-⨾ᶜ {C-⊤ = C-⊤} {C-abs} {γ} f-⊤ f-abs fc g-⊤ g-abs gc =
     ⊸-path refl refl $ funExt λ a →
       Glue-path (is-set (◯ᶜ C-abs))
-        (●.map-∘ (f-⊤ .U) (g-⊤ .U) (a .•))
-        (◯.map-∘ (f-abs .U) (g-abs .U) (a .◦))
+        (●.map-∘ (f-⊤ .U) (g-⊤ .U) (• a))
+        (◯.map-∘ (f-abs .U) (g-abs .U) (◦ a))
 
   squareᶜ'-≡ : ∀ {A-⊤ A-abs α B-⊤ B-abs β}
     {f-⊤ f-⊤' : A-⊤ ⊸ B-⊤} {f-abs f-abs' : A-abs ⊸ B-abs}
@@ -166,8 +167,8 @@ opaque
   squareᶜ'-≡ {B-⊤ = B-⊤} {B-abs} {β} {fc = fc} {fc' = fc'} p q =
     ⊸-path refl refl $ funExt λ a →
       Glue-path (is-set (◯ᶜ B-abs))
-        (cong (λ f → ●.map (f .U) (a .•)) p)
-        (cong (λ f → ◯.map (f .U) (a .◦)) q)
+        (cong (λ f → ●.map (f .U) (• a)) p)
+        (cong (λ f → ◯.map (f .U) (◦ a)) q)
 
   Abstractionᶜ-Abstractionᶜ : ∀ {A-⊤ A-abs α B-⊤ B-abs β f-⊤ f-abs f-coherence} →
     Abstractionᶜ
@@ -187,5 +188,5 @@ opaque
         (squareᶜ' f-⊤ f-abs f-coherence .U)
         (●ᶜ.map ((α ⨾ᶜ f-abs) ⨾ᶜ η◦ᶜ) .U)
         (λ g →
-            cong (●.map (◯.map (f-abs .U))) (sym (g .•→◦))
-          ∙ ●.map-∘ ((α ⨾ᶜ η◦ᶜ) .U) (◯.map (f-abs .U)) (g .•)))
+            cong (●.map (◯.map (f-abs .U))) (sym (•→◦ g))
+          ∙ ●.map-∘ ((α ⨾ᶜ η◦ᶜ) .U) (◯.map (f-abs .U)) (• g)))

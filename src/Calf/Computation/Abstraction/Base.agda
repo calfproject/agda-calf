@@ -25,7 +25,7 @@ opaque
 
   Abstractionᶜ-id : Abstractionᶜ A A idᶜ ≡ A
   Abstractionᶜ-id {A} =
-    cong (Glueᶜ (●ᶜ• A) (◯ᶜ◦ A) ∘ ●ᶜ.map) (idᶜ⨾ᶜf≡f η◦ᶜ)
+    cong (Glueᶜ (●ᶜ A) (◯ᶜ A) ∘ ●ᶜ.map) (idᶜ⨾ᶜf≡f η◦ᶜ)
     ∙ 𝒞-glue-fracture-retract A
 
 opaque
@@ -73,9 +73,8 @@ opaque
   triangleᶜ' : ∀ {B-⊤ B-abs β} (b-⊤ : U B-⊤) (b-abs : U B-abs)
     → β .U b-⊤ ≡ b-abs
     → U (Abstractionᶜ B-⊤ B-abs β)
-  triangleᶜ' b-⊤ b-abs b-coherence .• = η• b-⊤
-  triangleᶜ' {B-abs = B-abs} b-⊤ b-abs b-coherence .◦ = η◦ᶜ {A = B-abs} .U b-abs
-  triangleᶜ' {B-abs = B-abs} b-⊤ b-abs b-coherence .•→◦ =
+  triangleᶜ' {B-abs = B-abs} b-⊤ b-abs b-coherence =
+    (η• b-⊤ , η◦ᶜ {A = B-abs} .U b-abs) ,
     cong (λ b → η• (η◦ᶜ {A = B-abs} .U b)) b-coherence
 
 triangle' : ∀ {A B-⊤ B-abs β}
@@ -90,7 +89,7 @@ opaque
   triangle-Uᶜ-id {A} =
     compPathP' {B = A ⊸_}
       (⊸-path
-        refl (cong (Glueᶜ (●ᶜ• A) (◯ᶜ◦ A) ∘ ●ᶜ.map) (idᶜ⨾ᶜf≡f η◦ᶜ))
+        refl (cong (Glueᶜ (●ᶜ A) (◯ᶜ A) ∘ ●ᶜ.map) (idᶜ⨾ᶜf≡f η◦ᶜ))
         {f₀ = triangle-Uᶜ {A} {A} {idᶜ}}
         {f₁ = 𝒞-fracture {A}}
         refl)

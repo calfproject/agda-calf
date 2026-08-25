@@ -58,7 +58,7 @@ import Calf.Value.Glue using
 import Calf.Value.Abstraction using
   ( Abstraction
   ; Abstraction-id
-  ; square'
+  ; square
   )
 
 -- Section 2.2. Potential Functions as Types
