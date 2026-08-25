@@ -28,7 +28,7 @@ jobs:
             toolchain: mikan
             command: mikan
             typecheck-command: mikan --library-file="$GITHUB_WORKSPACE/libraries" --build-library
-            compiler-ref: 0513ea707f9879fd60fedcd868aae36c208d5f9d
+            compiler-ref: 2ddb89fe9a17488e081288c0337bd8c3fffec51b
             cubical-url: https://codeberg.org/1lab/agda-cubical.git
             cubical-ref: 7a99d6e2834053b72b33a051d2798e673bbbae76
 
@@ -45,13 +45,6 @@ jobs:
             accept-flake-config = true
             cores = 4
             max-jobs = 1
-
-      - name: Enable the Mikan binary cache
-        if: matrix.toolchain == 'mikan'
-        uses: cachix/cachix-action@v17
-        with:
-          name: mikan
-          skipPush: true
 
       - name: Restore and install Agda from Nixpkgs
         if: matrix.toolchain == 'agda'
