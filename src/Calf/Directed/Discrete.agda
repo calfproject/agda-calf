@@ -38,8 +38,8 @@ isDiscrete→isEquiv[≡⇒⊑] {X} isDiscreteX {x} {x'} = equivIsEquiv ≡≃�
     ⊑≃Σ =
       isoToEquiv $
       iso
-        (λ q → q .path , sym (q .path₀) , q .path₁)
-        (λ (p , p₀ , p₁) → record { path = p ; path₀ = sym p₀ ; path₁ = p₁ })
+        (λ q → path q , sym (path₀ q) , path₁ q)
+        (λ (p , p₀ , p₁) → p , sym p₀ , p₁)
         (λ _ → refl)
         (λ _ → refl)
 

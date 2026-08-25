@@ -36,15 +36,11 @@ open Iso
 
 Δ²-elim : Iso (Δ² → X) (Σ[ h ∈ (Λ² → X) ] (h (inl 0𝟚) ⊑ h (inr 1𝟚)))
 Δ²-elim .fun k =
-  (k ∘ inl) , record
-    { path = k ∘ inr
-    ; path₀ = cong k (sym (push false))
-    ; path₁ = cong k (sym (push true))
-    }
+  (k ∘ inl) , (k ∘ inr) , cong k (sym (push false)) , cong k (sym (push true))
 Δ²-elim .inv (h , e) (inl b) = h b
-Δ²-elim .inv (h , e) (inr 𝕚) = e .path 𝕚
-Δ²-elim .inv (h , e) (push false i) = sym (e .path₀) i
-Δ²-elim .inv (h , e) (push true i) = sym (e .path₁) i
+Δ²-elim .inv (h , e) (inr 𝕚) = path e 𝕚
+Δ²-elim .inv (h , e) (push false i) = sym (path₀ e) i
+Δ²-elim .inv (h , e) (push true i) = sym (path₁ e) i
 Δ²-elim .rightInv (h , e) = refl
 Δ²-elim .leftInv k i (inl b) = k (inl b)
 Δ²-elim .leftInv k i (inr 𝕚) = k (inr 𝕚)
@@ -66,18 +62,16 @@ isPathTransitive = isLocal {A = Unit} (const ι)
 
 isPathTransitive→Transitive[⊑] : isPathTransitive X → Transitive _⊑_
 isPathTransitive→Transitive[⊑] {X} isPathTransitiveX {x} {x'} {x''} x⊑x' x'⊑x'' =
-  record
-    { path = triangle ∘ inr
-    ; path₀ = cong triangle (sym (push false)) ∙ cong (_$ inl 0𝟚) secι ∙ x⊑x' .path₀
-    ; path₁ = cong triangle (sym (push true)) ∙ cong (_$ inr 1𝟚) secι ∙ x'⊑x'' .path₁
-    }
+    triangle ∘ inr
+  , cong triangle (sym (push false)) ∙ cong (_$ inl 0𝟚) secι ∙ path₀ x⊑x'
+  , cong triangle (sym (push true)) ∙ cong (_$ inr 1𝟚) secι ∙ path₁ x'⊑x''
   where
     open isPathSplitEquiv
 
     horn : Λ² → X
-    horn (inl 𝕚) = x⊑x' .path 𝕚
-    horn (inr 𝕚) = x'⊑x'' .path 𝕚
-    horn (push tt i) = (x⊑x' .path₁ ∙ sym (x'⊑x'' .path₀)) i
+    horn (inl 𝕚) = path x⊑x' 𝕚
+    horn (inr 𝕚) = path x'⊑x'' 𝕚
+    horn (push tt i) = (path₁ x⊑x' ∙ sym (path₀ x'⊑x'')) i
 
     triangle : Δ² → X
     triangle = isPathTransitiveX tt .sec .fst horn
@@ -94,9 +88,9 @@ isThin∧Transitive[⊑]→isPathTransitive {X} ⊑prop ⊑trans _ =
   where
     composite : (h : Λ² → X) → h (inl 0𝟚) ⊑ h (inr 1𝟚)
     composite h =
-      ⊑trans (record { path = h ∘ inl ; path₀ = refl ; path₁ = refl })
+      ⊑trans (h ∘ inl , refl , refl)
         (⊑trans (≡⇒⊑ (cong h (push tt)))
-          (record { path = h ∘ inr ; path₀ = refl ; path₁ = refl }))
+          (h ∘ inr , refl , refl))
 
     edge : (h : Λ² → X) → isContr (h (inl 0𝟚) ⊑ h (inr 1𝟚))
     edge h = composite h , ⊑prop _ _ (composite h)

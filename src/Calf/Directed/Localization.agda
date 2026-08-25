@@ -181,8 +181,8 @@ opaque
     → isLocal F (Σ[ (x , y) ∈ X × Y ] f x ⊑ g y)
   isLocalComma isLocalX isLocalY isLocalZ f g =
     isLocalRetract
-      (λ ((x , y) , q) → ((x , y) , q .path) , λ i → q .path₀ i , q .path₁ i)
-      (λ (((x , y) , p) , e) → (x , y) , record { path = p ; path₀ = cong fst e ; path₁ = cong snd e })
+      (λ ((x , y) , q) → ((x , y) , path q) , λ i → path₀ q i , path₁ q i)
+      (λ (((x , y) , p) , e) → (x , y) , p , cong fst e , cong snd e)
       (λ _ → refl)
       (isLocalEqualizer
         (isLocal× (isLocal× isLocalX isLocalY) (isLocalΠ λ _ → isLocalZ))

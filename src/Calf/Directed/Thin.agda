@@ -34,16 +34,15 @@ open Iso
 
 𝕊-elim : (Y : Type) → Iso (𝕊 Y → X) (𝕊-cocone X Y)
 𝕊-elim Y .fun k =
-  (k (inr false) , k (inr true)) , λ y → record
-    { path = λ 𝕚 → k (inl (y , 𝕚))
-    ; path₀ = cong k (push (y , false))
-    ; path₁ = cong k (push (y , true))
-    }
-𝕊-elim Y .inv (_ , q) (inl (y , 𝕚)) = q y .path 𝕚
+  (k (inr false) , k (inr true)) , λ y →
+      (λ 𝕚 → k (inl (y , 𝕚)))
+    , cong k (push (y , false))
+    , cong k (push (y , true))
+𝕊-elim Y .inv (_ , q) (inl (y , 𝕚)) = path (q y) 𝕚
 𝕊-elim Y .inv ((x , x') , q) (inr false) = x
 𝕊-elim Y .inv ((x , x') , q) (inr true) = x'
-𝕊-elim Y .inv (_ , q) (push (y , false) j) = q y .path₀ j
-𝕊-elim Y .inv (_ , q) (push (y , true) j) = q y .path₁ j
+𝕊-elim Y .inv (_ , q) (push (y , false) j) = path₀ (q y) j
+𝕊-elim Y .inv (_ , q) (push (y , true) j) = path₁ (q y) j
 𝕊-elim Y .rightInv (_ , q) = refl
 𝕊-elim Y .leftInv k i (inl (y , 𝕚)) = k (inl (y , 𝕚))
 𝕊-elim Y .leftInv k i (inr false) = k (inr false)

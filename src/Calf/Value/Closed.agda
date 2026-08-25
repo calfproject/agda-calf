@@ -300,34 +300,19 @@ module _ {X : 𝒱} (preX : isPreorder X) where
     map2● : {A B C : 𝒱} → (A → B → C) → ● A → ● B → ● C
     map2● f a• b• = elim (λ _ → isModal●) (λ a → map (f a) b•) a•
 
-    ⊑Σ : {W : 𝒱} → W → W → 𝒱
-    ⊑Σ {W} x x' = Σ[ p ∈ (𝟚 → W) ] ((p 0𝟚 ≡ x) × (p 1𝟚 ≡ x'))
-
-    ⊑Σ-Iso : {W : 𝒱} {x x' : W} → Iso (x ⊑ x') (⊑Σ x x')
-    ⊑Σ-Iso .Iso.fun e = e .path , e .path₀ , e .path₁
-    ⊑Σ-Iso .Iso.inv (p , h₀ , h₁) = record { path = p ; path₀ = h₀ ; path₁ = h₁ }
-    ⊑Σ-Iso .Iso.rightInv _ = refl
-    ⊑Σ-Iso .Iso.leftInv _ = refl
-
-    isModal⊑Σ : {x• y• : ● X} → isModal (⊑Σ x• y•)
-    isModal⊑Σ =
+    isModal⊑ : {x• y• : ● X} → isModal (x• ⊑ y•)
+    isModal⊑ =
       isModalΣ (isModalΠ λ _ → isModal●) λ _ →
       isModalΣ (●-≡-isModal _ _) λ _ → ●-≡-isModal _ _
 
-    ⊑Σ-η : {a b : X} → ⊑Σ a b → ⊑Σ (η• a) (η• b)
-    ⊑Σ-η = map-Σ (η• ∘_) λ _ → map-Σ (cong η•) λ _ → cong η•
-
-    ⊑Σ-η-connected : {a b : X} → isConnectedMap (⊑Σ-η {a} {b})
-    ⊑Σ-η-connected =
+    ⊑-η-connected : {a b : X} → isConnectedMap (⊑-mono (η• {X}) {a} {b})
+    ⊑-η-connected =
       isConnectedMapΣ (isConnectedMap-∘ₑ (●-𝟚 , ●-𝟚-isEquiv) isConnectedMapη)
         λ _ → isConnectedMapΣ (isConnectedMap-∘ₑ (◯-≡-≃ isLex●) isConnectedMapη)
           λ _ → isConnectedMap-∘ₑ (◯-≡-≃ isLex●) isConnectedMapη
 
     ⊑-● : {a b : X} → ● (a ⊑ b) ≃ (η• a ⊑ η• b)
-    ⊑-● =
-        ●-equiv (isoToEquiv ⊑Σ-Iso)
-      ∙ₑ reflection-≃ isModal⊑Σ ⊑Σ-η-connected
-      ∙ₑ invEquiv (isoToEquiv ⊑Σ-Iso)
+    ⊑-● = reflection-≃ isModal⊑ ⊑-η-connected
 
   isThin● : isThin (● X)
   isThin● =
