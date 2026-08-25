@@ -8,57 +8,34 @@ open import Calf.Core.Cost
 open import Calf.Core.Directed
 open import Calf.Computation
 open import Calf.Value
+open import Calf.Value.Product
 open import Calf.Value.Closed
 open import Calf.Value.Open
 open import Calf.Value.Glue
 
-record DGlue (X• : 𝒱•) (X◦ : 𝒱◦) (χ• : ⟨ X• ⟩ → ● ⟨ X◦ ⟩) : 𝒱 where
-  field
-    • : ⟨ X• ⟩
-    ◦ : ⟨ X◦ ⟩
-    •→◦ : χ• • ⊑ η• ◦
-open DGlue public
+Glueᵈ : (X• : 𝒱•) (X◦ : 𝒱◦) (χ• : ⟨ X• ⟩ → ● ⟨ X◦ ⟩) → 𝒱
+Glueᵈ X• X◦ χ• = Σ[ (x• , x◦) ∈ ⟨ X• ⟩ × ⟨ X◦ ⟩ ] χ• x• ⊑ η• x◦
+
+opaque
+  isPreorderGlueᵈ : ∀ {X• X◦ χ•}
+    → isPreorder ⟨ X• ⟩
+    → isPreorder ⟨ X◦ ⟩
+    → isPreorder (Glueᵈ X• X◦ χ•)
+  isPreorderGlueᵈ isPreorderX• isPreorderX◦ =
+    isLocalComma isPreorderX• isPreorderX◦ (isPreorder● isPreorderX◦)
 
 open 𝒱-FRACTURE
 
-DfromFRAC : 𝒱-FRACTURE → 𝒱
-DfromFRAC F = DGlue (F .X•) (F .X◦) (F .χ•)
+𝒱-Glueᵈ : 𝒱-FRACTURE → 𝒱
+𝒱-Glueᵈ F = Glueᵈ (F .X•) (F .X◦) (F .χ•)
 
 Seal : 𝒱 → 𝒱
-Seal = DfromFRAC ∘ 𝒱-Fracture
+Seal = 𝒱-Glueᵈ ∘ 𝒱-Fracture
 
-isPreorderSeal : isPreorder X → isPreorder (Seal X)
-isPreorderSeal = {!   !}
-
--- DGlueᵛ : (X• : 𝒱•) (X◦ : 𝒱◦) (χ• : val (X• .fst) → val (●ᵛ (X◦ .fst))) → 𝒱
--- DGlueᵛ X• X◦ χ• .val = DGlue (𝒱•→Type• X•) (𝒱◦→Type◦ X◦) χ•
--- DGlueᵛ X• X◦ χ• .is-set = {!   !}
--- DGlueᵛ X• X◦ χ• .is-preorder = {!   !}
-
--- DGlueᶜ : (A• : 𝒞•) (A◦ : 𝒞◦) (α• : A• .fst ⊸ ●ᶜ (A◦ .fst)) → 𝒞
--- DGlueᶜ A• A◦ α• .U = DGlueᵛ (U• A•) (U◦ A◦) (α• .U)
--- DGlueᶜ A• A◦ α• .charge c a .• = A• .fst .charge c (a .•)
--- DGlueᶜ A• A◦ α• .charge c a .◦ = A◦ .fst .charge c (a .◦)
--- DGlueᶜ A• A◦ α• .charge c a .•→◦ =
---   let open ⊑ᵛ-Reasoning (U (●ᶜ (A◦ .fst))) in
---   begin
---     α• .U (A• .fst .charge c (a .•))
---   ≡ᵛ⟨ α• .charge c (a .•) ⟩
---     ●ᶜ (A◦ .fst) .charge c (α• .U (a .•))
---   ⊑ᵛ⟨ ⊑ᵛ-mono (●ᶜ (A◦ .fst) .charge c) (a .•→◦) ⟩
---     η• (A◦ .fst .charge c (a .◦))
---   ∎ᵛ
--- DGlueᶜ A• A◦ α• .charge/0 {a} i .• = A• .fst .charge/0 {a .•} i
--- DGlueᶜ A• A◦ α• .charge/0 {a} i .◦ = A◦ .fst .charge/0 {a .◦} i
--- DGlueᶜ A• A◦ α• .charge/0 {a} i .•→◦ = {! ⊑ᵛ-isProp  !}
--- DGlueᶜ A• A◦ α• .charge/+ = {! same   !}
-
--- DGlueᶜ' : (A-⊤ A-abs : 𝒞) → (A-⊤ ⊸ A-abs) → 𝒞
--- DGlueᶜ' A-⊤ A-abs α =
---   DGlueᶜ
---     (●ᶜ A-⊤ , ●ᶜ.η-isEquiv {X = cmp A-⊤})
---     (◯ᶜ A-abs , ◯ᶜ.η-isEquiv {X = cmp A-abs})
---     (●ᶜ.map (α ⨾ᶜ η◦ᶜ {A = A-abs}))
+opaque
+  isPreorderSeal : isPreorder X → isPreorder (Seal X)
+  isPreorderSeal {X} isPreorderX =
+    isPreorderGlueᵈ {●• X} {◯◦ X} (isPreorder● isPreorderX) (isPreorder◯ isPreorderX)
 
 -- squareᶜ'≤ : ∀ {A-⊤ A-abs α B-⊤ B-abs β} (f-⊤ : A-⊤ ⊸ B-⊤) (f-abs : A-abs ⊸ B-abs)
 --   → ((a-⊤ : cmp A-⊤) → U β (U f-⊤ a-⊤) ⊑[ U B-abs ] U f-abs (U α a-⊤))

@@ -28,6 +28,9 @@ module _ {X : Type} where
   ⊑-refl : Reflexive _⊑_
   ⊑-refl = ≡⇒⊑ refl
 
+  ≡∙⊑ : {x y z : X} → x ≡ y → y ⊑ z → x ⊑ z
+  ≡∙⊑ h e = path e , path₀ e ∙ sym h , path₁ e
+
 private variable X Y : Type
 
 ⊑-mono : (f : X → Y) {x x' : X} → x ⊑ x' → f x ⊑ f x'

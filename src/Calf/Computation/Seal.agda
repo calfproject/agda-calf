@@ -1,6 +1,7 @@
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.Structure
+open import Cubical.Data.Sigma using (ΣPathP; Σ≡Prop)
 
 module Calf.Computation.Seal where
 
@@ -18,29 +19,43 @@ open import Calf.Computation.Closed as ●ᶜ
 open import Calf.Computation.Glue
 open import Calf.Computation.Abstraction
 
+private
+  thin● : (A : 𝒞) → isThin (● (U A))
+  thin● A = isPreorder→isThin (isPreorder● (A .is-preorder))
+
+Glueᵈᶜ : (A• : 𝒞•) (A◦ : 𝒞◦) (α• : ⟨ A• ⟩ᶜ ⊸ ●ᶜ ⟨ A◦ ⟩ᶜ) → 𝒞
+Glueᵈᶜ A• A◦ α• .U = Glueᵈ (U• A•) (U◦ A◦) (U α•)
+Glueᵈᶜ A• A◦ α• .is-preorder =
+  isPreorderGlueᵈ
+    {U• A•}
+    {U◦ A◦}
+    (⟨ A• ⟩ᶜ .is-preorder)
+    (⟨ A◦ ⟩ᶜ .is-preorder)
+Glueᵈᶜ A• A◦ α• .charge c ((x• , x◦) , p) =
+  (⟨ A• ⟩ᶜ .charge c x• , ⟨ A◦ ⟩ᶜ .charge c x◦) ,
+  ≡∙⊑ (α• .charge c x•) (⊑-mono (●ᶜ ⟨ A◦ ⟩ᶜ .charge c) p)
+Glueᵈᶜ A• A◦ α• .charge/0 =
+  Σ≡Prop (λ _ → thin● ⟨ A◦ ⟩ᶜ _ _)
+    (ΣPathP (⟨ A• ⟩ᶜ .charge/0 , ⟨ A◦ ⟩ᶜ .charge/0))
+Glueᵈᶜ A• A◦ α• .charge/+ =
+  Σ≡Prop (λ _ → thin● ⟨ A◦ ⟩ᶜ _ _)
+    (ΣPathP (⟨ A• ⟩ᶜ .charge/+ , ⟨ A◦ ⟩ᶜ .charge/+))
+
+open 𝒞-FRACTURE
+
+𝒞-Glueᵈ : 𝒞-FRACTURE → 𝒞
+𝒞-Glueᵈ F = Glueᵈᶜ (F .A•) (F .A◦) (F .α•)
+
 Sealᶜ : 𝒞 → 𝒞
-Sealᶜ A .U = Seal (A .U)
-Sealᶜ A .is-preorder = isPreorderSeal (A .is-preorder)
-Sealᶜ A .charge c a .• = ●ᶜ A .charge c (a .•)
-Sealᶜ A .charge c a .◦ = ◯ᶜ A .charge c (a .◦)
-Sealᶜ A .charge c a .•→◦ = ≡⇒⊑ {!   !}
-Sealᶜ A .charge/0 {a} i .• = ●ᶜ A .charge/0 {a .•} i
-Sealᶜ A .charge/0 {a} i .◦ = ◯ᶜ A .charge/0 {a .◦} i
-Sealᶜ A .charge/0 {a} i .•→◦ = {!   !}
-Sealᶜ A .charge/+ {a} {c₁} {c₂} i .• = ●ᶜ A .charge/+ {a .•} {c₁} {c₂} i
-Sealᶜ A .charge/+ {a} {c₁} {c₂} i .◦ = ◯ᶜ A .charge/+ {a .◦} {c₁} {c₂} i
-Sealᶜ A .charge/+ {a} {c₁} {c₂} i .•→◦ = {!   !}
+Sealᶜ = 𝒞-Glueᵈ ∘ 𝒞-Fracture
 
 _⊸ᵈ_ : 𝒞 → 𝒞 → 𝒱
 A ⊸ᵈ B = A ⊸ Sealᶜ B
 
 idᵈ : A ⊸ᵈ A
-idᵈ .U a .• = η• a
-idᵈ .U a .◦ = η◦ a
-idᵈ .U a .•→◦ = ⊑-refl
-idᵈ {A} .charge c a i .• = η• (A .charge c a)
-idᵈ {A} .charge c a i .◦ = η◦ (A .charge c a)
-idᵈ {A} .charge c a i .•→◦ = {! isPreorder→isProp⊑ (A .is-preorder) !}
+idᵈ .U a = (η• a , η◦ a) , ⊑-refl
+idᵈ {A} .charge c a =
+  Σ≡Prop (λ _ → thin● (◯ᶜ A) _ _) refl
 
 infixl 9 _⨾ᵈ_
 _⨾ᵈ_ : (A ⊸ B) → (B ⊸ C) → (A ⊸ C)

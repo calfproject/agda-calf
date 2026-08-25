@@ -177,9 +177,9 @@ opaque
 
 opaque
   isLocalComma :
-    isLocal F X → isLocal F Y → isLocal F Z → (f : X → Z) (g : Y → Z)
+    isLocal F X → isLocal F Y → isLocal F Z → {f : X → Z} {g : Y → Z}
     → isLocal F (Σ[ (x , y) ∈ X × Y ] f x ⊑ g y)
-  isLocalComma isLocalX isLocalY isLocalZ f g =
+  isLocalComma isLocalX isLocalY isLocalZ {f} {g} =
     isLocalRetract
       (λ ((x , y) , q) → ((x , y) , path q) , λ i → path₀ q i , path₁ q i)
       (λ (((x , y) , p) , e) → (x , y) , p , cong fst e , cong snd e)
