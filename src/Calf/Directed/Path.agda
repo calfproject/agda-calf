@@ -31,6 +31,9 @@ module _ {X : Type} where
   ≡∙⊑ : {x y z : X} → x ≡ y → y ⊑ z → x ⊑ z
   ≡∙⊑ h e = path e , path₀ e ∙ sym h , path₁ e
 
+  ⊑∙≡ : {x y z : X} → x ⊑ y → y ≡ z → x ⊑ z
+  ⊑∙≡ e h = path e , path₀ e , path₁ e ∙ h
+
 private variable X Y : Type
 
 ⊑-mono : (f : X → Y) {x x' : X} → x ⊑ x' → f x ⊑ f x'

@@ -37,7 +37,7 @@ opaque
   +ℂ-assoc = +-assoc
 
   +ℂ-comm : Commutative _+ℂ_
-  +ℂ-comm c₁ c₂ = {!   !}
+  +ℂ-comm = +-comm
 
   ℕ→ℂ : ℕ → ℂ
   ℕ→ℂ n = ` n
