@@ -1,4 +1,5 @@
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Univalence using (ua→; ua-gluePath)
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Structure
 
@@ -69,8 +70,6 @@ module ⊑-Reasoning (A : 𝒞) where
   infixr 2 step-≡'
   step-≡' = step-≈
   syntax step-≡' x yRz x⊑ᵛy = x ≡ᴾ⟨ x⊑ᵛy ⟩ yRz
-
-
 
 infix 1 _⊸_
 record _⊸_ (A B : 𝒞) : 𝒱 where
@@ -216,19 +215,6 @@ idᶜ⨾ᶜf≡f f = ⊸-path refl refl refl
 f⨾ᶜidᶜ≡f : (f : A ⊸ B) → f ⨾ᶜ idᶜ ≡ f
 f⨾ᶜidᶜ≡f f = ⊸-path refl refl (funExt (λ x → refl))
 
-charge-path-inv
-  : {X Y : 𝒱}
-  → (e : X ≃ Y)
-  → (chargeX : ℂ → X → X)
-  → (chargeY : ℂ → Y → Y)
-  → ((c : ℂ) (y : Y) → invEq e (chargeY c y) ≡ chargeX c (invEq e y))
-  → PathP
-      (λ i → ℂ → ua (invEquiv e) i → ua (invEquiv e) i)
-      chargeY
-      chargeX
-charge-path-inv e chargeX chargeY h =
-  funExt λ c → ua→ λ y → ua-gluePath (invEquiv e) (h c y)
-
 opaque
   charge-path
     : {X Y : 𝒱}
@@ -254,6 +240,22 @@ conservativity {A} {B} f f-equiv =
 
 uaᶜ : A ≃ᶜ B → A ≡ B
 uaᶜ = uncurry conservativity
+
+conservativity-⊸ :
+  {A A' B B' : 𝒞} (e : A ⊸ A') (ee : isEquivᶜ e) (e' : B ⊸ B') (ee' : isEquivᶜ e')
+  {f : A ⊸ B} {g : A' ⊸ B'}
+  → f ⨾ᶜ e' ≡ e ⨾ᶜ g
+  → PathP (λ i → conservativity e ee i ⊸ conservativity e' ee' i) f g
+conservativity-⊸ e ee e' ee' nat =
+  ⊸-path (conservativity e ee) (conservativity e' ee')
+    (ua→ {e = e .U , ee} λ a → ua-gluePath (e' .U , ee') (funExt⁻ (cong U nat) a))
+
+opaque
+  uaᶜ-⊸ :
+    {A A' B B' : 𝒞} (e : A ≃ᶜ A') (e' : B ≃ᶜ B') {f : A ⊸ B} {g : A' ⊸ B'}
+    → f ⨾ᶜ e' .fst ≡ e .fst ⨾ᶜ g
+    → PathP (λ i → uaᶜ e i ⊸ uaᶜ e' i) f g
+  uaᶜ-⊸ (e , ee) (e' , ee') = conservativity-⊸ e ee e' ee'
 
 invEquivᶜ : (f : A ⊸ B) → isEquivᶜ f → B ⊸ A
 invEquivᶜ {A} {B} f fe .U = invEq (f .U , fe)

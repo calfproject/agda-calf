@@ -130,3 +130,25 @@ bind'-path : (f g : F X ⊸ A) →
   (f .U ∘ ret ≡ g .U ∘ ret)
   → f ≡ g
 bind'-path f g pf-ret = sym (secEq F-adjoint f) ∙ cong bind' pf-ret ∙ secEq F-adjoint g
+
+costed : (X → Y) → (X → ℂ) → (F X ⊸ F Y)
+costed f Φ = bind' λ x → F _ .charge (Φ x) (ret (f x))
+
+costed-≡ : {f g : X → Y} {Φ Ψ : X → ℂ}
+  → (∀ x → f x ≡ g x) → (∀ x → Φ x ≡ Ψ x) → costed f Φ ≡ costed g Ψ
+costed-≡ p q i = costed (λ x → p x i) (λ x → q x i)
+
+costed-⨾ᶜ : (f : X → Y) (Φ : X → ℂ) (g : Y → Z) (Ψ : Y → ℂ)
+  → costed f Φ ⨾ᶜ costed g Ψ ≡ costed (g ∘ f) (λ x → Φ x +ℂ Ψ (f x))
+costed-⨾ᶜ f Φ g Ψ =
+  bind'-path _ _ (funExt λ x →
+      cong (costed g Ψ .U) bind'/β
+    ∙ costed g Ψ .charge (Φ x) (ret (f x))
+    ∙ cong (F _ .charge (Φ x)) bind'/β
+    ∙ sym (F _ .charge/+)
+    ∙ sym bind'/β)
+
+map-costed : (f : X → Y) (g : Y → Z) (Ψ : Y → ℂ)
+  → map f ⨾ᶜ costed g Ψ ≡ costed (g ∘ f) (Ψ ∘ f)
+map-costed f g Ψ =
+  bind'-path _ _ (funExt λ x → cong (costed g Ψ .U) bind'/β ∙ bind'/β ∙ sym bind'/β)
