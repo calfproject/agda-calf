@@ -108,7 +108,7 @@ _≈_.enqueue (batched-queue≈SPEC/batched-queue bl fl) e =
     (λ c → batched-queue (e ∷ bl) fl ≈ step (queue (F unit)) c (SPEC/batched-queue (e ∷ bl) fl))
     (Nat.+-comm 1 (length bl))
     (batched-queue≈SPEC/batched-queue (e ∷ bl) fl)
-_≈_.dequeue (batched-queue≈SPEC/batched-queue bl []) with reverse bl | List.reverse-injective {xs = bl} {ys = []}
+_≈_.dequeue (batched-queue≈SPEC/batched-queue bl []) with reverse bl | List.reverse-injective {x = bl} {y = []}
 _≈_.dequeue (batched-queue≈SPEC/batched-queue bl []) | [] | h with h refl
 ... | refl = refl , batched-queue≈SPEC/batched-queue [] []
 _≈_.dequeue (batched-queue≈SPEC/batched-queue bl []) | e ∷ fl | _ =
@@ -133,7 +133,7 @@ _≈_.enqueue (batched-queue≈SPEC/list-queue bl fl) e =
       (fl ++ reverse bl) ∷ʳ e
     ∎)
     (batched-queue≈SPEC/list-queue (e ∷ bl) fl)
-_≈_.dequeue (batched-queue≈SPEC/list-queue bl []) with reverse bl | List.reverse-injective {xs = bl} {ys = []}
+_≈_.dequeue (batched-queue≈SPEC/list-queue bl []) with reverse bl | List.reverse-injective {x = bl} {y = []}
 _≈_.dequeue (batched-queue≈SPEC/list-queue bl []) | [] | h with h refl
 ... | refl = refl , batched-queue≈SPEC/list-queue [] []
 _≈_.dequeue (batched-queue≈SPEC/list-queue bl []) | e ∷ fl | _ =
@@ -179,7 +179,7 @@ _≈_.enqueue (◯[list-queue≈batched-queue] bl fl u) e =
         (fl ++ reverse bl) ∷ʳ e
       ∎)
       (◯[list-queue≈batched-queue] (e ∷ bl) fl u))
-_≈_.dequeue (◯[list-queue≈batched-queue] bl [] u) with reverse bl | List.reverse-injective {xs = bl} {ys = []}
+_≈_.dequeue (◯[list-queue≈batched-queue] bl [] u) with reverse bl | List.reverse-injective {x = bl} {y = []}
 _≈_.dequeue (◯[list-queue≈batched-queue] bl [] u) | [] | h with h refl
 ... | refl = refl , ◯[list-queue≈batched-queue] [] [] u
 _≈_.dequeue (◯[list-queue≈batched-queue] bl [] u) | e ∷ fl | _ =

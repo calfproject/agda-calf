@@ -18,3 +18,6 @@ import Examples.Amortized
 
 -- Effectful
 import Examples.Decalf
+
+-- Amortized Analysis for Splay Tree
+import Examples.Amortized.SplayTree
