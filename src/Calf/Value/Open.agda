@@ -111,13 +111,7 @@ isConnected→◯isContr c abs .snd x = funExt⁻ (c .snd (λ _ → x)) abs
 
 opaque
   isLex◯ : IsLex◯
-  isLex◯ =
-    subst isEquiv
-      (funExt $
-        Modality.◯-elim ◯Modality
-          (λ _ → Modality.isModal≡ ◯Modality η-=-isModal)
-          (sym ∘ Modality.◯-rec-β ◯Modality η-=-isModal (cong η◦)))
-      (equivIsEquiv funExtEquiv)
+  isLex◯ = reflection-isEquiv η-=-isModal (isConnectedMap-∘ₑ funExtEquiv isConnectedMapη)
 
 opaque
   isSet◯ : isSet X → isSet (◯ X)

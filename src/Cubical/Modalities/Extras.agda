@@ -10,7 +10,7 @@ open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Path
   using (PathP≡Path⁻; PathP≃Path; compPathlEquiv; compPathrEquiv)
 open import Cubical.Foundations.Equiv.Properties using (equivAdjointEquiv)
-open import Cubical.Foundations.Univalence using (isEquivTransport; ua)
+open import Cubical.Foundations.Univalence using (isEquivTransport)
 open import Cubical.Data.Sigma
 
 open Modality M
@@ -96,7 +96,10 @@ module _ where
 
   opaque
     isModal-≃ : X ≃ Y → isModal X → isModal Y
-    isModal-≃ e = subst isModal (ua e)
+    isModal-≃ = equivPreservesIsModal
+
+  isModalIsProp : isModal X → isModal (isProp X)
+  isModalIsProp w = Π-isModal λ _ → Π-isModal λ _ → isModal≡ w
 
   opaque
     isModalPathP : {X : I → Type ℓ} → isModal (X i0) → ∀ {x x'} → isModal (PathP X x x')

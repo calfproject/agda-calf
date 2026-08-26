@@ -22,45 +22,17 @@ open 𝒞-FRACTURE
 𝒞-FractureGlue : 𝒞 → 𝒞
 𝒞-FractureGlue = 𝒞-Glue ∘ 𝒞-Fracture
 
-glue•-charge
-  : (F : 𝒞-FRACTURE) (c : ℂ) (g• : U (●ᶜ (𝒞-Glue F)))
-  → equivFun (glue•-equiv (U-FRACTURE F)) (●ᶜ (𝒞-Glue F) .charge c g•)
-  ≡ ⟨ F .A• ⟩ᶜ .charge c (equivFun (glue•-equiv (U-FRACTURE F)) g•)
-glue•-charge F c =
-  ●.elim (λ g• → ●.isModal≡ (F .A• .snd)) λ g →
-      glue•-β (U-FRACTURE F) (𝒞-Glue F .charge c g)
-    ∙ sym (cong (⟨ F .A• ⟩ᶜ .charge c) (glue•-β (U-FRACTURE F) g))
+glue•ᶜ : (F : 𝒞-FRACTURE) → ●ᶜ (𝒞-Glue F) ≃ᶜ ⟨ F .A• ⟩ᶜ
+glue•ᶜ F = ●ᶜ-rec (F .A•) (proj•ᶜ F) , equivIsEquiv (glue•-equiv (U-FRACTURE F))
 
-glue◦-charge
-  : (F : 𝒞-FRACTURE) (c : ℂ) (g◦ : U (◯ᶜ (𝒞-Glue F)))
-  → equivFun (glue◦-equiv (U-FRACTURE F)) (◯ᶜ (𝒞-Glue F) .charge c g◦)
-  ≡ ⟨ F .A◦ ⟩ᶜ .charge c (equivFun (glue◦-equiv (U-FRACTURE F)) g◦)
-glue◦-charge F c =
-  ◯.elim (λ g◦ → ◯.isModal≡ (F .A◦ .snd)) λ g →
-      glue◦-β (U-FRACTURE F) (𝒞-Glue F .charge c g)
-    ∙ sym (cong (⟨ F .A◦ ⟩ᶜ .charge c) (glue◦-β (U-FRACTURE F) g))
+glue◦ᶜ : (F : 𝒞-FRACTURE) → ◯ᶜ (𝒞-Glue F) ≃ᶜ ⟨ F .A◦ ⟩ᶜ
+glue◦ᶜ F = ◯ᶜ-rec (F .A◦) (proj◦ᶜ F) , equivIsEquiv (glue◦-equiv (U-FRACTURE F))
 
 𝒞-glue•-path : (F : 𝒞-FRACTURE) → ●ᶜ• (𝒞-Glue F) ≡ F .A•
-𝒞-glue•-path F =
-  𝒞•-path
-    (𝒞-path
-      (ua (glue•-equiv (U-FRACTURE F)))
-      (charge-path
-        (glue•-equiv (U-FRACTURE F))
-        (●ᶜ (𝒞-Glue F) .charge)
-        (⟨ F .A• ⟩ᶜ .charge)
-        (glue•-charge F)))
+𝒞-glue•-path F = 𝒞•-path (uaᶜ (glue•ᶜ F))
 
 𝒞-glue◦-path : (F : 𝒞-FRACTURE) → ◯ᶜ◦ (𝒞-Glue F) ≡ F .A◦
-𝒞-glue◦-path F =
-  𝒞◦-path
-    (𝒞-path
-      (ua (glue◦-equiv (U-FRACTURE F)))
-      (charge-path
-        (glue◦-equiv (U-FRACTURE F))
-        (◯ᶜ (𝒞-Glue F) .charge)
-        (⟨ F .A◦ ⟩ᶜ .charge)
-        (glue◦-charge F)))
+𝒞-glue◦-path F = 𝒞◦-path (uaᶜ (glue◦ᶜ F))
 
 opaque
   𝒞-glue-fracture-section : section 𝒞-Fracture 𝒞-Glue

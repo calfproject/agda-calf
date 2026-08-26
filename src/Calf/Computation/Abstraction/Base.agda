@@ -23,14 +23,6 @@ opaque
 opaque
   unfolding Abstractionᶜ
 
-  Abstractionᶜ-id : Abstractionᶜ A A idᶜ ≡ A
-  Abstractionᶜ-id {A} =
-    cong (Glueᶜ (●ᶜ A) (◯ᶜ A) ∘ ●ᶜ.map) (idᶜ⨾ᶜf≡f η◦ᶜ)
-    ∙ 𝒞-glue-fracture-retract A
-
-opaque
-  unfolding Abstractionᶜ
-
   squareᶜ'
     : ∀ {A-⊤ A-abs α B-⊤ B-abs β}
     → (f-⊤ : A-⊤ ⊸ B-⊤) (f-abs : A-abs ⊸ B-abs)
@@ -44,23 +36,8 @@ opaque
     where
       coh : ●ᶜ.map f-⊤ ⨾ᶜ ●ᶜ.map (β ⨾ᶜ η◦ᶜ) ≡ ●ᶜ.map (α ⨾ᶜ η◦ᶜ) ⨾ᶜ ●ᶜ.map (◯ᶜ.map f-abs)
       coh =
-            ●ᶜ.map f-⊤ ⨾ᶜ ●ᶜ.map (β ⨾ᶜ η◦ᶜ)
-          ≡⟨ ●ᶜ.map-∘ f-⊤ (β ⨾ᶜ η◦ᶜ) ⟩
-            ●ᶜ.map (f-⊤ ⨾ᶜ (β ⨾ᶜ η◦ᶜ))
-          ≡⟨ cong ●ᶜ.map
-                (⊸-path refl refl
-                  (funExt λ a-⊤ → cong η◦ (f-coherence a-⊤))) ⟩
-            ●ᶜ.map ((α ⨾ᶜ η◦ᶜ) ⨾ᶜ ◯ᶜ.map f-abs)
-          ≡⟨ sym (●ᶜ.map-∘ (α ⨾ᶜ η◦ᶜ) (◯ᶜ.map f-abs)) ⟩
-            ●ᶜ.map (α ⨾ᶜ η◦ᶜ) ⨾ᶜ ●ᶜ.map (◯ᶜ.map f-abs)
-          ∎
-
-triangle : ∀ {A-⊤ A-abs α B}
-  → A-abs ⊸ B
-  → Abstractionᶜ A-⊤ A-abs α ⊸ B
-triangle {α = α} {B} f-abs =
-  subst (_ ⊸_) Abstractionᶜ-id $
-  squareᶜ' (α ⨾ᶜ f-abs) f-abs (λ _ → refl)
+        ⊸-path refl refl
+          (funExt (●.elim (λ _ → ●.●-≡-isModal _ _) λ a → cong (η• ∘ η◦) (f-coherence a)))
 
 opaque
   unfolding Abstractionᶜ
@@ -76,6 +53,21 @@ opaque
   triangleᶜ' {B-abs = B-abs} b-⊤ b-abs b-coherence =
     (η• b-⊤ , η◦ᶜ {A = B-abs} .U b-abs) ,
     cong (λ b → η• (η◦ᶜ {A = B-abs} .U b)) b-coherence
+
+opaque
+  unfolding Abstractionᶜ
+
+  Abstractionᶜ-id : Abstractionᶜ A A idᶜ ≡ A
+  Abstractionᶜ-id {A} =
+    cong (Glueᶜ (●ᶜ A) (◯ᶜ A) ∘ ●ᶜ.map) (idᶜ⨾ᶜf≡f η◦ᶜ)
+    ∙ 𝒞-glue-fracture-retract A
+
+triangle : ∀ {A-⊤ A-abs α B}
+  → A-abs ⊸ B
+  → Abstractionᶜ A-⊤ A-abs α ⊸ B
+triangle {α = α} {B} f-abs =
+  subst (_ ⊸_) Abstractionᶜ-id $
+  squareᶜ' (α ⨾ᶜ f-abs) f-abs (λ _ → refl)
 
 triangle' : ∀ {A B-⊤ B-abs β}
   → A ⊸ B-⊤

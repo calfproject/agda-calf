@@ -38,10 +38,7 @@ opaque
       ge = glue•-equiv (U-FRACTURE (Abstractionᶜ-FRAC A-⊤ A-abs α))
 
       proj-unit : ∀ w → equivFun ge (●ᶜ.map (triangle-Uᶜ {A-⊤} {A-abs} {α}) .U w) ≡ w
-      proj-unit =
-        ●.ind-prop _ (λ _ → ●.isSet● (is-set A-⊤) _ _)
-          (λ a → glue•-β (U-FRACTURE (Abstractionᶜ-FRAC A-⊤ A-abs α)) (triangle-Uᶜ {A-⊤} {A-abs} {α} .U a))
-          (λ abs → ●.◯-isProp● abs _ _)
+      proj-unit = ●.elim (λ _ → ●.●-≡-isModal _ _) (λ _ → refl)
 
 ●ᶜ-Abstractionᶜ-≃ᶜ : ∀ {A-⊤ A-abs α} → ●ᶜ A-⊤ ≃ᶜ ●ᶜ (Abstractionᶜ A-⊤ A-abs α)
 ●ᶜ-Abstractionᶜ-≃ᶜ = ●ᶜ.map triangle-Uᶜ , ●ᶜ-triangle-Uᶜ-equiv

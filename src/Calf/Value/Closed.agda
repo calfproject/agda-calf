@@ -11,6 +11,7 @@ open import 1Lab.Set.Pi
 open import Cubical.Foundations.CartesianKanOps
 open import Cubical.Foundations.Path using (compPathlEquiv; compPathrEquiv)
 open import Cubical.Foundations.Univalence using (hPropExt)
+open import Cubical.Foundations.Equiv.Properties using (congEquiv)
 
 open import Cubical.Foundations.Equiv.PathSplit using (fromIsEquiv; toIsEquiv)
 open import Cubical.Data.Unit using (UnitToType≃)
@@ -124,12 +125,6 @@ isConnected◯→isModal● {X} c = isoToIsEquiv (iso η• inv sec ret)
         refl
         (law (inv (∗ abs)) abs))
 
-opaque
-  isModal●≡isConnected◯ : isModal X ≡ ◯.isConnected X
-  isModal●≡isConnected◯ =
-    hPropExt (isPropIsEquiv η•) isPropIsContr
-      isModal●→isConnected◯ isConnected◯→isModal●
-
 elim : {X : 𝒱} {Y : ● X → 𝒱}
   → ((x : ● X) → isModal (Y x)) → ((x : X) → Y (η• x)) → (x : ● X) → Y x
 elim {X} {Y} isModalY f =
@@ -178,10 +173,6 @@ open import Cubical.Modalities.Extras ●Modality public
 opaque
   map′≡map : map′ {X} {Y} ≡ map
   map′≡map = funExt λ f → sym (◯-rec-unique isModal● refl)
-
-opaque
-  join′≡join : join′ {X} ≡ join
-  join′≡join = sym (◯-rec-unique isModal● refl)
 
 opaque
   isLex● : IsLex◯
@@ -263,7 +254,6 @@ opaque
       ●-≡-equiv : {x x' : X} → ● (x ≡ x') ≃ (η• x ≡ η• x')
       ●-≡-equiv = isoToEquiv (iso ●-unlex ●-lex ●-unlex-lex ●-lex-unlex)
 
-
 opaque
   isSet● : isSet X → isSet (● X)
   isSet● = isSet◯-lex isLex●
@@ -272,30 +262,21 @@ opaque
 ●-𝟚 = elim (λ _ → isModalΠ λ _ → isModal●) (λ f → η• ∘ f)
 
 opaque
-  ●-𝟚-β : (p• : ● (𝟚 → X)) (𝕚 : 𝟚) → ●-𝟚 p• 𝕚 ≡ map (λ f → f 𝕚) p•
-  ●-𝟚-β {X} p• 𝕚 =
-    elim {Y = λ p• → ●-𝟚 p• 𝕚 ≡ map (λ f → f 𝕚) p•}
-      (λ _ → ●-≡-isModal _ _)
-      (λ _ → refl)
-      p•
-
-opaque
   unfolding 𝟚
 
-  ●-𝟚-isEquiv : isEquiv (●-𝟚 {X})
-  ●-𝟚-isEquiv {X} =
-    subst isEquiv
-      (funExt λ p• → funExt λ 𝕚 →
-        funExt⁻ (funExt⁻ map′≡map (λ f → f 𝕚)) p• ∙ sym (●-𝟚-β p• 𝕚))
-      (equivIsEquiv (●-equiv (UnitToType≃ X) ∙ₑ invEquiv (UnitToType≃ (● X))))
+  𝟚-η-connected : isConnectedMap (λ (f : 𝟚 → X) → η• ∘ f)
+  𝟚-η-connected {X} g =
+    isConnected-≃
+      (invEquiv (Σ-cong-equiv (UnitToType≃ X) λ _ → congEquiv (UnitToType≃ (● X))))
+      (isConnectedMapη (g tt))
+
+●-𝟚-isEquiv : isEquiv (●-𝟚 {X})
+●-𝟚-isEquiv = reflection-isEquiv (isModalΠ λ _ → isModal●) 𝟚-η-connected
 
 module _ {X : 𝒱} (preX : isPreorder X) where
   private
     thinX : isThin X
     thinX = isPreorder→isThin preX
-
-    pre-abs : ⟨ ABS ⟩ → isPreorder (● X)
-    pre-abs abs = isProp→isPreorder (◯-isProp● abs)
 
     map2● : {A B C : 𝒱} → (A → B → C) → ● A → ● B → ● C
     map2● f a• b• = elim (λ _ → isModal●) (λ a → map (f a) b•) a•
@@ -307,7 +288,7 @@ module _ {X : 𝒱} (preX : isPreorder X) where
 
     ⊑-η-connected : {a b : X} → isConnectedMap (⊑-mono (η• {X}) {a} {b})
     ⊑-η-connected =
-      isConnectedMapΣ (isConnectedMap-∘ₑ (●-𝟚 , ●-𝟚-isEquiv) isConnectedMapη)
+      isConnectedMapΣ 𝟚-η-connected
         λ _ → isConnectedMapΣ (isConnectedMap-∘ₑ (◯-≡-≃ isLex●) isConnectedMapη)
           λ _ → isConnectedMap-∘ₑ (◯-≡-≃ isLex●) isConnectedMapη
 
@@ -316,37 +297,22 @@ module _ {X : 𝒱} (preX : isPreorder X) where
 
   isThin● : isThin (● X)
   isThin● =
-    ind-prop _ (λ _ → isPropΠ λ _ → isPropIsProp)
-      (λ a → ind-prop _ (λ _ → isPropIsProp)
-        (λ b → isOfHLevelRespectEquiv 1 ⊑-● (isProp● (thinX a b)))
-        (λ abs → isPreorder→isThin (pre-abs abs) _ _))
-      (λ abs _ → isPreorder→isThin (pre-abs abs) _ _)
+    elim (λ x• → isModalΠ λ y• → isModalIsProp isModal⊑) λ a →
+    elim (λ y• → isModalIsProp isModal⊑) λ b →
+    isOfHLevelRespectEquiv 1 ⊑-● (isProp● (thinX a b))
 
   ⊑-trans● : (x• y• z• : ● X) → x• ⊑ y• → y• ⊑ z• → x• ⊑ z•
   ⊑-trans● =
-    ind-prop _ (λ x• → isPropΠ2 λ y• z• → isPropΠ2 λ _ _ → isThin● x• z•)
-      (λ a → ind-prop _ (λ y• → isPropΠ λ z• → isPropΠ2 λ _ _ → isThin● (η• a) z•)
-        (λ b → ind-prop _ (λ z• → isPropΠ2 λ _ _ → isThin● (η• a) z•)
-          (λ c e f →
-            equivFun ⊑-● (map2● (λ u v → ⊑-trans preX u v) (invEq ⊑-● e) (invEq ⊑-● f)))
-          (λ abs → ⊑-trans (pre-abs abs)))
-        (λ abs z• → ⊑-trans (pre-abs abs)))
-      (λ abs y• z• → ⊑-trans (pre-abs abs))
+    elim (λ _ → isModalΠ λ _ → isModalΠ λ _ → isModalΠ λ _ → isModalΠ λ _ → isModal⊑) λ a →
+    elim (λ _ → isModalΠ λ _ → isModalΠ λ _ → isModalΠ λ _ → isModal⊑) λ b →
+    elim (λ _ → isModalΠ λ _ → isModalΠ λ _ → isModal⊑) λ c e f →
+    equivFun ⊑-● (map2● (λ u v → ⊑-trans preX u v) (invEq ⊑-● e) (invEq ⊑-● f))
 
   opaque
-    unfolding Fᴾ
-
     isPreorder● : isPreorder (● X)
-    isPreorder● transitive =
-      isThin∧Transitive[⊑]→isPathTransitive isThin●
-        (λ {x•} {y•} {z•} → ⊑-trans● x• y• z•) _
-    isPreorder● thin =
-      transport (sym isBoundarySeparated≡isThin) isThin● _
-    isPreorder● hset =
-      fromIsEquiv _ $ equivIsEquiv $
-      compEquiv (UnitToType≃ _)
-        (_ , toIsEquiv _
-          (transport (sym isS¹Null≡isSet) (isSet● (isPreorder→isSet preX)) _))
+    isPreorder● =
+      isSet∧isThin∧Transitive→isPreorder (isSet● (isPreorder→isSet preX)) isThin●
+        (λ {x•} {y•} {z•} → ⊑-trans● x• y• z•)
 
 module _ {X Y Z : 𝒱} {f : X → Z} {g : Y → Z} where
   ●-pullback :
@@ -367,7 +333,6 @@ module _ {X Y Z : 𝒱} {f : X → Z} {g : Y → Z} where
     (u : Σ[ (x , y) ∈ X × Y ] (f x ≡ g y))
     → equivFun ●-pullback (η• u) .fst .snd ≡ η• (u .fst .snd)
   ●-pullback-β₂ u = cong (snd ∘ fst) (◯-pullback-lex-β isLex● u)
-
 
 𝒱• : 𝒱₁
 𝒱• = TypeWithStr _ isModal

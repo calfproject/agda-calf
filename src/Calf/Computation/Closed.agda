@@ -193,9 +193,7 @@ module _ where
     embed (x , a) = x , η• a
 
   Σᶜ-●ᶜ-fwd : ∀ {X A} → ●ᶜ (Σᶜ X A) ⊸ ●ᶜ (Σᶜ X (●ᶜ ∘ A))
-  Σᶜ-●ᶜ-fwd {X} {A} .U = ●.map (embed {X} {A})
-  Σᶜ-●ᶜ-fwd .charge c =
-    ●.elim (λ _ → ●-≡-isModal _ _) λ _ → refl
+  Σᶜ-●ᶜ-fwd {X} {A} = map (Σᶜ-map {X} {A} λ _ → η•ᶜ)
 
   Σᶜ-●ᶜ-fwd-equiv : ∀ {X A} → isEquivᶜ (Σᶜ-●ᶜ-fwd {X} {A})
   Σᶜ-●ᶜ-fwd-equiv {X} {A} =
