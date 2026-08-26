@@ -157,10 +157,10 @@ joinLeft/is-bounded' {A} y₁ n₁ l₁ t₁ a .red n₂ l₂ (red {l₁ = l₂�
       step cost (1 , 1) (
         bind cost (joinLeft _ _ _ t₁ a _ _ _ t₂₁ n₁<n₂)
         (λ _ → ret triv))
-    ≤⟨ ≤⁻-mono (λ e → step cost (1 , 1) e) (joinLeft/is-bounded' _ _ _ t₁ a _ _ _ t₂₁ n₁<n₂) ⟩
+    ≲⟨ ≤⁻-mono (λ e → step cost (1 , 1) e) (joinLeft/is-bounded' _ _ _ t₁ a _ _ _ t₂₁ n₁<n₂) ⟩
       step cost (1 , 1) (
         bind cost (step⋆ (2 * (n₂ ∸ n₁) , 2 * (n₂ ∸ n₁))) λ _ → ret triv)
-    ≤⟨ ≤⁻-refl ⟩
+    ≲⟨ ≤⁻-refl ⟩
       step⋆ (1 + 2 * (n₂ ∸ n₁) , 1 + 2 * (n₂ ∸ n₁))
     ∎
 joinLeft/is-bounded' {A} y₁ n₁ l₁ t₁ a .black (suc n₂) l₂ (black {y₁ = y₂₁} {y₂ = y₂₂} {l₁ = l₂₁} {l₂ = l₂₂} t₂₁ a₁ t₂₂) n₁<n₂ with n₁ Nat.≟ n₂
@@ -188,7 +188,7 @@ joinLeft/is-bounded' black n₁ _ _ _ .black _ _ (black {y₁ = black} _ _ _) _ 
       step cost (1 , 1) (
         bind cost (joinLeft _ _ _ t₁ a _ _ _ t₂₁ (Nat.≤∧≢⇒< (Nat.≤-pred n₁<n₂) n₁≢n₂))
         (λ _ → ret triv))
-    ≤⟨ ≤⁻-mono (λ e → step cost (1 , 1) e) (joinLeft/is-bounded _ _ _ t₁ a _ _ _ t₂₁ _) ⟩
+    ≲⟨ ≤⁻-mono (λ e → step cost (1 , 1) e) (joinLeft/is-bounded _ _ _ t₁ a _ _ _ t₂₁ _) ⟩
       step cost (1 , 1) (
         bind cost (step⋆ (1 + 2 * (n₂ ∸ n₁) , 1 + 2 * (n₂ ∸ n₁))) λ _ → ret triv)
     ≡⟨ Eq.cong (λ c → step⋆ c)
@@ -204,9 +204,9 @@ joinLeft/is-bounded y₁ n₁ l₁ t₁ a black n₂ l₂ t₂ n₁<n₂ =
   let open ≤⁻-Reasoning cost in
     begin
       bind cost (joinLeft y₁ n₁ l₁ t₁ a black n₂ l₂ t₂ n₁<n₂) (λ _ → ret triv)
-    ≤⟨ joinLeft/is-bounded' y₁ n₁ l₁ t₁ a black n₂ l₂ t₂ n₁<n₂ ⟩
+    ≲⟨ joinLeft/is-bounded' y₁ n₁ l₁ t₁ a black n₂ l₂ t₂ n₁<n₂ ⟩
       step⋆ (2 * (n₂ ∸ n₁) , 2 * (n₂ ∸ n₁))
-    ≤⟨ step⋆-mono-≤⁻ (Nat.n≤1+n _ , Nat.n≤1+n _) ⟩
+    ≲⟨ step⋆-mono-≤⁻ (Nat.n≤1+n _ , Nat.n≤1+n _) ⟩
       step⋆ (1 + 2 * (n₂ ∸ n₁) , 1 + 2 * (n₂ ∸ n₁))
     ∎
 
@@ -323,10 +323,10 @@ joinRight/is-bounded' {A} red n₁ l₁ (red {l₁ = l₁₁} {l₂ = l₁₂} t
       step cost (1 , 1) (
         bind cost (joinRight _ _ _ t₁₂ a _ _ _ t₂ n₁>n₂)
         (λ _ → ret triv))
-    ≤⟨ ≤⁻-mono (λ e → step cost (1 , 1) e) (joinRight/is-bounded' _ _ _ t₁₂ a _ _ _ t₂ n₁>n₂) ⟩
+    ≲⟨ ≤⁻-mono (λ e → step cost (1 , 1) e) (joinRight/is-bounded' _ _ _ t₁₂ a _ _ _ t₂ n₁>n₂) ⟩
       step cost (1 , 1) (
         bind cost (step⋆ (2 * (n₁ ∸ n₂) , 2 * (n₁ ∸ n₂))) λ _ → ret triv)
-    ≤⟨ ≤⁻-refl ⟩
+    ≲⟨ ≤⁻-refl ⟩
       step⋆ (1 + 2 * (n₁ ∸ n₂) , 1 + 2 * (n₁ ∸ n₂))
     ∎
 joinRight/is-bounded' {A} black (suc n₁) l₁ (black {y₁ = y₁₁} {y₂ = y₁₂} {l₁ = l₁₁} {l₂ = l₁₂} t₁₁ a₁ t₁₂) a y₂ n₂ l₂ t₂ n₁>n₂ with n₁ Nat.≟ n₂
@@ -354,7 +354,7 @@ joinRight/is-bounded' black n₁ _ (black {y₂ = black} _ _ _) _ black _ _ _ _ 
       step cost (1 , 1) (
         bind cost (joinRight _ _ _ t₁₂ a _ _ _ t₂ (Nat.≤∧≢⇒< (Nat.≤-pred n₁>n₂) (≢-sym n₁≢n₂)))
         (λ _ → ret triv))
-    ≤⟨ ≤⁻-mono (λ e → step cost (1 , 1) e) (joinRight/is-bounded _ _ _ t₁₂ a _ _ _ t₂ _) ⟩
+    ≲⟨ ≤⁻-mono (λ e → step cost (1 , 1) e) (joinRight/is-bounded _ _ _ t₁₂ a _ _ _ t₂ _) ⟩
       step cost (1 , 1) (
         bind cost (step⋆ (1 + 2 * (n₁ ∸ n₂) , 1 + 2 * (n₁ ∸ n₂))) λ _ → ret triv)
     ≡⟨ Eq.cong (λ c → step⋆ c)
@@ -370,9 +370,9 @@ joinRight/is-bounded black n₁ l₁ t₁ a y₂ n₂ l₂ t₂ n₁>n₂ =
   let open ≤⁻-Reasoning cost in
     begin
       bind cost (joinRight black n₁ l₁ t₁ a y₂ n₂ l₂ t₂ n₁>n₂) (λ _ → ret triv)
-    ≤⟨ joinRight/is-bounded' black n₁ l₁ t₁ a y₂ n₂ l₂ t₂ n₁>n₂ ⟩
+    ≲⟨ joinRight/is-bounded' black n₁ l₁ t₁ a y₂ n₂ l₂ t₂ n₁>n₂ ⟩
       step⋆ (2 * (n₁ ∸ n₂) , 2 * (n₁ ∸ n₂))
-    ≤⟨ step⋆-mono-≤⁻ (Nat.n≤1+n _ , Nat.n≤1+n _) ⟩
+    ≲⟨ step⋆-mono-≤⁻ (Nat.n≤1+n _ , Nat.n≤1+n _) ⟩
       step⋆ (1 + 2 * (n₁ ∸ n₂) , 1 + 2 * (n₁ ∸ n₂))
     ∎
 
@@ -450,7 +450,7 @@ i-join/is-bounded {A} black n₁ l₁ t₁ a black n₁ l₂ t₂ | tri≈ ¬n�
          (funext (λ { (_ , _ , violation _ _ _) → refl
                     ; (_ , _ , valid _) → refl })) ⟩
       bind cost (joinLeft _ _ _ t₁ a _ _ _ t₂ n₁<n₂) (λ _ → ret triv)
-    ≤⟨ joinLeft/is-bounded _ _ _ t₁ a _ _ _ t₂ n₁<n₂ ⟩
+    ≲⟨ joinLeft/is-bounded _ _ _ t₁ a _ _ _ t₂ n₁<n₂ ⟩
       step⋆ (1 + 2 * (n₂ ∸ n₁) , 1 + 2 * (n₂ ∸ n₁))
     ≡⟨ Eq.cong (λ c → step⋆ c)
          (Eq.cong₂ _,_
@@ -472,7 +472,7 @@ i-join/is-bounded {A} black n₁ l₁ t₁ a black n₁ l₂ t₂ | tri≈ ¬n�
            (funext (λ { (_ , _ , violation _ _ _) → refl
                       ; (_ , _ , valid _) → refl })) ⟩
       bind cost (joinRight _ _ _ t₁ a _ _ _ t₂ n₁>n₂) (λ _ → ret triv)
-    ≤⟨ joinRight/is-bounded _ _ _ t₁ a _ _ _ t₂ n₁>n₂ ⟩
+    ≲⟨ joinRight/is-bounded _ _ _ t₁ a _ _ _ t₂ n₁>n₂ ⟩
       step⋆ (1 + 2 * (n₁ ∸ n₂) , 1 + 2 * (n₁ ∸ n₂))
     ≡⟨ Eq.cong (λ c → step⋆ c)
          (Eq.cong₂ _,_

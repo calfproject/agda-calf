@@ -15,7 +15,7 @@ open import Calf.Data.Sum
 open import Calf.Data.Bool
 open import Calf.Data.Maybe
 open import Calf.Data.Nat hiding (compare)
-open import Calf.Data.List hiding (filter)
+open import Calf.Data.List hiding (filter; find)
 
 open import Level using (0ℓ)
 open import Relation.Binary
@@ -29,6 +29,7 @@ open import Function using (case_of_; _$_)
 open import Examples.Sequence.MSequence
 open import Examples.Sequence.ListMSequence
 open import Examples.Sequence.RedBlackMSequence
+open import Examples.Sequence.DerivedFormsRBT
 
 
 module Ex/FromList where
@@ -197,13 +198,18 @@ module Ex/NatStringDict where
       ; _<_ = λ (n₁ , _) (n₂ , _) → n₁ Nat.< n₂
       ; isStrictTotalOrder =
           record
-            { isEquivalence =
+            { isStrictPartialOrder =
                 record
-                  { refl = Eq.refl
-                  ; sym = Eq.sym
-                  ; trans = Eq.trans
+                  { isEquivalence =
+                      record
+                        { refl = Eq.refl
+                        ; sym = Eq.sym
+                        ; trans = Eq.trans
+                        }
+                  ; irrefl = Nat.<-irrefl
+                  ; trans = Nat.<-trans
+                  ; <-resp-≈ = (λ { Eq.refl h → h }) , (λ { Eq.refl h → h })
                   }
-            ; trans = Nat.<-trans
             ; compare = λ (n₁ , _) (n₂ , _) → Nat.<-cmp n₁ n₂
             }
       }

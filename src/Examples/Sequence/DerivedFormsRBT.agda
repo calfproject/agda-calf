@@ -125,7 +125,7 @@ module MapReduce {A B : tp⁺} where
                   bind cost (g s₁ s₃) λ _ →
                     ret triv
         )
-      ≤⟨ bind-monoʳ-≤⁻ ((mapreduce/seq _ _ _ t₁ f g z) ∥ (mapreduce/seq _ _ _ t₂ f g z)) (λ (s₁ , s₂) →
+      ≲⟨ bind-monoʳ-≤⁻ ((mapreduce/seq _ _ _ t₁ f g z) ∥ (mapreduce/seq _ _ _ t₂ f g z)) (λ (s₁ , s₂) →
            bind-monoʳ-≤⁻ (f a) (λ b →
              bind-monoʳ-≤⁻ (g b s₂) (λ s₃ → g-bound))) ⟩
        (
@@ -135,7 +135,7 @@ module MapReduce {A B : tp⁺} where
                 bind cost (g b s₂) λ _ →
                   step⋆ (c₂ , c₂')
         )
-      ≤⟨ bind-monoʳ-≤⁻ ((mapreduce/seq _ _ _ t₁ f g z) ∥ (mapreduce/seq _ _ _ t₂ f g z)) (λ (s₁ , s₂) →
+      ≲⟨ bind-monoʳ-≤⁻ ((mapreduce/seq _ _ _ t₁ f g z) ∥ (mapreduce/seq _ _ _ t₂ f g z)) (λ (s₁ , s₂) →
            bind-monoʳ-≤⁻ (f a) (λ b →
              bind-monoˡ-≤⁻ (λ _ → step⋆ (c₂ , c₂')) g-bound)) ⟩
         (
@@ -145,7 +145,7 @@ module MapReduce {A B : tp⁺} where
                 bind cost (step⋆ (c₂ , c₂')) λ _ →
                   step⋆ (c₂ , c₂')
         )
-      ≤⟨ bind-monoʳ-≤⁻ ((mapreduce/seq _ _ _ t₁ f g z) ∥ (mapreduce/seq _ _ _ t₂ f g z)) (λ (s₁ , s₂) →
+      ≲⟨ bind-monoʳ-≤⁻ ((mapreduce/seq _ _ _ t₁ f g z) ∥ (mapreduce/seq _ _ _ t₂ f g z)) (λ (s₁ , s₂) →
           bind-monoˡ-≤⁻ (λ _ → bind cost (step⋆ (c₂ , c₂')) λ _ → step⋆ (c₂ , c₂')) f-bound) ⟩
         (
           bind cost
@@ -154,7 +154,7 @@ module MapReduce {A B : tp⁺} where
                 bind cost (step⋆ (c₂ , c₂')) λ _ →
                   step⋆ (c₂ , c₂')
         )
-      ≤⟨ bind-monoˡ-≤⁻ (λ _ → bind cost (step⋆ (c₁ , c₁')) λ _ → bind cost (step⋆ (c₂ , c₂')) λ _ → step⋆ (c₂ , c₂'))
+      ≲⟨ bind-monoˡ-≤⁻ (λ _ → bind cost (step⋆ (c₁ , c₁')) λ _ → bind cost (step⋆ (c₂ , c₂')) λ _ → step⋆ (c₂ , c₂'))
           (bound/par
             {e₁ = mapreduce/seq _ _ _ t₁ f g z}
             {c₁ = mapreduce/work c₁ c₂ l₁ , mapreduce/span c₁' c₂' black n}
@@ -233,7 +233,7 @@ module MapReduce {A B : tp⁺} where
                   bind cost (g s₁ s₃) λ _ →
                     ret triv
         )
-      ≤⟨ bind-monoʳ-≤⁻ ((mapreduce/seq _ _ _ t₁ f g z) ∥ (mapreduce/seq _ _ _ t₂ f g z)) (λ (s₁ , s₂) →
+      ≲⟨ bind-monoʳ-≤⁻ ((mapreduce/seq _ _ _ t₁ f g z) ∥ (mapreduce/seq _ _ _ t₂ f g z)) (λ (s₁ , s₂) →
            bind-monoʳ-≤⁻ (f a) (λ b →
              bind-monoʳ-≤⁻ (g b s₂) (λ s₃ → g-bound))) ⟩
        (
@@ -243,7 +243,7 @@ module MapReduce {A B : tp⁺} where
                 bind cost (g b s₂) λ _ →
                   step⋆ (c₂ , c₂')
         )
-      ≤⟨ bind-monoʳ-≤⁻ ((mapreduce/seq _ _ _ t₁ f g z) ∥ (mapreduce/seq _ _ _ t₂ f g z)) (λ (s₁ , s₂) →
+      ≲⟨ bind-monoʳ-≤⁻ ((mapreduce/seq _ _ _ t₁ f g z) ∥ (mapreduce/seq _ _ _ t₂ f g z)) (λ (s₁ , s₂) →
            bind-monoʳ-≤⁻ (f a) (λ b →
              bind-monoˡ-≤⁻ (λ _ → step⋆ (c₂ , c₂')) g-bound)) ⟩
         (
@@ -253,7 +253,7 @@ module MapReduce {A B : tp⁺} where
                 bind cost (step⋆ (c₂ , c₂')) λ _ →
                   step⋆ (c₂ , c₂')
         )
-      ≤⟨ bind-monoʳ-≤⁻ ((mapreduce/seq _ _ _ t₁ f g z) ∥ (mapreduce/seq _ _ _ t₂ f g z)) (λ (s₁ , s₂) →
+      ≲⟨ bind-monoʳ-≤⁻ ((mapreduce/seq _ _ _ t₁ f g z) ∥ (mapreduce/seq _ _ _ t₂ f g z)) (λ (s₁ , s₂) →
           bind-monoˡ-≤⁻ (λ _ → bind cost (step⋆ (c₂ , c₂')) λ _ → step⋆ (c₂ , c₂')) f-bound) ⟩
         (
           bind cost
@@ -262,7 +262,7 @@ module MapReduce {A B : tp⁺} where
                 bind cost (step⋆ (c₂ , c₂')) λ _ →
                   step⋆ (c₂ , c₂')
         )
-      ≤⟨ bind-monoˡ-≤⁻ (λ _ → bind cost (step⋆ (c₁ , c₁')) λ _ → bind cost (step⋆ (c₂ , c₂')) λ _ → step⋆ (c₂ , c₂'))
+      ≲⟨ bind-monoˡ-≤⁻ (λ _ → bind cost (step⋆ (c₁ , c₁')) λ _ → bind cost (step⋆ (c₂ , c₂')) λ _ → step⋆ (c₂ , c₂'))
           (bound/par
             {e₁ = mapreduce/seq _ _ _ t₁ f g z}
             {c₁ = mapreduce/work c₁ c₂ l₁ , mapreduce/span c₁' c₂' y₁ n'}
@@ -274,7 +274,7 @@ module MapReduce {A B : tp⁺} where
               bind cost (step⋆ (c₂ , c₂')) λ _ →
                 step⋆ (c₂ , c₂')
         )
-      ≤⟨ bind-monoˡ-≤⁻
+      ≲⟨ bind-monoˡ-≤⁻
           (λ _ →
             bind cost (step⋆ (c₁ , c₁')) λ _ →
               bind cost (step⋆ (c₂ , c₂')) λ _ →
@@ -367,11 +367,11 @@ module MapReduce {A B : tp⁺} where
     let open ≤⁻-Reasoning cost in
       begin
         bind cost (mapreduce/seq y n l t f g z) (λ _ → ret triv)
-      ≤⟨ mapreduce/is-bounded' {c₁} {c₁'} {c₂} {c₂'} f f-bound g g-bound z y n l t ⟩
+      ≲⟨ mapreduce/is-bounded' {c₁} {c₁'} {c₂} {c₂'} f f-bound g g-bound z y n l t ⟩
         step⋆ (mapreduce/work c₁ c₂ l , mapreduce/span c₁' c₂' y n)
-      ≤⟨ step⋆-mono-≤⁻ (Nat.≤-refl {mapreduce/work c₁ c₂ l}, span/bounded c₁' c₂' y n) ⟩
+      ≲⟨ step⋆-mono-≤⁻ (Nat.≤-refl {mapreduce/work c₁ c₂ l}, span/bounded c₁' c₂' y n) ⟩
         step⋆ (mapreduce/work c₁ c₂ l , mapreduce/span' c₁' c₂' n)
-      ≤⟨ step⋆-mono-≤⁻ (Nat.≤-refl {mapreduce/work c₁ c₂ l} , lemma) ⟩
+      ≲⟨ step⋆-mono-≤⁻ (Nat.≤-refl {mapreduce/work c₁ c₂ l} , lemma) ⟩
         step⋆ ((c₁ + 2 * c₂) * length l , (2 * c₁' + 4 * c₂') * ⌈log₂ (1 + length l) ⌉ + (c₁' + 2 * c₂'))
       ∎
         where
@@ -422,7 +422,7 @@ module Sum where
         step cost (1 , 1) (
           bind cost ((sum/seq _ _ _ t₁) ∥ (sum/seq _ _ _ t₂))
             (λ _ → ret triv))
-      ≤⟨
+      ≲⟨
         ≤⁻-mono
           (step cost (1 , 1))
           (bound/par
@@ -453,7 +453,7 @@ module Sum where
         step cost (1 , 1) (
           bind cost ((sum/seq _ _ _ t₁) ∥ (sum/seq _ _ _ t₂))
             (λ _ → ret triv))
-      ≤⟨ ≤⁻-mono
+      ≲⟨ ≤⁻-mono
           (step cost (1 , 1))
           (bound/par
             {e₁ = sum/seq _ _ _ t₁}
@@ -462,7 +462,7 @@ module Sum where
             (sum/bounded' y₂ n' l₂ t₂)) ⟩
         step cost (1 , 1) (
           step⋆ ((length l₁ , span/sum y₁ n') ⊗ (length l₂ , span/sum y₂ n')))
-      ≤⟨ ≤⁻-mono
+      ≲⟨ ≤⁻-mono
           (λ e → step cost (1 , 1) e)
             (step⋆-mono-≤⁻
               (Nat.≤-refl , Nat.⊔-mono-≤ (span/bounded y₁ n') (span/bounded y₂ n'))) ⟩
@@ -495,9 +495,9 @@ module Sum where
     let open ≤⁻-Reasoning cost in
       begin
         bind cost (sum/seq y n l t) (λ _ → ret triv)
-      ≤⟨ sum/bounded' y n l t ⟩
+      ≲⟨ sum/bounded' y n l t ⟩
         step⋆ (length l , span/sum y n)
-      ≤⟨ step⋆-mono-≤⁻ (Nat.≤-refl {length l} , lemma) ⟩
+      ≲⟨ step⋆-mono-≤⁻ (Nat.≤-refl {length l} , lemma) ⟩
         step⋆ (length l , 1 + 2 * ⌈log₂ (1 + length l) ⌉)
       ∎
     where

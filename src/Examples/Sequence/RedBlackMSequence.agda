@@ -68,7 +68,7 @@ RedBlackMSequence =
              (funext (λ { (_ , _ , _ , inj₁ _) → refl
                         ; (_ , _ , _ , inj₂ _) → refl })) ⟩
           bind cost (i-join _ _ _ (RBT.t t₁) a _ _ _ (RBT.t t₂)) (λ _ → ret triv)
-        ≤⟨ i-join/is-bounded _ _ _ (RBT.t t₁) a _ _ _ (RBT.t t₂) ⟩
+        ≲⟨ i-join/is-bounded _ _ _ (RBT.t t₁) a _ _ _ (RBT.t t₂) ⟩
           step⋆ (1 + (2 * (RBT.n t₁ Nat.⊔ RBT.n t₂ ∸ RBT.n t₁ Nat.⊓ RBT.n t₂)) , 1 + (2 * (RBT.n t₁ Nat.⊔ RBT.n t₂ ∸ RBT.n t₁ Nat.⊓ RBT.n t₂)))
         ∎
 
@@ -92,9 +92,9 @@ RedBlackMSequence =
       let open ≤⁻-Reasoning cost in
         begin
           bind cost (join t₁ a t₂) (λ _ → ret triv)
-        ≤⟨ join/is-bounded t₁ a t₂ ⟩
+        ≲⟨ join/is-bounded t₁ a t₂ ⟩
           step⋆ (1 + (2 * (RBT.n t₁ Nat.⊔ RBT.n t₂ ∸ RBT.n t₁ Nat.⊓ RBT.n t₂)) , 1 + (2 * (RBT.n t₁ Nat.⊔ RBT.n t₂ ∸ RBT.n t₁ Nat.⊓ RBT.n t₂)))
-        ≤⟨ step⋆-mono-≤⁻ (black-height-cost/to/node-cost , black-height-cost/to/node-cost)  ⟩
+        ≲⟨ step⋆-mono-≤⁻ (black-height-cost/to/node-cost , black-height-cost/to/node-cost)  ⟩
           step⋆ (join/cost t₁ t₂)
         ∎
           where
