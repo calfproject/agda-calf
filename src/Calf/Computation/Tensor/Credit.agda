@@ -29,10 +29,10 @@ opaque
     sym (𝒞-glue-fracture-retract _) ∙ cong 𝒞-Glue (sym fracture-proof)
     where
       fwd : ●ᶜ (A ⊗ B-⊤) ⊸ ●ᶜ (A ⊗ Abstractionᶜ B-⊤ B-abs β)
-      fwd = ●ᶜ.map (map₂ idᶜ (triangle-Uᶜ {B-⊤} {B-abs} {β}))
+      fwd = ●ᶜ.map (map₂ idᶜ (triangle-Uᶜ β))
 
       fwd-equiv : isEquiv (fwd .U)
-      fwd-equiv = ●ᶜ-map₂-equiv (●ᶜ.map-id-equiv {A}) (●ᶜ-Abstractionᶜ-≃ᶜ {B-⊤} {B-abs} {β} .snd)
+      fwd-equiv = ●ᶜ-map₂-equiv (●ᶜ.map-id-equiv {A}) (●ᶜ-Abstractionᶜ-≃ᶜ β .snd)
 
       q• : ●ᶜ (A ⊗ B-⊤) ≡ ●ᶜ (A ⊗ Abstractionᶜ B-⊤ B-abs β)
       q• = conservativity fwd fwd-equiv
@@ -40,7 +40,7 @@ opaque
       q◦ : ◯ᶜ (A ⊗ B-abs) ≡ ◯ᶜ (A ⊗ Abstractionᶜ B-⊤ B-abs β)
       q◦ =
         cong (Πᶜ ⟨ ABS ⟩)
-          (funExt λ abs → sym (cong (A ⊗_) (◯[Abstractionᶜ≡A-abs] {B-⊤} {B-abs} {β} abs)))
+          (funExt λ abs → sym (cong (A ⊗_) (◯[Abstractionᶜ≡A-abs] β abs)))
 
       qα :
         PathP (λ i → q• i ⊸ ●ᶜ (q◦ i))
@@ -54,14 +54,14 @@ opaque
                 (●ᶜ (◯ᶜ (A ⊗ Abstractionᶜ B-⊤ B-abs β)) .is-preorder)
                 (λ w → ●.η• ((map₂ idᶜ β ⨾ᶜ η◦ᶜ) .U w))
                 (λ w → ●.η• (η◦ᶜ {A = A ⊗ Abstractionᶜ B-⊤ B-abs β} .U
-                  (map₂ idᶜ (triangle-Uᶜ {B-⊤} {B-abs} {β}) .U w)))
+                  (map₂ idᶜ (triangle-Uᶜ β) .U w)))
                 (⊗₀-elimProp {A} {B-⊤}
                   (λ _ → isOfHLevelPathP' {A = λ i → U (●ᶜ (q◦ i))} 1
                     (is-set (●ᶜ (◯ᶜ (A ⊗ Abstractionᶜ B-⊤ B-abs β)))) _ _)
                   (λ a b →
                     congP (λ _ → ●.η•) (funExt λ abs →
-                      congP (λ i q → ηᴾ (inj {A} {◯[Abstractionᶜ≡A-abs] {B-⊤} {B-abs} {β} abs (~ i)} a q))
-                        (symP (◯[triangleᶜ'≡b-abs] {B-⊤} {B-abs} {β} {b} {β .U b} {refl} abs)))))
+                      congP (λ i q → ηᴾ (inj {A} {◯[Abstractionᶜ≡A-abs] β abs (~ i)} a q))
+                        (symP (◯[triangleᶜ'≡b-abs] β b (β .U b) refl abs)))))
                 w))
 
       fracture-proof :

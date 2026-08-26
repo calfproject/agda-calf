@@ -62,7 +62,7 @@ opaque
 opaque
   𝒞-glue-fracture-retract : retract 𝒞-Fracture 𝒞-Glue
   𝒞-glue-fracture-retract A =
-    sym (conservativity (𝒞-fracture {A}) fracture-isEquiv)
+    sym (conservativity 𝒞-fracture fracture-isEquiv)
 
 𝒞-fracture-and-gluing : 𝒞 ≃ 𝒞-FRACTURE
 𝒞-fracture-and-gluing =

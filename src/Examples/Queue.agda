@@ -113,16 +113,16 @@ module Dequeue where
 
     dequeue-coherent :
       (q : U BQ)
-      → ⋊-map {X = ℕₚ} α .U (dequeueᴮ .U q) ≡ dequeueᴸ .U (α .U q)
+      → ⋊-map ℕₚ α .U (dequeueᴮ .U q) ≡ dequeueᴸ .U (α .U q)
     dequeue-coherent q =
       cong (λ f → f .U q)
         (bind'-path
-          (dequeueᴮ ⨾ᶜ ⋊-map {X = ℕₚ} α)
+          (dequeueᴮ ⨾ᶜ ⋊-map ℕₚ α)
           (α ⨾ᶜ dequeueᴸ)
           (funExt dequeue-lemma))
       where
         dequeue-lemma : (x : List ℕ × List ℕ)
-          → (dequeueᴮ ⨾ᶜ ⋊-map {X = ℕₚ} α) .U (ret x) ≡ (α ⨾ᶜ dequeueᴸ) .U (ret x)
+          → (dequeueᴮ ⨾ᶜ ⋊-map ℕₚ α) .U (ret x) ≡ (α ⨾ᶜ dequeueᴸ) .U (ret x)
         dequeue-lemma (back , x ∷ front) =
             dequeueᴮ .U (ret (back , x ∷ front)) .proj₁ ,
             α .U (dequeueᴮ .U (ret (back , x ∷ front)) .proj₂)
@@ -187,22 +187,22 @@ module Dequeue where
 
 
   dequeue' : BLQ ⊸ ℕₚ ⋊ BLQ
-  dequeue' = squareᶜ' {α = α} {β = ⋊-map {X = ℕₚ} α} dequeueᴮ dequeueᴸ dequeue-coherent ⨾ᶜ ⋊-Abstractionᶜ {X = ℕₚ} {A-⊤ = BQ} {LQ} {α}
+  dequeue' = squareᶜ' α (⋊-map ℕₚ α) dequeueᴮ dequeueᴸ dequeue-coherent ⨾ᶜ ⋊-Abstractionᶜ ℕₚ α
 
 
 batched-queue : Queue
 batched-queue .prequeue .Q = Abstractionᶜ BQ LQ α
-batched-queue .prequeue .empty = triangleᶜ' {β = α} emptyᴮ emptyᴸ empty-coherent
-batched-queue .prequeue .enqueue e = squareᶜ' (enqueueᴮ e) (enqueueᴸ e) (enqueue-coherent e)
+batched-queue .prequeue .empty = triangleᶜ' α emptyᴮ emptyᴸ empty-coherent
+batched-queue .prequeue .enqueue e = squareᶜ' α α (enqueueᴮ e) (enqueueᴸ e) (enqueue-coherent e)
 batched-queue .prequeue .dequeue = Dequeue.dequeue'
 batched-queue .spec abs i .Q =
-  ◯[Abstractionᶜ≡A-abs] {BQ} {LQ} {α} abs i
+  ◯[Abstractionᶜ≡A-abs] α abs i
 batched-queue .spec abs i .empty =
-  ◯[triangleᶜ'≡b-abs] {b-⊤ = emptyᴮ} {emptyᴸ} {empty-coherent} abs i
+  ◯[triangleᶜ'≡b-abs] α emptyᴮ emptyᴸ empty-coherent abs i
 batched-queue .spec abs i .enqueue e =
-  ◯[squareᶜ'≡f-abs] {f-⊤ = enqueueᴮ e} {enqueueᴸ e} {enqueue-coherent e} abs i
+  ◯[squareᶜ'≡f-abs] α α (enqueueᴮ e) (enqueueᴸ e) (enqueue-coherent e) abs i
 batched-queue .spec abs i .dequeue =
   ( (λ i →
-      ◯[squareᶜ'≡f-abs] {β = ⋊-map {X = ℕₚ} α} {f-⊤ = dequeueᴮ} {dequeueᴸ} {Dequeue.dequeue-coherent} abs i
-        ⨾ᶜ ◯[⋊-Abstractionᶜ≡idᶜ] {X = ℕₚ} {A-⊤ = BQ} {LQ} {α} abs i)
+      ◯[squareᶜ'≡f-abs] α (⋊-map ℕₚ α) dequeueᴮ dequeueᴸ Dequeue.dequeue-coherent abs i
+        ⨾ᶜ ◯[⋊-Abstractionᶜ≡idᶜ] ℕₚ α abs i)
   ▷ f⨾ᶜidᶜ≡f dequeueᴸ) i

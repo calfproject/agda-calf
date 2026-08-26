@@ -24,11 +24,12 @@ opaque
   unfolding Abstractionᶜ
 
   squareᶜ'
-    : ∀ {A-⊤ A-abs α B-⊤ B-abs β}
+    : ∀ {A-⊤ A-abs B-⊤ B-abs}
+    → (α : A-⊤ ⊸ A-abs) (β : B-⊤ ⊸ B-abs)
     → (f-⊤ : A-⊤ ⊸ B-⊤) (f-abs : A-abs ⊸ B-abs)
     → ((a-⊤ : U A-⊤) → U β (U f-⊤ a-⊤) ≡ U f-abs (U α a-⊤))
     → Abstractionᶜ A-⊤ A-abs α ⊸ Abstractionᶜ B-⊤ B-abs β
-  squareᶜ' {α = α} {β = β} f-⊤ f-abs f-coherence =
+  squareᶜ' α β f-⊤ f-abs f-coherence =
     Glueᶜ.squareᶜ
       (●ᶜ.map f-⊤)
       (◯ᶜ.map f-abs)
@@ -42,23 +43,23 @@ opaque
 opaque
   unfolding Abstractionᶜ
 
-  triangle-Uᶜ : ∀ {A-⊤ A-abs α} → A-⊤ ⊸ Abstractionᶜ A-⊤ A-abs α
-  triangle-Uᶜ {A-⊤} {A-abs} {α} .U = Abstraction.triangle
-  triangle-Uᶜ {A-⊤} {A-abs} {α} .charge c a =
+  triangle-Uᶜ : ∀ {A-⊤ A-abs} (α : A-⊤ ⊸ A-abs) → A-⊤ ⊸ Abstractionᶜ A-⊤ A-abs α
+  triangle-Uᶜ {A-⊤} {A-abs} α .U = Abstraction.triangle
+  triangle-Uᶜ {A-⊤} {A-abs} α .charge c a =
     Glue-path (is-set (◯ᶜ A-abs)) refl (cong η◦ (α .charge c a))
 
-  triangleᶜ' : ∀ {B-⊤ B-abs β} (b-⊤ : U B-⊤) (b-abs : U B-abs)
+  triangleᶜ' : ∀ {B-⊤ B-abs} (β : B-⊤ ⊸ B-abs) (b-⊤ : U B-⊤) (b-abs : U B-abs)
     → β .U b-⊤ ≡ b-abs
     → U (Abstractionᶜ B-⊤ B-abs β)
-  triangleᶜ' {B-abs = B-abs} b-⊤ b-abs b-coherence =
+  triangleᶜ' {B-abs = B-abs} β b-⊤ b-abs b-coherence =
     (η• b-⊤ , η◦ᶜ {A = B-abs} .U b-abs) ,
     cong (λ b → η• (η◦ᶜ {A = B-abs} .U b)) b-coherence
 
 opaque
   unfolding Abstractionᶜ
 
-  Abstractionᶜ-id : Abstractionᶜ A A idᶜ ≡ A
-  Abstractionᶜ-id {A} =
+  Abstractionᶜ-id : (A : 𝒞) → Abstractionᶜ A A idᶜ ≡ A
+  Abstractionᶜ-id A =
     cong (Glueᶜ (●ᶜ A) (◯ᶜ A) ∘ ●ᶜ.map) (idᶜ⨾ᶜf≡f η◦ᶜ)
     ∙ 𝒞-glue-fracture-retract A
 
@@ -66,27 +67,28 @@ triangle : ∀ {A-⊤ A-abs α B}
   → A-abs ⊸ B
   → Abstractionᶜ A-⊤ A-abs α ⊸ B
 triangle {α = α} {B} f-abs =
-  subst (_ ⊸_) Abstractionᶜ-id $
-  squareᶜ' (α ⨾ᶜ f-abs) f-abs (λ _ → refl)
+  subst (_ ⊸_) (Abstractionᶜ-id B) $
+  squareᶜ' α idᶜ (α ⨾ᶜ f-abs) f-abs (λ _ → refl)
 
-triangle' : ∀ {A B-⊤ B-abs β}
+triangle' : ∀ {A B-⊤ B-abs}
+  → (β : B-⊤ ⊸ B-abs)
   → A ⊸ B-⊤
   → A ⊸ Abstractionᶜ B-⊤ B-abs β
-triangle' f-⊤ = f-⊤ ⨾ᶜ triangle-Uᶜ
+triangle' β f-⊤ = f-⊤ ⨾ᶜ triangle-Uᶜ β
 
 opaque
   unfolding Abstractionᶜ Abstractionᶜ-id 𝒞-glue-fracture-retract triangle-Uᶜ ⊸-path
 
-  triangle-Uᶜ-id : PathP (λ i → A ⊸ Abstractionᶜ-id {A} i) (triangle-Uᶜ {A} {A} {idᶜ}) idᶜ
+  triangle-Uᶜ-id : PathP (λ i → A ⊸ Abstractionᶜ-id A i) (triangle-Uᶜ idᶜ) idᶜ
   triangle-Uᶜ-id {A} =
     compPathP' {B = A ⊸_}
       (⊸-path
         refl (cong (Glueᶜ (●ᶜ A) (◯ᶜ A) ∘ ●ᶜ.map) (idᶜ⨾ᶜf≡f η◦ᶜ))
-        {f₀ = triangle-Uᶜ {A} {A} {idᶜ}}
-        {f₁ = 𝒞-fracture {A}}
+        {f₀ = triangle-Uᶜ idᶜ}
+        {f₁ = 𝒞-fracture}
         refl)
       (⊸-path refl (𝒞-glue-fracture-retract A)
-        {f₀ = 𝒞-fracture {A}}
+        {f₀ = 𝒞-fracture}
         {f₁ = idᶜ}
         (funExt λ a →
           symP (ua-gluePath (𝒞-fracture {A} .U , fracture-isEquiv) {x = a} refl)))

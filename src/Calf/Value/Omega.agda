@@ -15,9 +15,9 @@ data ω₀ : 𝒱 where
   rel-0𝟚 : ∀ n → rel 0𝟚 n ≡ n
   rel-1𝟚 : ∀ n → rel 1𝟚 n ≡ suc n
 
-ω₀-elimProp : {P : ω₀ → Type} → (∀ n → isProp (P n))
+ω₀-elimProp : (P : ω₀ → Type) → (∀ n → isProp (P n))
   → P zero → (∀ n → P n → P (suc n)) → (∀ 𝕚 n → P n → P (rel 𝕚 n)) → ∀ n → P n
-ω₀-elimProp {P} isPropP z s r = go
+ω₀-elimProp P isPropP z s r = go
   where
     go : ∀ n → P n
     go zero = z
@@ -142,7 +142,7 @@ private
 
   +-suc : ∀ m n → ηᴾ (m +₀ suc n) ≡ ηᴾ (suc (m +₀ n))
   +-suc m n =
-    ω₀-elimProp {P = λ m → ηᴾ (m +₀ suc n) ≡ ηᴾ (suc (m +₀ n))} (λ _ → isSetω _ _)
+    ω₀-elimProp (λ m → ηᴾ (m +₀ suc n) ≡ ηᴾ (suc (m +₀ n))) (λ _ → isSetω _ _)
       refl
       (λ m ih → cong sucω ih)
       (λ 𝕚 m ih → cong (relω 𝕚) ih ∙ rel-suc 𝕚 (m +₀ n))
@@ -150,7 +150,7 @@ private
 
   +-rel : ∀ m 𝕚 n → ηᴾ (m +₀ rel 𝕚 n) ≡ ηᴾ (rel 𝕚 (m +₀ n))
   +-rel m 𝕚 n =
-    ω₀-elimProp {P = λ m → ηᴾ (m +₀ rel 𝕚 n) ≡ ηᴾ (rel 𝕚 (m +₀ n))} (λ _ → isSetω _ _)
+    ω₀-elimProp (λ m → ηᴾ (m +₀ rel 𝕚 n) ≡ ηᴾ (rel 𝕚 (m +₀ n))) (λ _ → isSetω _ _)
       refl
       (λ m ih → cong sucω ih ∙ sym (rel-suc 𝕚 (m +₀ n)))
       (λ 𝕛 m ih → cong (relω 𝕛) ih ∙ rel-rel 𝕛 𝕚 (m +₀ n))
@@ -158,7 +158,7 @@ private
 
   +-comm₀ : ∀ m n → ηᴾ (m +₀ n) ≡ ηᴾ (n +₀ m)
   +-comm₀ m n =
-    ω₀-elimProp {P = λ n → ηᴾ (m +₀ n) ≡ ηᴾ (n +₀ m)} (λ _ → isSetω _ _)
+    ω₀-elimProp (λ n → ηᴾ (m +₀ n) ≡ ηᴾ (n +₀ m)) (λ _ → isSetω _ _)
       (cong ηᴾ (+₀-identityʳ m))
       (λ n ih → +-suc m n ∙ cong sucω ih)
       (λ 𝕚 n ih → +-rel m 𝕚 n ∙ cong (relω 𝕚) ih)

@@ -26,15 +26,15 @@ module _ {X• X◦ : 𝒱} {χ• : X• → ● X◦} where
   •→◦ : (g : Glueᵈ X• X◦ χ•) → χ• (• g) ⊑ η• (◦ g)
   •→◦ g = g .snd
 
-  opaque
-    isPreorderGlueᵈ :
-        isPreorder X•
-      → isPreorder X◦
-      → isPreorder (Glueᵈ X• X◦ χ•)
-    isPreorderGlueᵈ isPreorderX• isPreorderX◦ =
-      isLocalComma isPreorderX• isPreorderX◦ (isPreorder● isPreorderX◦)
-
 open 𝒱-FRACTURE
+
+opaque
+  isPreorderGlueᵈ : (X• X◦ : 𝒱) {χ• : X• → ● X◦}
+    → isPreorder X•
+    → isPreorder X◦
+    → isPreorder (Glueᵈ X• X◦ χ•)
+  isPreorderGlueᵈ X• X◦ isPreorderX• isPreorderX◦ =
+    isLocalComma isPreorderX• isPreorderX◦ (isPreorder● isPreorderX◦)
 
 𝒱-Glueᵈ : 𝒱-FRACTURE → 𝒱
 𝒱-Glueᵈ F = Glueᵈ ⟨ F .X• ⟩ ⟨ F .X◦ ⟩ (F .χ•)
@@ -45,4 +45,4 @@ Seal = 𝒱-Glueᵈ ∘ 𝒱-Fracture
 opaque
   isPreorderSeal : isPreorder X → isPreorder (Seal X)
   isPreorderSeal {X} isPreorderX =
-    isPreorderGlueᵈ {● X} {◯ X} (isPreorder● isPreorderX) (isPreorder◯ isPreorderX)
+    isPreorderGlueᵈ (● X) (◯ X) (isPreorder● isPreorderX) (isPreorder◯ isPreorderX)

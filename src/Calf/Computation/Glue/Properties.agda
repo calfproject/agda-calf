@@ -45,10 +45,10 @@ fracture-map-fracture {A} {B} f a =
 ◯[Glueᶜ≡A◦] F abs = uaᶜ (◯[Glueᶜ≃A◦] F abs)
 
 ◯[squareᶜ≡f◦] : {F G : 𝒞-FRACTURE}
-    {f• : ⟨ F .A• ⟩ᶜ ⊸ ⟨ G .A• ⟩ᶜ} {f◦ : ⟨ F .A◦ ⟩ᶜ ⊸ ⟨ G .A◦ ⟩ᶜ}
-    {coh : f• ⨾ᶜ G .α• ≡ F .α• ⨾ᶜ ●ᶜ.map f◦} (abs : ⟨ ABS ⟩)
+  → (f• : ⟨ F .A• ⟩ᶜ ⊸ ⟨ G .A• ⟩ᶜ) (f◦ : ⟨ F .A◦ ⟩ᶜ ⊸ ⟨ G .A◦ ⟩ᶜ)
+  → (coh : f• ⨾ᶜ G .α• ≡ F .α• ⨾ᶜ ●ᶜ.map f◦) (abs : ⟨ ABS ⟩)
   → PathP (λ i → ◯[Glueᶜ≡A◦] F abs i ⊸ ◯[Glueᶜ≡A◦] G abs i)
       (squareᶜ f• f◦ coh)
       f◦
-◯[squareᶜ≡f◦] {F} {G} {f•} {f◦} {coh} abs =
+◯[squareᶜ≡f◦] {F} {G} f• f◦ coh abs =
   uaᶜ-⊸ (◯[Glueᶜ≃A◦] F abs) (◯[Glueᶜ≃A◦] G abs) (⊸-path refl refl refl)

@@ -20,7 +20,7 @@ Potential-0ℂ =
     Abstractionᶜ (F _) (F _) (bind' ret)
   ≡⟨ cong (Abstractionᶜ _ _) bind'/η ⟩
     Abstractionᶜ (F _) (F _) idᶜ
-  ≡⟨ Abstractionᶜ-id ⟩
+  ≡⟨ Abstractionᶜ-id (F _) ⟩
     F _
   ∎
 
@@ -30,7 +30,7 @@ square : {ΦX : X → ℂ} {ΦY : Y → ℂ}
   → (∀ x → c-⊤ x +ℂ ΦY (f x) ≡ ΦX x +ℂ c-abs x)
   → Potential ΦX ⊸ Potential ΦY
 square {ΦX = ΦX} {ΦY = ΦY} f c-⊤ c-abs amortization =
-  squareᶜ' (costed f c-⊤) (costed f c-abs) λ a →
+  squareᶜ' (costed (λ x → x) ΦX) (costed (λ y → y) ΦY) (costed f c-⊤) (costed f c-abs) λ a →
     cong (λ h → h .U a)
       ( costed-⨾ᶜ f c-⊤ (λ y → y) ΦY
       ∙ costed-≡ (λ _ → refl) amortization
@@ -46,55 +46,55 @@ module _ where
   open import Calf.Computation.Tensor
 
   private
-    Σᶜ-◯ᶜ-in : ∀ {X : 𝒱ₛ} {A : ⟨ X ⟩ → 𝒞} x →
+    Σᶜ-◯ᶜ-in : (X : 𝒱ₛ) (A : ⟨ X ⟩ → 𝒞) (x : ⟨ X ⟩) →
       A x ⊸ ◯ᶜ (Σᶜ X A)
-    Σᶜ-◯ᶜ-in x .U a◦ = η◦ (x , a◦)
-    Σᶜ-◯ᶜ-in x .charge _ _ = refl
+    Σᶜ-◯ᶜ-in X A x .U a◦ = η◦ (x , a◦)
+    Σᶜ-◯ᶜ-in X A x .charge _ _ = refl
 
-    Σᶜ-fracture-map' : ∀ {X : 𝒱ₛ} {A B : ⟨ X ⟩ → 𝒞} →
+    Σᶜ-fracture-map' : (X : 𝒱ₛ) {A B : ⟨ X ⟩ → 𝒞} →
       ((x : ⟨ X ⟩) → A x ⊸ ●ᶜ (B x)) →
       ●ᶜ (Σᶜ X A) ⊸ ●ᶜ (◯ᶜ (Σᶜ X B))
-    Σᶜ-fracture-map' {X} {A} {B} α = ●ᶜ.bind k
+    Σᶜ-fracture-map' X {A} {B} α = ●ᶜ.bind k
       where
         k : Σᶜ X A ⊸ ●ᶜ (◯ᶜ (Σᶜ X B))
-        k .U (x , a) = ●ᶜ.map (Σᶜ-◯ᶜ-in {X} {B} x) .U (α x .U a)
+        k .U (x , a) = ●ᶜ.map (Σᶜ-◯ᶜ-in X B x) .U (α x .U a)
         k .charge c (x , a) =
-            ●ᶜ.map (Σᶜ-◯ᶜ-in {X} {B} x) .U (α x .U (A x .charge c a))
-          ≡⟨ cong (●ᶜ.map (Σᶜ-◯ᶜ-in {X} {B} x) .U) (α x .charge c a) ⟩
-            ●ᶜ.map (Σᶜ-◯ᶜ-in {X} {B} x) .U (●ᶜ (B x) .charge c (α x .U a))
-          ≡⟨ ●ᶜ.map (Σᶜ-◯ᶜ-in {X} {B} x) .charge c (α x .U a) ⟩
-            ●ᶜ (◯ᶜ (Σᶜ X B)) .charge c (●ᶜ.map (Σᶜ-◯ᶜ-in {X} {B} x) .U (α x .U a))
+            ●ᶜ.map (Σᶜ-◯ᶜ-in X B x) .U (α x .U (A x .charge c a))
+          ≡⟨ cong (●ᶜ.map (Σᶜ-◯ᶜ-in X B x) .U) (α x .charge c a) ⟩
+            ●ᶜ.map (Σᶜ-◯ᶜ-in X B x) .U (●ᶜ (B x) .charge c (α x .U a))
+          ≡⟨ ●ᶜ.map (Σᶜ-◯ᶜ-in X B x) .charge c (α x .U a) ⟩
+            ●ᶜ (◯ᶜ (Σᶜ X B)) .charge c (●ᶜ.map (Σᶜ-◯ᶜ-in X B x) .U (α x .U a))
           ∎
 
   private opaque
-    Σᶜ-fracture-map'-path : ∀ {X : 𝒱ₛ} {A B : ⟨ X ⟩ → 𝒞}
+    Σᶜ-fracture-map'-path : (X : 𝒱ₛ) (A B : ⟨ X ⟩ → 𝒞)
       → (m : Σᶜ X A ⊸ ◯ᶜ (Σᶜ X B))
       → (α : (x : ⟨ X ⟩) → ●ᶜ (A x) ⊸ ●ᶜ (◯ᶜ (B x)))
       → ((x : ⟨ X ⟩) (a : U (A x))
-          → ●ᶜ.map (Σᶜ-◯ᶜ-in {X} {◯ᶜ ∘ B} x) .U (α x .U (η• a))
-            ≡ η• (Σᶜ-◯ᶜ-fwd {X} {B} .U (m .U (x , a))))
+          → ●ᶜ.map (Σᶜ-◯ᶜ-in X (◯ᶜ ∘ B) x) .U (α x .U (η• a))
+            ≡ η• (Σᶜ-◯ᶜ-fwd X B .U (m .U (x , a))))
       → PathP
-          (λ i → Σᶜ-●ᶜ {X} {A} i ⊸ ●ᶜ (Σᶜ-◯ᶜ {X} {B} i))
+          (λ i → Σᶜ-●ᶜ X A i ⊸ ●ᶜ (Σᶜ-◯ᶜ X B i))
           (●ᶜ.map m)
-          (Σᶜ-fracture-map' {X} α)
-    Σᶜ-fracture-map'-path {X} {A} {B} m α coh =
+          (Σᶜ-fracture-map' X α)
+    Σᶜ-fracture-map'-path X A B m α coh =
       ⊸-path
-        (Σᶜ-●ᶜ {X} {A})
-        (cong ●ᶜ (Σᶜ-◯ᶜ {X} {B}))
+        (Σᶜ-●ᶜ X A)
+        (cong ●ᶜ (Σᶜ-◯ᶜ X B))
         {f₀ = ●ᶜ.map m}
-        {f₁ = Σᶜ-fracture-map' {X} α}
+        {f₁ = Σᶜ-fracture-map' X α}
         (ua→
-          {e = Σᶜ-●ᶜ-fwd {X} {A} .U , Σᶜ-●ᶜ-fwd-equiv {X} {A}}
+          {e = Σᶜ-●ᶜ-fwd X A .U , Σᶜ-●ᶜ-fwd-equiv X A}
           (λ w →
             ●.elim
               (λ w →
                 ●.isModalPathP ●.isModal●
                   {x = ●ᶜ.map m .U w}
-                  {x' = Σᶜ-fracture-map' {X} α .U (Σᶜ-●ᶜ-fwd {X} {A} .U w)})
+                  {x' = Σᶜ-fracture-map' X α .U (Σᶜ-●ᶜ-fwd X A .U w)})
               (λ (x , a) →
                 congP (λ _ → η•)
                   (ua-gluePath
-                    ( Σᶜ-◯ᶜ-fwd {X} {B} .U , Σᶜ-◯ᶜ-fwd-equiv {X} {B})
+                    ( Σᶜ-◯ᶜ-fwd X B .U , Σᶜ-◯ᶜ-fwd-equiv X B)
                     {x = m .U (x , a)}
                     refl)
                 ▷ sym (coh x a))
@@ -117,31 +117,31 @@ module _ where
         fracture-proof =
             Abstractionᶜ-FRAC (Σᶜ X A-⊤) (Σᶜ X A-abs) (Σᶜ-map α)
           ≡⟨ 𝒞-FRACTURE-pathᶜ
-                (Σᶜ-●ᶜ {X} {A-⊤})
-                (Σᶜ-◯ᶜ {X} {A-abs})
-                (Σᶜ-fracture-map'-path {X} {A-⊤} {A-abs}
+                (Σᶜ-●ᶜ X A-⊤)
+                (Σᶜ-◯ᶜ X A-abs)
+                (Σᶜ-fracture-map'-path X A-⊤ A-abs
                   (Σᶜ-map α ⨾ᶜ η◦ᶜ {Σᶜ X A-abs})
                   (λ x → ●ᶜ.map (α x ⨾ᶜ η◦ᶜ {A-abs x}))
                   (λ x a → refl)) ⟩
             record
               { A• = ●ᶜ• (Σᶜ X (●ᶜ ∘ A-⊤))
               ; A◦ = ◯ᶜ◦ (Σᶜ X (◯ᶜ ∘ A-abs))
-              ; α• = Σᶜ-fracture-map' {X} {●ᶜ ∘ A-⊤} {◯ᶜ ∘ A-abs} (λ x → ●ᶜ.map (α x ⨾ᶜ η◦ᶜ {A-abs x}))
+              ; α• = Σᶜ-fracture-map' X {●ᶜ ∘ A-⊤} {◯ᶜ ∘ A-abs} (λ x → ●ᶜ.map (α x ⨾ᶜ η◦ᶜ {A-abs x}))
               }
           ≡⟨ 𝒞-FRACTURE-pathᶜ
-                (cong (●ᶜ ∘ Σᶜ X) (funExt λ x → sym (●ᶜ-Abstractionᶜ {A-⊤ x} {A-abs x} {α x})))
-                (cong (◯ᶜ ∘ Σᶜ X) (funExt λ x → sym (◯ᶜ-Abstractionᶜ {A-⊤ x} {A-abs x} {α x})))
-                (congP (λ _ → Σᶜ-fracture-map' {X})
-                  (funExt λ x → Abstractionᶜ-coherence {A-⊤ x} {A-abs x} {α x})) ⟩
+                (cong (●ᶜ ∘ Σᶜ X) (funExt λ x → sym (●ᶜ-Abstractionᶜ (α x))))
+                (cong (◯ᶜ ∘ Σᶜ X) (funExt λ x → sym (◯ᶜ-Abstractionᶜ (α x))))
+                (congP (λ _ → Σᶜ-fracture-map' X)
+                  (funExt λ x → Abstractionᶜ-coherence (α x))) ⟩
             record
               { A• = ●ᶜ• (Σᶜ X (●ᶜ ∘ Abs))
               ; A◦ = ◯ᶜ◦ (Σᶜ X (◯ᶜ ∘ Abs))
-              ; α• = Σᶜ-fracture-map' {X} {●ᶜ ∘ Abs} {◯ᶜ ∘ Abs} (λ x → ●ᶜ.map (η◦ᶜ {Abs x}))
+              ; α• = Σᶜ-fracture-map' X {●ᶜ ∘ Abs} {◯ᶜ ∘ Abs} (λ x → ●ᶜ.map (η◦ᶜ {Abs x}))
               }
           ≡⟨ 𝒞-FRACTURE-pathᶜ
-                (sym (Σᶜ-●ᶜ {X} {Abs}))
-                (sym (Σᶜ-◯ᶜ {X} {Abs}))
-                (symP (Σᶜ-fracture-map'-path {X} {Abs} {Abs}
+                (sym (Σᶜ-●ᶜ X Abs))
+                (sym (Σᶜ-◯ᶜ X Abs))
+                (symP (Σᶜ-fracture-map'-path X Abs Abs
                   (η◦ᶜ {Σᶜ X Abs})
                   (λ x → ●ᶜ.map (η◦ᶜ {Abs x}))
                   (λ x a → refl))) ⟩
@@ -155,7 +155,7 @@ module _ where
       Potential Φ ≡ [ x ∈ X ] ⋊ ▷[ Φ x ] ⊤
     potential-credit {X = X} Φ =
         Potential Φ
-      ≡⟨ (λ i → Abstractionᶜ (F-Σᶜ {X} i) (F-Σᶜ {X} i) (F-Σᶜ-potential {X} Φ i)) ⟩
+      ≡⟨ (λ i → Abstractionᶜ (F-Σᶜ X i) (F-Σᶜ X i) (F-Σᶜ-potential X Φ i)) ⟩
         Abstractionᶜ ([ x ∈ X ] ⋊ ⊤) ([ x ∈ X ] ⋊ ⊤) (Σᶜ-map {X} {const ⊤} (λ x → CHARGE (Φ x)))
       ≡⟨ Σᶜ-Abstractionᶜ (λ x → CHARGE (Φ x)) ⟩
         [ x ∈ X ] ⋊ ▷[ Φ x ] ⊤
