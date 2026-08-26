@@ -57,4 +57,4 @@ opaque
       uncurryᶜ-curryᶜ : (f : A ⊗ B ⊸ C) → uncurryᶜ (curryᶜ f) ≡ f
       uncurryᶜ-curryᶜ f =
         ⊸-path refl refl
-          (funExt (⊛-≡ (C .is-preorder) (uncurryᶜ (curryᶜ f) .U) (f .U) (λ a b → refl)))
+          (funExt (⊗₀-≡ (C .is-preorder) (uncurryᶜ (curryᶜ f) .U) (f .U) (λ a b → refl)))

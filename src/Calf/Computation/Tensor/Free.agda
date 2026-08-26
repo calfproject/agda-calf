@@ -32,7 +32,7 @@ opaque
 
       bwd-sect : ∀ v → bwd .U (fwd v) ≡ v
       bwd-sect =
-        ⊛-≡ isPreorderP (λ v → bwd .U (fwd v)) (λ v → v)
+        ⊗₀-≡ isPreorderP (λ v → bwd .U (fwd v)) (λ v → v)
           (λ (c₁ , x) (c₂ , y) →
             rec-unique2 isPreorderP
               (λ x y → bwd .U ((c₁ +ℂ c₂) , map2ᴾ _,_ x y))

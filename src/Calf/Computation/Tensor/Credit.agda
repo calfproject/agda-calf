@@ -64,7 +64,7 @@ opaque
                     (●.η• ((CHARGE c ⨾ᶜ η◦ᶜ {A = A ⊗ B}) .U w)))
                   (λ w → ●.η• (η◦ᶜ {A = A ⊗ (▷[ c ] B)} .U
                     (map₂ idᶜ (triangle-Uᶜ {B} {B}) .U w)))
-                  (⊛-elimProp
+                  (⊗₀-elimProp {A} {B}
                     (λ _ → is-set (●ᶜ (◯ᶜ (A ⊗ (▷[ c ] B)))) _ _)
                     (λ a b → fromPathP
                       (congP (λ _ → ●.η•)

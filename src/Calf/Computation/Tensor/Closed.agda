@@ -49,7 +49,7 @@ module _ {A B : 𝒞} where
         ●ᶜ.bind (comb-in (●ᶜ B .charge c b•))
       ∎
 
-    comb : ●.● (U A) → ●.● (U B) → ●.● ∥ A ⊛ B ∥ᴾ
+    comb : ●.● (U A) → ●.● (U B) → ●.● ∥ A ⊗₀ B ∥ᴾ
     comb a• b• = combᶜ b• .U a•
 
     sect-pt : ∀ a• b• → ●ᶜ-⊗-fwd .U (comb a• b•) ≡ ηᴾ (inj a• b•)
@@ -75,12 +75,12 @@ module _ {A B : 𝒞} where
   ●ᶜ-⊗-equiv = isoToIsEquiv (iso (●ᶜ-⊗-fwd .U) (⊗-str● .U) sect retr)
     where
       sect : ∀ y → ●ᶜ-⊗-fwd .U (⊗-str● .U y) ≡ y
-      sect = ⊛-≡ isPreorderP (λ y → ●ᶜ-⊗-fwd .U (⊗-str● .U y)) (λ y → y) sect-pt
+      sect = ⊗₀-≡ isPreorderP (λ y → ●ᶜ-⊗-fwd .U (⊗-str● .U y)) (λ y → y) sect-pt
 
       retr : ∀ x → ⊗-str● .U (●ᶜ-⊗-fwd .U x) ≡ x
       retr =
         ●.ind-prop _ (λ _ → ●.isSet● (isPreorder→isSet isPreorderP) _ _)
-          (⊛-≡ (●.isPreorder● isPreorderP) (λ w → ⊗-str● .U (●ᶜ-⊗-fwd .U (●.η• w))) ●.η•
+          (⊗₀-≡ (●.isPreorder● isPreorderP) (λ w → ⊗-str● .U (●ᶜ-⊗-fwd .U (●.η• w))) ●.η•
             (λ a b → cong (⊗-str● .U) (●ᶜ-rec-β ⊗• (map₂ η•ᶜ η•ᶜ) (ηᴾ (inj a b)))))
           (λ abs → ●.◯-isProp● abs _ _)
 
@@ -93,7 +93,7 @@ module _ {A B : 𝒞} where
     ≡ ●ᶜ-⊗-fwd .U (●ᶜ.map (map₂ f g) .U w)
 ●ᶜ-⊗-natural {A} {A'} {B} {B'} f g =
   ●.ind-prop _ (λ _ → isPreorder→isSet isPreorderP _ _)
-    (⊛-≡ isPreorderP
+    (⊗₀-≡ isPreorderP
       (λ z → map₂ (●ᶜ.map f) (●ᶜ.map g) .U (●ᶜ-⊗-fwd .U (●.η• z)))
       (λ z → ●ᶜ-⊗-fwd .U (●ᶜ.map (map₂ f g) .U (●.η• z)))
       (λ a b → refl))
