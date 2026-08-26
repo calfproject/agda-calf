@@ -95,19 +95,8 @@ module _ where
 ⊗-identityʳ : A ⊗ ⊤ ≡ A
 ⊗-identityʳ {A = A} = conservativity fwd fwd-equiv
   where
-    fwd-U : A ⊗₀ ⊤ → U A
-    fwd-U (inj a c) = A .charge c a
-    fwd-U (law c' a c i) =
-      ( sym (A .charge/+ {a} {c} {c'})
-      ∙ cong (λ d → A .charge d a) (+ℂ-comm c c') ) i
-
     fwd : A ⊗ ⊤ ⊸ A
-    fwd .U = rec (A .is-preorder) fwd-U
-    fwd .charge c₀ =
-      ⊗₀-≡ (A .is-preorder)
-        (λ z → fwd .U ((A ⊗ ⊤) .charge c₀ z))
-        (λ z → A .charge c₀ (fwd .U z))
-        (λ a c → charge/comm A)
+    fwd = ⊗-rec (λ a c → A .charge c a) (λ _ _ _ → charge/comm A) (λ _ _ _ → A .charge/+)
 
     fwd-equiv : isEquivᶜ fwd
     fwd-equiv = isoToIsEquiv (iso (fwd .U) inv sect retr)

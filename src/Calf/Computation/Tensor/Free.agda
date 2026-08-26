@@ -103,10 +103,8 @@ module _ {X : 𝒱ₛ} where
           (bind' λ x → F _ .charge (Φ x) (ret x))
           (Σᶜ-map {X} {const ⊤} (λ x → CHARGE (Φ x)))
     F-Σᶜ-potential Φ =
-      ⊸-path F-Σᶜ F-Σᶜ
-        (ua→
-          {e = F-Σᶜ-fwd .U , F-Σᶜ-fwd-equiv}
-          (λ e → ua-gluePath _ (naturality e)))
+      conservativity-⊸ F-Σᶜ-fwd F-Σᶜ-fwd-equiv F-Σᶜ-fwd F-Σᶜ-fwd-equiv
+        (⊸-path refl refl (funExt naturality))
       where
         naturality : (e : U (F ⟨ X ⟩)) →
           F-Σᶜ-fwd .U (bind' {A = F _} (λ x → F _ .charge (Φ x) (ret x)) .U e)

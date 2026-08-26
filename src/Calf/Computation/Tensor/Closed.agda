@@ -26,31 +26,18 @@ module _ {A B : 𝒞} where
   ●ᶜ-⊗-fwd = ●ᶜ-rec ⊗• (map₂ η•ᶜ η•ᶜ)
 
   private
-    comb-in : U (●ᶜ B) → A ⊸ ●ᶜ (A ⊗ B)
-    comb-in b• .U a = ●.map (λ b → ηᴾ (inj a b)) b•
-    comb-in b• .charge c a =
-      sym (●.map-∘ (λ b → ηᴾ (inj a b)) ((A ⊗ B) .charge c) b•)
+    comb : U (●ᶜ A) → U (●ᶜ B) → U (●ᶜ (A ⊗ B))
+    comb a• b• = ●.elim (λ _ → ●.isModal●) (λ a → ●.map (a ∥_) b•) a•
 
-    combᶜ : U (●ᶜ B) → ●ᶜ A ⊸ ●ᶜ (A ⊗ B)
-    combᶜ b• = ●ᶜ.bind (comb-in b•)
+    comb-chargeˡ : ∀ c a• b• → comb (●ᶜ A .charge c a•) b• ≡ ●ᶜ (A ⊗ B) .charge c (comb a• b•)
+    comb-chargeˡ c =
+      ●.elim (λ _ → ●.isModalΠ λ _ → ●.●-≡-isModal _ _) λ a →
+        ●.elim (λ _ → ●.●-≡-isModal _ _) λ b → refl
 
-    combᶜ-charge : ∀ c b• → combᶜ b• ⨾ᶜ CHARGE c ≡ combᶜ (●ᶜ B .charge c b•)
-    combᶜ-charge c b• =
-        combᶜ b• ⨾ᶜ CHARGE c
-      ≡⟨ ⊸-path refl refl refl ⟩
-        combᶜ b• ⨾ᶜ ●ᶜ.map (CHARGE c)
-      ≡⟨ ●ᶜ.bind-map (comb-in b•) (CHARGE c) ⟩
-        ●ᶜ.bind (comb-in b• ⨾ᶜ ●ᶜ.map (CHARGE c))
-      ≡⟨ cong ●ᶜ.bind
-            (⊸-path refl refl (funExt λ a →
-                ●.map-∘ (λ b → ηᴾ (inj a b)) ((A ⊗ B) .charge c) b•
-              ∙ cong (λ h → ●.map h b•) (funExt λ b → cong ηᴾ (law c a b))
-              ∙ sym (●.map-∘ (B .charge c) (λ b → ηᴾ (inj a b)) b•))) ⟩
-        ●ᶜ.bind (comb-in (●ᶜ B .charge c b•))
-      ∎
-
-    comb : ●.● (U A) → ●.● (U B) → ●.● ∥ A ⊗₀ B ∥ᴾ
-    comb a• b• = combᶜ b• .U a•
+    comb-chargeʳ : ∀ c a• b• → comb a• (●ᶜ B .charge c b•) ≡ ●ᶜ (A ⊗ B) .charge c (comb a• b•)
+    comb-chargeʳ c =
+      ●.elim (λ _ → ●.isModalΠ λ _ → ●.●-≡-isModal _ _) λ a →
+        ●.elim (λ _ → ●.●-≡-isModal _ _) λ b → cong ●.η• (sym (∥-law c a b))
 
     sect-pt : ∀ a• b• → ●ᶜ-⊗-fwd .U (comb a• b•) ≡ ηᴾ (inj a• b•)
     sect-pt a• b• =
@@ -66,10 +53,7 @@ module _ {A B : 𝒞} where
         a•
 
   ⊗-str● : (●ᶜ A ⊗ ●ᶜ B) ⊸ ●ᶜ (A ⊗ B)
-  ⊗-str● =
-    ⊗-rec comb
-      (λ c a• b• → combᶜ b• .charge c a•)
-      (λ c a• b• → cong (λ h → h .U a•) (sym (combᶜ-charge c b•)))
+  ⊗-str● = ⊗-rec comb comb-chargeˡ comb-chargeʳ
 
   ●ᶜ-⊗-equiv : isEquivᶜ ●ᶜ-⊗-fwd
   ●ᶜ-⊗-equiv = isoToIsEquiv (iso (●ᶜ-⊗-fwd .U) (⊗-str● .U) sect retr)
