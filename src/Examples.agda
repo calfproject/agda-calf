@@ -14,7 +14,7 @@ import Examples.Exp2
 -- import Examples.Sorting.Parallel
 
 -- Amortized Analysis via Coinduction
--- import Examples.Amortized
+import Examples.Amortized
 
 -- Effectful
 import Examples.Decalf
