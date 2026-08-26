@@ -15,6 +15,17 @@ data ω₀ : 𝒱 where
   rel-0𝟚 : ∀ n → rel 0𝟚 n ≡ n
   rel-1𝟚 : ∀ n → rel 1𝟚 n ≡ suc n
 
+ω₀-elimProp : {P : ω₀ → Type} → (∀ n → isProp (P n))
+  → P zero → (∀ n → P n → P (suc n)) → (∀ 𝕚 n → P n → P (rel 𝕚 n)) → ∀ n → P n
+ω₀-elimProp {P} isPropP z s r = go
+  where
+    go : ∀ n → P n
+    go zero = z
+    go (suc n) = s n (go n)
+    go (rel 𝕚 n) = r 𝕚 n (go n)
+    go (rel-0𝟚 n i) = isProp→PathP (λ i → isPropP (rel-0𝟚 n i)) (r 0𝟚 n (go n)) (go n) i
+    go (rel-1𝟚 n i) = isProp→PathP (λ i → isPropP (rel-1𝟚 n i)) (r 1𝟚 n (go n)) (s n (go n)) i
+
 infixl 6 _+₀_
 
 _+₀_ : ω₀ → ω₀ → ω₀
@@ -104,10 +115,8 @@ private
   isSetω : isSet ω
   isSetω = isPreorder→isSet isPreorderω
 
-  thin-path : (P Q : 𝟚 → ω) → P 0𝟚 ≡ Q 0𝟚 → P 1𝟚 ≡ Q 1𝟚 → ∀ 𝕚 → P 𝕚 ≡ Q 𝕚
-  thin-path P Q p q 𝕚 =
-    cong (λ e → path e 𝕚)
-      (isPreorder→isThin isPreorderω _ _ (P , refl , refl) (Q , sym p , sym q))
+  thinω : isThin ω
+  thinω = isPreorder→isThin isPreorderω
 
   sucω : ω → ω
   sucω = mapᴾ suc
@@ -117,62 +126,43 @@ private
 
   rel-suc : ∀ 𝕚 n → ηᴾ (rel 𝕚 (suc n)) ≡ ηᴾ (suc (rel 𝕚 n))
   rel-suc 𝕚 n =
-    thin-path (λ 𝕚 → ηᴾ (rel 𝕚 (suc n))) (λ 𝕚 → ηᴾ (suc (rel 𝕚 n)))
-      (cong ηᴾ (rel-0𝟚 (suc n)) ∙ sym (cong (sucω ∘ ηᴾ) (rel-0𝟚 n)))
-      (cong ηᴾ (rel-1𝟚 (suc n)) ∙ sym (cong (sucω ∘ ηᴾ) (rel-1𝟚 n)))
+    funExt⁻
+      (isThin→𝟚-ext thinω
+        (cong ηᴾ (rel-0𝟚 (suc n)) ∙ sym (cong (sucω ∘ ηᴾ) (rel-0𝟚 n)))
+        (cong ηᴾ (rel-1𝟚 (suc n)) ∙ sym (cong (sucω ∘ ηᴾ) (rel-1𝟚 n))))
       𝕚
 
   rel-rel : ∀ 𝕚 𝕛 n → ηᴾ (rel 𝕚 (rel 𝕛 n)) ≡ ηᴾ (rel 𝕛 (rel 𝕚 n))
   rel-rel 𝕚 𝕛 n =
-    thin-path (λ 𝕚 → ηᴾ (rel 𝕚 (rel 𝕛 n))) (λ 𝕚 → ηᴾ (rel 𝕛 (rel 𝕚 n)))
-      (cong ηᴾ (rel-0𝟚 (rel 𝕛 n)) ∙ sym (cong (relω 𝕛 ∘ ηᴾ) (rel-0𝟚 n)))
-      (cong ηᴾ (rel-1𝟚 (rel 𝕛 n)) ∙ sym (rel-suc 𝕛 n) ∙ sym (cong (relω 𝕛 ∘ ηᴾ) (rel-1𝟚 n)))
+    funExt⁻
+      (isThin→𝟚-ext thinω
+        (cong ηᴾ (rel-0𝟚 (rel 𝕛 n)) ∙ sym (cong (relω 𝕛 ∘ ηᴾ) (rel-0𝟚 n)))
+        (cong ηᴾ (rel-1𝟚 (rel 𝕛 n)) ∙ sym (rel-suc 𝕛 n) ∙ sym (cong (relω 𝕛 ∘ ηᴾ) (rel-1𝟚 n))))
       𝕚
 
   +-suc : ∀ m n → ηᴾ (m +₀ suc n) ≡ ηᴾ (suc (m +₀ n))
-  +-suc zero n = refl
-  +-suc (suc m) n = cong sucω (+-suc m n)
-  +-suc (rel 𝕚 m) n = cong (relω 𝕚) (+-suc m n) ∙ rel-suc 𝕚 (m +₀ n)
-  +-suc (rel-0𝟚 m i) n =
-    isProp→PathP
-      (λ i → isSetω (ηᴾ (rel-0𝟚 m i +₀ suc n)) (ηᴾ (suc (rel-0𝟚 m i +₀ n))))
-      (cong (relω 0𝟚) (+-suc m n) ∙ rel-suc 0𝟚 (m +₀ n))
-      (+-suc m n) i
-  +-suc (rel-1𝟚 m i) n =
-    isProp→PathP
-      (λ i → isSetω (ηᴾ (rel-1𝟚 m i +₀ suc n)) (ηᴾ (suc (rel-1𝟚 m i +₀ n))))
-      (cong (relω 1𝟚) (+-suc m n) ∙ rel-suc 1𝟚 (m +₀ n))
-      (cong sucω (+-suc m n)) i
+  +-suc m n =
+    ω₀-elimProp {P = λ m → ηᴾ (m +₀ suc n) ≡ ηᴾ (suc (m +₀ n))} (λ _ → isSetω _ _)
+      refl
+      (λ m ih → cong sucω ih)
+      (λ 𝕚 m ih → cong (relω 𝕚) ih ∙ rel-suc 𝕚 (m +₀ n))
+      m
 
   +-rel : ∀ m 𝕚 n → ηᴾ (m +₀ rel 𝕚 n) ≡ ηᴾ (rel 𝕚 (m +₀ n))
-  +-rel zero 𝕚 n = refl
-  +-rel (suc m) 𝕚 n = cong sucω (+-rel m 𝕚 n) ∙ sym (rel-suc 𝕚 (m +₀ n))
-  +-rel (rel 𝕛 m) 𝕚 n = cong (relω 𝕛) (+-rel m 𝕚 n) ∙ rel-rel 𝕛 𝕚 (m +₀ n)
-  +-rel (rel-0𝟚 m i) 𝕚 n =
-    isProp→PathP
-      (λ i → isSetω (ηᴾ (rel-0𝟚 m i +₀ rel 𝕚 n)) (ηᴾ (rel 𝕚 (rel-0𝟚 m i +₀ n))))
-      (cong (relω 0𝟚) (+-rel m 𝕚 n) ∙ rel-rel 0𝟚 𝕚 (m +₀ n))
-      (+-rel m 𝕚 n) i
-  +-rel (rel-1𝟚 m i) 𝕚 n =
-    isProp→PathP
-      (λ i → isSetω (ηᴾ (rel-1𝟚 m i +₀ rel 𝕚 n)) (ηᴾ (rel 𝕚 (rel-1𝟚 m i +₀ n))))
-      (cong (relω 1𝟚) (+-rel m 𝕚 n) ∙ rel-rel 1𝟚 𝕚 (m +₀ n))
-      (cong sucω (+-rel m 𝕚 n) ∙ sym (rel-suc 𝕚 (m +₀ n))) i
+  +-rel m 𝕚 n =
+    ω₀-elimProp {P = λ m → ηᴾ (m +₀ rel 𝕚 n) ≡ ηᴾ (rel 𝕚 (m +₀ n))} (λ _ → isSetω _ _)
+      refl
+      (λ m ih → cong sucω ih ∙ sym (rel-suc 𝕚 (m +₀ n)))
+      (λ 𝕛 m ih → cong (relω 𝕛) ih ∙ rel-rel 𝕛 𝕚 (m +₀ n))
+      m
 
   +-comm₀ : ∀ m n → ηᴾ (m +₀ n) ≡ ηᴾ (n +₀ m)
-  +-comm₀ m zero = cong ηᴾ (+₀-identityʳ m)
-  +-comm₀ m (suc n) = +-suc m n ∙ cong sucω (+-comm₀ m n)
-  +-comm₀ m (rel 𝕚 n) = +-rel m 𝕚 n ∙ cong (relω 𝕚) (+-comm₀ m n)
-  +-comm₀ m (rel-0𝟚 n i) =
-    isProp→PathP
-      (λ i → isSetω (ηᴾ (m +₀ rel-0𝟚 n i)) (ηᴾ (rel-0𝟚 n i +₀ m)))
-      (+-rel m 0𝟚 n ∙ cong (relω 0𝟚) (+-comm₀ m n))
-      (+-comm₀ m n) i
-  +-comm₀ m (rel-1𝟚 n i) =
-    isProp→PathP
-      (λ i → isSetω (ηᴾ (m +₀ rel-1𝟚 n i)) (ηᴾ (rel-1𝟚 n i +₀ m)))
-      (+-rel m 1𝟚 n ∙ cong (relω 1𝟚) (+-comm₀ m n))
-      (+-suc m n ∙ cong sucω (+-comm₀ m n)) i
+  +-comm₀ m n =
+    ω₀-elimProp {P = λ n → ηᴾ (m +₀ n) ≡ ηᴾ (n +₀ m)} (λ _ → isSetω _ _)
+      (cong ηᴾ (+₀-identityʳ m))
+      (λ n ih → +-suc m n ∙ cong sucω ih)
+      (λ 𝕚 n ih → +-rel m 𝕚 n ∙ cong (relω 𝕚) ih)
+      n
 
 +-comm : Commutative _+_
 +-comm = rec-unique2 isPreorderP _+_ (λ m n → n + m) +-comm₀
