@@ -12,6 +12,7 @@ import Examples.Sorting.Sequential
 import Examples.TreeSum
 import Examples.Exp2
 -- import Examples.Sorting.Parallel
+import Examples.Scan
 
 -- Amortized Analysis via Coinduction
 import Examples.Amortized
