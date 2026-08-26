@@ -54,85 +54,44 @@ isSet∧isDiscrete→isThin isSetX isDiscreteX x x' =
   isOfHLevelRespectEquiv 1 (≡⇒⊑ , isDiscrete→isEquiv[≡⇒⊑] isDiscreteX) (isSetX x x')
 
 opaque
-  unfolding Fᴾ
-
   isSet∧isDiscrete→isPreorder : isSet X → isDiscrete X → isPreorder X
-  isSet∧isDiscrete→isPreorder {X} isSetX isDiscreteX transitive =
-    isThin∧Transitive[⊑]→isPathTransitive
-      (isSet∧isDiscrete→isThin isSetX isDiscreteX)
-      (λ x⊑x' x'⊑x'' → ≡⇒⊑ (⊑⇒≡ x⊑x' ∙ ⊑⇒≡ x'⊑x''))
-      _
+  isSet∧isDiscrete→isPreorder {X} isSetX isDiscreteX =
+    isSet∧isThin∧Transitive→isPreorder isSetX (isSet∧isDiscrete→isThin isSetX isDiscreteX)
+      λ x⊑x' x'⊑x'' → ≡⇒⊑ (⊑⇒≡ x⊑x' ∙ ⊑⇒≡ x'⊑x'')
     where
       ⊑⇒≡ : {x x' : X} → x ⊑ x' → x ≡ x'
-      ⊑⇒≡ {x} {x'} = invEq (≡⇒⊑ , isDiscrete→isEquiv[≡⇒⊑] isDiscreteX)
-  isSet∧isDiscrete→isPreorder isSetX isDiscreteX thin =
-    transport (sym isBoundarySeparated≡isThin) (isSet∧isDiscrete→isThin isSetX isDiscreteX) _
-  isSet∧isDiscrete→isPreorder {X} isSetX isDiscreteX hset =
-    fromIsEquiv _ $ equivIsEquiv $
-    compEquiv (UnitToType≃ _) (_ , toIsEquiv _ (transport (sym isS¹Null≡isSet) isSetX _))
+      ⊑⇒≡ = invEq (≡⇒⊑ , isDiscrete→isEquiv[≡⇒⊑] isDiscreteX)
 
-private
-  diag≃ : X ≃ (Σ[ (x , x') ∈ X × X ] (x ≡ x'))
-  diag≃ = isoToEquiv (iso
-    (λ x → (x , x) , refl)
-    (λ ((x , _) , _) → x)
-    (λ ((x , x') , p) i → (x , p i) , λ j → p (i ∧ j))
-    (λ _ → refl))
+isEquivEv→isEquivConst : (y₀ : Y)
+  → isEquiv (λ (f : Y → X) → f y₀) → isEquiv (const {A = X} {B = Y})
+isEquivEv→isEquivConst k₀ = composesToId→Equiv _ const refl
 
-  unitConst≃ : (A : Type) → A ≃ (Unit → A)
-  unitConst≃ A = isoToEquiv (iso const (λ f → f tt) (λ _ → refl) (λ _ → refl))
+isLocalTerminal→isEquivConst : {A : Type} {S : A → Type}
+  → isLocal (λ α → terminal (S α)) X → (α : A) → isEquiv (const {A = X} {B = S α})
+isLocalTerminal→isEquivConst l α =
+  equivIsEquiv (compEquiv (invEquiv (UnitToType≃ _)) (_ , toIsEquiv _ (l α)))
+
+isEquivConst→isLocalTerminal : {A : Type} {S : A → Type}
+  → ((α : A) → isEquiv (const {A = X} {B = S α})) → isLocal (λ α → terminal (S α)) X
+isEquivConst→isLocalTerminal e α = fromIsEquiv _ (compEquiv (UnitToType≃ _) (_ , e α) .snd)
 
 null[Unit] : isEquiv (const {A = X} {B = Unit})
-null[Unit] {X} = equivIsEquiv (unitConst≃ X)
-
-null[𝕊Unit] : isDiscrete X → isEquiv (const {A = X} {B = 𝕊 Unit})
-null[𝕊Unit] {X} isDiscreteX = subst isEquiv chain≡const (equivIsEquiv chain)
-  where
-    chain : X ≃ (𝕊 Unit → X)
-    chain =
-        X
-      ≃⟨ diag≃ ⟩
-        Σ[ p ∈ X × X ] (fst p ≡ snd p)
-      ≃⟨ Σ-cong-equiv-snd (λ _ → ≡⇒⊑ , isDiscrete→isEquiv[≡⇒⊑] isDiscreteX) ⟩
-        Σ[ p ∈ X × X ] (fst p ⊑ snd p)
-      ≃⟨ Σ-cong-equiv-snd (λ _ → unitConst≃ _) ⟩
-        Σ[ p ∈ X × X ] (Unit → fst p ⊑ snd p)
-      ≃⟨ isoToEquiv (invIso (𝕊-elim Unit)) ⟩
-        (𝕊 Unit → X)
-      ■
-
-    chain≡const : chain .fst ≡ const
-    chain≡const = funExt λ x → funExt λ
-      { (inl (y , 𝕚)) → refl
-      ; (inr false) → refl
-      ; (inr true) → refl
-      ; (push (y , false) j) → refl
-      ; (push (y , true) j) → refl
-      }
+null[Unit] {X} = isEquivEv→isEquivConst tt (equivIsEquiv (UnitToType≃ X))
 
 null[𝟚] : isDiscrete X → isEquiv (const {A = X} {B = 𝟚})
-null[𝟚] {X} isDiscreteX =
-  subst isEquiv
-    (funExt λ x → funExt λ _ → secEq (UnitToType≃ X) x)
-    (compEquiv (invEquiv (UnitToType≃ X)) (_ , toIsEquiv _ (isDiscreteX tt)) .snd)
+null[𝟚] isDiscreteX = isLocalTerminal→isEquivConst isDiscreteX tt
 
 null[Λ²] : isDiscrete X → isEquiv (const {A = X} {B = Λ²})
-null[Λ²] {X} isDiscreteX = subst isEquiv chain≡const (chain .snd)
+null[Λ²] {X} isDiscreteX =
+  isEquivEv→isEquivConst (inl 0𝟚) (precomposesToId→Equiv _ (chain .fst) refl (chain .snd))
   where
     constₚ : X ≃ (𝟚 → X)
     constₚ = const , null[𝟚] isDiscreteX
 
-    diag2 : X ≃ (Σ[ a ∈ X ] Σ[ b ∈ X ] (a ≡ b))
-    diag2 = isoToEquiv (iso
-      (λ a → a , a , refl)
-      (λ (a , _ , _) → a)
-      (λ (a , b , p) i → a , p i , λ j → p (i ∧ j))
-      (λ _ → refl))
-
     chain : X ≃ (Λ² → X)
     chain =
         X
-      ≃⟨ diag2 ⟩
+      ≃⟨ invEquiv (Σ-contractSnd λ _ → isContrSingl _) ⟩
         Σ[ a ∈ X ] Σ[ b ∈ X ] (a ≡ b)
       ≃⟨ Σ-cong-equiv-snd (λ _ → Σ-cong-equiv-fst constₚ) ⟩
         Σ[ a ∈ X ] Σ[ q ∈ (𝟚 → X) ] (a ≡ q 0𝟚)
@@ -142,17 +101,26 @@ null[Λ²] {X} isDiscreteX = subst isEquiv chain≡const (chain .snd)
         (Λ² → X)
       ■
 
-    chain≡const : equivFun chain ≡ const
-    chain≡const = funExt λ x → funExt λ
-      { (inl 𝕚) → refl
-      ; (inr 𝕚) → refl
-      ; (push tt j) → refl
-      }
+null[𝕊Unit] : isDiscrete X → isEquiv (const {A = X} {B = 𝕊 Unit})
+null[𝕊Unit] {X} isDiscreteX =
+  isEquivEv→isEquivConst (inr false) (precomposesToId→Equiv _ (chain .fst) refl (chain .snd))
+  where
+    chain : X ≃ (𝕊 Unit → X)
+    chain =
+        X
+      ≃⟨ invEquiv (compEquiv Σ-assoc-≃ (Σ-contractSnd λ _ → isContrSingl _)) ⟩
+        Σ[ p ∈ X × X ] (fst p ≡ snd p)
+      ≃⟨ Σ-cong-equiv-snd (λ _ → ≡⇒⊑ , isDiscrete→isEquiv[≡⇒⊑] isDiscreteX) ⟩
+        Σ[ p ∈ X × X ] (fst p ⊑ snd p)
+      ≃⟨ Σ-cong-equiv-snd (λ _ → invEquiv (UnitToType≃ _)) ⟩
+        Σ[ p ∈ X × X ] (Unit → fst p ⊑ snd p)
+      ≃⟨ isoToEquiv (invIso (𝕊-elim Unit)) ⟩
+        (𝕊 Unit → X)
+      ■
 
--- A map `Δ² → X` is a horn plus a composite edge; over a discrete *set* the horn
--- collapses (null[Λ²]) and the composite edge `x ⊑ x` is contractible.
 null[Δ²] : isSet X → isDiscrete X → isEquiv (const {A = X} {B = Δ²})
-null[Δ²] {X} isSetX isDiscreteX = subst isEquiv chain≡const (chain .snd)
+null[Δ²] {X} isSetX isDiscreteX =
+  isEquivEv→isEquivConst (inl (inl 0𝟚)) (precomposesToId→Equiv _ (chain .fst) refl (chain .snd))
   where
     contr⊑ : (x : X) → isContr (x ⊑ x)
     contr⊑ x =
@@ -160,26 +128,22 @@ null[Δ²] {X} isSetX isDiscreteX = subst isEquiv chain≡const (chain .snd)
         (≡⇒⊑ , isDiscrete→isEquiv[≡⇒⊑] isDiscreteX)
         (refl , isSetX x x refl)
 
-    constΣ⊑ : X ≃ (Σ[ x ∈ X ] (x ⊑ x))
-    constΣ⊑ = isoToEquiv (iso
-      (λ x → x , ≡⇒⊑ refl)
-      fst
-      (λ (x , e) i → x , isContr→isProp (contr⊑ x) (≡⇒⊑ refl) e i)
-      (λ _ → refl))
-
     chain : X ≃ (Δ² → X)
     chain =
-      X
-        ≃⟨ constΣ⊑ ⟩
-      Σ[ x ∈ X ] (x ⊑ x)
-        ≃⟨ Σ-cong-equiv-fst (const , null[Λ²] isDiscreteX) ⟩
-      Σ[ h ∈ (Λ² → X) ] (h (inl 0𝟚) ⊑ h (inr 1𝟚))
-        ≃⟨ isoToEquiv (invIso Δ²-elim) ⟩
-      (Δ² → X) ■
+        X
+      ≃⟨ invEquiv (Σ-contractSnd contr⊑) ⟩
+        Σ[ x ∈ X ] (x ⊑ x)
+      ≃⟨ Σ-cong-equiv-fst (const , null[Λ²] isDiscreteX) ⟩
+        Σ[ h ∈ (Λ² → X) ] (h (inl 0𝟚) ⊑ h (inr 1𝟚))
+      ≃⟨ isoToEquiv (invIso Δ²-elim) ⟩
+        (Δ² → X)
+      ■
 
-    chain≡const : chain .fst ≡ const
-    chain≡const = funExt λ x → funExt λ
-      { (inl b) → refl
-      ; (inr 𝕚) → refl
-      ; (push false i) → refl
-      ; (push true i) → refl }
+opaque
+  unfolding Fᴾ
+
+  isSet∧isDiscrete→nullᴾ : isSet X → isDiscrete X
+    → (α : Requirements) → isEquiv (const {A = X} {B = Tᴾ α})
+  isSet∧isDiscrete→nullᴾ isSetX isDiscreteX transitive = null[Δ²] isSetX isDiscreteX
+  isSet∧isDiscrete→nullᴾ isSetX isDiscreteX thin = null[𝕊Unit] isDiscreteX
+  isSet∧isDiscrete→nullᴾ isSetX isDiscreteX hset = null[Unit]

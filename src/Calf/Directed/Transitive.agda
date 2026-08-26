@@ -1,6 +1,7 @@
 module Calf.Directed.Transitive where
 
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Equiv.Properties using (isEquiv[f∘equivFunA≃B]→isEquiv[f])
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Equiv.PathSplit
 open import Cubical.Foundations.Function
@@ -19,6 +20,9 @@ open import Calf.Directed.Path
 open import Calf.Directed.Thin
 
 private variable X Y : Type
+
+isTransitive : Type → Type
+isTransitive X = Transitive (_⊑_ {X})
 
 Λ² : Type
 Λ² = Pushout {A = Unit} (const 1𝟚) (const 0𝟚)
@@ -60,31 +64,25 @@ open Iso
 isPathTransitive : Type → Type
 isPathTransitive = isLocal {A = Unit} (const ι)
 
-isPathTransitive→Transitive[⊑] : isPathTransitive X → Transitive _⊑_
-isPathTransitive→Transitive[⊑] {X} isPathTransitiveX {x} {x'} {x''} x⊑x' x'⊑x'' =
-    triangle ∘ inr
-  , cong triangle (sym (push false)) ∙ cong (_$ inl 0𝟚) secι ∙ path₀ x⊑x'
-  , cong triangle (sym (push true)) ∙ cong (_$ inr 1𝟚) secι ∙ path₁ x'⊑x''
-  where
-    open isPathSplitEquiv
+isEquivFst→isContrFibers : {B : Type} {P : B → Type}
+  → isEquiv (fst {A = B} {B = P}) → (b : B) → isContr (P b)
+isEquivFst→isContrFibers {P = P} e b =
+  isOfHLevelRespectEquiv 0 (invEquiv (fiberProjEquiv _ P b)) (e .equiv-proof b)
 
-    horn : Λ² → X
-    horn (inl 𝕚) = path x⊑x' 𝕚
-    horn (inr 𝕚) = path x'⊑x'' 𝕚
-    horn (push tt i) = (path₁ x⊑x' ∙ sym (path₀ x'⊑x'')) i
+isPathTransitive→fillers : isPathTransitive X → (h : Λ² → X) → isContr (h (inl 0𝟚) ⊑ h (inr 1𝟚))
+isPathTransitive→fillers pt =
+  isEquivFst→isContrFibers
+    (isEquiv[f∘equivFunA≃B]→isEquiv[f] fst (isoToEquiv Δ²-elim) (toIsEquiv _ (pt tt)))
 
-    triangle : Δ² → X
-    triangle = isPathTransitiveX tt .sec .fst horn
+isPathTransitive→isTransitive : isPathTransitive X → isTransitive X
+isPathTransitive→isTransitive pt e f =
+  ≡∙⊑ (sym (path₀ e)) (⊑∙≡ (isPathTransitive→fillers pt horn .fst) (path₁ f))
+  where horn = Λ²-elim .inv (path e , path f , path₁ e ∙ sym (path₀ f))
 
-    secι : triangle ∘ ι ≡ horn
-    secι = isPathTransitiveX tt .sec .snd horn
-
-isThin∧Transitive[⊑]→isPathTransitive :
-  isThin X → Transitive _⊑_ → isPathTransitive X
-isThin∧Transitive[⊑]→isPathTransitive {X} ⊑prop ⊑trans _ =
-  fromIsEquiv _
-    (subst isEquiv (funExt (λ _ → refl))
-      (compEquiv (isoToEquiv Δ²-elim) (Σ-contractSnd edge) .snd))
+isThin∧isTransitive→isPathTransitive :
+  isThin X → isTransitive X → isPathTransitive X
+isThin∧isTransitive→isPathTransitive {X} ⊑prop ⊑trans _ =
+  fromIsEquiv _ (compEquiv (isoToEquiv Δ²-elim) (Σ-contractSnd edge) .snd)
   where
     composite : (h : Λ² → X) → h (inl 0𝟚) ⊑ h (inr 1𝟚)
     composite h =
@@ -95,14 +93,14 @@ isThin∧Transitive[⊑]→isPathTransitive {X} ⊑prop ⊑trans _ =
     edge : (h : Λ² → X) → isContr (h (inl 0𝟚) ⊑ h (inr 1𝟚))
     edge h = composite h , ⊑prop _ _ (composite h)
 
-isThin→isPathTransitive≡Transitive[⊑] :
-  isThin X → isPathTransitive X ≡ Transitive _⊑_
-isThin→isPathTransitive≡Transitive[⊑] {X} isThinX =
+isThin→isPathTransitive≡isTransitive :
+  isThin X → isPathTransitive X ≡ isTransitive X
+isThin→isPathTransitive≡isTransitive {X} isThinX =
   hPropExt
     (isPropΠ λ _ → isPropIsPathSplitEquiv _)
-    isPropTransitive
-    isPathTransitive→Transitive[⊑]
-    (isThin∧Transitive[⊑]→isPathTransitive isThinX)
+    isPropIsTransitive
+    isPathTransitive→isTransitive
+    (isThin∧isTransitive→isPathTransitive isThinX)
   where
-    isPropTransitive : isProp (Transitive _⊑_)
-    isPropTransitive t t' i a b = isThinX _ _ (t a b) (t' a b) i
+    isPropIsTransitive : isProp (isTransitive X)
+    isPropIsTransitive t t' i a b = isThinX _ _ (t a b) (t' a b) i

@@ -1,6 +1,8 @@
 module Calf.Directed.Modality where
 
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Univalence using (hPropExt)
+open import Cubical.HITs.Truncation.Properties using (isSphereFilled→isOfHLevel)
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Equiv.Fiberwise
 open import Cubical.Foundations.Equiv.PathSplit
@@ -71,17 +73,16 @@ open isPathSplitEquiv
 opaque
   unfolding Fᴾ
 
-  ⊑-trans : isPreorder X → Transitive (_⊑_ {X})
-  ⊑-trans isPreorderX = isPathTransitive→Transitive[⊑] (const (isPreorderX transitive))
+  ⊑-trans : isPreorder X → isTransitive X
+  ⊑-trans isPreorderX = isPathTransitive→isTransitive (const (isPreorderX transitive))
 
   isPreorder→isThin : isPreorder X → isThin X
   isPreorder→isThin isPreorderX = transport isBoundarySeparated≡isThin (const (isPreorderX thin))
 
   isPreorder→isSet : isPreorder X → isSet X
   isPreorder→isSet isPreorderX =
-    transport isS¹Null≡isSet λ _ →
-    fromIsEquiv _ $ equivIsEquiv $
-    compEquiv (invEquiv (UnitToType≃ _)) (_ , toIsEquiv _ (isPreorderX hset))
+    isSphereFilled→isOfHLevel 1 λ f →
+      isPreorderX hset .sec .fst f tt , funExt⁻ (isPreorderX hset .sec .snd f)
 
   isProp→isPreorder : isProp X → isPreorder X
   isProp→isPreorder =
@@ -91,12 +92,37 @@ opaque
       ; hset → base
       }
 
+  isSet∧isThin∧Transitive→isPreorder : isSet X → isThin X → isTransitive X → isPreorder X
+  isSet∧isThin∧Transitive→isPreorder setX thinX transX transitive =
+    isThin∧isTransitive→isPathTransitive thinX transX _
+  isSet∧isThin∧Transitive→isPreorder setX thinX transX thin =
+    transport (sym isBoundarySeparated≡isThin) thinX _
+  isSet∧isThin∧Transitive→isPreorder setX thinX transX hset =
+    fromIsEquiv _
+      (compEquiv (UnitToType≃ _) (_ , toIsEquiv _ (transport (sym isS¹Null≡isSet) setX _)) .snd)
+
+isPreorder≡ : isPreorder X ≡ (isSet X × isThin X × isTransitive X)
+isPreorder≡ {X} =
+  hPropExt isPropIsPreorder
+    (isPropΣ isPropIsSet λ _ →
+      isPropΣ (isPropΠ2 λ _ _ → isPropIsProp) λ thinX t t' i a b → thinX _ _ (t a b) (t' a b) i)
+    (λ pre → isPreorder→isSet pre , isPreorder→isThin pre , λ {i} {j} {k} → ⊑-trans pre {i} {j} {k})
+    (λ (setX , thinX , transX) →
+      isSet∧isThin∧Transitive→isPreorder setX thinX (λ {i} {j} {k} → transX {i} {j} {k}))
+
 rec-unique :
   isPreorder Y
   → (f g : ∥ X ∥ᴾ → Y)
   → ((x : X) → f (ηᴾ x) ≡ g (ηᴾ x))
   → (z : ∥ X ∥ᴾ) → f z ≡ g z
 rec-unique = recUnique
+
+rec-uniqueP : (P : I → Type) → isPreorder (P i1)
+  → (f : ∥ X ∥ᴾ → P i0) (g : ∥ X ∥ᴾ → P i1)
+  → ((x : X) → PathP P (f (ηᴾ x)) (g (ηᴾ x)))
+  → (z : ∥ X ∥ᴾ) → PathP P (f z) (g z)
+rec-uniqueP P isPreorderP₁ f g h z =
+  toPathP (rec-unique isPreorderP₁ (transport (λ i → P i) ∘ f) g (λ x → fromPathP (h x)) z)
 
 rec-unique2 :
   isPreorder Z

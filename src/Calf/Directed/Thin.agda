@@ -1,6 +1,7 @@
 module Calf.Directed.Thin where
 
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Equiv.Properties using (isEquiv[equivFunA≃B∘f]→isEquiv[f])
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Equiv.Fiberwise
 open import Cubical.Foundations.Equiv.PathSplit
@@ -59,6 +60,9 @@ isBoundarySeparated = isLocal {A = Unit} (const (𝕊map (terminal Bool)))
 isThin : Type → Type
 isThin X = (x x' : X) → isProp (x ⊑ x')
 
+isThin→𝟚-ext : isThin X → {P Q : 𝟚 → X} → P 0𝟚 ≡ Q 0𝟚 → P 1𝟚 ≡ Q 1𝟚 → P ≡ Q
+isThin→𝟚-ext isThinX {P} {Q} p q = cong path (isThinX _ _ (P , refl , refl) (Q , sym p , sym q))
+
 isBoundarySeparated≡isThin : isBoundarySeparated X ≡ isThin X
 isBoundarySeparated≡isThin {X} =
   hPropExt
@@ -93,26 +97,11 @@ isBoundarySeparated≡isThin {X} =
 
     isThin→isBoundarySeparated : isThin X → isBoundarySeparated X
     isThin→isBoundarySeparated isThinX _ =
-      fromIsEquiv _ (subst isEquiv boundary-separationFun (equivIsEquiv boundary-separation))
+      fromIsEquiv _
+        (isEquiv[equivFunA≃B∘f]→isEquiv[f] _ (𝕊-elim≃ Bool)
+          (equivIsEquiv (compEquiv (𝕊-elim≃ Unit) (_ , totalEquiv P Q φ φ-equiv))))
       where
         φ-equiv : (xx' : X × X) → isEquiv (φ xx')
         φ-equiv (x , x') = isoToIsEquiv
           (isProp→Iso (isPropΠ λ _ → isThinX x x') (isPropΠ λ _ → isThinX x x')
             (φ (x , x')) (λ q _ → q false))
-
-        boundary-separation : (𝕊 Unit → X) ≃ (𝕊 Bool → X)
-        boundary-separation =
-          (𝕊 Unit → X)    ≃⟨ 𝕊-elim≃ Unit ⟩
-          𝕊-cocone X Unit ≃⟨ _ , totalEquiv P Q φ φ-equiv ⟩
-          𝕊-cocone X Bool ≃⟨ invEquiv (𝕊-elim≃ Bool) ⟩
-          (𝕊 Bool → X)    ■
-
-        boundary-separationFun :
-          equivFun boundary-separation ≡ (_∘ 𝕊map (terminal Bool))
-        boundary-separationFun = funExt λ _ → funExt λ
-          { (inl (b , 𝕚)) → refl
-          ; (inr false) → refl
-          ; (inr true) → refl
-          ; (push (b , false) j) → refl
-          ; (push (b , true) j) → refl
-          }
