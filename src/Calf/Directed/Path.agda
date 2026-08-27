@@ -22,11 +22,11 @@ module _ {X : Type} where
   path₁ : {x x' : X} (e : x ⊑ x') → path e 1𝟚 ≡ x'
   path₁ e = e .snd .snd
 
-  ≡⇒⊑ : _≡_ ⇒ _⊑_
-  ≡⇒⊑ {x = x} x≡x' = (λ _ → x) , refl , x≡x'
+  ⊑-reflexive : _≡_ ⇒ _⊑_
+  ⊑-reflexive {x = x} x≡x' = (λ _ → x) , refl , x≡x'
 
   ⊑-refl : Reflexive _⊑_
-  ⊑-refl = ≡⇒⊑ refl
+  ⊑-refl = ⊑-reflexive refl
 
   ≡∙⊑ : {x y z : X} → x ≡ y → y ⊑ z → x ⊑ z
   ≡∙⊑ h e = path e , path₀ e ∙ sym h , path₁ e

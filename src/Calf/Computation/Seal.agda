@@ -95,7 +95,7 @@ _⨾ᵈ_ {A} {B} {C} f g =
     bind-coh =
       ●.ind-prop _ (λ _ → thin● (◯ᶜ C) _ _)
         (λ b → g .U b .snd)
-        (λ abs → ≡⇒⊑ (●.◯-isProp● abs _ _))
+        (λ abs → ⊑-reflexive (●.◯-isProp● abs _ _))
 
 squareᵈ : (F G : 𝒞-FRACTURE)
   → (f• : ⟨ F .A• ⟩ᶜ ⊸ ⟨ G .A• ⟩ᶜ)
@@ -124,4 +124,4 @@ opaque
         (●ᶜ.map f-⊤) (◯ᶜ.map f-abs)
         (●.ind-prop _ (λ _ → thin● (◯ᶜ B-abs) _ _)
           (λ a → ⊑-mono η• (⊑-mono η◦ (f-coh a)))
-          (λ abs → ≡⇒⊑ (●.◯-isProp● abs _ _))))
+          (λ abs → ⊑-reflexive (●.◯-isProp● abs _ _))))

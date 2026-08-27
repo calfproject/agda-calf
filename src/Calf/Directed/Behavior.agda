@@ -16,19 +16,22 @@ private variable X Y : Type
 BEH : Type
 BEH = 0𝟚 ≡ 1𝟚
 
-BEH-isProp : isProp BEH
-BEH-isProp = isSet𝟚 0𝟚 1𝟚
+isPropBEH : isProp BEH
+isPropBEH = isSet𝟚 0𝟚 1𝟚
 
-𝟚-isAlgorithmic : BEH → isContr 𝟚
-𝟚-isAlgorithmic beh .fst = 0𝟚
-𝟚-isAlgorithmic beh .snd i =
+isAlgorithmic : Type → Type
+isAlgorithmic X = BEH → isContr X
+
+isAlgorithmic𝟚 : isAlgorithmic 𝟚
+isAlgorithmic𝟚 beh .fst = 0𝟚
+isAlgorithmic𝟚 beh .snd i =
   ≤𝟚-antisym
     (0𝟚-minimum _)
     (≤𝟚-trans (1𝟚-maximum _) (subst (_≤𝟚 0𝟚) beh ≤𝟚-refl))
 
 ⊑-beh : BEH → isDiscrete X
 ⊑-beh beh _ =
-  fromIsEquiv _ (isEquivPreComp (terminal 𝟚 , isEquivFromIsContr _ (𝟚-isAlgorithmic beh) isContrUnit))
+  fromIsEquiv _ (isEquivPreComp (terminal 𝟚 , isEquivFromIsContr _ (isAlgorithmic𝟚 beh) isContrUnit))
 
 ⊑-beh' : BEH → {x x' : X} → x ⊑ x' → x ≡ x'
-⊑-beh' beh = invIsEq (isDiscrete→isEquiv[≡⇒⊑] (⊑-beh beh))
+⊑-beh' beh = invIsEq (isDiscrete→isEquiv[⊑-reflexive] (⊑-beh beh))

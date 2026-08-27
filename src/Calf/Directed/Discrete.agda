@@ -25,8 +25,8 @@ private variable X Y : Type
 isDiscrete : Type → Type
 isDiscrete X = isLocal {A = Unit} (λ _ → terminal 𝟚) X
 
-isDiscrete→isEquiv[≡⇒⊑] : isDiscrete X → {x x' : X} → isEquiv (≡⇒⊑ {X} {x} {x'})
-isDiscrete→isEquiv[≡⇒⊑] {X} isDiscreteX {x} {x'} = equivIsEquiv ≡≃⊑
+isDiscrete→isEquiv[⊑-reflexive] : isDiscrete X → {x x' : X} → isEquiv (⊑-reflexive {X} {x} {x'})
+isDiscrete→isEquiv[⊑-reflexive] {X} isDiscreteX {x} {x'} = equivIsEquiv ≡≃⊑
   where
     discreteness : X ≃ (𝟚 → X)
     discreteness = compEquiv (invEquiv (UnitToType≃ X)) (_ , toIsEquiv _ (isDiscreteX tt))
@@ -51,16 +51,16 @@ isDiscrete→isEquiv[≡⇒⊑] {X} isDiscreteX {x} {x'} = equivIsEquiv ≡≃�
 
 isSet∧isDiscrete→isThin : isSet X → isDiscrete X → isThin X
 isSet∧isDiscrete→isThin isSetX isDiscreteX x x' =
-  isOfHLevelRespectEquiv 1 (≡⇒⊑ , isDiscrete→isEquiv[≡⇒⊑] isDiscreteX) (isSetX x x')
+  isOfHLevelRespectEquiv 1 (⊑-reflexive , isDiscrete→isEquiv[⊑-reflexive] isDiscreteX) (isSetX x x')
 
 opaque
   isSet∧isDiscrete→isPreorder : isSet X → isDiscrete X → isPreorder X
   isSet∧isDiscrete→isPreorder {X} isSetX isDiscreteX =
     isSet∧isThin∧Transitive→isPreorder isSetX (isSet∧isDiscrete→isThin isSetX isDiscreteX)
-      λ x⊑x' x'⊑x'' → ≡⇒⊑ (⊑⇒≡ x⊑x' ∙ ⊑⇒≡ x'⊑x'')
+      λ x⊑x' x'⊑x'' → ⊑-reflexive (⊑⇒≡ x⊑x' ∙ ⊑⇒≡ x'⊑x'')
     where
       ⊑⇒≡ : {x x' : X} → x ⊑ x' → x ≡ x'
-      ⊑⇒≡ = invEq (≡⇒⊑ , isDiscrete→isEquiv[≡⇒⊑] isDiscreteX)
+      ⊑⇒≡ = invEq (⊑-reflexive , isDiscrete→isEquiv[⊑-reflexive] isDiscreteX)
 
 isEquivEv→isEquivConst : (y₀ : Y)
   → isEquiv (λ (f : Y → X) → f y₀) → isEquiv (const {A = X} {B = Y})
@@ -110,7 +110,7 @@ null[𝕊Unit] {X} isDiscreteX =
         X
       ≃⟨ invEquiv (compEquiv Σ-assoc-≃ (Σ-contractSnd λ _ → isContrSingl _)) ⟩
         Σ[ p ∈ X × X ] (fst p ≡ snd p)
-      ≃⟨ Σ-cong-equiv-snd (λ _ → ≡⇒⊑ , isDiscrete→isEquiv[≡⇒⊑] isDiscreteX) ⟩
+      ≃⟨ Σ-cong-equiv-snd (λ _ → ⊑-reflexive , isDiscrete→isEquiv[⊑-reflexive] isDiscreteX) ⟩
         Σ[ p ∈ X × X ] (fst p ⊑ snd p)
       ≃⟨ Σ-cong-equiv-snd (λ _ → invEquiv (UnitToType≃ _)) ⟩
         Σ[ p ∈ X × X ] (Unit → fst p ⊑ snd p)
@@ -125,7 +125,7 @@ null[Δ²] {X} isSetX isDiscreteX =
     contr⊑ : (x : X) → isContr (x ⊑ x)
     contr⊑ x =
       isOfHLevelRespectEquiv 0
-        (≡⇒⊑ , isDiscrete→isEquiv[≡⇒⊑] isDiscreteX)
+        (⊑-reflexive , isDiscrete→isEquiv[⊑-reflexive] isDiscreteX)
         (refl , isSetX x x refl)
 
     chain : X ≃ (Δ² → X)

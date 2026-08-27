@@ -32,7 +32,7 @@ opaque
   double/bound = ⊑-funext lemma
     where
       lemma : ∀ n → double n ⊑[ F ℕ ] F _ .charge (` n) (ret (DOUBLE n))
-      lemma zero = ≡⇒⊑ (sym (F _ .charge/0))
+      lemma zero = ⊑-reflexive (sym (F _ .charge/0))
       lemma (suc n) =
         let open ⊑-Reasoning (F ℕ) in
         begin

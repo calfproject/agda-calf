@@ -86,9 +86,9 @@ isThin∧isTransitive→isPathTransitive {X} ⊑prop ⊑trans _ =
   where
     composite : (h : Λ² → X) → h (inl 0𝟚) ⊑ h (inr 1𝟚)
     composite h =
-      ⊑trans (h ∘ inl , refl , refl)
-        (⊑trans (≡⇒⊑ (cong h (push tt)))
-          (h ∘ inr , refl , refl))
+      ⊑trans (h ∘ inl , refl , refl) $
+      ≡∙⊑ (cong h (push tt)) $
+      (h ∘ inr , refl , refl)
 
     edge : (h : Λ² → X) → isContr (h (inl 0𝟚) ⊑ h (inr 1𝟚))
     edge h = composite h , ⊑prop _ _ (composite h)
