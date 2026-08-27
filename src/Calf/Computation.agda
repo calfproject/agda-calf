@@ -30,6 +30,10 @@ record 𝒞 : 𝒱₁ where
     charge/comm : ∀ {c} {c'} {a}
       → charge c (charge c' a) ≡ charge c' (charge c a)
     charge/comm = sym charge/+ ∙ cong (flip charge _) (+ℂ-comm _ _) ∙ charge/+
+
+  charge/BEH : ∀ {c} {a} → BEH → charge c a ≡ a
+  charge/BEH {c} {a} beh =
+    cong (flip charge a) (isContr→isProp (isAlgorithmicℂ beh) c 0ℂ) ∙ charge/0
 open 𝒞 public
 
 variable
@@ -57,7 +61,7 @@ module ⊑-Reasoning (A : 𝒞) where
   ⊑-preorder ._≈_ = _≡_
   ⊑-preorder ._≲_ = _⊑_ {U A}
   ⊑-preorder .Preorder.isPreorder .isEquivalence = ≡-isEquivalence
-  ⊑-preorder .Preorder.isPreorder .reflexive = ≡⇒⊑
+  ⊑-preorder .Preorder.isPreorder .reflexive = ⊑-reflexive
   ⊑-preorder .Preorder.isPreorder .trans = ⊑-trans (A .is-preorder)
 
   open import Relation.Binary.Reasoning.Preorder ⊑-preorder as P public

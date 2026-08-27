@@ -3,7 +3,6 @@ module Calf.Value.Omega where
 open import Calf.Core.Directed
 open import Calf.Value
 open import Cubical.Data.Nat using (ℕ; zero; suc; HasFromNat) renaming (_+_ to _+ℕ_)
-open import Cubical.Data.Nat.Order
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
 open import Data.Unit
@@ -53,10 +52,6 @@ rel-1𝟚 m i +₀ n = rel-1𝟚 (m +₀ n) i
 ℕ→ω₀ zero = zero
 ℕ→ω₀ (suc n) = suc (ℕ→ω₀ n)
 
-ℕ→ω₀-+ : ∀ m n → ℕ→ω₀ (m +ℕ n) ≡ ℕ→ω₀ m +₀ ℕ→ω₀ n
-ℕ→ω₀-+ zero n = refl
-ℕ→ω₀-+ (suc m) n = cong suc (ℕ→ω₀-+ m n)
-
 
 ω : 𝒱
 ω = ∥ ω₀ ∥ᴾ
@@ -73,8 +68,9 @@ instance
 
 infixl 6 _+_
 
-0ω : ω
+0ω 1ω : ω
 0ω = ℕ→ω 0
+1ω = ℕ→ω 1
 
 _+_ : ω → ω → ω
 _+_ = map2ᴾ _+₀_
@@ -97,18 +93,11 @@ open import Algebra.Definitions {A = ω} _≡_
       m n)
     o
 
-ℕ→ω-+ : ∀ m n → ℕ→ω (m +ℕ n) ≡ ℕ→ω m + ℕ→ω n
-ℕ→ω-+ m n = cong ηᴾ (ℕ→ω₀-+ m n)
-
-⊑-suc : ∀ n → ηᴾ n ⊑ ηᴾ (suc n)
-⊑-suc n = (λ 𝕚 → ηᴾ (rel 𝕚 n)) , cong ηᴾ (rel-0𝟚 n) , cong ηᴾ (rel-1𝟚 n)
-
-⊑-+ : ∀ p m → ℕ→ω m ⊑ ℕ→ω (p +ℕ m)
-⊑-+ zero m = ⊑-refl
-⊑-+ (suc p) m = ⊑-trans isPreorderω (⊑-+ p m) (⊑-suc (ℕ→ω₀ (p +ℕ m)))
-
-≤⇒⊑ : ∀ {m n} → m ≤ n → ℕ→ω m ⊑ ℕ→ω n
-≤⇒⊑ (p , p+m≡n) = ⊑∙≡ (⊑-+ p _) (cong ℕ→ω p+m≡n)
+⊑-suc : ∀ c → c ⊑ 1ω + c
+⊑-suc c =
+    (λ 𝕚 → mapᴾ (rel 𝕚) c)
+  , rec-unique isPreorderP (mapᴾ (rel 0𝟚)) (λ c → c) (λ n → cong ηᴾ (rel-0𝟚 n)) c
+  , rec-unique isPreorderP (mapᴾ (rel 1𝟚)) (1ω +_) (λ n → cong ηᴾ (rel-1𝟚 n)) c
 
 
 private
@@ -166,3 +155,11 @@ private
 
 +-comm : Commutative _+_
 +-comm = rec-unique2 isPreorderP _+_ (λ m n → n + m) +-comm₀
+
+isAlgorithmicω : isAlgorithmic ω
+isAlgorithmicω beh =
+  isContrᴾ zero
+    (ω₀-elimProp (λ n → 0ω ≡ ηᴾ n) (λ _ → isSetω _ _)
+      refl
+      (λ n ih → ih ∙ ⊑-beh' beh (⊑-suc (ηᴾ n)))
+      (λ 𝕚 n ih → ih ∙ cong ηᴾ (sym (rel-0𝟚 n) ∙ cong (λ 𝕛 → rel 𝕛 n) (isContr→isProp (isAlgorithmic𝟚 beh) 0𝟚 𝕚))))

@@ -117,6 +117,9 @@ rec-unique :
   → (z : ∥ X ∥ᴾ) → f z ≡ g z
 rec-unique = recUnique
 
+isContrᴾ : (x₀ : X) → ((x : X) → ηᴾ x₀ ≡ ηᴾ x) → isContr ∥ X ∥ᴾ
+isContrᴾ x₀ h = ηᴾ x₀ , rec-unique isPreorderP (λ _ → ηᴾ x₀) (λ z → z) h
+
 rec-uniqueP : (P : I → Type) → isPreorder (P i1)
   → (f : ∥ X ∥ᴾ → P i0) (g : ∥ X ∥ᴾ → P i1)
   → ((x : X) → PathP P (f (ηᴾ x)) (g (ηᴾ x)))

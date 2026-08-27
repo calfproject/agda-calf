@@ -10,6 +10,7 @@ open import Calf.Core.Interval
 
 module _ {X : Type} where
 
+  infix 4 _⊑_
   _⊑_ : X → X → Type
   x ⊑ x' = Σ[ p ∈ (𝟚 → X) ] ((p 0𝟚 ≡ x) × (p 1𝟚 ≡ x'))
 

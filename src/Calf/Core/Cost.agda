@@ -5,7 +5,7 @@ open import Calf.Value.Omega
 open import Calf.Value.Unit
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Nat.Literals public
-open import Cubical.Data.Nat using (ℕ; zero; suc) renaming (_+_ to _+ℕ_)
+open import Cubical.Data.Nat using (ℕ; zero; suc; iter) renaming (_+_ to _+ℕ_)
 open import Cubical.Data.Nat.Order
 import Cubical.Data.Nat.Properties as Nat
 
@@ -24,6 +24,7 @@ opaque
   0ℂ : ℂ
   0ℂ = 0
 
+  infixl 6 _+ℂ_
   _+ℂ_ : ℂ → ℂ → ℂ
   _+ℂ_ = _+_
 
@@ -39,18 +40,35 @@ opaque
   +ℂ-comm : Commutative _+ℂ_
   +ℂ-comm = +-comm
 
-  ℕ→ℂ : ℕ → ℂ
-  ℕ→ℂ n = ` n
+  isAlgorithmicℂ : isAlgorithmic ℂ
+  isAlgorithmicℂ = isAlgorithmicω
 
-  ℕ→ℂ-+ : ∀ m n → ℕ→ℂ (m +ℕ n) ≡ ℕ→ℂ m +ℂ ℕ→ℂ n
-  ℕ→ℂ-+ = ℕ→ω-+
+  1ℂ : ℂ
+  1ℂ = 1
 
-  ≤⇒⊑ℂ : ∀ {m n} → m ≤ n → ℕ→ℂ m ⊑ ℕ→ℂ n
-  ≤⇒⊑ℂ = ≤⇒⊑
+  ⊑-sucℂ : ∀ c → c ⊑ 1ℂ +ℂ c
+  ⊑-sucℂ = ⊑-suc
 
 instance
   fromNatℂ : HasFromNat ℂ
-  fromNatℂ = record { Constraint = λ _ → ⊤ ; fromNat = λ n → ℕ→ℂ n }
+  fromNatℂ = record { Constraint = λ _ → ⊤ ; fromNat = λ n → iter n (1ℂ +ℂ_) 0ℂ }
+
+ℕ→ℂ : ℕ → ℂ
+ℕ→ℂ n = ` n
+
+ℕ→ℂ-0 : ℕ→ℂ 0 ≡ 0ℂ
+ℕ→ℂ-0 = refl
+
+ℕ→ℂ-+ : ∀ m n → ℕ→ℂ (m +ℕ n) ≡ ℕ→ℂ m +ℂ ℕ→ℂ n
+ℕ→ℂ-+ zero n = sym (+ℂ-identityˡ (ℕ→ℂ n))
+ℕ→ℂ-+ (suc m) n = cong (1ℂ +ℂ_) (ℕ→ℂ-+ m n) ∙ sym (+ℂ-assoc _ _ _)
+
+≤⇒⊑ℂ : ∀ {m n} → m ≤ n → ℕ→ℂ m ⊑ ℕ→ℂ n
+≤⇒⊑ℂ (p , p+m≡n) = ⊑∙≡ (⊑-+ℂ p _) (cong ℕ→ℂ p+m≡n)
+  where
+    ⊑-+ℂ : ∀ p m → ℕ→ℂ m ⊑ ℕ→ℂ (p +ℕ m)
+    ⊑-+ℂ zero m = ⊑-refl
+    ⊑-+ℂ (suc p) m = ⊑-trans isPreorderℂ (⊑-+ℂ p m) (⊑-sucℂ (ℕ→ℂ (p +ℕ m)))
 
 variable
   c c' c₁ c₂ : ℂ
