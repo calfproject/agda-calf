@@ -1,3 +1,4 @@
+import Examples.Id
 import Examples.Queue
 
 import Examples.Giralf.Id
@@ -58,6 +59,6 @@ opaque
       double
     ⊑⟨ double/bound ⟩
       (λ n → F _ .charge (` n) (ret (DOUBLE n)))
-    ⊑⟨ ⊑-funext (λ n → ⊑-mono (λ e → F _ .charge e (ret (DOUBLE n))) (≤⇒⊑ℂ (Nat.≤-suc Nat.≤-refl))) ⟩
+    ⊑⟨ ⊑-funext (λ n → ⊑-mono (λ e → F _ .charge e (ret (DOUBLE n))) (≤⇒⊑ℂ {n} {suc n} (Nat.≤-suc Nat.≤-refl))) ⟩
       (λ n → F _ .charge (` suc n) (ret (DOUBLE n)))
     ∎ᴾ

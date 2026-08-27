@@ -8,6 +8,7 @@ module Calf.Computation where
 open import Calf.Core.Abstract
 open import Calf.Value
 open import Calf.Core.Cost
+open import Cubical.Data.Nat using (ℕ; zero; suc) renaming (_+_ to _+ℕ_)
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.Isomorphism
@@ -34,6 +35,22 @@ record 𝒞 : 𝒱₁ where
   charge/BEH : ∀ {c} {a} → BEH → charge c a ≡ a
   charge/BEH {c} {a} beh =
     cong (flip charge a) (isContr→isProp (isAlgorithmicℂ beh) c 0ℂ) ∙ charge/0
+
+  charge` : ℕ → U → U
+  charge` zero a = a
+  charge` (suc n) a = charge 1ℂ (charge` n a)
+
+  charge`/charge : ∀ n {a} → charge` n a ≡ charge (` n) a
+  charge`/charge zero = sym charge/0
+  charge`/charge (suc n) = cong (charge 1ℂ) (charge`/charge n) ∙ sym charge/+
+
+  charge`/+ : ∀ m n {a} → charge` (m +ℕ n) a ≡ charge` m (charge` n a)
+  charge`/+ zero n = refl
+  charge`/+ (suc m) n = cong (charge 1ℂ) (charge`/+ m n)
+
+  charge`/BEH : ∀ n {a} → BEH → charge` n a ≡ a
+  charge`/BEH zero beh = refl
+  charge`/BEH (suc n) beh = charge/BEH beh ∙ charge`/BEH n beh
 open 𝒞 public
 
 variable

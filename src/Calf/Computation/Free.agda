@@ -4,6 +4,7 @@ open import Calf.Core.Monad
 open import Calf.Value
 open import Calf.Value.Product
 open import Calf.Computation
+open import Cubical.Data.Nat using (zero; suc)
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Function
@@ -36,6 +37,15 @@ opaque
 
   bind/β : ∀ {x k} → bind {A = A} (ret {X} x) k ≡ k x
   bind/β {A = A} = A .charge/0
+
+  bind/charge` : ∀ n {e k} → bind {A = A} (charge` (F X) n e) k ≡ charge` A n (bind {A = A} e k)
+  bind/charge` zero = refl
+  bind/charge` {A = A} (suc n) {e} {k} =
+    bind/charge {A = A} {c = 1ℂ} {e = charge` (F _) n e} {k = k} ∙ cong (A .charge 1ℂ) (bind/charge` n {e} {k})
+
+  bind/charge`-ret : ∀ n {x k} → bind {A = A} (charge` (F X) n (ret x)) k ≡ charge` A n (k x)
+  bind/charge`-ret {A = A} n {x} {k} =
+    bind/charge` n {ret x} {k} ∙ cong (charge` A n) (bind/β {A = A} {x = x} {k = k})
 
   syntax bind {A = A} e (λ x → k) = bind[ A ] x ← e ⨾ k
 
