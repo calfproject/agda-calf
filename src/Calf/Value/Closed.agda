@@ -258,14 +258,61 @@ opaque
   isSet● : isSet X → isSet (● X)
   isSet● = isSet◯-lex isLex●
 
+●-𝟚 : ● (𝟚 → X) → (𝟚 → ● X)
+●-𝟚 = elim (λ _ → isModalΠ λ _ → isModal●) (λ f → η• ∘ f)
+
 opaque
   unfolding 𝟚
 
-  isPreorder● : isPreorder X → isPreorder (● X)
-  isPreorder● isPreorderX =
-    isSet∧isDiscrete→isPreorder
-      (isSet● (isPreorder→isSet isPreorderX))
-      (BEH⇒isDiscrete refl)
+  𝟚-η-connected : isConnectedMap (λ (f : 𝟚 → X) → η• ∘ f)
+  𝟚-η-connected {X} g =
+    isConnected-≃
+      (invEquiv (Σ-cong-equiv (UnitToType≃ X) λ _ → congEquiv (UnitToType≃ (● X))))
+      (isConnectedMapη (g tt))
+
+●-𝟚-isEquiv : isEquiv (●-𝟚 {X})
+●-𝟚-isEquiv = reflection-isEquiv (isModalΠ λ _ → isModal●) 𝟚-η-connected
+
+module _ {X : 𝒱} (preX : isPreorder X) where
+  private
+    thinX : isThin X
+    thinX = isPreorder→isThin preX
+
+    map2 : {A B C : 𝒱} → (A → B → C) → ● A → ● B → ● C
+    map2 f a• b• = elim (λ _ → isModal●) (λ a → map (f a) b•) a•
+
+    isModal⊑ : {x• y• : ● X} → isModal (x• ⊑ y•)
+    isModal⊑ =
+      isModalΣ (isModalΠ λ _ → isModal●) λ _ →
+      isModalΣ (●-≡-isModal _ _) λ _ → ●-≡-isModal _ _
+
+    ⊑-η-connected : {a b : X} → isConnectedMap (⊑-mono (η• {X}) {a} {b})
+    ⊑-η-connected =
+      isConnectedMapΣ 𝟚-η-connected
+        λ _ → isConnectedMapΣ (isConnectedMap-∘ₑ (◯-≡-≃ isLex●) isConnectedMapη)
+          λ _ → isConnectedMap-∘ₑ (◯-≡-≃ isLex●) isConnectedMapη
+
+    ⊑-● : {a b : X} → ● (a ⊑ b) ≃ (η• a ⊑ η• b)
+    ⊑-● = reflection-≃ isModal⊑ ⊑-η-connected
+
+  isThin● : isThin (● X)
+  isThin● =
+    elim (λ x• → isModalΠ λ y• → isModalIsProp isModal⊑) λ a →
+    elim (λ y• → isModalIsProp isModal⊑) λ b →
+    isOfHLevelRespectEquiv 1 ⊑-● (isProp● (thinX a b))
+
+  ⊑-trans● : (x• y• z• : ● X) → x• ⊑ y• → y• ⊑ z• → x• ⊑ z•
+  ⊑-trans● =
+    elim (λ _ → isModalΠ λ _ → isModalΠ λ _ → isModalΠ λ _ → isModalΠ λ _ → isModal⊑) λ a →
+    elim (λ _ → isModalΠ λ _ → isModalΠ λ _ → isModalΠ λ _ → isModal⊑) λ b →
+    elim (λ _ → isModalΠ λ _ → isModalΠ λ _ → isModal⊑) λ c e f →
+    equivFun ⊑-● (map2 (λ u v → ⊑-trans preX u v) (invEq ⊑-● e) (invEq ⊑-● f))
+
+  opaque
+    isPreorder● : isPreorder (● X)
+    isPreorder● =
+      isSet∧isThin∧Transitive→isPreorder (isSet● (isPreorder→isSet preX)) isThin●
+        (λ {x•} {y•} {z•} → ⊑-trans● x• y• z•)
 
 module _ {X Y Z : 𝒱} {f : X → Z} {g : Y → Z} where
   ●-pullback :
