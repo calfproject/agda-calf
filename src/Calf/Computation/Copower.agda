@@ -8,12 +8,12 @@ open import Cubical.Foundations.Prelude using (cong)
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Structure
 
-Σᶜ : (X : 𝒱ₛ) → (⟨ X ⟩ → 𝒞) → 𝒞
+Σᶜ : (X : 𝒱₌) → (⟨ X ⟩ → 𝒞) → 𝒞
 Σᶜ X A .U = Σ[ x ∈ ⟨ X ⟩ ] U (A x)
 Σᶜ X A .is-preorder = isPreorderΣ X λ x → A x .is-preorder
 Σᶜ X A .charge c (x , a) = x , A x .charge c a
-Σᶜ X A .charge/0 {x , _} = cong (x ,_) (A x .charge/0)
-Σᶜ X A .charge/+ {x , _} = cong (x ,_) (A x .charge/+)
+Σᶜ X A .charge-0 {x , _} = cong (x ,_) (A x .charge-0)
+Σᶜ X A .charge-+ {x , _} = cong (x ,_) (A x .charge-+)
 
 syntax Σᶜ X (λ x → A) = [ x ∈ X ] ⋊ A
 
@@ -29,21 +29,21 @@ syntax Σᶜ X (λ x → A) = [ x ∈ X ] ⋊ A
 Σᶜ-map f .U (x , a) = x , f x .U a
 Σᶜ-map f .charge c (x , a) = cong (x ,_) (f x .charge c a)
 
-Σᶜ-map-idᶜ : ∀ {A : ⟨ Xₛ ⟩ → 𝒞} →
-  Σᶜ-map {X = Xₛ} (λ x → idᶜ {A = A x}) ≡ idᶜ
+Σᶜ-map-idᶜ : ∀ {A : ⟨ X₌ ⟩ → 𝒞} →
+  Σᶜ-map {X = X₌} (λ x → idᶜ {A = A x}) ≡ idᶜ
 Σᶜ-map-idᶜ = ⊸-path refl refl refl
 
 Σᶜ-map-⨾ᶜ :
-  ∀ {A B C : ⟨ Xₛ ⟩ → 𝒞}
-  (f : (x : ⟨ Xₛ ⟩) → A x ⊸ B x)
-  (g : (x : ⟨ Xₛ ⟩) → B x ⊸ C x) →
-  Σᶜ-map {X = Xₛ} f ⨾ᶜ Σᶜ-map {X = Xₛ} g ≡
-  Σᶜ-map {X = Xₛ} (λ x → f x ⨾ᶜ g x)
+  ∀ {A B C : ⟨ X₌ ⟩ → 𝒞}
+  (f : (x : ⟨ X₌ ⟩) → A x ⊸ B x)
+  (g : (x : ⟨ X₌ ⟩) → B x ⊸ C x) →
+  Σᶜ-map {X = X₌} f ⨾ᶜ Σᶜ-map {X = X₌} g ≡
+  Σᶜ-map {X = X₌} (λ x → f x ⨾ᶜ g x)
 Σᶜ-map-⨾ᶜ f g = ⊸-path refl refl refl
 
 _⋊_ : 𝒱ₚ → 𝒞 → 𝒞
 (X ⋊ A) .U = ⟨ X ⟩ × U A
 (X ⋊ A) .is-preorder = isPreorder× (str X) (A .is-preorder)
 (X ⋊ A) .charge c (x , a) = x , A .charge c a
-(X ⋊ A) .charge/0 {x , _} = cong (x ,_) (A .charge/0)
-(X ⋊ A) .charge/+ {x , _} = cong (x ,_) (A .charge/+)
+(X ⋊ A) .charge-0 {x , _} = cong (x ,_) (A .charge-0)
+(X ⋊ A) .charge-+ {x , _} = cong (x ,_) (A .charge-+)

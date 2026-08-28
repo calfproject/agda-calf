@@ -24,33 +24,33 @@ record 𝒞 : 𝒱₁ where
 
   field
     charge : ℂ → U → U
-    charge/0 : ∀ {a} → charge 0ℂ a ≡ a
-    charge/+ : ∀ {a c₁ c₂} → charge (c₁ +ℂ c₂) a ≡ charge c₁ (charge c₂ a)
+    charge-0 : ∀ {a} → charge 0ℂ a ≡ a
+    charge-+ : ∀ {a c₁ c₂} → charge (c₁ +ℂ c₂) a ≡ charge c₁ (charge c₂ a)
 
   opaque
-    charge/comm : ∀ {c} {c'} {a}
+    charge-comm : ∀ {c} {c'} {a}
       → charge c (charge c' a) ≡ charge c' (charge c a)
-    charge/comm = sym charge/+ ∙ cong (flip charge _) (+ℂ-comm _ _) ∙ charge/+
+    charge-comm = sym charge-+ ∙ cong (flip charge _) (+ℂ-comm _ _) ∙ charge-+
 
-  charge/BEH : ∀ {c} {a} → BEH → charge c a ≡ a
-  charge/BEH {c} {a} beh =
-    cong (flip charge a) (isContr→isProp (isAlgorithmicℂ beh) c 0ℂ) ∙ charge/0
+  charge-BEH : ∀ {c} {a} → BEH → charge c a ≡ a
+  charge-BEH {c} {a} beh =
+    cong (flip charge a) (isContr→isProp (isAlgorithmicℂ beh) c 0ℂ) ∙ charge-0
 
-  charge` : ℕ → U → U
-  charge` zero a = a
-  charge` (suc n) a = charge 1ℂ (charge` n a)
+  chargeℕ : ℕ → U → U
+  chargeℕ zero a = a
+  chargeℕ (suc n) a = charge 1ℂ (chargeℕ n a)
 
-  charge`/charge : ∀ n {a} → charge` n a ≡ charge (` n) a
-  charge`/charge zero = sym charge/0
-  charge`/charge (suc n) = cong (charge 1ℂ) (charge`/charge n) ∙ sym charge/+
+  chargeℕ-charge : ∀ n {a} → chargeℕ n a ≡ charge (# n) a
+  chargeℕ-charge zero = sym charge-0
+  chargeℕ-charge (suc n) = cong (charge 1ℂ) (chargeℕ-charge n) ∙ sym charge-+
 
-  charge`/+ : ∀ m n {a} → charge` (m +ℕ n) a ≡ charge` m (charge` n a)
-  charge`/+ zero n = refl
-  charge`/+ (suc m) n = cong (charge 1ℂ) (charge`/+ m n)
+  chargeℕ-+ : ∀ m n {a} → chargeℕ (m +ℕ n) a ≡ chargeℕ m (chargeℕ n a)
+  chargeℕ-+ zero n = refl
+  chargeℕ-+ (suc m) n = cong (charge 1ℂ) (chargeℕ-+ m n)
 
-  charge`/BEH : ∀ n {a} → BEH → charge` n a ≡ a
-  charge`/BEH zero beh = refl
-  charge`/BEH (suc n) beh = charge/BEH beh ∙ charge`/BEH n beh
+  chargeℕ-BEH : ∀ n {a} → BEH → chargeℕ n a ≡ a
+  chargeℕ-BEH zero beh = refl
+  chargeℕ-BEH (suc n) beh = charge-BEH beh ∙ chargeℕ-BEH n beh
 open 𝒞 public
 
 variable
@@ -114,9 +114,9 @@ _⨾ᶜ_ : (A ⊸ B) → (B ⊸ C) → (A ⊸ C)
 (f ⨾ᶜ g) .U = g .U ∘ f .U
 (f ⨾ᶜ g) .charge c a = cong (g .U) (f .charge c a) ∙ g .charge c (f .U a)
 
-CHARGE : ℂ → A ⊸ A
-CHARGE {A} c .U = charge A c
-CHARGE {A} c .charge c' a = charge/comm A {c} {c'} {a}
+chargeᶜ : ℂ → A ⊸ A
+chargeᶜ {A} c .U = charge A c
+chargeᶜ {A} c .charge c' a = charge-comm A {c} {c'} {a}
 
 opaque
   isPropCharge/0
@@ -151,17 +151,17 @@ opaque
         (B .is-preorder)
         i
     ; charge = charge-path i
-    ; charge/0 =
+    ; charge-0 =
         isProp→PathP
           (λ i → isPropCharge/0 {U = U-path i} {isSetUi i} (charge-path i))
-          (A .charge/0)
-          (B .charge/0)
+          (A .charge-0)
+          (B .charge-0)
           i
-    ; charge/+ =
+    ; charge-+ =
         isProp→PathP
           (λ i → isPropCharge/+ {U = U-path i} {isSetUi i} (charge-path i))
-          (A .charge/+)
-          (B .charge/+)
+          (A .charge-+)
+          (B .charge-+)
           i
     }
   where
@@ -213,28 +213,28 @@ opaque
     isOfHLevelRetractFromIso 2 ⊸-Σ-Iso
       (isSetΣ (isSet→ (is-set B)) λ h → isProp→isSet (isProp⊸charge A B h))
 
-CHARGE-commute
+chargeᶜ-commute
   : ∀ c (e : A ⊸ B)
-  → CHARGE c ⨾ᶜ e ≡ e ⨾ᶜ CHARGE c
-CHARGE-commute c e =
+  → chargeᶜ c ⨾ᶜ e ≡ e ⨾ᶜ chargeᶜ c
+chargeᶜ-commute c e =
   ⊸-path refl refl (funExt λ a → e .charge c a)
 
-CHARGE-comm : ∀ c₁ c₂ → CHARGE {A} c₁ ⨾ᶜ CHARGE c₂ ≡ CHARGE c₂ ⨾ᶜ CHARGE c₁
-CHARGE-comm c₁ c₂ = CHARGE-commute c₁ (CHARGE c₂)
+chargeᶜ-comm : ∀ c₁ c₂ → chargeᶜ {A} c₁ ⨾ᶜ chargeᶜ c₂ ≡ chargeᶜ c₂ ⨾ᶜ chargeᶜ c₁
+chargeᶜ-comm c₁ c₂ = chargeᶜ-commute c₁ (chargeᶜ c₂)
 
-CHARGE-0 : CHARGE {A} 0ℂ ≡ idᶜ
-CHARGE-0 {A = A} =
-  ⊸-path refl refl (funExt λ a → A .charge/0)
+chargeᶜ-0 : chargeᶜ {A} 0ℂ ≡ idᶜ
+chargeᶜ-0 {A = A} =
+  ⊸-path refl refl (funExt λ a → A .charge-0)
 
-CHARGE-+ : ∀ c₁ c₂ → CHARGE {A} (c₁ +ℂ c₂) ≡ CHARGE c₂ ⨾ᶜ CHARGE c₁
-CHARGE-+ {A = A} c₁ c₂ =
-  ⊸-path refl refl (funExt λ a → A .charge/+)
+chargeᶜ-+ : ∀ c₁ c₂ → chargeᶜ {A} (c₁ +ℂ c₂) ≡ chargeᶜ c₂ ⨾ᶜ chargeᶜ c₁
+chargeᶜ-+ {A = A} c₁ c₂ =
+  ⊸-path refl refl (funExt λ a → A .charge-+)
 
-idᶜ⨾ᶜf≡f : (f : A ⊸ B) → idᶜ ⨾ᶜ f ≡ f
-idᶜ⨾ᶜf≡f f = ⊸-path refl refl refl
+⨾ᶜ-identityˡ : (f : A ⊸ B) → idᶜ ⨾ᶜ f ≡ f
+⨾ᶜ-identityˡ f = ⊸-path refl refl refl
 
-f⨾ᶜidᶜ≡f : (f : A ⊸ B) → f ⨾ᶜ idᶜ ≡ f
-f⨾ᶜidᶜ≡f f = ⊸-path refl refl (funExt (λ x → refl))
+⨾ᶜ-identityʳ : (f : A ⊸ B) → f ⨾ᶜ idᶜ ≡ f
+⨾ᶜ-identityʳ f = ⊸-path refl refl (funExt (λ x → refl))
 
 opaque
   charge-path
@@ -292,17 +292,10 @@ _∙ₑᶜ_ : A ≃ᶜ B → B ≃ᶜ C → A ≃ᶜ C
 (e ∙ₑᶜ f) .fst = e .fst ⨾ᶜ f .fst
 (e ∙ₑᶜ f) .snd = ((e .fst .U , e .snd) ∙ₑ (f .fst .U , f .snd)) .snd
 
-⊸-inv : (e : B ⊸ C) → isEquivᶜ e → C ⊸ B
-⊸-inv e h .U = invIsEq h
-⊸-inv {B = B} {C = C} e h .charge c x =
-    sym (cong (invIsEq h)
-      (e .charge c (invIsEq h x) ∙ cong (C .charge c) (secIsEq h x)))
-  ∙ retIsEq h (B .charge c (invIsEq h x))
-
 ⊸-postcomp-isEquiv : {A B C : 𝒞} (e : B ⊸ C) → isEquivᶜ e
   → isEquiv (λ (f : A ⊸ B) → f ⨾ᶜ e)
 ⊸-postcomp-isEquiv e h =
-  isoToIsEquiv (iso (_⨾ᶜ e) (_⨾ᶜ ⊸-inv e h)
+  isoToIsEquiv (iso (_⨾ᶜ e) (_⨾ᶜ invEquivᶜ e h)
     (λ g → ⊸-path refl refl (funExt λ a → secIsEq h (g .U a)))
     (λ f → ⊸-path refl refl (funExt λ a → retIsEq h (f .U a))))
 

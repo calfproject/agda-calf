@@ -37,15 +37,15 @@ module _ {A B : 𝒞} where
     comb-chargeʳ : ∀ c a• b• → comb a• (●ᶜ B .charge c b•) ≡ ●ᶜ (A ⊗ B) .charge c (comb a• b•)
     comb-chargeʳ c =
       ●.elim (λ _ → ●.isModalΠ λ _ → ●.●-≡-isModal _ _) λ a →
-        ●.elim (λ _ → ●.●-≡-isModal _ _) λ b → cong ●.η• (sym (∥-law c a b))
+        ●.elim (λ _ → ●.●-≡-isModal _ _) λ b → cong ●.η• (sym (∥-slide c a b))
 
     sect-pt : ∀ a• b• → ●ᶜ-⊗-fwd .U (comb a• b•) ≡ ηᴾ (inj a• b•)
     sect-pt a• b• =
       ●.ind-prop (λ a• → ●ᶜ-⊗-fwd .U (comb a• b•) ≡ ηᴾ (inj a• b•))
-        (λ _ → isPreorder→isSet isPreorderP _ _)
+        (λ _ → isPreorder→isSet isPreorderᴾ _ _)
         (λ a →
           ●.ind-prop (λ b• → ●ᶜ-⊗-fwd .U (comb (●.η• a) b•) ≡ ηᴾ (inj (●.η• a) b•))
-            (λ _ → isPreorder→isSet isPreorderP _ _)
+            (λ _ → isPreorder→isSet isPreorderᴾ _ _)
             (λ b → ●ᶜ-rec-β ⊗• (map₂ η•ᶜ η•ᶜ) (ηᴾ (inj a b)))
             (λ abs → isContr→isProp (⊗•-isContr abs) _ _)
             b•)
@@ -59,12 +59,12 @@ module _ {A B : 𝒞} where
   ●ᶜ-⊗-equiv = isoToIsEquiv (iso (●ᶜ-⊗-fwd .U) (⊗-str● .U) sect retr)
     where
       sect : ∀ y → ●ᶜ-⊗-fwd .U (⊗-str● .U y) ≡ y
-      sect = ⊗₀-≡ isPreorderP (λ y → ●ᶜ-⊗-fwd .U (⊗-str● .U y)) (λ y → y) sect-pt
+      sect = ⊗₀-rec-unique isPreorderᴾ (λ y → ●ᶜ-⊗-fwd .U (⊗-str● .U y)) (λ y → y) sect-pt
 
       retr : ∀ x → ⊗-str● .U (●ᶜ-⊗-fwd .U x) ≡ x
       retr =
-        ●.ind-prop _ (λ _ → ●.isSet● (isPreorder→isSet isPreorderP) _ _)
-          (⊗₀-≡ (●.isPreorder● isPreorderP) (λ w → ⊗-str● .U (●ᶜ-⊗-fwd .U (●.η• w))) ●.η•
+        ●.ind-prop _ (λ _ → ●.isSet● (isPreorder→isSet isPreorderᴾ) _ _)
+          (⊗₀-rec-unique (●.isPreorder● isPreorderᴾ) (λ w → ⊗-str● .U (●ᶜ-⊗-fwd .U (●.η• w))) ●.η•
             (λ a b → cong (⊗-str● .U) (●ᶜ-rec-β ⊗• (map₂ η•ᶜ η•ᶜ) (ηᴾ (inj a b)))))
           (λ abs → ●.◯-isProp● abs _ _)
 
@@ -76,8 +76,8 @@ module _ {A B : 𝒞} where
     map₂ (●ᶜ.map f) (●ᶜ.map g) .U (●ᶜ-⊗-fwd .U w)
     ≡ ●ᶜ-⊗-fwd .U (●ᶜ.map (map₂ f g) .U w)
 ●ᶜ-⊗-natural {A} {A'} {B} {B'} f g =
-  ●.ind-prop _ (λ _ → isPreorder→isSet isPreorderP _ _)
-    (⊗₀-≡ isPreorderP
+  ●.ind-prop _ (λ _ → isPreorder→isSet isPreorderᴾ _ _)
+    (⊗₀-rec-unique isPreorderᴾ
       (λ z → map₂ (●ᶜ.map f) (●ᶜ.map g) .U (●ᶜ-⊗-fwd .U (●.η• z)))
       (λ z → ●ᶜ-⊗-fwd .U (●ᶜ.map (map₂ f g) .U (●.η• z)))
       (λ a b → refl))

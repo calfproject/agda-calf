@@ -20,7 +20,8 @@ open import Calf.Core.Interval
 open import Calf.Directed.Set
 open import Calf.Directed.Transitive
 open import Calf.Directed.Thin
-open import Calf.Directed.Localization
+import Calf.Directed.Localization
+open import Calf.Directed.Localization hiding (rec-unique)
 open import Calf.Directed.Path
 
 private variable X Y Z : Type
@@ -41,7 +42,7 @@ opaque
 
   Fᴾ : (α : Requirements) → Sᴾ α → Tᴾ α
   Fᴾ transitive = ι
-  Fᴾ thin = 𝕊map (terminal Bool)
+  Fᴾ thin = 𝕊-map (terminal Bool)
   Fᴾ hset = terminal S¹
 
 isPreorder : Type → Type
@@ -53,8 +54,8 @@ isPreorder = isLocal Fᴾ
 ηᴾ : X → ∥ X ∥ᴾ
 ηᴾ = ∣_∣
 
-isPreorderP : isPreorder ∥ X ∥ᴾ
-isPreorderP = isLocal-Localize Fᴾ _
+isPreorderᴾ : isPreorder ∥ X ∥ᴾ
+isPreorderᴾ = isLocal-Localize Fᴾ _
 
 isPropIsPreorder : isProp (isPreorder X)
 isPropIsPreorder = isPropΠ (λ _ → isPropIsPathSplitEquiv _)
@@ -63,10 +64,10 @@ rec : isPreorder Y → (X → Y) → ∥ X ∥ᴾ → Y
 rec = Localization.rec
 
 mapᴾ : (X → Y) → ∥ X ∥ᴾ → ∥ Y ∥ᴾ
-mapᴾ f = rec isPreorderP (ηᴾ ∘ f)
+mapᴾ f = rec isPreorderᴾ (ηᴾ ∘ f)
 
 map2ᴾ : (X → Y → Z) → ∥ X ∥ᴾ → ∥ Y ∥ᴾ → ∥ Z ∥ᴾ
-map2ᴾ f = rec (isLocalΠ λ _ → isPreorderP) (mapᴾ ∘ f)
+map2ᴾ f = rec (isLocalΠ λ _ → isPreorderᴾ) (mapᴾ ∘ f)
 
 open isPathSplitEquiv
 
@@ -115,17 +116,17 @@ rec-unique :
   → (f g : ∥ X ∥ᴾ → Y)
   → ((x : X) → f (ηᴾ x) ≡ g (ηᴾ x))
   → (z : ∥ X ∥ᴾ) → f z ≡ g z
-rec-unique = recUnique
+rec-unique = Calf.Directed.Localization.rec-unique
 
 isContrᴾ : (x₀ : X) → ((x : X) → ηᴾ x₀ ≡ ηᴾ x) → isContr ∥ X ∥ᴾ
-isContrᴾ x₀ h = ηᴾ x₀ , rec-unique isPreorderP (λ _ → ηᴾ x₀) (λ z → z) h
+isContrᴾ x₀ h = ηᴾ x₀ , rec-unique isPreorderᴾ (λ _ → ηᴾ x₀) (λ z → z) h
 
 rec-uniqueP : (P : I → Type) → isPreorder (P i1)
   → (f : ∥ X ∥ᴾ → P i0) (g : ∥ X ∥ᴾ → P i1)
   → ((x : X) → PathP P (f (ηᴾ x)) (g (ηᴾ x)))
   → (z : ∥ X ∥ᴾ) → PathP P (f z) (g z)
-rec-uniqueP P isPreorderP₁ f g h z =
-  toPathP (rec-unique isPreorderP₁ (transport (λ i → P i) ∘ f) g (λ x → fromPathP (h x)) z)
+rec-uniqueP P isPreorderᴾ₁ f g h z =
+  toPathP (rec-unique isPreorderᴾ₁ (transport (λ i → P i) ∘ f) g (λ x → fromPathP (h x)) z)
 
 rec-unique2 :
   isPreorder Z

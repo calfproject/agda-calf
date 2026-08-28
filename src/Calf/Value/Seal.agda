@@ -11,7 +11,7 @@ open import Calf.Value
 open import Calf.Value.Product
 open import Calf.Value.Closed
 open import Calf.Value.Open
-open import Calf.Value.Glue using (𝒱-FRACTURE; 𝒱-Fracture)
+open import Calf.Value.Glue using (Fracture; toFracture)
 
 Glueᵈ : (X• X◦ : 𝒱) (χ• : X• → ● X◦) → 𝒱
 Glueᵈ X• X◦ χ• = Σ[ (x• , x◦) ∈ X• × X◦ ] χ• x• ⊑ η• x◦
@@ -26,7 +26,7 @@ module _ {X• X◦ : 𝒱} {χ• : X• → ● X◦} where
   •→◦ : (g : Glueᵈ X• X◦ χ•) → χ• (• g) ⊑ η• (◦ g)
   •→◦ g = g .snd
 
-open 𝒱-FRACTURE
+open Fracture
 
 opaque
   isPreorderGlueᵈ : (X• X◦ : 𝒱) {χ• : X• → ● X◦}
@@ -36,11 +36,11 @@ opaque
   isPreorderGlueᵈ X• X◦ isPreorderX• isPreorderX◦ =
     isLocalComma isPreorderX• isPreorderX◦ (isPreorder● isPreorderX◦)
 
-𝒱-Glueᵈ : 𝒱-FRACTURE → 𝒱
-𝒱-Glueᵈ F = Glueᵈ ⟨ F .X• ⟩ ⟨ F .X◦ ⟩ (F .χ•)
+fromFractureᵈ : Fracture → 𝒱
+fromFractureᵈ F = Glueᵈ ⟨ F .X• ⟩ ⟨ F .X◦ ⟩ (F .χ•)
 
 Seal : 𝒱 → 𝒱
-Seal = 𝒱-Glueᵈ ∘ 𝒱-Fracture
+Seal = fromFractureᵈ ∘ toFracture
 
 opaque
   isPreorderSeal : isPreorder X → isPreorder (Seal X)

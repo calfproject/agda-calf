@@ -19,25 +19,25 @@ natCongSuc : (x y : ℕ) → x ≡ y → suc x ≡ suc y
 natCongSuc x y p = cong suc p
 
 natCong₂+ :
-  (a a′ b b′ : ℕ)
-  → a ≡ a′
-  → b ≡ b′
-  → a + b ≡ a′ + b′
-natCong₂+ a a′ b b′ p q = cong₂ _+_ p q
+  (a a' b b' : ℕ)
+  → a ≡ a'
+  → b ≡ b'
+  → a + b ≡ a' + b'
+natCong₂+ a a' b b' p q = cong₂ _+_ p q
 
 natCong₂· :
-  (a a′ b b′ : ℕ)
-  → a ≡ a′
-  → b ≡ b′
-  → a · b ≡ a′ · b′
-natCong₂· a a′ b b′ p q = cong₂ _·_ p q
+  (a a' b b' : ℕ)
+  → a ≡ a'
+  → b ≡ b'
+  → a · b ≡ a' · b'
+natCong₂· a a' b b' p q = cong₂ _·_ p q
 
 natCong₂∸ :
-  (a a′ b b′ : ℕ)
-  → a ≡ a′
-  → b ≡ b′
-  → a ∸ b ≡ a′ ∸ b′
-natCong₂∸ a a′ b b′ p q = cong₂ _∸_ p q
+  (a a' b b' : ℕ)
+  → a ≡ a'
+  → b ≡ b'
+  → a ∸ b ≡ a' ∸ b'
+natCong₂∸ a a' b b' p q = cong₂ _∸_ p q
 
 natComp :
   (x y z : ℕ)
@@ -47,23 +47,23 @@ natComp :
 natComp x y z p q = p ∙ q
 
 finishNatExplicit :
-  (lhs lhs′ rhs rhs′ : ℕ)
-  → lhs ≡ lhs′
-  → lhs′ ≡ rhs′
-  → rhs ≡ rhs′
+  (lhs lhs' rhs rhs' : ℕ)
+  → lhs ≡ lhs'
+  → lhs' ≡ rhs'
+  → rhs ≡ rhs'
   → lhs ≡ rhs
-finishNatExplicit lhs lhs′ rhs rhs′ lhs-step middle rhs-step =
+finishNatExplicit lhs lhs' rhs rhs' lhs-step middle rhs-step =
   lhs-step ∙ middle ∙ sym rhs-step
 
 finishLeExplicit :
-  (lower lower′ upper upper′ : ℕ)
-  → lower ≡ lower′
-  → lower′ ≤ upper′
-  → upper ≡ upper′
+  (lower lower' upper upper' : ℕ)
+  → lower ≡ lower'
+  → lower' ≤ upper'
+  → upper ≡ upper'
   → lower ≤ upper
-finishLeExplicit lower lower′ upper upper′ lower-step middle upper-step =
+finishLeExplicit lower lower' upper upper' lower-step middle upper-step =
   subst (λ n → lower ≤ n) (sym upper-step)
-    (subst (λ n → n ≤ upper′) (sym lower-step) middle)
+    (subst (λ n → n ≤ upper') (sym lower-step) middle)
 
 leRefl : (m : ℕ) → m ≤ m
 leRefl m = ≤-refl

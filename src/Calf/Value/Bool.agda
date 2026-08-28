@@ -6,7 +6,7 @@ open import Cubical.Data.Bool public
 open import Cubical.Foundations.Isomorphism
 
 isDiscreteBool : isDiscrete Bool
-isDiscreteBool = isLocalRetract inj prj is-retract isDiscreteℕ
+isDiscreteBool = isLocalRetract inj prj isRetract isDiscreteℕ
   where
     inj : Bool → ℕ
     inj false = 0
@@ -16,12 +16,12 @@ isDiscreteBool = isLocalRetract inj prj is-retract isDiscreteℕ
     prj zero = false
     prj (suc _) = true
 
-    is-retract : retract inj prj
-    is-retract false = refl
-    is-retract true = refl
+    isRetract : retract inj prj
+    isRetract false = refl
+    isRetract true = refl
 
-Boolₛ : 𝒱ₛ
-Boolₛ = Bool , isSetBool , isDiscreteBool
+Bool₌ : 𝒱₌
+Bool₌ = Bool , isSetBool , isDiscreteBool
 
 Boolₚ : 𝒱ₚ
-Boolₚ = ⟨ Boolₛ ⟩ₚ
+Boolₚ = ⟨ Bool₌ ⟩ₚ

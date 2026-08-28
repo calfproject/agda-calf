@@ -17,10 +17,10 @@ open import Cubical.Functions.FunExtEquiv using (funExtEquiv)
 open import Cubical.Modalities.Modality
 
 module _ where
-  open 𝒱-FRACTURE
+  open Fracture
 
   FractureGlue : 𝒱 → 𝒱
-  FractureGlue = 𝒱-Glue ∘ 𝒱-Fracture
+  FractureGlue = fromFracture ∘ toFracture
 
   fracture : X → FractureGlue X
   fracture x = (η• x , η◦ x) , refl
@@ -56,12 +56,12 @@ module _ where
   fracture-isEquiv = ●.isModal+isConnected→isEquiv fracture-modal fracture-connected
 
   -- This proof is a direct adaptation of https://agda.monade.li/ErasureOpen.html
-  glue-fracture-retract : retract 𝒱-Fracture 𝒱-Glue
+  glue-fracture-retract : retract toFracture fromFracture
   glue-fracture-retract X = sym (ua (fracture , fracture-isEquiv))
 
   opaque
-    proj•-connected-contract : (F : 𝒱-FRACTURE)
-      → ●.isConnectedMap (λ (g : 𝒱-Glue F) → • g)
+    proj•-connected-contract : (F : Fracture)
+      → ●.isConnectedMap (λ (g : fromFracture F) → • g)
     proj•-connected-contract F x• =
       ●.isConnected-≃
         (invEquiv
@@ -70,7 +70,7 @@ module _ where
           ∙ₑ invEquiv (fiberProjEquiv _ _ x•)))
         (●.isConnectedMapη (F .χ• x•))
 
-  proj•-connected : (F : 𝒱-FRACTURE) → ●.isConnectedMap (λ (g : 𝒱-Glue F) → • g)
+  proj•-connected : (F : Fracture) → ●.isConnectedMap (λ (g : fromFracture F) → • g)
   proj•-connected F x• .fst =
     ●.map (λ (x◦ , p) → ((x• , x◦) , sym p) , refl)
       (●.isConnectedMapη (F .χ• x•) .fst)
@@ -78,8 +78,8 @@ module _ where
     isContr→isProp (proj•-connected-contract F x•) _
 
   opaque
-    proj◦-connected-contract : (F : 𝒱-FRACTURE)
-      → ◯.isConnectedMap (λ (g : 𝒱-Glue F) → ◦ g)
+    proj◦-connected-contract : (F : Fracture)
+      → ◯.isConnectedMap (λ (g : fromFracture F) → ◦ g)
     proj◦-connected-contract F x◦ =
       ◯.isConnected-≃
         (invEquiv
@@ -88,7 +88,7 @@ module _ where
         (isModal●→isConnected◯
           (●.isModalΣ (F .X• .snd) λ x• → ●-≡-isModal _ _))
 
-  proj◦-connected : (F : 𝒱-FRACTURE) → ◯.isConnectedMap (λ (g : 𝒱-Glue F) → ◦ g)
+  proj◦-connected : (F : Fracture) → ◯.isConnectedMap (λ (g : fromFracture F) → ◦ g)
   proj◦-connected F x◦ .fst abs =
     ( (invIsEq (F .X• .snd) (∗ abs) , x◦)
     , ◯-isProp● abs (F .χ• (invIsEq (F .X• .snd) (∗ abs))) (η• x◦)
@@ -96,45 +96,45 @@ module _ where
   proj◦-connected F x◦ .snd =
     isContr→isProp (proj◦-connected-contract F x◦) _
 
-  glue•-out : (F : 𝒱-FRACTURE) → ● (𝒱-Glue F) → ⟨ F .X• ⟩
+  glue•-out : (F : Fracture) → ● (fromFracture F) → ⟨ F .X• ⟩
   glue•-out F = ●.elim (λ _ → F .X• .snd) (λ g → • g)
 
-  glue•-in : (F : 𝒱-FRACTURE) → ⟨ F .X• ⟩ → ● (𝒱-Glue F)
+  glue•-in : (F : Fracture) → ⟨ F .X• ⟩ → ● (fromFracture F)
   glue•-in F = ●.reflection-inv (F .X• .snd) (proj•-connected F)
 
-  glue•-equiv : (F : 𝒱-FRACTURE) → ● (𝒱-Glue F) ≃ ⟨ F .X• ⟩
+  glue•-equiv : (F : Fracture) → ● (fromFracture F) ≃ ⟨ F .X• ⟩
   glue•-equiv F =
     isoToEquiv
       (iso (glue•-out F) (glue•-in F)
         (●.reflection-sec (F .X• .snd) (proj•-connected F))
         (●.reflection-ret (F .X• .snd) (proj•-connected F)))
 
-  glue◦-out : (F : 𝒱-FRACTURE) → ◯ (𝒱-Glue F) → ⟨ F .X◦ ⟩
+  glue◦-out : (F : Fracture) → ◯ (fromFracture F) → ⟨ F .X◦ ⟩
   glue◦-out F = ◯.elim (λ _ → F .X◦ .snd) (λ g → ◦ g)
 
-  glue◦-in : (F : 𝒱-FRACTURE) → ⟨ F .X◦ ⟩ → ◯ (𝒱-Glue F)
+  glue◦-in : (F : Fracture) → ⟨ F .X◦ ⟩ → ◯ (fromFracture F)
   glue◦-in F = ◯.reflection-inv (F .X◦ .snd) (proj◦-connected F)
 
-  glue◦-equiv : (F : 𝒱-FRACTURE) → ◯ (𝒱-Glue F) ≃ ⟨ F .X◦ ⟩
+  glue◦-equiv : (F : Fracture) → ◯ (fromFracture F) ≃ ⟨ F .X◦ ⟩
   glue◦-equiv F =
     isoToEquiv
       (iso (glue◦-out F) (glue◦-in F)
         (◯.reflection-sec (F .X◦ .snd) (proj◦-connected F))
         (◯.reflection-ret (F .X◦ .snd) (proj◦-connected F)))
 
-  glue•-β : (F : 𝒱-FRACTURE) (g : 𝒱-Glue F)
+  glue•-β : (F : Fracture) (g : fromFracture F)
     → equivFun (glue•-equiv F) (η• g) ≡ • g
   glue•-β F = ●.elim-β (λ _ → F .X• .snd) (λ g → • g)
 
-  glue◦-β : (F : 𝒱-FRACTURE) (g : 𝒱-Glue F)
+  glue◦-β : (F : Fracture) (g : fromFracture F)
     → equivFun (glue◦-equiv F) (η◦ g) ≡ ◦ g
   glue◦-β F = ◯.elim-β (λ _ → F .X◦ .snd) (λ g → ◦ g)
 
   opaque
-    square-χ•-path : {F G : 𝒱-FRACTURE}
-      → (h : 𝒱-Glue F → 𝒱-Glue G)
+    square-χ•-path : {F G : Fracture}
+      → (h : fromFracture F → fromFracture G)
       → (k : ⟨ F .X• ⟩ → ● ⟨ G .X◦ ⟩)
-      → ((g : 𝒱-Glue F) → η• (◦ (h g)) ≡ k (• g))
+      → ((g : fromFracture F) → η• (◦ (h g)) ≡ k (• g))
       → PathP (λ i → ua (glue•-equiv F) i → ● (ua (glue◦-equiv G) i))
           (●.map (η◦ ∘ h))
           k
@@ -143,35 +143,35 @@ module _ where
         congP (λ _ → η•) (ua-gluePath (glue◦-equiv G) (glue◦-β G (h g)))
         ▷ (coh g ∙ cong k (sym (glue•-β F g))))
 
-  glue-fracture-χ•-path : (F : 𝒱-FRACTURE)
+  glue-fracture-χ•-path : (F : Fracture)
     → PathP (λ i → ua (glue•-equiv F) i → ● (ua (glue◦-equiv F) i))
         (●.map η◦)
         (F .χ•)
   glue-fracture-χ•-path F = square-χ•-path (λ g → g) (F .χ•) (λ g → sym (•→◦ g))
 
-  glue-fracture-section : section 𝒱-Fracture 𝒱-Glue
+  glue-fracture-section : section toFracture fromFracture
   glue-fracture-section F =
-    𝒱-FRACTURE-path
-      (𝒱•-path (●• (𝒱-Glue F)) (F .X•) (ua (glue•-equiv F)))
-      (𝒱◦-path (◯◦ (𝒱-Glue F)) (F .X◦) (ua (glue◦-equiv F)))
+    Fracture-path
+      (𝒱•-path (●• (fromFracture F)) (F .X•) (ua (glue•-equiv F)))
+      (𝒱◦-path (◯◦ (fromFracture F)) (F .X◦) (ua (glue◦-equiv F)))
       (glue-fracture-χ•-path F)
 
-  fracture-and-gluing : 𝒱 ≃ 𝒱-FRACTURE
+  fracture-and-gluing : 𝒱 ≃ Fracture
   fracture-and-gluing =
-    isoToEquiv (iso 𝒱-Fracture 𝒱-Glue glue-fracture-section glue-fracture-retract)
+    isoToEquiv (iso toFracture fromFracture glue-fracture-section glue-fracture-retract)
 
-  ◯[Glue≃X◦] : (F : 𝒱-FRACTURE) → ⟨ ABS ⟩ → 𝒱-Glue F ≃ ⟨ F .X◦ ⟩
-  ◯[Glue≃X◦] F abs .fst g = ◦ g
-  ◯[Glue≃X◦] F abs .snd .equiv-proof x◦ =
+  Glue-open-≃ : (F : Fracture) → ⟨ ABS ⟩ → fromFracture F ≃ ⟨ F .X◦ ⟩
+  Glue-open-≃ F abs .fst g = ◦ g
+  Glue-open-≃ F abs .snd .equiv-proof x◦ =
     ◯.isConnected→◯isContr (proj◦-connected F x◦) abs
 
 module _ where
-  toSquare : (X → Y) → 𝒱-Square (𝒱-Fracture X) (𝒱-Fracture Y)
+  toSquare : (X → Y) → Fracture-Square (toFracture X) (toFracture Y)
   toSquare f =
     (●.map f , ◯.map f) ,
     funExt (●.elim (λ x• → ●-≡-isModal _ _) (λ _ → refl))
 
-  fracture-and-gluing-square : (X → Y) ≃ 𝒱-Square (𝒱-Fracture X) (𝒱-Fracture Y)
+  fracture-and-gluing-square : (X → Y) ≃ Fracture-Square (toFracture X) (toFracture Y)
   fracture-and-gluing-square {X} {Y} =
       (X → Y)
     ≃⟨ equivΠCod (λ _ → fracture , fracture-isEquiv) ⟩
@@ -185,7 +185,7 @@ module _ where
       (Σ[ (h• , h◦) ∈ (X → ● Y) × (X → ◯ Y) ] (●.map η◦ ∘ h• ≡ η• ∘ h◦))
     ≃⟨ invEquiv (Σ-cong-equiv (≃-× precomp• precomp◦)
          (λ (f• , f◦) → congEquiv precomp•●◯)) ⟩
-      𝒱-Square (𝒱-Fracture X) (𝒱-Fracture Y)
+      Fracture-Square (toFracture X) (toFracture Y)
     ■
     where
       precomp◦ : (◯ X → ◯ Y) ≃ (X → ◯ Y)

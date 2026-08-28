@@ -17,12 +17,12 @@ opaque
   F-monoidal {X} {Y} = sym (conservativity bwd bwd-equiv)
     where
       bwd : F (X × Y) ⊸ F X ⊗ F Y
-      bwd = bind' (λ (x , y) → ret x ∥ ret y)
+      bwd = F-rec (λ (x , y) → ret x ∥ ret y)
 
       fwd : U (F X ⊗ F Y) → U (F (X × Y))
       fwd = rec (F (X × Y) .is-preorder) λ
         { (inj (c₁ , x) (c₂ , y)) → (c₁ +ℂ c₂) , map2ᴾ _,_ x y
-        ; (law c (c₁ , x) (c₂ , y) i) →
+        ; (slide c (c₁ , x) (c₂ , y) i) →
             cong (_, map2ᴾ _,_ x y)
               ( cong (_+ℂ c₂) (+ℂ-comm c c₁) ∙ +ℂ-assoc c₁ c c₂ ) i
         }
@@ -32,14 +32,14 @@ opaque
 
       bwd-sect : ∀ v → bwd .U (fwd v) ≡ v
       bwd-sect =
-        ⊗₀-≡ isPreorderP (λ v → bwd .U (fwd v)) (λ v → v)
+        ⊗₀-rec-unique isPreorderᴾ (λ v → bwd .U (fwd v)) (λ v → v)
           (λ (c₁ , x) (c₂ , y) →
-            rec-unique2 isPreorderP
+            rec-unique2 isPreorderᴾ
               (λ x y → bwd .U ((c₁ +ℂ c₂) , map2ᴾ _,_ x y))
               (λ x y → ηᴾ (inj (c₁ , x) (c₂ , y)))
               (λ x y →
-                  (F X ⊗ F Y) .charge/+ {ret x ∥ ret y} {c₁} {c₂}
-                ∙ cong ((F X ⊗ F Y) .charge c₁) (∥-law {A = F X} {B = F Y} c₂ (ret x) (ret y))
+                  (F X ⊗ F Y) .charge-+ {ret x ∥ ret y} {c₁} {c₂}
+                ∙ cong ((F X ⊗ F Y) .charge c₁) (∥-slide {A = F X} {B = F Y} c₂ (ret x) (ret y))
                 ∙ cong₂ _∥_ (charge-ret c₁ x) (charge-ret c₂ y))
               x y)
 
@@ -58,7 +58,7 @@ opaque
 par : U (F X) → U (F Y) → U (F (X × Y))
 par ex ey = transport (cong U F-monoidal) (ex ∥ ey)
 
-module _ (X : 𝒱ₛ) where
+module _ (X : 𝒱₌) where
   open import Calf.Computation.Copower
 
   opaque
@@ -100,23 +100,23 @@ module _ (X : 𝒱ₛ) where
 
     F-Σᶜ-potential : ∀ (Φ : ⟨ X ⟩ → ℂ)
       → PathP (λ i → F-Σᶜ i ⊸ F-Σᶜ i)
-          (bind' λ x → F _ .charge (Φ x) (ret x))
-          (Σᶜ-map {X} {const ⊤} (λ x → CHARGE (Φ x)))
+          (F-rec λ x → F _ .charge (Φ x) (ret x))
+          (Σᶜ-map {X} {const ⊤} (λ x → chargeᶜ (Φ x)))
     F-Σᶜ-potential Φ =
       conservativity-⊸ F-Σᶜ-fwd F-Σᶜ-fwd-equiv F-Σᶜ-fwd F-Σᶜ-fwd-equiv
         (⊸-path refl refl (funExt naturality))
       where
         naturality : (e : U (F ⟨ X ⟩)) →
-          F-Σᶜ-fwd .U (bind' {A = F _} (λ x → F _ .charge (Φ x) (ret x)) .U e)
-          ≡ Σᶜ-map {X} {const ⊤} (λ x → CHARGE (Φ x)) .U (F-Σᶜ-fwd .U e)
+          F-Σᶜ-fwd .U (F-rec {A = F _} (λ x → F _ .charge (Φ x) (ret x)) .U e)
+          ≡ Σᶜ-map {X} {const ⊤} (λ x → chargeᶜ (Φ x)) .U (F-Σᶜ-fwd .U e)
         naturality (c , x) =
           rec-unique
             (Σᶜ X (const ⊤) .is-preorder)
             (λ x →
               F-Σᶜ-fwd .U
-                (bind' {A = F _} (λ x → F _ .charge (Φ x) (ret x)) .U (c , x)))
+                (F-rec {A = F _} (λ x → F _ .charge (Φ x) (ret x)) .U (c , x)))
             (λ x →
-              Σᶜ-map {X} {const ⊤} (λ x → CHARGE (Φ x)) .U
+              Σᶜ-map {X} {const ⊤} (λ x → chargeᶜ (Φ x)) .U
                 (F-Σᶜ-fwd .U (c , x)))
             (λ x → cong (x ,_) (cong (c +ℂ_) (+ℂ-identityʳ _) ∙ +ℂ-comm c (Φ x)))
             x

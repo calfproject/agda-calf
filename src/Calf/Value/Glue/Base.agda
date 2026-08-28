@@ -41,15 +41,15 @@ module _ {X• X◦ : 𝒱} {χ• : X• → ● X◦} where
     isPreorderGlue pre• pre◦ =
       isLocalPullback pre• pre◦ (isPreorder● pre◦) χ• η•
 
-record 𝒱-FRACTURE : 𝒱₁ where
+record Fracture : 𝒱₁ where
   field
     X• : 𝒱•
     X◦ : 𝒱◦
     χ• : ⟨ X• ⟩ → ● ⟨ X◦ ⟩
-open 𝒱-FRACTURE
+open Fracture
 
-𝒱-FRACTURE-path
-  : {F G : 𝒱-FRACTURE}
+Fracture-path
+  : {F G : Fracture}
   → (X•-path : F .X• ≡ G .X•)
   → (X◦-path : F .X◦ ≡ G .X◦)
   → PathP
@@ -57,20 +57,20 @@ open 𝒱-FRACTURE
       (F .χ•)
       (G .χ•)
   → F ≡ G
-𝒱-FRACTURE-path X•-path X◦-path χ•-path i .X• = X•-path i
-𝒱-FRACTURE-path X•-path X◦-path χ•-path i .X◦ = X◦-path i
-𝒱-FRACTURE-path X•-path X◦-path χ•-path i .χ• = χ•-path i
+Fracture-path X•-path X◦-path χ•-path i .X• = X•-path i
+Fracture-path X•-path X◦-path χ•-path i .X◦ = X◦-path i
+Fracture-path X•-path X◦-path χ•-path i .χ• = χ•-path i
 
-𝒱-Glue : 𝒱-FRACTURE → 𝒱
-𝒱-Glue F = Glue ⟨ F .X• ⟩ ⟨ F .X◦ ⟩ (F .χ•)
+fromFracture : Fracture → 𝒱
+fromFracture F = Glue ⟨ F .X• ⟩ ⟨ F .X◦ ⟩ (F .χ•)
 
-𝒱-Fracture : 𝒱 → 𝒱-FRACTURE
-𝒱-Fracture X .X• = ●• X
-𝒱-Fracture X .X◦ = ◯◦ X
-𝒱-Fracture X .χ• = ●.map η◦
+toFracture : 𝒱 → Fracture
+toFracture X .X• = ●• X
+toFracture X .X◦ = ◯◦ X
+toFracture X .χ• = ●.map η◦
 
-𝒱-Square : 𝒱-FRACTURE → 𝒱-FRACTURE → 𝒱
-𝒱-Square F G =
+Fracture-Square : Fracture → Fracture → 𝒱
+Fracture-Square F G =
   Σ[ (f• , f◦) ∈ (⟨ F .X• ⟩ → ⟨ G .X• ⟩) × (⟨ F .X◦ ⟩ → ⟨ G .X◦ ⟩) ]
     G .χ• ∘ f• ≡ ●.map f◦ ∘ F .χ•
 

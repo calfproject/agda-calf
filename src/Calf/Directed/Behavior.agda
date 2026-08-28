@@ -29,9 +29,9 @@ isAlgorithmic𝟚 beh .snd i =
     (0𝟚-minimum _)
     (≤𝟚-trans (1𝟚-maximum _) (subst (_≤𝟚 0𝟚) beh ≤𝟚-refl))
 
-⊑-beh : BEH → isDiscrete X
-⊑-beh beh _ =
+BEH⇒isDiscrete : BEH → isDiscrete X
+BEH⇒isDiscrete beh _ =
   fromIsEquiv _ (isEquivPreComp (terminal 𝟚 , isEquivFromIsContr _ (isAlgorithmic𝟚 beh) isContrUnit))
 
-⊑-beh' : BEH → {x x' : X} → x ⊑ x' → x ≡ x'
-⊑-beh' beh = invIsEq (isDiscrete→isEquiv[⊑-reflexive] (⊑-beh beh))
+⊑-BEH : BEH → {x x' : X} → x ⊑ x' → x ≡ x'
+⊑-BEH beh = invIsEq (isDiscrete→isEquiv[⊑-reflexive] (BEH⇒isDiscrete beh))

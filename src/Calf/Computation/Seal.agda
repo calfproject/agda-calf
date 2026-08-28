@@ -16,7 +16,7 @@ open import Calf.Computation.Power
 open import Calf.Computation.Open as ◯ᶜ
 open import Calf.Computation.Closed as ●ᶜ
 open import Calf.Computation.Glue
-  using (𝒞-FRACTURE; 𝒞-Fracture; 𝒞-Glue; 𝒞-glue-fracture-section; proj•ᶜ; proj◦ᶜ)
+  using (Fractureᶜ; toFractureᶜ; fromFractureᶜ; glue-fracture-sectionᶜ; proj•ᶜ; proj◦ᶜ)
 open import Calf.Computation.Abstraction
 
 private
@@ -32,20 +32,20 @@ Glueᵈᶜ A• A◦ α• .is-preorder =
 Glueᵈᶜ A• A◦ α• .charge c ((x• , x◦) , p) =
   (A• .charge c x• , A◦ .charge c x◦) ,
   ≡∙⊑ (α• .charge c x•) (⊑-mono (●ᶜ A◦ .charge c) p)
-Glueᵈᶜ A• A◦ α• .charge/0 =
+Glueᵈᶜ A• A◦ α• .charge-0 =
   Σ≡Prop (λ _ → thin● A◦ _ _)
-    (ΣPathP (A• .charge/0 , A◦ .charge/0))
-Glueᵈᶜ A• A◦ α• .charge/+ =
+    (ΣPathP (A• .charge-0 , A◦ .charge-0))
+Glueᵈᶜ A• A◦ α• .charge-+ =
   Σ≡Prop (λ _ → thin● A◦ _ _)
-    (ΣPathP (A• .charge/+ , A◦ .charge/+))
+    (ΣPathP (A• .charge-+ , A◦ .charge-+))
 
-open 𝒞-FRACTURE
+open Fractureᶜ
 
-𝒞-Glueᵈ : 𝒞-FRACTURE → 𝒞
-𝒞-Glueᵈ F = Glueᵈᶜ ⟨ F .A• ⟩ᶜ ⟨ F .A◦ ⟩ᶜ (F .α•)
+fromFractureᵈᶜ : Fractureᶜ → 𝒞
+fromFractureᵈᶜ F = Glueᵈᶜ ⟨ F .A• ⟩ᶜ ⟨ F .A◦ ⟩ᶜ (F .α•)
 
 Sealᶜ : 𝒞 → 𝒞
-Sealᶜ = 𝒞-Glueᵈ ∘ 𝒞-Fracture
+Sealᶜ = fromFractureᵈᶜ ∘ toFractureᶜ
 
 proj•ᶜᵈ : Sealᶜ A ⊸ ●ᶜ A
 proj•ᶜᵈ .U = •
@@ -59,16 +59,16 @@ proj◦ᶜᵈ .charge c g = refl
 _⊸ᵈ_ : 𝒞 → 𝒞 → 𝒱
 A ⊸ᵈ B = A ⊸ Sealᶜ B
 
-glueᵈ : (G : 𝒞-FRACTURE) (f• : A ⊸ ⟨ G .A• ⟩ᶜ) (f◦ : A ⊸ ⟨ G .A◦ ⟩ᶜ)
+glueᵈ : (G : Fractureᶜ) (f• : A ⊸ ⟨ G .A• ⟩ᶜ) (f◦ : A ⊸ ⟨ G .A◦ ⟩ᶜ)
   → ((a : U A) → U (G .α•) (U f• a) ⊑ η• (U f◦ a))
-  → A ⊸ 𝒞-Glueᵈ G
+  → A ⊸ fromFractureᵈᶜ G
 glueᵈ G f• f◦ f-coh .U a = (f• .U a , f◦ .U a) , f-coh a
 glueᵈ G f• f◦ f-coh .charge c a =
   Σ≡Prop (λ _ → thin● ⟨ G .A◦ ⟩ᶜ _ _)
     (ΣPathP (f• .charge c a , f◦ .charge c a))
 
-pair : (f• : A ⊸ ●ᶜ B) (f◦ : A ⊸ ◯ᶜ B) → ((a : U A) → ●.map η◦ (f• .U a) ⊑ η• (f◦ .U a)) → (A ⊸ᵈ B)
-pair {B = B} = glueᵈ (𝒞-Fracture B)
+pairᵈ : (f• : A ⊸ ●ᶜ B) (f◦ : A ⊸ ◯ᶜ B) → ((a : U A) → ●.map η◦ (f• .U a) ⊑ η• (f◦ .U a)) → (A ⊸ᵈ B)
+pairᵈ {B = B} = glueᵈ (toFractureᶜ B)
 
 idᵈ : A ⊸ᵈ A
 idᵈ .U a = (η• a , η◦ a) , ⊑-refl
@@ -77,7 +77,7 @@ idᵈ {A} .charge c a = Σ≡Prop (λ _ → thin● (◯ᶜ A) _ _) refl
 infixl 9 _⨾ᵈ_
 _⨾ᵈ_ : (A ⊸ᵈ B) → (B ⊸ᵈ C) → (A ⊸ᵈ C)
 _⨾ᵈ_ {A} {B} {C} f g =
-  pair
+  pairᵈ
     (f ⨾ᶜ proj•ᶜᵈ ⨾ᶜ g•)
     (f ⨾ᶜ proj◦ᶜᵈ ⨾ᶜ g◦)
     (λ a →
@@ -97,17 +97,17 @@ _⨾ᵈ_ {A} {B} {C} f g =
         (λ b → g .U b .snd)
         (λ abs → ⊑-reflexive (●.◯-isProp● abs _ _))
 
-squareᵈ : (F G : 𝒞-FRACTURE)
+squareᵈ : (F G : Fractureᶜ)
   → (f• : ⟨ F .A• ⟩ᶜ ⊸ ⟨ G .A• ⟩ᶜ)
   → (f◦ : ⟨ F .A◦ ⟩ᶜ ⊸ ⟨ G .A◦ ⟩ᶜ)
   → ((a• : U ⟨ F .A• ⟩ᶜ) → U (G .α•) (U f• a•) ⊑ U (●ᶜ.map f◦) (U (F .α•) a•))
-  → 𝒞-Glue F ⊸ 𝒞-Glueᵈ G
+  → fromFractureᶜ F ⊸ fromFractureᵈᶜ G
 squareᵈ F G f• f◦ f-coh =
   glueᵈ G (proj•ᶜ F ⨾ᶜ f•) (proj◦ᶜ F ⨾ᶜ f◦)
     (λ ((a• , a◦) , acoh) → ⊑∙≡ (f-coh a•) (cong (U (●ᶜ.map f◦)) acoh))
 
-Sealᶜ-Glue : (F : 𝒞-FRACTURE) → Sealᶜ (𝒞-Glue F) ≡ 𝒞-Glueᵈ F
-Sealᶜ-Glue F = cong 𝒞-Glueᵈ (𝒞-glue-fracture-section F)
+Sealᶜ-fromFracture : (F : Fractureᶜ) → Sealᶜ (fromFractureᶜ F) ≡ fromFractureᵈᶜ F
+Sealᶜ-fromFracture F = cong fromFractureᵈᶜ (glue-fracture-sectionᶜ F)
 
 opaque
   unfolding Abstractionᶜ
@@ -119,8 +119,8 @@ opaque
     → ((a-⊤ : U A-⊤) → U β (U f-⊤ a-⊤) ⊑[ B-abs ] U f-abs (U α a-⊤))
     → Abstractionᶜ A-⊤ A-abs α ⊸ᵈ Abstractionᶜ B-⊤ B-abs β
   squareᵈᶜ {A-⊤} {A-abs} {B-⊤} {B-abs} α β f-⊤ f-abs f-coh =
-    subst (Abstractionᶜ A-⊤ A-abs α ⊸_) (sym (Sealᶜ-Glue (Abstractionᶜ-FRAC B-⊤ B-abs β)))
-      (squareᵈ (Abstractionᶜ-FRAC A-⊤ A-abs α) (Abstractionᶜ-FRAC B-⊤ B-abs β)
+    subst (Abstractionᶜ A-⊤ A-abs α ⊸_) (sym (Sealᶜ-fromFracture (Abstractionᶜ-Fracture B-⊤ B-abs β)))
+      (squareᵈ (Abstractionᶜ-Fracture A-⊤ A-abs α) (Abstractionᶜ-Fracture B-⊤ B-abs β)
         (●ᶜ.map f-⊤) (◯ᶜ.map f-abs)
         (●.ind-prop _ (λ _ → thin● (◯ᶜ B-abs) _ _)
           (λ a → ⊑-mono η• (⊑-mono η◦ (f-coh a)))

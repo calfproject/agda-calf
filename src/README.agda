@@ -31,7 +31,7 @@ import Calf.Value.Closed using
   ( ●
   ; η•
   ; ∗
-  ; law
+  ; push
   ; 𝒱•
   ; ◯-isConnected
   )
@@ -42,9 +42,9 @@ import Calf.Value.Closed using
 -}
 import Calf.Value.Glue using
   ( Glue
-  ; 𝒱-FRACTURE
-  ; 𝒱-Glue
-  ; 𝒱-Fracture
+  ; Fracture
+  ; fromFracture
+  ; toFracture
   ; square
   ; fracture-and-gluing
   ; fracture-and-gluing-square
@@ -74,7 +74,7 @@ import Calf.Computation.Open using
   ; η◦ᶜ
   ; 𝒞◦
   ; U◦
-  ; lex
+  ; Pullback-◯ᶜ
   )
 
 {-
@@ -88,7 +88,7 @@ import Calf.Computation.Closed using
   ; η•ᶜ
   ; 𝒞•
   ; U•
-  ; lex
+  ; Pullback-●ᶜ
   )
 
 {-
@@ -129,12 +129,12 @@ import Calf.Computation.Tensor using
 -}
 import Calf.Computation.Glue using
   ( Glueᶜ
-  ; 𝒞-FRACTURE
-  ; 𝒞-Glue
-  ; 𝒞-Fracture
+  ; Fractureᶜ
+  ; fromFractureᶜ
+  ; toFractureᶜ
   ; squareᶜ
-  ; 𝒞-fracture-and-gluing
-  ; 𝒞-fracture-and-gluing-square
+  ; fracture-and-gluingᶜ
+  ; fracture-and-gluing-squareᶜ
   )
 
 {-
@@ -147,9 +147,9 @@ import Calf.Computation.Glue using
 import Calf.Computation.Abstraction using
   ( Abstractionᶜ
   ; Abstractionᶜ-id
-  ; squareᶜ'
-  ; triangle
-  ; triangle'
+  ; squareᶜ
+  ; triangle-abs
+  ; triangle-⊤
   )
 
 -- Section 2.3. Potential and Abstraction, Independently
@@ -192,13 +192,13 @@ import Examples.Queue using
 -}
 import Calf.Computation.Credit using
   ( ▷[_]_
-  ; ▷/0
-  ; ▷/+
+  ; ▷-0
+  ; ▷-+
   ; ▷-●ᶜ
   ; ▷-◯ᶜ
   ; save
   ; spend
-  ; save⨾spend≡charge
+  ; save⨾spend≡chargeᶜ
   )
 
 {-
@@ -219,15 +219,15 @@ import Calf.Computation.Debit using
 -}
 import Calf.Computation.CList1 using
   ( CList₁
-  ; cnil₁
-  ; ccons₁
-  ; cfoldr₁
+  ; nil₁
+  ; cons₁
+  ; foldr₁
   )
 import Calf.Computation.CList2 using
   ( CList₂
-  ; cnil₂
-  ; ccons₂
-  ; cfoldr₂
+  ; nil₂
+  ; cons₂
+  ; foldr₂
   )
 
 -- Section 5. Giralf: A Graded, Inferential, Resource-Aware Logical Framework

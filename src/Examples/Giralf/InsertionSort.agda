@@ -4,7 +4,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
 open import Calf.Core.Cost
 open import Calf.Value
-open import Calf.Value.Nat using (ℕₛ)
+open import Calf.Value.Nat using (ℕ₌)
 open import Calf.Computation
 open import Calf.Computation.Product
 open import Calf.Computation.Tensor
@@ -25,12 +25,12 @@ m ≤ᵇ n with ≤Dec m n
 ... | yes p = true
 ... | no ¬p = false
 
-insert : ∀ p → ℕ → CList₁ (1 +ℂ p) ℕₛ , p ⊢ CList₁ p ℕₛ
+insert : ∀ p → ℕ → CList₁ (1 +ℂ p) ℕ₌ , p ⊢ CList₁ p ℕ₌
 insert p x =
   payᴳ (+ℂ-identityʳ p) $
-  proj₁ᴳ {B = CList₁ p ℕₛ} $
+  proj₁ᴳ {B = CList₁ p ℕ₌} $
   foldr₁ᴳ
-    {A = (◁[ p ] CList₁ p ℕₛ) ×ᶜ CList₁ p ℕₛ}
+    {A = (◁[ p ] CList₁ p ℕ₌) ×ᶜ CList₁ p ℕ₌}
     (pairᴳ
       (getᴳ p (+ℂ-identityʳ p) (cons₁ᴳ (+ℂ-identityʳ p) x nil₁ᴳ))
       nil₁ᴳ
@@ -40,17 +40,17 @@ insert p x =
       pairᴳ
         ( getᴳ p refl $
           if x ≤ᵇ y
-            then cons₁ᴳ refl x (cons₁ᴳ (+ℂ-identityʳ p) y (proj₂ᴳ {A = ◁[ p ] CList₁ p ℕₛ} (idᴳ refl)))
-            else cons₁ᴳ refl y (payᴳ (+ℂ-identityʳ p) (proj₁ᴳ {B = CList₁ p ℕₛ} (idᴳ refl)))
+            then cons₁ᴳ refl x (cons₁ᴳ (+ℂ-identityʳ p) y (proj₂ᴳ {A = ◁[ p ] CList₁ p ℕ₌} (idᴳ refl)))
+            else cons₁ᴳ refl y (payᴳ (+ℂ-identityʳ p) (proj₁ᴳ {B = CList₁ p ℕ₌} (idᴳ refl)))
         )
-        (cons₁ᴳ (+ℂ-identityʳ p) y (proj₂ᴳ {A = ◁[ p ] CList₁ p ℕₛ} (idᴳ refl)))
+        (cons₁ᴳ (+ℂ-identityʳ p) y (proj₂ᴳ {A = ◁[ p ] CList₁ p ℕ₌} (idᴳ refl)))
     )
     (idᴳ refl)
 
-isort : CList₂ 0 1 ℕₛ , 0ℂ ⊢ CList₁ 0 ℕₛ
+isort : CList₂ 0 1 ℕ₌ , 0ℂ ⊢ CList₁ 0 ℕ₌
 isort =
   foldr₂ᴳ
-    (λ r → CList₁ r ℕₛ)
+    (λ r → CList₁ r ℕ₌)
     (λ r → nil₁ᴳ)
     insert
     (idᴳ refl)

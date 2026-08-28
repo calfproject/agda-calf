@@ -14,7 +14,7 @@ opaque
     → isDiscrete X → ((x : X) → isDiscrete (Y x)) → isDiscrete (Σ X Y)
   isDiscreteΣ isDiscreteX = isLocalΣ isDiscreteX (λ _ → null[Unit])
 
-  isPreorderΣ : (X : 𝒱ₛ) {Y : ⟨ X ⟩ → 𝒱}
+  isPreorderΣ : (X : 𝒱₌) {Y : ⟨ X ⟩ → 𝒱}
     → ((x : ⟨ X ⟩) → isPreorder (Y x))
     → isPreorder (Σ ⟨ X ⟩ Y)
   isPreorderΣ X isPreorderY =

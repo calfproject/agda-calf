@@ -39,7 +39,7 @@ module _ {X : 𝒱} where
     fwd-bwd (x ∷ l) = cong (x ∷_) (fwd-bwd l)
 
   isPreorderList : isPreorder X → isPreorder (List X)
-  isPreorderList isPreorderX = isLocalRetract bwd fwd fwd-bwd (isPreorderΣ ℕₛ isPreorderVec)
+  isPreorderList isPreorderX = isLocalRetract bwd fwd fwd-bwd (isPreorderΣ ℕ₌ isPreorderVec)
     where
       isPreorderVec : (n : ℕ) → isPreorder (Vec n)
       isPreorderVec zero = isPreorder⊤
@@ -52,5 +52,5 @@ module _ {X : 𝒱} where
       isDiscreteVec zero = isDiscrete⊤
       isDiscreteVec (suc n) = isDiscrete× isDiscreteX (isDiscreteVec n)
 
-Listₛ : 𝒱ₛ → 𝒱ₛ
-Listₛ X = List ⟨ X ⟩ , isSetList (str X .fst) , isDiscreteList (str X .snd)
+List₌ : 𝒱₌ → 𝒱₌
+List₌ X = List ⟨ X ⟩ , isSetList (str X .fst) , isDiscreteList (str X .snd)

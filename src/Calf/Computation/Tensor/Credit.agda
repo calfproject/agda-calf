@@ -8,7 +8,7 @@ open import Calf.Computation
 open import Calf.Computation.Open as ◯ᶜ
 open import Calf.Computation.Closed as ●ᶜ
 open import Calf.Computation.Power using (Πᶜ)
-open import Calf.Computation.Glue
+open import Calf.Computation.Glue hiding (squareᶜ)
 open import Calf.Computation.Abstraction
 open import Calf.Computation.Credit
 
@@ -18,18 +18,18 @@ open import Cubical.Foundations.HLevels using (isOfHLevelPathP')
 
 open import Calf.Computation.Tensor.Base
 open import Calf.Computation.Tensor.Closed
-open 𝒞-FRACTURE
+open Fractureᶜ
 
 opaque
-  unfolding Abstractionᶜ triangle-Uᶜ
+  unfolding Abstractionᶜ triangleᶜ
 
   ⊗-Abstractionᶜ : (A : 𝒞) {B-⊤ B-abs : 𝒞} {β : B-⊤ ⊸ B-abs}
     → A ⊗ Abstractionᶜ B-⊤ B-abs β ≡ Abstractionᶜ (A ⊗ B-⊤) (A ⊗ B-abs) (map₂ idᶜ β)
   ⊗-Abstractionᶜ A {B-⊤} {B-abs} {β} =
-    sym (𝒞-glue-fracture-retract _) ∙ cong 𝒞-Glue (sym fracture-proof)
+    sym (glue-fracture-retractᶜ _) ∙ cong fromFractureᶜ (sym fracture-proof)
     where
       fwd : ●ᶜ (A ⊗ B-⊤) ⊸ ●ᶜ (A ⊗ Abstractionᶜ B-⊤ B-abs β)
-      fwd = ●ᶜ.map (map₂ idᶜ (triangle-Uᶜ β))
+      fwd = ●ᶜ.map (map₂ idᶜ (triangleᶜ β))
 
       fwd-equiv : isEquiv (fwd .U)
       fwd-equiv = ●ᶜ-map₂-equiv (●ᶜ.map-id-equiv {A}) (●ᶜ-Abstractionᶜ-≃ᶜ β .snd)
@@ -40,7 +40,7 @@ opaque
       q◦ : ◯ᶜ (A ⊗ B-abs) ≡ ◯ᶜ (A ⊗ Abstractionᶜ B-⊤ B-abs β)
       q◦ =
         cong (Πᶜ ⟨ ABS ⟩)
-          (funExt λ abs → sym (cong (A ⊗_) (◯[Abstractionᶜ≡A-abs] β abs)))
+          (funExt λ abs → sym (cong (A ⊗_) (Abstractionᶜ-open β abs)))
 
       qα :
         PathP (λ i → q• i ⊸ ●ᶜ (q◦ i))
@@ -54,31 +54,31 @@ opaque
                 (●ᶜ (◯ᶜ (A ⊗ Abstractionᶜ B-⊤ B-abs β)) .is-preorder)
                 (λ w → ●.η• ((map₂ idᶜ β ⨾ᶜ η◦ᶜ) .U w))
                 (λ w → ●.η• (η◦ᶜ {A = A ⊗ Abstractionᶜ B-⊤ B-abs β} .U
-                  (map₂ idᶜ (triangle-Uᶜ β) .U w)))
+                  (map₂ idᶜ (triangleᶜ β) .U w)))
                 (⊗₀-elimProp {A} {B-⊤}
                   (λ _ → isOfHLevelPathP' {A = λ i → U (●ᶜ (q◦ i))} 1
                     (is-set (●ᶜ (◯ᶜ (A ⊗ Abstractionᶜ B-⊤ B-abs β)))) _ _)
                   (λ a b →
                     congP (λ _ → ●.η•) (funExt λ abs →
-                      congP (λ i q → ηᴾ (inj {A} {◯[Abstractionᶜ≡A-abs] β abs (~ i)} a q))
-                        (symP (◯[triangleᶜ'≡b-abs] β b (β .U b) refl abs)))))
+                      congP (λ i q → ηᴾ (inj {A} {Abstractionᶜ-open β abs (~ i)} a q))
+                        (symP (triangle-U-openP β b (β .U b) refl abs)))))
                 w))
 
       fracture-proof :
-        Abstractionᶜ-FRAC (A ⊗ B-⊤) (A ⊗ B-abs) (map₂ idᶜ β)
-          ≡ 𝒞-Fracture (A ⊗ Abstractionᶜ B-⊤ B-abs β)
-      fracture-proof = 𝒞-FRACTURE-pathᶜ q• q◦ qα
+        Abstractionᶜ-Fracture (A ⊗ B-⊤) (A ⊗ B-abs) (map₂ idᶜ β)
+          ≡ toFractureᶜ (A ⊗ Abstractionᶜ B-⊤ B-abs β)
+      fracture-proof = Fractureᶜ-path-U q• q◦ qα
 
 ▷⊤-rec : U A → ▷[ 0ℂ ] ⊤ ⊸ A
-▷⊤-rec {A} a = subst (_⊸ A) (sym ▷/0) (⊤-rec a)
+▷⊤-rec {A} a = subst (_⊸ A) (sym ▷-0) (⊤-rec a)
 
-map₂-idᶜ-CHARGE : ∀ c → map₂ (idᶜ {A}) (CHARGE {B} c) ≡ CHARGE {A ⊗ B} c
-map₂-idᶜ-CHARGE c =
-  ⊸-path refl refl (funExt (⊗₀-≡ isPreorderP _ _ λ a b → sym (∥-law c a b)))
+map₂-idᶜ-chargeᶜ : ∀ c → map₂ (idᶜ {A}) (chargeᶜ {B} c) ≡ chargeᶜ {A ⊗ B} c
+map₂-idᶜ-chargeᶜ c =
+  ⊸-path refl refl (funExt (⊗₀-rec-unique isPreorderᴾ _ _ λ a b → sym (∥-slide c a b)))
 
 opaque
   unfolding ▷[_]_
 
-  A⊗▷B≡▷[A⊗B] : ∀ c → (A ⊗ (▷[ c ] B)) ≡ (▷[ c ] (A ⊗ B))
-  A⊗▷B≡▷[A⊗B] {A} {B} c =
-    ⊗-Abstractionᶜ A ∙ cong (Abstractionᶜ (A ⊗ B) (A ⊗ B)) (map₂-idᶜ-CHARGE c)
+  ⊗-▷-distrib : ∀ c → (A ⊗ (▷[ c ] B)) ≡ (▷[ c ] (A ⊗ B))
+  ⊗-▷-distrib {A} {B} c =
+    ⊗-Abstractionᶜ A ∙ cong (Abstractionᶜ (A ⊗ B) (A ⊗ B)) (map₂-idᶜ-chargeᶜ c)

@@ -18,21 +18,21 @@ open import Calf.Computation
 ●ᶜ A .U = ● (A .U)
 ●ᶜ A .is-preorder = isPreorder● (A .is-preorder)
 ●ᶜ A .charge = ●.map ∘ A .charge
-●ᶜ A .charge/0 {a•} = lemma
+●ᶜ A .charge-0 {a•} = lemma
   where
     opaque
       lemma : ●ᶜ A .charge 0ℂ a• ≡ a•
       lemma =
         ●.elim (λ a• → ●-≡-isModal (●ᶜ A .charge 0ℂ a•) a•)
-          (λ a → cong η• (A .charge/0 {a}))
+          (λ a → cong η• (A .charge-0 {a}))
           a•
-●ᶜ A .charge/+ {a•} {c₁} {c₂} = lemma
+●ᶜ A .charge-+ {a•} {c₁} {c₂} = lemma
   where
     opaque
       lemma : ●ᶜ A .charge (c₁ +ℂ c₂) a• ≡ ●ᶜ A .charge c₁ (●ᶜ A .charge c₂ a•)
       lemma =
         ●.elim (λ a• → ●-≡-isModal (●ᶜ A .charge (c₁ +ℂ c₂) a•) (●ᶜ A .charge c₁ (●ᶜ A .charge c₂ a•)))
-          (λ a → cong η• (A .charge/+ {a} {c₁} {c₂}))
+          (λ a → cong η• (A .charge-+ {a} {c₁} {c₂}))
           a•
 
 η•ᶜ : A ⊸ ●ᶜ A
@@ -147,17 +147,17 @@ opaque
 ⊸-precomp-η•ᶜ-≃ : {A : 𝒞} (B• : 𝒞•) → (●ᶜ A ⊸ ⟨ B• ⟩ᶜ) ≃ (A ⊸ ⟨ B• ⟩ᶜ)
 ⊸-precomp-η•ᶜ-≃ B• = (η•ᶜ ⨾ᶜ_) , ⊸-precomp-η•ᶜ-isEquiv B•
 
-●ᶜ-map-CHARGE
+●ᶜ-map-chargeᶜ
   : (c : ℂ) (a• : U (●ᶜ A))
-  → map (CHARGE {A = A} c) .U a• ≡ ●ᶜ A .charge c a•
-●ᶜ-map-CHARGE c =
+  → map (chargeᶜ {A = A} c) .U a• ≡ ●ᶜ A .charge c a•
+●ᶜ-map-chargeᶜ c =
   ●.elim (λ _ → ●-≡-isModal _ _) (λ _ → refl)
 
 module _ {A B C : 𝒞} where
   open import Calf.Computation.Pullback
 
-  lex : (f : A ⊸ C) (g : B ⊸ C) → ●ᶜ (Pullback f g) ≡ Pullback (map f) (map g)
-  lex f g = conservativity fwd (equivIsEquiv e)
+  Pullback-●ᶜ : (f : A ⊸ C) (g : B ⊸ C) → ●ᶜ (Pullback f g) ≡ Pullback (map f) (map g)
+  Pullback-●ᶜ f g = conservativity fwd (equivIsEquiv e)
     where
       e : U (●ᶜ (Pullback f g)) ≃ U (Pullback (map f) (map g))
       e = ●.●-pullback
@@ -192,13 +192,13 @@ module _ where
     embed : ∀ {X A} → Σᶜ X A .U → Σᶜ X (●ᶜ ∘ A) .U
     embed (x , a) = x , η• a
 
-  Σᶜ-●ᶜ-fwd : (X : 𝒱ₛ) (A : ⟨ X ⟩ → 𝒞) → ●ᶜ (Σᶜ X A) ⊸ ●ᶜ (Σᶜ X (●ᶜ ∘ A))
+  Σᶜ-●ᶜ-fwd : (X : 𝒱₌) (A : ⟨ X ⟩ → 𝒞) → ●ᶜ (Σᶜ X A) ⊸ ●ᶜ (Σᶜ X (●ᶜ ∘ A))
   Σᶜ-●ᶜ-fwd X A = map (Σᶜ-map {X} {A} λ _ → η•ᶜ)
 
-  Σᶜ-●ᶜ-fwd-equiv : (X : 𝒱ₛ) (A : ⟨ X ⟩ → 𝒞) → isEquivᶜ (Σᶜ-●ᶜ-fwd X A)
+  Σᶜ-●ᶜ-fwd-equiv : (X : 𝒱₌) (A : ⟨ X ⟩ → 𝒞) → isEquivᶜ (Σᶜ-●ᶜ-fwd X A)
   Σᶜ-●ᶜ-fwd-equiv X A =
     subst isEquiv (funExt⁻ ●.map′≡map (embed {X} {A})) (invEquiv ●Σ●≃●Σ .snd)
 
-  Σᶜ-●ᶜ : (X : 𝒱ₛ) (A : ⟨ X ⟩ → 𝒞) → ●ᶜ (Σᶜ X A) ≡ ●ᶜ (Σᶜ X (●ᶜ ∘ A))
+  Σᶜ-●ᶜ : (X : 𝒱₌) (A : ⟨ X ⟩ → 𝒞) → ●ᶜ (Σᶜ X A) ≡ ●ᶜ (Σᶜ X (●ᶜ ∘ A))
   Σᶜ-●ᶜ X A =
     conservativity (Σᶜ-●ᶜ-fwd X A) (Σᶜ-●ᶜ-fwd-equiv X A)

@@ -14,20 +14,20 @@ open import Calf.Computation.Tensor
 open import Calf.Computation.Potential using (▷-Σᶜ)
 
 opaque
-  CList₁ : ℂ → 𝒱ₛ → 𝒞
-  CList₁ c Xₛ = [ l ∈ Listₛ Xₛ ] ⋊ ▷[ length l ⊙ c ] ⊤
+  CList₁ : ℂ → 𝒱₌ → 𝒞
+  CList₁ c X₌ = [ l ∈ List₌ X₌ ] ⋊ ▷[ length l ⊙ c ] ⊤
 
-  cnil₁ : ∀ {c} → U (CList₁ c Xₛ)
-  cnil₁ = [] , subst U (sym ▷/0) 0ℂ
+  nil₁ : ∀ {c} → U (CList₁ c X₌)
+  nil₁ = [] , subst U (sym ▷-0) 0ℂ
 
-  ccons₁ : ∀ {c} → ⟨ Xₛ ⟩ → ▷[ c ] CList₁ c Xₛ ⊸ CList₁ c Xₛ
-  ccons₁ {X} {c} x =
+  cons₁ : ∀ {c} → ⟨ X₌ ⟩ → ▷[ c ] CList₁ c X₌ ⊸ CList₁ c X₌
+  cons₁ {X} {c} x =
     transport (cong (_⊸ CList₁ c X) (sym (▷-Σᶜ c))) $
-    Σᶜ-rec λ l → transport (cong (_⊸ CList₁ c X) ▷/+) (Σᶜ-in (x ∷ l))
+    Σᶜ-rec λ l → transport (cong (_⊸ CList₁ c X) ▷-+) (Σᶜ-in (x ∷ l))
 
-  cfoldr₁ : ∀ {c} → U A → (⟨ Xₛ ⟩ → ▷[ c ] A ⊸ A) → CList₁ c Xₛ ⊸ A
-  cfoldr₁ {A} {X} {c} e-nil e-cons = Σᶜ-rec go
+  foldr₁ : ∀ {c} → U A → (⟨ X₌ ⟩ → ▷[ c ] A ⊸ A) → CList₁ c X₌ ⊸ A
+  foldr₁ {A} {X} {c} e-nil e-cons = Σᶜ-rec go
     where
       go : (l : List ⟨ X ⟩) → ▷[ length l ⊙ c ] ⊤ ⊸ A
       go [] = ▷⊤-rec e-nil
-      go (x ∷ l) = transport (cong (_⊸ A) (sym ▷/+)) (▷-map (go l) ⨾ᶜ e-cons x)
+      go (x ∷ l) = transport (cong (_⊸ A) (sym ▷-+)) (▷-map (go l) ⨾ᶜ e-cons x)

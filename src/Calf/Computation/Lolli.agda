@@ -28,9 +28,9 @@ _⊸ᶜ_ : 𝒞 → 𝒞 → 𝒞
 (A ⊸ᶜ B) .charge c f .U a = B .charge c (f .U a)
 (A ⊸ᶜ B) .charge c f .charge c' a =
   cong (B .charge c) (f .charge c' a)
-  ∙ cong ((_$ f .U a) ∘ U) (CHARGE-comm {B} c' c)
-(A ⊸ᶜ B) .charge/0 = ⊸-path refl refl (funExt λ a → B .charge/0)
-(A ⊸ᶜ B) .charge/+ = ⊸-path refl refl (funExt λ a → B .charge/+)
+  ∙ cong ((_$ f .U a) ∘ U) (chargeᶜ-comm {B} c' c)
+(A ⊸ᶜ B) .charge-0 = ⊸-path refl refl (funExt λ a → B .charge-0)
+(A ⊸ᶜ B) .charge-+ = ⊸-path refl refl (funExt λ a → B .charge-+)
 
 opaque
   lolli-currying : (A ⊗ B ⊸ C) ≡ (A ⊸ (B ⊸ᶜ C))
@@ -40,7 +40,7 @@ opaque
       curryᶜ : (A ⊗ B ⊸ C) → (A ⊸ (B ⊸ᶜ C))
       curryᶜ f .U a .U b = f .U (a ∥ b)
       curryᶜ f .U a .charge c b =
-        cong (f .U) (sym (∥-law {A = A} {B = B} c a b)) ∙ f .charge c (a ∥ b)
+        cong (f .U) (sym (∥-slide {A = A} {B = B} c a b)) ∙ f .charge c (a ∥ b)
       curryᶜ f .charge c a =
         ⊸-path refl refl (funExt λ b → f .charge c (a ∥ b))
 
@@ -57,4 +57,4 @@ opaque
       uncurryᶜ-curryᶜ : (f : A ⊗ B ⊸ C) → uncurryᶜ (curryᶜ f) ≡ f
       uncurryᶜ-curryᶜ f =
         ⊸-path refl refl
-          (funExt (⊗₀-≡ (C .is-preorder) (uncurryᶜ (curryᶜ f) .U) (f .U) (λ a b → refl)))
+          (funExt (⊗₀-rec-unique (C .is-preorder) (uncurryᶜ (curryᶜ f) .U) (f .U) (λ a b → refl)))

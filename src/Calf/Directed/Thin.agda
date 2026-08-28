@@ -23,10 +23,10 @@ private variable X Y : Type
 𝕊 : Type → Type
 𝕊 X = Pushout {A = X × Bool} (λ (x , b) → (x , (if b then 1𝟚 else 0𝟚))) snd
 
-𝕊map : (X → Y) → 𝕊 X → 𝕊 Y
-𝕊map f (inl (x , 𝕚)) = inl (f x , 𝕚)
-𝕊map f (inr b) = inr b
-𝕊map f (push (x , b) i) = push (f x , b) i
+𝕊-map : (X → Y) → 𝕊 X → 𝕊 Y
+𝕊-map f (inl (x , 𝕚)) = inl (f x , 𝕚)
+𝕊-map f (inr b) = inr b
+𝕊-map f (push (x , b) i) = push (f x , b) i
 
 𝕊-cocone : Type → Type → Type
 𝕊-cocone X Y = Σ (X × X) (λ (x , x') → Y → x ⊑ x')
@@ -55,13 +55,13 @@ open Iso
 𝕊-elim≃ Y = isoToEquiv (𝕊-elim Y)
 
 isBoundarySeparated : Type → Type
-isBoundarySeparated = isLocal {A = Unit} (const (𝕊map (terminal Bool)))
+isBoundarySeparated = isLocal {A = Unit} (const (𝕊-map (terminal Bool)))
 
 isThin : Type → Type
 isThin X = (x x' : X) → isProp (x ⊑ x')
 
-isThin→𝟚-ext : isThin X → {P Q : 𝟚 → X} → P 0𝟚 ≡ Q 0𝟚 → P 1𝟚 ≡ Q 1𝟚 → P ≡ Q
-isThin→𝟚-ext isThinX {P} {Q} p q = cong path (isThinX _ _ (P , refl , refl) (Q , sym p , sym q))
+isThin→𝟚-injective : isThin X → {P Q : 𝟚 → X} → P 0𝟚 ≡ Q 0𝟚 → P 1𝟚 ≡ Q 1𝟚 → P ≡ Q
+isThin→𝟚-injective isThinX {P} {Q} p q = cong path (isThinX _ _ (P , refl , refl) (Q , sym p , sym q))
 
 isBoundarySeparated≡isThin : isBoundarySeparated X ≡ isThin X
 isBoundarySeparated≡isThin {X} =

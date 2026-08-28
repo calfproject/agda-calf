@@ -12,7 +12,7 @@ open import Calf.Value.Sigma
 isPreorder⊎ : isPreorder X → isPreorder Y → isPreorder (X ⊎ Y)
 isPreorder⊎ {X} {Y} isPreorderX isPreorderY =
   isLocalRetract to from (λ { (inj₁ _) → refl ; (inj₂ _) → refl })
-    (isPreorderΣ Boolₛ λ { false → isPreorderX ; true → isPreorderY })
+    (isPreorderΣ Bool₌ λ { false → isPreorderX ; true → isPreorderY })
   where
     to : X ⊎ Y → Σ Bool (if_then Y else X)
     to (inj₁ x) = false , x

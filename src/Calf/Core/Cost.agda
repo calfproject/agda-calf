@@ -12,7 +12,7 @@ import Cubical.Data.Nat.Properties as Nat
 module _ {A : Type} where
   open import Algebra.Definitions {A = A} _≡_ public
 
-`_ = fromNat
+#_ = fromNat
 
 opaque
   ℂ : 𝒱
@@ -54,7 +54,7 @@ instance
   fromNatℂ = record { Constraint = λ _ → ⊤ ; fromNat = λ n → iter n (1ℂ +ℂ_) 0ℂ }
 
 ℕ→ℂ : ℕ → ℂ
-ℕ→ℂ n = ` n
+ℕ→ℂ n = # n
 
 ℕ→ℂ-0 : ℕ→ℂ 0 ≡ 0ℂ
 ℕ→ℂ-0 = refl
@@ -77,11 +77,11 @@ _⊙_ : ℕ → ℂ → ℂ
 zero ⊙ c = 0ℂ
 suc n ⊙ c = c +ℂ (n ⊙ c)
 
-⊙-+ : ∀ n c₁ c₂ → n ⊙ (c₁ +ℂ c₂) ≡ (n ⊙ c₁) +ℂ (n ⊙ c₂)
-⊙-+ zero c₁ c₂ = sym (+ℂ-identityˡ 0ℂ)
-⊙-+ (suc n) c₁ c₂ =
+⊙-distribˡ : ∀ n c₁ c₂ → n ⊙ (c₁ +ℂ c₂) ≡ (n ⊙ c₁) +ℂ (n ⊙ c₂)
+⊙-distribˡ zero c₁ c₂ = sym (+ℂ-identityˡ 0ℂ)
+⊙-distribˡ (suc n) c₁ c₂ =
     suc n ⊙ (c₁ +ℂ c₂)
-  ≡⟨ cong ((c₁ +ℂ c₂) +ℂ_) (⊙-+ n c₁ c₂) ⟩
+  ≡⟨ cong ((c₁ +ℂ c₂) +ℂ_) (⊙-distribˡ n c₁ c₂) ⟩
     (c₁ +ℂ c₂) +ℂ ((n ⊙ c₁) +ℂ (n ⊙ c₂))
   ≡⟨ +ℂ-assoc c₁ c₂ ((n ⊙ c₁) +ℂ (n ⊙ c₂)) ⟩
     c₁ +ℂ (c₂ +ℂ ((n ⊙ c₁) +ℂ (n ⊙ c₂)))
@@ -95,11 +95,11 @@ suc n ⊙ c = c +ℂ (n ⊙ c)
     (suc n ⊙ c₁) +ℂ (suc n ⊙ c₂)
   ∎
 
-⊙-+-left : ∀ n m c → (n +ℕ m) ⊙ c ≡ (n ⊙ c) +ℂ (m ⊙ c)
-⊙-+-left zero m c = sym (+ℂ-identityˡ (m ⊙ c))
-⊙-+-left (suc n) m c =
+⊙-distribʳ : ∀ n m c → (n +ℕ m) ⊙ c ≡ (n ⊙ c) +ℂ (m ⊙ c)
+⊙-distribʳ zero m c = sym (+ℂ-identityˡ (m ⊙ c))
+⊙-distribʳ (suc n) m c =
     (suc n +ℕ m) ⊙ c
-  ≡⟨ cong (c +ℂ_) (⊙-+-left n m c) ⟩
+  ≡⟨ cong (c +ℂ_) (⊙-distribʳ n m c) ⟩
     c +ℂ ((n ⊙ c) +ℂ (m ⊙ c))
   ≡⟨ sym (+ℂ-assoc c (n ⊙ c) (m ⊙ c)) ⟩
     (suc n ⊙ c) +ℂ (m ⊙ c)

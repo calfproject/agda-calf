@@ -14,12 +14,12 @@ open import Cubical.Data.Sigma using (ΣPathP; Σ≡Prop)
 
 open import Calf.Computation.Glue.Base
 open import Calf.Computation.Glue.Fracture
-open 𝒞-FRACTURE
+open Fractureᶜ
 
 fracture-map
   : (f : A ⊸ B)
-  → 𝒞-FractureGlue A ⊸ 𝒞-FractureGlue B
-fracture-map f = squareᶜ (●ᶜ.map f) (◯ᶜ.map f) (to𝒞Square f .snd)
+  → FractureGlueᶜ A ⊸ FractureGlueᶜ B
+fracture-map f = squareᶜ (●ᶜ.map f) (◯ᶜ.map f) (toSquareᶜ f .snd)
 
 fracture-map-coh
   : (f : A ⊸ B)
@@ -37,18 +37,18 @@ fracture-map-fracture
 fracture-map-fracture {A} {B} f a =
   Σ≡Prop (λ _ → is-set (●ᶜ (◯ᶜ B)) _ _) refl
 
-◯[Glueᶜ≃A◦] : (F : 𝒞-FRACTURE) → ⟨ ABS ⟩ → 𝒞-Glue F ≃ᶜ ⟨ F .A◦ ⟩ᶜ
-◯[Glueᶜ≃A◦] F abs =
-  proj◦ᶜ F , ◯[Glue≃X◦] (U-FRACTURE F) abs .snd
+Glueᶜ-open-≃ : (F : Fractureᶜ) → ⟨ ABS ⟩ → fromFractureᶜ F ≃ᶜ ⟨ F .A◦ ⟩ᶜ
+Glueᶜ-open-≃ F abs =
+  proj◦ᶜ F , Glue-open-≃ (U-Fracture F) abs .snd
 
-◯[Glueᶜ≡A◦] : (F : 𝒞-FRACTURE) → ⟨ ABS ⟩ → 𝒞-Glue F ≡ ⟨ F .A◦ ⟩ᶜ
-◯[Glueᶜ≡A◦] F abs = uaᶜ (◯[Glueᶜ≃A◦] F abs)
+Glueᶜ-open : (F : Fractureᶜ) → ⟨ ABS ⟩ → fromFractureᶜ F ≡ ⟨ F .A◦ ⟩ᶜ
+Glueᶜ-open F abs = uaᶜ (Glueᶜ-open-≃ F abs)
 
-◯[squareᶜ≡f◦] : {F G : 𝒞-FRACTURE}
+squareᶜ-openP : {F G : Fractureᶜ}
   → (f• : ⟨ F .A• ⟩ᶜ ⊸ ⟨ G .A• ⟩ᶜ) (f◦ : ⟨ F .A◦ ⟩ᶜ ⊸ ⟨ G .A◦ ⟩ᶜ)
   → (coh : f• ⨾ᶜ G .α• ≡ F .α• ⨾ᶜ ●ᶜ.map f◦) (abs : ⟨ ABS ⟩)
-  → PathP (λ i → ◯[Glueᶜ≡A◦] F abs i ⊸ ◯[Glueᶜ≡A◦] G abs i)
+  → PathP (λ i → Glueᶜ-open F abs i ⊸ Glueᶜ-open G abs i)
       (squareᶜ f• f◦ coh)
       f◦
-◯[squareᶜ≡f◦] {F} {G} f• f◦ coh abs =
-  uaᶜ-⊸ (◯[Glueᶜ≃A◦] F abs) (◯[Glueᶜ≃A◦] G abs) (⊸-path refl refl refl)
+squareᶜ-openP {F} {G} f• f◦ coh abs =
+  uaᶜ-⊸ (Glueᶜ-open-≃ F abs) (Glueᶜ-open-≃ G abs) (⊸-path refl refl refl)

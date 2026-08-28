@@ -57,7 +57,7 @@ rel-1𝟚 m i +₀ n = rel-1𝟚 (m +₀ n) i
 ω = ∥ ω₀ ∥ᴾ
 
 isPreorderω : isPreorder ω
-isPreorderω = isPreorderP
+isPreorderω = isPreorderᴾ
 
 ℕ→ω : ℕ → ω
 ℕ→ω = ηᴾ ∘ ℕ→ω₀
@@ -78,34 +78,34 @@ _+_ = map2ᴾ _+₀_
 open import Algebra.Definitions {A = ω} _≡_
 
 +-identityˡ : LeftIdentity 0ω _+_
-+-identityˡ = rec-unique isPreorderP (0ω +_) (λ n → n) λ _ → refl
++-identityˡ = rec-unique isPreorderᴾ (0ω +_) (λ n → n) λ _ → refl
 
 +-identityʳ : RightIdentity 0ω _+_
-+-identityʳ = rec-unique isPreorderP (_+ 0ω) (λ n → n) λ n → cong ηᴾ (+₀-identityʳ n)
++-identityʳ = rec-unique isPreorderᴾ (_+ 0ω) (λ n → n) λ n → cong ηᴾ (+₀-identityʳ n)
 
 +-assoc : Associative _+_
 +-assoc m n o =
   funExt⁻
-    (rec-unique2 (isLocalΠ λ _ → isPreorderP)
+    (rec-unique2 (isLocalΠ λ _ → isPreorderᴾ)
       (λ m n o → (m + n) + o)
       (λ m n o → m + (n + o))
-      (λ x y → funExt (rec-unique isPreorderP _ _ λ z → cong ηᴾ (+₀-assoc x y z)))
+      (λ x y → funExt (rec-unique isPreorderᴾ _ _ λ z → cong ηᴾ (+₀-assoc x y z)))
       m n)
     o
 
 ⊑-suc : ∀ c → c ⊑ 1ω + c
 ⊑-suc c =
     (λ 𝕚 → mapᴾ (rel 𝕚) c)
-  , rec-unique isPreorderP (mapᴾ (rel 0𝟚)) (λ c → c) (λ n → cong ηᴾ (rel-0𝟚 n)) c
-  , rec-unique isPreorderP (mapᴾ (rel 1𝟚)) (1ω +_) (λ n → cong ηᴾ (rel-1𝟚 n)) c
+  , rec-unique isPreorderᴾ (mapᴾ (rel 0𝟚)) (λ c → c) (λ n → cong ηᴾ (rel-0𝟚 n)) c
+  , rec-unique isPreorderᴾ (mapᴾ (rel 1𝟚)) (1ω +_) (λ n → cong ηᴾ (rel-1𝟚 n)) c
 
 
 private
   isSetω : isSet ω
   isSetω = isPreorder→isSet isPreorderω
 
-  thinω : isThin ω
-  thinω = isPreorder→isThin isPreorderω
+  isThinω : isThin ω
+  isThinω = isPreorder→isThin isPreorderω
 
   sucω : ω → ω
   sucω = mapᴾ suc
@@ -116,7 +116,7 @@ private
   rel-suc : ∀ 𝕚 n → ηᴾ (rel 𝕚 (suc n)) ≡ ηᴾ (suc (rel 𝕚 n))
   rel-suc 𝕚 n =
     funExt⁻
-      (isThin→𝟚-ext thinω
+      (isThin→𝟚-injective isThinω
         (cong ηᴾ (rel-0𝟚 (suc n)) ∙ sym (cong (sucω ∘ ηᴾ) (rel-0𝟚 n)))
         (cong ηᴾ (rel-1𝟚 (suc n)) ∙ sym (cong (sucω ∘ ηᴾ) (rel-1𝟚 n))))
       𝕚
@@ -124,7 +124,7 @@ private
   rel-rel : ∀ 𝕚 𝕛 n → ηᴾ (rel 𝕚 (rel 𝕛 n)) ≡ ηᴾ (rel 𝕛 (rel 𝕚 n))
   rel-rel 𝕚 𝕛 n =
     funExt⁻
-      (isThin→𝟚-ext thinω
+      (isThin→𝟚-injective isThinω
         (cong ηᴾ (rel-0𝟚 (rel 𝕛 n)) ∙ sym (cong (relω 𝕛 ∘ ηᴾ) (rel-0𝟚 n)))
         (cong ηᴾ (rel-1𝟚 (rel 𝕛 n)) ∙ sym (rel-suc 𝕛 n) ∙ sym (cong (relω 𝕛 ∘ ηᴾ) (rel-1𝟚 n))))
       𝕚
@@ -145,8 +145,8 @@ private
       (λ 𝕛 m ih → cong (relω 𝕛) ih ∙ rel-rel 𝕛 𝕚 (m +₀ n))
       m
 
-  +-comm₀ : ∀ m n → ηᴾ (m +₀ n) ≡ ηᴾ (n +₀ m)
-  +-comm₀ m n =
+  +₀-comm : ∀ m n → ηᴾ (m +₀ n) ≡ ηᴾ (n +₀ m)
+  +₀-comm m n =
     ω₀-elimProp (λ n → ηᴾ (m +₀ n) ≡ ηᴾ (n +₀ m)) (λ _ → isSetω _ _)
       (cong ηᴾ (+₀-identityʳ m))
       (λ n ih → +-suc m n ∙ cong sucω ih)
@@ -154,12 +154,12 @@ private
       n
 
 +-comm : Commutative _+_
-+-comm = rec-unique2 isPreorderP _+_ (λ m n → n + m) +-comm₀
++-comm = rec-unique2 isPreorderᴾ _+_ (λ m n → n + m) +₀-comm
 
 isAlgorithmicω : isAlgorithmic ω
 isAlgorithmicω beh =
   isContrᴾ zero
     (ω₀-elimProp (λ n → 0ω ≡ ηᴾ n) (λ _ → isSetω _ _)
       refl
-      (λ n ih → ih ∙ ⊑-beh' beh (⊑-suc (ηᴾ n)))
+      (λ n ih → ih ∙ ⊑-BEH beh (⊑-suc (ηᴾ n)))
       (λ 𝕚 n ih → ih ∙ cong ηᴾ (sym (rel-0𝟚 n) ∙ cong (λ 𝕛 → rel 𝕛 n) (isContr→isProp (isAlgorithmic𝟚 beh) 0𝟚 𝕚))))

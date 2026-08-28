@@ -15,7 +15,7 @@ Pullback {A} {B} {C} f g .is-preorder =
 Pullback {A} {B} {C} f g .charge c ((a , b) , p) =
   (A .charge c a , B .charge c b) ,
   f .charge c a ∙ cong (C .charge c) p ∙ sym (g .charge c b)
-Pullback {A} {B} {C} f g .charge/0 =
-  ΣPathP (ΣPathP (A .charge/0 , B .charge/0) , isProp→PathP (λ i → is-set C _ _) _ _)
-Pullback {A} {B} {C} f g .charge/+ =
-  ΣPathP (ΣPathP (A .charge/+ , B .charge/+) , isProp→PathP (λ i → is-set C _ _) _ _)
+Pullback {A} {B} {C} f g .charge-0 =
+  ΣPathP (ΣPathP (A .charge-0 , B .charge-0) , isProp→PathP (λ i → is-set C _ _) _ _)
+Pullback {A} {B} {C} f g .charge-+ =
+  ΣPathP (ΣPathP (A .charge-+ , B .charge-+) , isProp→PathP (λ i → is-set C _ _) _ _)

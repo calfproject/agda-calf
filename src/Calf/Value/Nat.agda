@@ -9,10 +9,10 @@ opaque
   unfolding 𝟚
 
   isDiscreteℕ : isDiscrete ℕ
-  isDiscreteℕ = ⊑-beh refl
+  isDiscreteℕ = BEH⇒isDiscrete refl
 
-ℕₛ : 𝒱ₛ
-ℕₛ = ℕ , isSetℕ , isDiscreteℕ
+ℕ₌ : 𝒱₌
+ℕ₌ = ℕ , isSetℕ , isDiscreteℕ
 
 ℕₚ : 𝒱ₚ
-ℕₚ = ⟨ ℕₛ ⟩ₚ
+ℕₚ = ⟨ ℕ₌ ⟩ₚ

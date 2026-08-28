@@ -15,7 +15,7 @@ open import Calf.Value.Abstraction using (square)
 open import Calf.Computation
 open import Calf.Computation.Copower
 open import Calf.Computation.Open as ◯ᶜ
-open import Calf.Computation.Closed as ●ᶜ hiding (law)
+open import Calf.Computation.Closed as ●ᶜ hiding (push)
 open import Calf.Computation.Abstraction.Base
 open import Calf.Computation.Abstraction.Properties
 
@@ -32,7 +32,7 @@ module _ (X : 𝒱ₚ) where
     private
       opaque
         ⋊-proj₂ᵃ : Abstractionᶜ (X ⋊ A-⊤) (X ⋊ A-abs) (⋊-map α) ⊸ Abstractionᶜ A-⊤ A-abs α
-        ⋊-proj₂ᵃ = squareᶜ' (⋊-map α) α ⋊-proj₂ ⋊-proj₂ (λ _ → refl)
+        ⋊-proj₂ᵃ = squareᶜ (⋊-map α) α ⋊-proj₂ ⋊-proj₂ (λ _ → refl)
 
       opaque
         unfolding Abstractionᶜ
@@ -61,30 +61,30 @@ module _ (X : 𝒱ₚ) where
       ⋊-proj₂ᵃ-abs : (abs : ⟨ ABS ⟩)
         → PathP
             (λ i →
-              ◯[Abstractionᶜ≡A-abs] (⋊-map α) abs i
-                ⊸ ◯[Abstractionᶜ≡A-abs] α abs i)
+              Abstractionᶜ-open (⋊-map α) abs i
+                ⊸ Abstractionᶜ-open α abs i)
             ⋊-proj₂ᵃ
             ⋊-proj₂
-      ⋊-proj₂ᵃ-abs abs = ◯[squareᶜ'≡f-abs] (⋊-map α) α ⋊-proj₂ ⋊-proj₂ (λ _ → refl) abs
+      ⋊-proj₂ᵃ-abs abs = square-openP (⋊-map α) α ⋊-proj₂ ⋊-proj₂ (λ _ → refl) abs
 
     opaque
-      unfolding ⋊-proj₁-glue ⋊-Abstractionᶜ ◯[Abstractionᶜ≡A-abs]
+      unfolding ⋊-proj₁-glue ⋊-Abstractionᶜ Abstractionᶜ-open
 
-      ◯[⋊-Abstractionᶜ≡idᶜ] : (abs : ⟨ ABS ⟩)
+      ⋊-Abstractionᶜ-openP : (abs : ⟨ ABS ⟩)
         → PathP
             (λ i →
-              ◯[Abstractionᶜ≡A-abs] (⋊-map α) abs i
-                ⊸ X ⋊ ◯[Abstractionᶜ≡A-abs] α abs i)
+              Abstractionᶜ-open (⋊-map α) abs i
+                ⊸ X ⋊ Abstractionᶜ-open α abs i)
             ⋊-Abstractionᶜ
             idᶜ
-      ◯[⋊-Abstractionᶜ≡idᶜ] abs =
-        ⊸-path _ (λ i → X ⋊ ◯[Abstractionᶜ≡A-abs] α abs i)
-          (ua→ {e = ◯[Abstractionᶜ≃A-abs] (⋊-map α) abs .fst .U , ◯[Abstractionᶜ≃A-abs] (⋊-map α) abs .snd} λ g →
+      ⋊-Abstractionᶜ-openP abs =
+        ⊸-path _ (λ i → X ⋊ Abstractionᶜ-open α abs i)
+          (ua→ {e = Abstractionᶜ-open-≃ (⋊-map α) abs .fst .U , Abstractionᶜ-open-≃ (⋊-map α) abs .snd} λ g →
             ΣPathP
               {A = λ _ → ⟨ X ⟩}
-              {B = λ i _ → U (◯[Abstractionᶜ≡A-abs] α abs i)}
+              {B = λ i _ → U (Abstractionᶜ-open α abs i)}
               ( cong (λ h → ◦ h abs) (secIsEq fracture-isEquiv (⋊-proj₁-glue g))
               , λ i →
                   ⋊-proj₂ᵃ-abs abs i .U
-                    (ua-gluePath (◯[Abstractionᶜ≃A-abs] (⋊-map α) abs .fst .U , ◯[Abstractionᶜ≃A-abs] (⋊-map α) abs .snd)
-                      {x = g} {y = ◯[Abstractionᶜ≃A-abs] (⋊-map α) abs .fst .U g} refl i) ))
+                    (ua-gluePath (Abstractionᶜ-open-≃ (⋊-map α) abs .fst .U , Abstractionᶜ-open-≃ (⋊-map α) abs .snd)
+                      {x = g} {y = Abstractionᶜ-open-≃ (⋊-map α) abs .fst .U g} refl i) ))

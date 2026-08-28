@@ -18,8 +18,8 @@ module Calf.Value.Open where
 ◯ : 𝒱 → 𝒱
 ◯ X = (abs : ⟨ ABS ⟩) → X
 
-◯' : (⟨ ABS ⟩ → 𝒱) → 𝒱
-◯' X = (abs : ⟨ ABS ⟩) → X abs
+◯Π : (⟨ ABS ⟩ → 𝒱) → 𝒱
+◯Π X = (abs : ⟨ ABS ⟩) → X abs
 
 η◦ : X → ◯ X
 η◦ x _ = x
@@ -27,21 +27,21 @@ module Calf.Value.Open where
 isModal : 𝒱 → 𝒱
 isModal X = isEquiv (η◦ {X = X})
 
-◯'-isModal : {X : ⟨ ABS ⟩ → 𝒱} → isModal (◯' X)
-◯'-isModal {X = X} = isoToIsEquiv (iso η◦ join' sec ret)
+isModal◯Π : {X : ⟨ ABS ⟩ → 𝒱} → isModal (◯Π X)
+isModal◯Π {X = X} = isoToIsEquiv (iso η◦ join′ sec ret)
   where
-    join' : ◯ (◯' X) → ◯' X
-    join' x abs = x abs abs
+    join′ : ◯ (◯Π X) → ◯Π X
+    join′ x abs = x abs abs
 
-    sec : (x : ◯ (◯' X)) → η◦ (join' x) ≡ x
+    sec : (x : ◯ (◯Π X)) → η◦ (join′ x) ≡ x
     sec x = funExt λ abs → funExt λ abs' → cong (λ a → x a abs') (str ABS abs' abs)
 
-    ret : (x : ◯' X) → join' (η◦ x) ≡ x
+    ret : (x : ◯Π X) → join′ (η◦ x) ≡ x
     ret x = refl
 
 opaque
   isModal◯ : isModal (◯ X)
-  isModal◯ = ◯'-isModal
+  isModal◯ = isModal◯Π
 
 ◯Modality : Modality _
 ◯Modality .Modality.◯ = ◯
@@ -55,7 +55,7 @@ opaque
 ◯Modality .Modality.◯-elim-β {X} {Y} isModalY f x =
   retIsEq (isModalY (η◦ x)) (subst Y refl (f x)) ∙ substRefl {B = Y} (f x)
 ◯Modality .Modality.◯-=-isModal x◦ x◦' =
-  subst isModal (ua funExtEquiv) (◯'-isModal {X = λ abs → x◦ abs ≡ x◦' abs})
+  subst isModal (ua funExtEquiv) (isModal◯Π {X = λ abs → x◦ abs ≡ x◦' abs})
 
 open Modality ◯Modality public
   renaming
