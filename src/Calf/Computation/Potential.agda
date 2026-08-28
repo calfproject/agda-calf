@@ -103,9 +103,9 @@ module _ where
   opaque
     unfolding Abstractionᶜ
 
-    Σᶜ-Abstractionᶜ : {X : 𝒱ₛ} {A-⊤ A-abs : ⟨ X ⟩ → 𝒞} (α : (x : ⟨ X ⟩) → A-⊤ x ⊸ A-abs x)
-      → Abstractionᶜ (Σᶜ X A-⊤) (Σᶜ X A-abs) (Σᶜ-map α)
-        ≡ Σᶜ X (λ x → Abstractionᶜ (A-⊤ x) (A-abs x) (α x))
+    Σᶜ-Abstractionᶜ : {A-⊤ A-abs : ⟨ Xₛ ⟩ → 𝒞} (α : (x : ⟨ Xₛ ⟩) → A-⊤ x ⊸ A-abs x)
+      → Abstractionᶜ (Σᶜ Xₛ A-⊤) (Σᶜ Xₛ A-abs) (Σᶜ-map α)
+        ≡ Σᶜ Xₛ (λ x → Abstractionᶜ (A-⊤ x) (A-abs x) (α x))
     Σᶜ-Abstractionᶜ {X} {A-⊤} {A-abs} α =
       cong 𝒞-Glue fracture-proof ∙ 𝒞-glue-fracture-retract _
       where
@@ -148,12 +148,19 @@ module _ where
             𝒞-Fracture (Σᶜ X Abs)
           ∎
 
+  Σᶜ-map-CHARGE : ∀ {A : ⟨ Xₛ ⟩ → 𝒞} c → Σᶜ-map {Xₛ} {A} {A} (λ _ → CHARGE c) ≡ CHARGE c
+  Σᶜ-map-CHARGE c = ⊸-path refl refl refl
+
   opaque
     unfolding ▷[_]_
 
-    potential-credit : ∀ {X : 𝒱ₛ} Φ →
-      Potential Φ ≡ [ x ∈ X ] ⋊ ▷[ Φ x ] ⊤
-    potential-credit {X = X} Φ =
+    ▷-Σᶜ : ∀ {A : ⟨ Xₛ ⟩ → 𝒞} c → ▷[ c ] Σᶜ Xₛ A ≡ Σᶜ Xₛ (λ x → ▷[ c ] A x)
+    ▷-Σᶜ {X} {A} c =
+      cong (Abstractionᶜ (Σᶜ X A) (Σᶜ X A)) (sym (Σᶜ-map-CHARGE c)) ∙ Σᶜ-Abstractionᶜ (λ _ → CHARGE c)
+
+    potential-credit : ∀ Φ →
+      Potential Φ ≡ [ x ∈ Xₛ ] ⋊ ▷[ Φ x ] ⊤
+    potential-credit {Xₛ = X} Φ =
         Potential Φ
       ≡⟨ (λ i → Abstractionᶜ (F-Σᶜ X i) (F-Σᶜ X i) (F-Σᶜ-potential X Φ i)) ⟩
         Abstractionᶜ ([ x ∈ X ] ⋊ ⊤) ([ x ∈ X ] ⋊ ⊤) (Σᶜ-map {X} {const ⊤} (λ x → CHARGE (Φ x)))

@@ -17,20 +17,28 @@ open import Cubical.Foundations.Structure
 
 syntax Σᶜ X (λ x → A) = [ x ∈ X ] ⋊ A
 
+Σᶜ-in : ∀ {X A} (x : ⟨ X ⟩) → A x ⊸ Σᶜ X A
+Σᶜ-in x .U a = x , a
+Σᶜ-in x .charge c a = refl
+
+Σᶜ-rec : ∀ {X A} → ((x : ⟨ X ⟩) → A x ⊸ B) → Σᶜ X A ⊸ B
+Σᶜ-rec f .U (x , a) = f x .U a
+Σᶜ-rec f .charge c (x , a) = f x .charge c a
+
 Σᶜ-map : ∀ {X A B} → ((x : ⟨ X ⟩) → A x ⊸ B x) → Σᶜ X A ⊸ Σᶜ X B
 Σᶜ-map f .U (x , a) = x , f x .U a
 Σᶜ-map f .charge c (x , a) = cong (x ,_) (f x .charge c a)
 
-Σᶜ-map-idᶜ : ∀ {X : 𝒱ₛ} {A : ⟨ X ⟩ → 𝒞} →
-  Σᶜ-map {X = X} (λ x → idᶜ {A = A x}) ≡ idᶜ
+Σᶜ-map-idᶜ : ∀ {A : ⟨ Xₛ ⟩ → 𝒞} →
+  Σᶜ-map {X = Xₛ} (λ x → idᶜ {A = A x}) ≡ idᶜ
 Σᶜ-map-idᶜ = ⊸-path refl refl refl
 
 Σᶜ-map-⨾ᶜ :
-  ∀ {X : 𝒱ₛ} {A B C : ⟨ X ⟩ → 𝒞}
-  (f : (x : ⟨ X ⟩) → A x ⊸ B x)
-  (g : (x : ⟨ X ⟩) → B x ⊸ C x) →
-  Σᶜ-map {X = X} f ⨾ᶜ Σᶜ-map {X = X} g ≡
-  Σᶜ-map {X = X} (λ x → f x ⨾ᶜ g x)
+  ∀ {A B C : ⟨ Xₛ ⟩ → 𝒞}
+  (f : (x : ⟨ Xₛ ⟩) → A x ⊸ B x)
+  (g : (x : ⟨ Xₛ ⟩) → B x ⊸ C x) →
+  Σᶜ-map {X = Xₛ} f ⨾ᶜ Σᶜ-map {X = Xₛ} g ≡
+  Σᶜ-map {X = Xₛ} (λ x → f x ⨾ᶜ g x)
 Σᶜ-map-⨾ᶜ f g = ⊸-path refl refl refl
 
 _⋊_ : 𝒱ₚ → 𝒞 → 𝒞

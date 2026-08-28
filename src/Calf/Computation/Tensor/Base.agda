@@ -11,6 +11,10 @@ open import Calf.Computation
 ⊤ .charge/0 = +ℂ-identityˡ _
 ⊤ .charge/+ = +ℂ-assoc _ _ _
 
+⊤-rec : U A → ⊤ ⊸ A
+⊤-rec {A} a .U c = A .charge c a
+⊤-rec {A} a .charge c c' = A .charge/+
+
 module _ where
   data _⊗₀_ (A B : 𝒞) : 𝒱 where
     inj : (a : U A) (b : U B) → A ⊗₀ B

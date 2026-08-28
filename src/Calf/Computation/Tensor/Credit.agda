@@ -69,6 +69,9 @@ opaque
           ≡ 𝒞-Fracture (A ⊗ Abstractionᶜ B-⊤ B-abs β)
       fracture-proof = 𝒞-FRACTURE-pathᶜ q• q◦ qα
 
+▷⊤-rec : U A → ▷[ 0ℂ ] ⊤ ⊸ A
+▷⊤-rec {A} a = subst (_⊸ A) (sym ▷/0) (⊤-rec a)
+
 map₂-idᶜ-CHARGE : ∀ c → map₂ (idᶜ {A}) (CHARGE {B} c) ≡ CHARGE {A ⊗ B} c
 map₂-idᶜ-CHARGE c =
   ⊸-path refl refl (funExt (⊗₀-≡ isPreorderP _ _ λ a b → sym (∥-law c a b)))

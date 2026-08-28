@@ -44,3 +44,13 @@ module _ {X : 𝒱} where
       isPreorderVec : (n : ℕ) → isPreorder (Vec n)
       isPreorderVec zero = isPreorder⊤
       isPreorderVec (suc n) = isPreorder× isPreorderX (isPreorderVec n)
+
+  isDiscreteList : isDiscrete X → isDiscrete (List X)
+  isDiscreteList isDiscreteX = isLocalRetract bwd fwd fwd-bwd (isDiscreteΣ isDiscreteℕ isDiscreteVec)
+    where
+      isDiscreteVec : (n : ℕ) → isDiscrete (Vec n)
+      isDiscreteVec zero = isDiscrete⊤
+      isDiscreteVec (suc n) = isDiscrete× isDiscreteX (isDiscreteVec n)
+
+Listₛ : 𝒱ₛ → 𝒱ₛ
+Listₛ X = List ⟨ X ⟩ , isSetList (str X .fst) , isDiscreteList (str X .snd)

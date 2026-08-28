@@ -59,9 +59,7 @@ cmpᴳ→cmp : cmpᴳ A → U A
 cmpᴳ→cmp e = e .U (subst U (sym (▷/0 {⊤})) 0ℂ)
 
 cmp→cmpᴳ : U A → cmpᴳ A
-cmp→cmpᴳ {A} e =
-  subst (_⊸ A) (sym ▷/0) $
-  record { U = flip (A .charge) e ; charge = λ _ _ → A .charge/+ }
+cmp→cmpᴳ = ▷⊤-rec
 
 module _ where
   substᵐᴳ :
@@ -124,40 +122,40 @@ module _ where
   payᴳ {A = A} split = transport (▷⊣◁ ∙ cong (_⊸ A) (sym ▷/+ ∙ cong (▷[_] _) split))
 
 module _ where
-  nil₁ᴳ : cmpᴳ (CList₁ p X)
+  nil₁ᴳ : cmpᴳ (CList₁ p Xₛ)
   nil₁ᴳ = cmp→cmpᴳ cnil₁
 
   cons₁ᴳ :
     q ⋎₂ (p , q')
-    → X
-    → Δ , q' ⊢ CList₁ p X
-    → Δ , q ⊢ CList₁ p X
+    → ⟨ Xₛ ⟩
+    → Δ , q' ⊢ CList₁ p Xₛ
+    → Δ , q ⊢ CList₁ p Xₛ
   cons₁ᴳ split x e = storeᴳ _ split e ⨾ᶜ ccons₁ x
 
   foldr₁ᴳ :
     cmpᴳ A
-    → (X → A , p ⊢ A)
-    → Δ , q ⊢ CList₁ p X
+    → (⟨ Xₛ ⟩ → A , p ⊢ A)
+    → Δ , q ⊢ CList₁ p Xₛ
     → Δ , q ⊢ A
   foldr₁ᴳ e-nil e-cons e = e ⨾ᶜ cfoldr₁ (cmpᴳ→cmp e-nil) e-cons
 
 module _ where
-  nil₂ᴳ : q ⋎₀ → ⊤ , q ⊢ (CList₂ p₁ p₂ X)
+  nil₂ᴳ : q ⋎₀ → ⊤ , q ⊢ (CList₂ p₁ p₂ Xₛ)
   nil₂ᴳ split = subst (λ x → ▷[ x ] _ ⊸ _) split (cmp→cmpᴳ cnil₂)
 
   cons₂ᴳ :
     q ⋎₂ (p₁ , q')
-    → X
-    → Δ , q' ⊢ CList₂ (p₂ +ℂ p₁) p₂ X
-    → Δ , q ⊢ CList₂ p₁ p₂ X
+    → ⟨ Xₛ ⟩
+    → Δ , q' ⊢ CList₂ (p₂ +ℂ p₁) p₂ Xₛ
+    → Δ , q ⊢ CList₂ p₁ p₂ Xₛ
   cons₂ᴳ split-q x e =
     storeᴳ _ split-q e ⨾ᶜ ccons₂ x
 
   foldr₂ᴳ :
     (A : ℂ → 𝒞)
     → (∀ r → cmpᴳ (A r))
-    → (∀ r → X → A (p₂ +ℂ r) , r ⊢ A r)
-    → Δ , q ⊢ CList₂ p₁ p₂ X
+    → (∀ r → ⟨ Xₛ ⟩ → A (p₂ +ℂ r) , r ⊢ A r)
+    → Δ , q ⊢ CList₂ p₁ p₂ Xₛ
     → Δ , q ⊢ A p₁
   foldr₂ᴳ A e-nil e-cons e = e ⨾ᶜ cfoldr₂ A (cmpᴳ→cmp ∘ e-nil) e-cons
 

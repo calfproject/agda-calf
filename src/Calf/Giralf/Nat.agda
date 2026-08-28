@@ -40,7 +40,7 @@ opaque
   ◁[_]_ : ℕ → 𝒞 → 𝒞
   ◁[ p ] A = Debit.◁[ ` p ] A
 
-  CList₂ : ℕ → ℕ → 𝒱 → 𝒞
+  CList₂ : ℕ → ℕ → 𝒱ₛ → 𝒞
   CList₂ p₁ p₂ X = CList2.CList₂ (` p₁) (` p₂) X
 
 cmpᴳ : 𝒞 → Type
@@ -71,25 +71,25 @@ opaque
   payᴳ : ∀ {Δ A : 𝒞} {p q q' : ℕ} → q ⋎₂ (p , q') → Δ , q' ⊢ ◁[ p ] A → Δ , q ⊢ A
   payᴳ {p = p} {q = q} {q' = q'} split = G.payᴳ (⋎₂ℂ q p q' split)
 
-  nil₂ᴳ : ∀ {X : 𝒱} {p₁ p₂ q : ℕ} → q ⋎₀ → ⊤ , q ⊢ CList₂ p₁ p₂ X
+  nil₂ᴳ : ∀ {p₁ p₂ q : ℕ} → q ⋎₀ → ⊤ , q ⊢ CList₂ p₁ p₂ Xₛ
   nil₂ᴳ {q = q} split = G.nil₂ᴳ (⋎₀ℂ q split)
 
-  cons₂ᴳ : ∀ {Δ : 𝒞} {X : 𝒱} {p₁ p₂ q q' : ℕ}
+  cons₂ᴳ : ∀ {Δ : 𝒞} {p₁ p₂ q q' : ℕ}
     → q ⋎₂ (p₁ , q')
-    → X
-    → Δ , q' ⊢ CList₂ (p₂ + p₁) p₂ X
-    → Δ , q ⊢ CList₂ p₁ p₂ X
-  cons₂ᴳ {Δ} {X} {p₁} {p₂} {q} {q'} split x e =
+    → ⟨ Xₛ ⟩
+    → Δ , q' ⊢ CList₂ (p₂ + p₁) p₂ Xₛ
+    → Δ , q ⊢ CList₂ p₁ p₂ Xₛ
+  cons₂ᴳ {X} {Δ} {p₁} {p₂} {q} {q'} split x e =
     G.cons₂ᴳ (⋎₂ℂ q p₁ q' split) x
       (subst (λ c → G._⊢_ (Δ , ` q') (CList2.CList₂ c (` p₂) X)) (ℕ→ℂ-+ p₂ p₁) e)
 
-  foldr₂ᴳ : ∀ {Δ : 𝒞} {X : 𝒱} {p₁ p₂ q : ℕ}
+  foldr₂ᴳ : ∀ {Δ : 𝒞} {p₁ p₂ q : ℕ}
     → (A : ℕ → 𝒞)
     → (∀ r → cmpᴳ (A r))
-    → (∀ r → X → A (p₂ + r) , r ⊢ A r)
-    → Δ , q ⊢ CList₂ p₁ p₂ X
+    → (∀ r → ⟨ Xₛ ⟩ → A (p₂ + r) , r ⊢ A r)
+    → Δ , q ⊢ CList₂ p₁ p₂ Xₛ
     → Δ , q ⊢ A p₁
-  foldr₂ᴳ {Δ} {X} {p₁} {p₂} {q} A e-nil e-cons e =
+  foldr₂ᴳ {X} {Δ} {p₁} {p₂} {q} A e-nil e-cons e =
     G.foldr₂ᴳ A' e-nil' e-cons' e ⨾ᶜ Πᶜ-app {C = λ (n , _) → A n} (p₁ , refl)
     where
       A' : ℂ → 𝒞
@@ -98,7 +98,7 @@ opaque
       e-nil' : ∀ c → G.cmpᴳ (A' c)
       e-nil' c = Πᶜ-lam {C = λ (n , _) → A n} λ (n , _) → e-nil n
 
-      e-cons' : ∀ c → X → G._⊢_ (A' (` p₂ +ℂ c) , c) (A' c)
+      e-cons' : ∀ c → ⟨ X ⟩ → G._⊢_ (A' (` p₂ +ℂ c) , c) (A' c)
       e-cons' c x =
         Πᶜ-lam {C = λ (n , _) → A n} λ (n , n≡c) →
           ▷-map (Πᶜ-app {C = λ (n , _) → A n} (p₂ + n , ℕ→ℂ-+ p₂ n ∙ cong (` p₂ +ℂ_) n≡c))

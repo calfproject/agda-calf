@@ -8,7 +8,7 @@ open import Calf.Computation.CList1
 open import Calf.Computation.CList2
 open import Calf.Giralf
 
-snoc : ∀ p → X → CList₁ (1 +ℂ p) X , p ⊢ CList₁ p X
+snoc : ∀ p → ⟨ Xₛ ⟩ → CList₁ (1 +ℂ p) Xₛ , p ⊢ CList₁ p Xₛ
 snoc p x =
   payᴳ (+ℂ-identityʳ _) $
   foldr₁ᴳ
@@ -25,7 +25,7 @@ snoc p x =
     )
     (idᴳ refl)
 
-qreverse : CList₂ 0 1 X , 0ℂ ⊢ CList₁ 0 X
+qreverse : CList₂ 0 1 Xₛ , 0ℂ ⊢ CList₁ 0 Xₛ
 qreverse {X} =
   foldr₂ᴳ
     (λ r → CList₁ r X)
