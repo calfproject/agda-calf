@@ -5,3 +5,11 @@ open import Cubical.Data.Sigma
   renaming (fst to proj₁; snd to proj₂)
   public
 open import Cubical.Foundations.HLevels using (isSet×) public
+open import Calf.Value
+
+opaque
+  isDiscrete× : isDiscrete X → isDiscrete Y → isDiscrete (X × Y)
+  isDiscrete× = isLocal×
+
+  isPreorder× : isPreorder X → isPreorder Y → isPreorder (X × Y)
+  isPreorder× = isLocal×

@@ -103,9 +103,9 @@ private
 
   termEq : Term → Term → TC Bool
   termEq x y =
-    do x′ ← normalise x
-       y′ ← normalise y
-       returnTC (isJust (indexOf x′ (y′ ∷ [])))
+    do x' ← normalise x
+       y' ← normalise y
+       returnTC (isJust (indexOf x' (y' ∷ [])))
 
   literalShapeEq : Literal → Literal → Bool
   literalShapeEq (nat m) (nat n) = m =ℕ n
@@ -115,29 +115,29 @@ private
 
   mutual
     termShapeEq : Term → Term → Bool
-    termShapeEq (var i args) (var j args′) =
-      (i =ℕ j) and argListShapeEq args args′
-    termShapeEq (con c args) (con c′ args′) =
-      primQNameEquality c c′ and argListShapeEq args args′
-    termShapeEq (def f args) (def f′ args′) =
-      primQNameEquality f f′ and argListShapeEq args args′
-    termShapeEq (lit l) (lit l′) = literalShapeEq l l′
-    termShapeEq (meta m args) (meta m′ args′) =
-      primMetaEquality m m′ and argListShapeEq args args′
+    termShapeEq (var i args) (var j args') =
+      (i =ℕ j) and argListShapeEq args args'
+    termShapeEq (con c args) (con c' args') =
+      primQNameEquality c c' and argListShapeEq args args'
+    termShapeEq (def f args) (def f' args') =
+      primQNameEquality f f' and argListShapeEq args args'
+    termShapeEq (lit l) (lit l') = literalShapeEq l l'
+    termShapeEq (meta m args) (meta m' args') =
+      primMetaEquality m m' and argListShapeEq args args'
     termShapeEq _ _ = false
 
     argListShapeEq : List (Arg Term) → List (Arg Term) → Bool
     argListShapeEq [] [] = true
     argListShapeEq [] (arg (arg-info visible _) _ ∷ _) = false
-    argListShapeEq [] (_ ∷ args′) = argListShapeEq [] args′
+    argListShapeEq [] (_ ∷ args') = argListShapeEq [] args'
     argListShapeEq (arg (arg-info visible _) _ ∷ _) [] = false
     argListShapeEq (_ ∷ args) [] = argListShapeEq args []
     argListShapeEq (arg (arg-info visible _) t ∷ args)
-                   (arg (arg-info visible _) u ∷ args′) =
-      termShapeEq t u and argListShapeEq args args′
-    argListShapeEq (a@(arg (arg-info visible _) _) ∷ args) (_ ∷ args′) =
-      argListShapeEq (a ∷ args) args′
-    argListShapeEq (_ ∷ args) args′ = argListShapeEq args args′
+                   (arg (arg-info visible _) u ∷ args') =
+      termShapeEq t u and argListShapeEq args args'
+    argListShapeEq (a@(arg (arg-info visible _) _) ∷ args) (_ ∷ args') =
+      argListShapeEq (a ∷ args) args'
+    argListShapeEq (_ ∷ args) args' = argListShapeEq args args'
 
   mk≤-trans : Term → Term → Term → Term → Term → Term
   mk≤-trans lower middle upper p q =
@@ -183,14 +183,14 @@ private
       true → returnTC (just ys)
       false →
         removeAddend x ys >>= λ where
-          (just ys′) → returnTC (just (y ∷ ys′))
+          (just ys') → returnTC (just (y ∷ ys'))
           nothing → returnTC nothing
 
   removeAddends : List Term → List Term → TC (Maybe (List Term))
   removeAddends [] upper = returnTC (just upper)
   removeAddends (x ∷ xs) upper =
     removeAddend x upper >>= λ where
-      (just upper′) → removeAddends xs upper′
+      (just upper') → removeAddends xs upper'
       nothing → returnTC nothing
 
   ExprBuilder : Type
@@ -203,8 +203,8 @@ private
 
   indexOfTermByNormalForm : Term → Vars → TC (Maybe ℕ)
   indexOfTermByNormalForm t [] = returnTC nothing
-  indexOfTermByNormalForm t (t′ ∷ vars) =
-    termEq t t′ >>= λ where
+  indexOfTermByNormalForm t (t' ∷ vars) =
+    termEq t t' >>= λ where
       true → returnTC (just 0)
       false →
         indexOfTermByNormalForm t vars >>= λ where
@@ -213,13 +213,13 @@ private
 
   indexOfTermByShape : Term → Vars → TC (Maybe ℕ)
   indexOfTermByShape t [] = returnTC nothing
-  indexOfTermByShape t (t′ ∷ vars) =
-    case termShapeEq t t′ of λ where
+  indexOfTermByShape t (t' ∷ vars) =
+    case termShapeEq t t' of λ where
       true → returnTC (just 0)
       false →
         do tNorm ← normalise t
-           t′Norm ← normalise t′
-           case termShapeEq tNorm t′Norm of λ where
+           t'Norm ← normalise t'
+           case termShapeEq tNorm t'Norm of λ where
              true → returnTC (just 0)
              false →
                indexOfTermByShape t vars >>= λ where
@@ -244,22 +244,22 @@ private
   appendVariables : Vars → Vars → TC Vars
   appendVariables [] vars = returnTC vars
   appendVariables (t ∷ ts) vars =
-    do vars′ ← addVariable t vars
-       appendVariables ts vars′
+    do vars' ← addVariable t vars
+       appendVariables ts vars'
 
   asVariable : Term → TC (ExprBuilder × Vars)
   asVariable t =
-    do t′ ← normalise t
+    do t' ← normalise t
        returnTC
          ((λ vars →
-           indexOfTerm t′ vars >>= λ where
+           indexOfTerm t' vars >>= λ where
              (just n) → returnTC (con (quote ∣) (finiteNumberAsTerm (just n) v∷ []))
              nothing →
                typeError
                  (strErr "Internal error: Nat solver variable was not collected: "
-                 ∷ termErr t′
+                 ∷ termErr t'
                  ∷ []))
-         , t′ ∷ [])
+         , t' ∷ [])
 
   buildExpression : ℕ → Term → TC (ExprBuilder × Vars)
   buildExpression zero t =
@@ -326,9 +326,9 @@ private
 
   findDirect : Term → Term → List LeFact → TC (Maybe Term)
   findDirect lower upper [] = returnTC nothing
-  findDirect lower upper (leFact lower′ upper′ proof ∷ facts) =
-    do sameLower ← termEq lower lower′
-       sameUpper ← termEq upper upper′
+  findDirect lower upper (leFact lower' upper' proof ∷ facts) =
+    do sameLower ← termEq lower lower'
+       sameUpper ← termEq upper upper'
        if sameLower and sameUpper
          then returnTC (just proof)
          else findDirect lower upper facts
@@ -389,30 +389,30 @@ private
 
     sMinusUpper : Strategy
     sMinusUpper fuel facts lower upper with view∸ upper
-    ... | just (upper′ , subtrahend) =
+    ... | just (upper' , subtrahend) =
       let lower+sub = def (quote _+_) (lower v∷ subtrahend v∷ []) in
-      synth≤ fuel facts lower+sub upper′ >>= λ where
+      synth≤ fuel facts lower+sub upper' >>= λ where
         (just proof) →
           returnTC
             (just
               (def (quote leMinusRight)
-                (lower v∷ upper′ v∷ subtrahend v∷ proof v∷ [])))
+                (lower v∷ upper' v∷ subtrahend v∷ proof v∷ [])))
         nothing →
           let sub+lower = def (quote _+_) (subtrahend v∷ lower v∷ []) in
-          synth≤ fuel facts sub+lower upper′ >>= λ where
+          synth≤ fuel facts sub+lower upper' >>= λ where
             (just proof) →
               returnTC
                 (just
                   (def (quote leMinusRightComm)
-                    (lower v∷ upper′ v∷ subtrahend v∷ proof v∷ [])))
+                    (lower v∷ upper' v∷ subtrahend v∷ proof v∷ [])))
             nothing → returnTC nothing
     ... | nothing = returnTC nothing
 
     sSuc : Strategy
     sSuc fuel facts lower upper with viewSuc lower | viewSuc upper
-    ... | just lower′ | just upper′ =
-      returnMap (λ p → def (quote leSuc) (lower′ v∷ upper′ v∷ p v∷ []))
-        (synth≤ fuel facts lower′ upper′)
+    ... | just lower' | just upper' =
+      returnMap (λ p → def (quote leSuc) (lower' v∷ upper' v∷ p v∷ []))
+        (synth≤ fuel facts lower' upper')
     ... | _ | _ = returnTC nothing
 
     sSum : Strategy
@@ -453,11 +453,11 @@ private
 
     sSucPlus : Strategy
     sSucPlus fuel facts lower upper with viewSuc lower | view+ upper
-    ... | just lower′ | just (u₁ , u₂) =
+    ... | just lower' | just (u₁ , u₂) =
       synth≤ fuel facts oneTerm u₁ >>= λ where
         (just p₁) →
-          synth≤ fuel facts lower′ u₂ >>= λ where
-            (just p₂) → returnTC (just (mk≤-+-≤ oneTerm u₁ lower′ u₂ p₁ p₂))
+          synth≤ fuel facts lower' u₂ >>= λ where
+            (just p₂) → returnTC (just (mk≤-+-≤ oneTerm u₁ lower' u₂ p₁ p₂))
             nothing → returnTC nothing
         nothing → returnTC nothing
     ... | _ | _ = returnTC nothing
@@ -508,8 +508,8 @@ private
         case parse≤Type ty of λ where
           (just _) → returnTC (just p)
           nothing →
-            do ty′ ← normalise ty
-               case parse≤Type ty′ of λ where
+            do ty' ← normalise ty
+               case parse≤Type ty' of λ where
                  (just _) → returnTC (just p)
                  nothing → returnTC nothing)
     <|>
@@ -569,27 +569,27 @@ private
        facts ← collectFacts ps
        collectFact p ty facts
          <|>
-         (do ty′ ← normalise ty
-             collectFact p ty′ facts)
+         (do ty' ← normalise ty
+             collectFact p ty' facts)
 
   cong₂+Term : Term → Term → Term → Term → Term → Term → Term
-  cong₂+Term x x′ y y′ p q =
+  cong₂+Term x x' y y' p q =
     def (quote natCong₂+)
-      (x v∷ x′ v∷ y v∷ y′ v∷ p v∷ q v∷ [])
+      (x v∷ x' v∷ y v∷ y' v∷ p v∷ q v∷ [])
 
   cong₂·Term : Term → Term → Term → Term → Term → Term → Term
-  cong₂·Term x x′ y y′ p q =
+  cong₂·Term x x' y y' p q =
     def (quote natCong₂·)
-      (x v∷ x′ v∷ y v∷ y′ v∷ p v∷ q v∷ [])
+      (x v∷ x' v∷ y v∷ y' v∷ p v∷ q v∷ [])
 
   cong₂∸Term : Term → Term → Term → Term → Term → Term → Term
-  cong₂∸Term x x′ y y′ p q =
+  cong₂∸Term x x' y y' p q =
     def (quote natCong₂∸)
-      (x v∷ x′ v∷ y v∷ y′ v∷ p v∷ q v∷ [])
+      (x v∷ x' v∷ y v∷ y' v∷ p v∷ q v∷ [])
 
   congSucTerm : Term → Term → Term → Term
-  congSucTerm x x′ p =
-    def (quote natCongSuc) (x v∷ x′ v∷ p v∷ [])
+  congSucTerm x x' p =
+    def (quote natCongSuc) (x v∷ x' v∷ p v∷ [])
 
   compTerm : Term → Term → Term → Term → Term → Term
   compTerm x y z p q =
@@ -834,15 +834,15 @@ private
       false → findUpperRewriteWitness t facts
 
   onMinusElim : List LeFact → ℕ → Term → Term → TC (Maybe Rewrite)
-  onMinusElim facts fuel upper′ lower′ =
-    rewriteMinusDirect fuel facts upper′ lower′
+  onMinusElim facts fuel upper' lower' =
+    rewriteMinusDirect fuel facts upper' lower'
 
   onMinusWitness : List LeFact → ℕ → Term → Term → TC (Maybe Rewrite)
-  onMinusWitness facts _ upper′ lower′ =
-    rewriteMinusBasic upper′ lower′ >>= λ where
+  onMinusWitness facts _ upper' lower' =
+    rewriteMinusBasic upper' lower' >>= λ where
       (just r) → returnTC (just r)
       nothing →
-        synth≤ synthFuel facts lower′ upper′ >>= λ where
+        synth≤ synthFuel facts lower' upper' >>= λ where
           (just proof) →
             returnTC
               (just
@@ -851,9 +851,9 @@ private
           nothing →
             typeError
               (strErr "Could not synthesize a checked ≤ guard for subtraction: "
-              ∷ termErr lower′
+              ∷ termErr lower'
               ∷ strErr " ≤ "
-              ∷ termErr upper′
+              ∷ termErr upper'
               ∷ [])
 
   policyMinusElim : List LeFact → RewritePolicy
@@ -891,34 +891,34 @@ private
     ... | just (x , y) =
       do rx ← traverseRewrite pol fuel x
          ry ← traverseRewrite pol fuel y
-         let x′ = Rewrite.term rx
-         let y′ = Rewrite.term ry
+         let x' = Rewrite.term rx
+         let y' = Rewrite.term ry
          returnTC
            (mkRewrite
-             (def (quote _+_) (x′ v∷ y′ v∷ []))
-             (cong₂+Term x x′ y y′ (Rewrite.step rx) (Rewrite.step ry)))
+             (def (quote _+_) (x' v∷ y' v∷ []))
+             (cong₂+Term x x' y y' (Rewrite.step rx) (Rewrite.step ry)))
     ... | nothing with view· t
     ... | just (x , y) =
       do rx ← traverseRewrite pol fuel x
          ry ← traverseRewrite pol fuel y
-         let x′ = Rewrite.term rx
-         let y′ = Rewrite.term ry
+         let x' = Rewrite.term rx
+         let y' = Rewrite.term ry
          returnTC
            (mkRewrite
-             (def (quote _·_) (x′ v∷ y′ v∷ []))
-             (cong₂·Term x x′ y y′ (Rewrite.step rx) (Rewrite.step ry)))
+             (def (quote _·_) (x' v∷ y' v∷ []))
+             (cong₂·Term x x' y y' (Rewrite.step rx) (Rewrite.step ry)))
     ... | nothing with view∸ t
     ... | just (upper , lower) =
       do rUpper ← traverseRewrite pol fuel upper
          rLower ← traverseRewrite pol fuel lower
-         let upper′ = Rewrite.term rUpper
-         let lower′ = Rewrite.term rLower
+         let upper' = Rewrite.term rUpper
+         let lower' = Rewrite.term rLower
          let origMinus = def (quote _∸_) (upper v∷ lower v∷ [])
-         let rebuilt = def (quote _∸_) (upper′ v∷ lower′ v∷ [])
+         let rebuilt = def (quote _∸_) (upper' v∷ lower' v∷ [])
          let childStep =
-               cong₂∸Term upper upper′ lower lower′
+               cong₂∸Term upper upper' lower lower'
                  (Rewrite.step rUpper) (Rewrite.step rLower)
-         RewritePolicy.onMinus pol fuel upper′ lower′ >>= λ where
+         RewritePolicy.onMinus pol fuel upper' lower' >>= λ where
            (just r) →
              returnTC
                (mkRewrite (Rewrite.term r)
@@ -929,10 +929,10 @@ private
     ... | nothing with viewSuc t
     ... | just x =
       do rx ← traverseRewrite pol fuel x
-         let x′ = Rewrite.term rx
+         let x' = Rewrite.term rx
          returnTC
-           (mkRewrite (con (quote suc) (x′ v∷ []))
-             (congSucTerm x x′ (Rewrite.step rx)))
+           (mkRewrite (con (quote suc) (x' v∷ []))
+             (congSucTerm x x' (Rewrite.step rx)))
     ... | nothing = returnTC (mkRewrite t (natReflTerm t))
 
   rewriteTerm : ℕ → List LeFact → Term → TC Rewrite
@@ -975,16 +975,16 @@ private
     List LeFact → RewritePolicy → RewritePolicy → Bool
     → Term → Term → Term → TC Term
   solveEqGoal leFacts elimPol upperPol threePass goal lhsN rhsN =
-    do (lhs′ , lhsStep) ← processSide elimPol upperPol threePass lhsN
-       (rhs′ , rhsStep) ← processSide elimPol upperPol threePass rhsN
-       parsed ← toNatExpression lhs′ rhs′
+    do (lhs' , lhsStep) ← processSide elimPol upperPol threePass lhsN
+       (rhs' , rhsStep) ← processSide elimPol upperPol threePass rhsN
+       parsed ← toNatExpression lhs' rhs'
        let lhsExpr = fst parsed
        let rhsExpr = fst (snd parsed)
        let vars = snd (snd parsed)
        let middle = natSolverCall lhsExpr rhsExpr vars
        checkType
          (def (quote finishNatExplicit)
-           (lhsN v∷ lhs′ v∷ rhsN v∷ rhs′ v∷
+           (lhsN v∷ lhs' v∷ rhsN v∷ rhs' v∷
             lhsStep v∷ middle v∷ rhsStep v∷ []))
          goal
 
@@ -992,22 +992,22 @@ private
     List LeFact → RewritePolicy → RewritePolicy → Bool
     → Term → Term → Term → TC Term
   solveLeGoal leFacts elimPol upperPol threePass goal lowerN upperN =
-    do (lower′ , lowerStep) ← processSide elimPol upperPol threePass lowerN
-       (upper′ , upperStep) ← processSide elimPol upperPol threePass upperN
-       proof? ← synth≤ synthFuel leFacts lower′ upper′
+    do (lower' , lowerStep) ← processSide elimPol upperPol threePass lowerN
+       (upper' , upperStep) ← processSide elimPol upperPol threePass upperN
+       proof? ← synth≤ synthFuel leFacts lower' upper'
        case proof? of λ where
          (just middle) →
            checkType
              (def (quote finishLeExplicit)
-              (lowerN v∷ lower′ v∷ upperN v∷ upper′ v∷
+              (lowerN v∷ lower' v∷ upperN v∷ upper' v∷
                lowerStep v∷ middle v∷ upperStep v∷ []))
              goal
          nothing →
            typeError
              (strErr "Could not synthesize a checked ≤ proof: "
-             ∷ termErr lower′
+             ∷ termErr lower'
              ∷ strErr " ≤ "
-             ∷ termErr upper′
+             ∷ termErr upper'
              ∷ [])
 
   solveNatGoalProof : List LeFact → Term → TC Term
@@ -1051,8 +1051,8 @@ private
     do goal ← inferType hole
        ((solveNatGoalProof leFacts goal)
          <|>
-        (do goal′ ← normalise goal
-            solveNatGoalProof leFacts goal′))
+        (do goal' ← normalise goal
+            solveNatGoalProof leFacts goal'))
 
   solveNatFromFacts : List LeFact → Term → TC ⊤
   solveNatFromFacts leFacts hole =

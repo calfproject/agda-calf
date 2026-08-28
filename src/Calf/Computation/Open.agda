@@ -73,65 +73,65 @@ opaque
 module _ where
   open import Calf.Computation.Pullback
 
-  lex : ∀ {A B C} (f : A ⊸ C) (g : B ⊸ C) → ◯ᶜ (Pullback f g) ≡ Pullback (map f) (map g)
-  lex {A} {B} {C} f g = conservativity fwd fwd-equiv
+  Pullback-◯ᶜ : ∀ {A B C} (f : A ⊸ C) (g : B ⊸ C) → ◯ᶜ (Pullback f g) ≡ Pullback (map f) (map g)
+  Pullback-◯ᶜ {A} {B} {C} f g = conservativity fwd fwd-equiv
     where
       fwd : ◯ᶜ (Pullback f g) ⊸ Pullback (map f) (map g)
       fwd .U e =
-        (λ abs → e abs .fst) , (λ abs → e abs .snd .fst) ,
-        funExt (λ abs → e abs .snd .snd)
+        ((λ abs → e abs .fst .fst) , (λ abs → e abs .fst .snd)) ,
+        funExt (λ abs → e abs .snd)
       fwd .charge c e =
-        ΣPathP (refl , ΣPathP (refl , isProp→PathP (λ i → (◯ᶜ C) .is-set _ _) _ _))
+        ΣPathP (refl , isProp→PathP (λ i → is-set (◯ᶜ C) _ _) _ _)
 
       inv : U (Pullback (map f) (map g)) → U (◯ᶜ (Pullback f g))
-      inv (a◦ , b◦ , p) abs = a◦ abs , b◦ abs , funExt⁻ p abs
+      inv ((a◦ , b◦) , p) abs = (a◦ abs , b◦ abs) , funExt⁻ p abs
 
       fwd-equiv : isEquivᶜ fwd
       fwd-equiv = isoToIsEquiv (iso (fwd .U) inv (λ _ → refl) (λ _ → refl))
 
-ABS-◯ᶜeval : ⟨ ABS ⟩ → (A : 𝒞) → ◯ᶜ A ⊸ A
-ABS-◯ᶜeval abs A .U a◦ = a◦ abs
-ABS-◯ᶜeval abs A .charge c a◦ = refl
+◯ᶜ-eval-open : ⟨ ABS ⟩ → (A : 𝒞) → ◯ᶜ A ⊸ A
+◯ᶜ-eval-open abs A .U a◦ = a◦ abs
+◯ᶜ-eval-open abs A .charge c a◦ = refl
 
-ABS-◯ᶜeval-equiv
+◯ᶜ-eval-open-isEquiv
   : (abs : ⟨ ABS ⟩) (A : 𝒞)
-  → isEquivᶜ (ABS-◯ᶜeval abs A)
-ABS-◯ᶜeval-equiv abs A =
+  → isEquivᶜ (◯ᶜ-eval-open abs A)
+◯ᶜ-eval-open-isEquiv abs A =
   isoToIsEquiv
     (iso
-      (ABS-◯ᶜeval abs A .U)
+      (◯ᶜ-eval-open abs A .U)
       η◦
       (λ _ → refl)
       (λ a◦ → funExt λ abs' → cong a◦ (str ABS abs abs')))
 
-ABS-◯ᶜA≃A : ⟨ ABS ⟩ → ◯ᶜ A ≃ᶜ A
-ABS-◯ᶜA≃A {A} abs = ABS-◯ᶜeval abs A , ABS-◯ᶜeval-equiv abs A
+◯ᶜ-open-≃ : ⟨ ABS ⟩ → ◯ᶜ A ≃ᶜ A
+◯ᶜ-open-≃ {A} abs = ◯ᶜ-eval-open abs A , ◯ᶜ-eval-open-isEquiv abs A
 
-ABS-◯ᶜA≡A : ⟨ ABS ⟩ → ◯ᶜ A ≡ A
-ABS-◯ᶜA≡A abs = uaᶜ (ABS-◯ᶜA≃A abs)
+◯ᶜ-open : ⟨ ABS ⟩ → ◯ᶜ A ≡ A
+◯ᶜ-open abs = uaᶜ (◯ᶜ-open-≃ abs)
 
-ABS-◯ᶜmap≡f : ∀ (abs : ⟨ ABS ⟩) (f : A ⊸ B)
-  → PathP (λ i → ABS-◯ᶜA≡A {A} abs i ⊸ ABS-◯ᶜA≡A {B} abs i)
+◯ᶜ-map-openP : ∀ (abs : ⟨ ABS ⟩) (f : A ⊸ B)
+  → PathP (λ i → ◯ᶜ-open {A} abs i ⊸ ◯ᶜ-open {B} abs i)
       (map f)
       f
-ABS-◯ᶜmap≡f {A} {B} abs f =
+◯ᶜ-map-openP {A} {B} abs f =
   ⊸-path
-    (ABS-◯ᶜA≡A {A} abs)
-    (ABS-◯ᶜA≡A {B} abs)
+    (◯ᶜ-open {A} abs)
+    (◯ᶜ-open {B} abs)
     (ua→
-      {e = ABS-◯ᶜeval abs A .U , ABS-◯ᶜeval-equiv abs A}
-      {B = λ i → U (ABS-◯ᶜA≡A {B} abs i)}
+      {e = ◯ᶜ-eval-open abs A .U , ◯ᶜ-eval-open-isEquiv abs A}
+      {B = λ i → U (◯ᶜ-open {B} abs i)}
       (λ a◦ →
         ua-gluePath
-          (ABS-◯ᶜeval abs B .U , ABS-◯ᶜeval-equiv abs B)
+          (◯ᶜ-eval-open abs B .U , ◯ᶜ-eval-open-isEquiv abs B)
           refl))
 
-ABS-◯ᶜpoint≡a : ∀ (abs : ⟨ ABS ⟩) (a◦ : U (◯ᶜ A)) (a : U A)
+◯ᶜ-point-openP : ∀ (abs : ⟨ ABS ⟩) (a◦ : U (◯ᶜ A)) (a : U A)
   → a◦ abs ≡ a
-  → PathP (λ i → U (ABS-◯ᶜA≡A {A} abs i)) a◦ a
-ABS-◯ᶜpoint≡a {A} abs a◦ a p =
+  → PathP (λ i → U (◯ᶜ-open {A} abs i)) a◦ a
+◯ᶜ-point-openP {A} abs a◦ a p =
   ua-gluePath
-    (ABS-◯ᶜeval abs A .U , ABS-◯ᶜeval-equiv abs A)
+    (◯ᶜ-eval-open abs A .U , ◯ᶜ-eval-open-isEquiv abs A)
     p
 
 module _ where
@@ -141,14 +141,13 @@ module _ where
     embed : ∀ {X A} → Σᶜ X A .U → Σᶜ X (◯ᶜ ∘ A) .U
     embed (x , a) = x , η◦ a
 
-  Σᶜ-◯ᶜ-fwd : ∀ {X A} → ◯ᶜ (Σᶜ X A) ⊸ ◯ᶜ (Σᶜ X (◯ᶜ ∘ A))
-  Σᶜ-◯ᶜ-fwd {X} {A} .U = ◯.map (embed {X} {A})
-  Σᶜ-◯ᶜ-fwd .charge _ _ = refl
+  Σᶜ-◯ᶜ-fwd : (X : 𝒱₌) (A : ⟨ X ⟩ → 𝒞) → ◯ᶜ (Σᶜ X A) ⊸ ◯ᶜ (Σᶜ X (◯ᶜ ∘ A))
+  Σᶜ-◯ᶜ-fwd X A = map (Σᶜ-map {X} {A} λ _ → η◦ᶜ)
 
-  Σᶜ-◯ᶜ-fwd-equiv : ∀ {X A} → isEquivᶜ (Σᶜ-◯ᶜ-fwd {X} {A})
-  Σᶜ-◯ᶜ-fwd-equiv {X} {A} =
+  Σᶜ-◯ᶜ-fwd-equiv : (X : 𝒱₌) (A : ⟨ X ⟩ → 𝒞) → isEquivᶜ (Σᶜ-◯ᶜ-fwd X A)
+  Σᶜ-◯ᶜ-fwd-equiv X A =
     subst isEquiv (funExt⁻ ◯.map′≡map (embed {X} {A})) (invEquiv ○Σ○≃○Σ .snd)
 
-  Σᶜ-◯ᶜ : ∀ {X A} → ◯ᶜ (Σᶜ X A) ≡ ◯ᶜ (Σᶜ X (◯ᶜ ∘ A))
-  Σᶜ-◯ᶜ {X} {A} =
-    conservativity (Σᶜ-◯ᶜ-fwd {X} {A}) (Σᶜ-◯ᶜ-fwd-equiv {X} {A})
+  Σᶜ-◯ᶜ : (X : 𝒱₌) (A : ⟨ X ⟩ → 𝒞) → ◯ᶜ (Σᶜ X A) ≡ ◯ᶜ (Σᶜ X (◯ᶜ ∘ A))
+  Σᶜ-◯ᶜ X A =
+    conservativity (Σᶜ-◯ᶜ-fwd X A) (Σᶜ-◯ᶜ-fwd-equiv X A)

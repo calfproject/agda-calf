@@ -13,42 +13,42 @@ open import Calf.Computation.Closed as ●ᶜ
 
 open import Calf.Value.Glue public
 
-Glueᶜ : (A• : 𝒞•) (A◦ : 𝒞◦) (α• : ⟨ A• ⟩ᶜ ⊸ ●ᶜ ⟨ A◦ ⟩ᶜ) → 𝒞
-Glueᶜ A• A◦ α• .U = Glue (U• A•) (U◦ A◦) (α• .U)
-Glueᶜ A• A◦ α• .is-set = isSetGlue (⟨ A• ⟩ᶜ .is-set) (⟨ A◦ ⟩ᶜ .is-set)
-Glueᶜ A• A◦ α• .charge c a .• = ⟨ A• ⟩ᶜ .charge c (a .•)
-Glueᶜ A• A◦ α• .charge c a .◦ = ⟨ A◦ ⟩ᶜ .charge c (a .◦)
-Glueᶜ A• A◦ α• .charge c a .•→◦ = α• .charge c (a .•) ∙ cong (●ᶜ ⟨ A◦ ⟩ᶜ .charge c) (a .•→◦)
-Glueᶜ A• A◦ α• .charge/0 =
-  Glue-path (⟨ A◦ ⟩ᶜ .is-set) (⟨ A• ⟩ᶜ .charge/0) (⟨ A◦ ⟩ᶜ .charge/0)
-Glueᶜ A• A◦ α• .charge/+ =
-  Glue-path (⟨ A◦ ⟩ᶜ .is-set) (⟨ A• ⟩ᶜ .charge/+) (⟨ A◦ ⟩ᶜ .charge/+)
+Glueᶜ : (A• A◦ : 𝒞) (α• : A• ⊸ ●ᶜ A◦) → 𝒞
+Glueᶜ A• A◦ α• .U = Glue (U A•) (U A◦) (α• .U)
+Glueᶜ A• A◦ α• .is-preorder = isPreorderGlue (A• .is-preorder) (A◦ .is-preorder)
+Glueᶜ A• A◦ α• .charge c ((x• , x◦) , h) =
+  (A• .charge c x• , A◦ .charge c x◦) ,
+  α• .charge c x• ∙ cong (●ᶜ A◦ .charge c) h
+Glueᶜ A• A◦ α• .charge-0 =
+  Glue-path (is-set A◦) (A• .charge-0) (A◦ .charge-0)
+Glueᶜ A• A◦ α• .charge-+ =
+  Glue-path (is-set A◦) (A• .charge-+) (A◦ .charge-+)
 
-record 𝒞-FRACTURE : 𝒱₁ where
+record Fractureᶜ : 𝒱₁ where
   field
     A• : 𝒞•
     A◦ : 𝒞◦
     α• : ⟨ A• ⟩ᶜ ⊸ ●ᶜ ⟨ A◦ ⟩ᶜ
-open 𝒞-FRACTURE
+open Fractureᶜ
 
-𝒞-Glue : 𝒞-FRACTURE → 𝒞
-𝒞-Glue F = Glueᶜ (F .A•) (F .A◦) (F .α•)
+fromFractureᶜ : Fractureᶜ → 𝒞
+fromFractureᶜ F = Glueᶜ ⟨ F .A• ⟩ᶜ ⟨ F .A◦ ⟩ᶜ (F .α•)
 
-𝒞-Fracture : 𝒞 → 𝒞-FRACTURE
-𝒞-Fracture A .A• = ●ᶜ• A
-𝒞-Fracture A .A◦ = ◯ᶜ◦ A
-𝒞-Fracture A .α• = ●ᶜ.map η◦ᶜ
+toFractureᶜ : 𝒞 → Fractureᶜ
+toFractureᶜ A .A• = ●ᶜ• A
+toFractureᶜ A .A◦ = ◯ᶜ◦ A
+toFractureᶜ A .α• = ●ᶜ.map η◦ᶜ
 
-proj•ᶜ : (F : 𝒞-FRACTURE) → 𝒞-Glue F ⊸ ⟨ F .A• ⟩ᶜ
-proj•ᶜ F .U g = g .•
+proj•ᶜ : (F : Fractureᶜ) → fromFractureᶜ F ⊸ ⟨ F .A• ⟩ᶜ
+proj•ᶜ F .U = •
 proj•ᶜ F .charge c g = refl
 
-proj◦ᶜ : (F : 𝒞-FRACTURE) → 𝒞-Glue F ⊸ ⟨ F .A◦ ⟩ᶜ
-proj◦ᶜ F .U g = g .◦
+proj◦ᶜ : (F : Fractureᶜ) → fromFractureᶜ F ⊸ ⟨ F .A◦ ⟩ᶜ
+proj◦ᶜ F .U = ◦
 proj◦ᶜ F .charge c g = refl
 
-𝒞-FRACTURE-path
-  : {F G : 𝒞-FRACTURE}
+Fractureᶜ-path
+  : {F G : Fractureᶜ}
   → (A•-path : F .A• ≡ G .A•)
   → (A◦-path : F .A◦ ≡ G .A◦)
   → PathP
@@ -56,12 +56,12 @@ proj◦ᶜ F .charge c g = refl
       (F .α•)
       (G .α•)
   → F ≡ G
-𝒞-FRACTURE-path A•-path A◦-path α•-path i .A• = A•-path i
-𝒞-FRACTURE-path A•-path A◦-path α•-path i .A◦ = A◦-path i
-𝒞-FRACTURE-path A•-path A◦-path α•-path i .α• = α•-path i
+Fractureᶜ-path A•-path A◦-path α•-path i .A• = A•-path i
+Fractureᶜ-path A•-path A◦-path α•-path i .A◦ = A◦-path i
+Fractureᶜ-path A•-path A◦-path α•-path i .α• = α•-path i
 
-𝒞-FRACTURE-pathᶜ :
-  {F G : 𝒞-FRACTURE}
+Fractureᶜ-path-U :
+  {F G : Fractureᶜ}
   → (p• : ⟨ F .A• ⟩ᶜ ≡ ⟨ G .A• ⟩ᶜ)
   → (p◦ : ⟨ F .A◦ ⟩ᶜ ≡ ⟨ G .A◦ ⟩ᶜ)
   → PathP
@@ -69,126 +69,65 @@ proj◦ᶜ F .charge c g = refl
       (F .α•)
       (G .α•)
   → F ≡ G
-𝒞-FRACTURE-pathᶜ p• p◦ pα =
-  𝒞-FRACTURE-path
+Fractureᶜ-path-U p• p◦ pα =
+  Fractureᶜ-path
     (●ᶜ.𝒞•-path p•)
     (◯ᶜ.𝒞◦-path p◦)
     pα
 
-U-FRACTURE : 𝒞-FRACTURE → 𝒱-FRACTURE
-U-FRACTURE F =
+U-Fracture : Fractureᶜ → Fracture
+U-Fracture F =
   record
     { X• = U• (F .A•)
     ; X◦ = U◦ (F .A◦)
     ; χ• = F .α• .U
     }
 
-record 𝒞-Square (A B : 𝒞-FRACTURE) : 𝒱 where
-  field
-    f• : ⟨ A .A• ⟩ᶜ ⊸ ⟨ B .A• ⟩ᶜ
-    f◦ : ⟨ A .A◦ ⟩ᶜ ⊸ ⟨ B .A◦ ⟩ᶜ
-    f-coh : (a• : U ⟨ A .A• ⟩ᶜ) → B .α• .U (f• .U a•) ≡ ●ᶜ.map f◦ .U (A .α• .U a•)
+Fractureᶜ-Square : Fractureᶜ → Fractureᶜ → 𝒱
+Fractureᶜ-Square F G =
+  Σ[ (f• , f◦) ∈ (⟨ F .A• ⟩ᶜ ⊸ ⟨ G .A• ⟩ᶜ) × (⟨ F .A◦ ⟩ᶜ ⊸ ⟨ G .A◦ ⟩ᶜ) ]
+    f• ⨾ᶜ G .α• ≡ F .α• ⨾ᶜ ●ᶜ.map f◦
 
 squareᶜ
   : ∀ {A• A◦ α B• B◦ β}
-  → (f• : ⟨ A• ⟩ᶜ ⊸ ⟨ B• ⟩ᶜ)
-  → (f◦ : ⟨ A◦ ⟩ᶜ ⊸ ⟨ B◦ ⟩ᶜ)
+  → (f• : A• ⊸ B•)
+  → (f◦ : A◦ ⊸ B◦)
   → f• ⨾ᶜ β ≡ α ⨾ᶜ ●ᶜ.map f◦
   → Glueᶜ A• A◦ α ⊸ Glueᶜ B• B◦ β
-squareᶜ f• f◦ f-coherence .U q =
+squareᶜ f• f◦ f-coherence .U =
   square
     (f• .U)
     (f◦ .U)
     (λ a• → cong ((_$ a•) ∘ U) f-coherence)
-    q
-squareᶜ f• f◦ f-coherence .charge c q i .• =
-  f• .charge c (q .•) i
-squareᶜ f• f◦ f-coherence .charge c q i .◦ =
-  f◦ .charge c (q .◦) i
-squareᶜ {A• = A•} {A◦ = A◦} {α = α} {B• = B•} {B◦ = B◦} {β = β} f• f◦ f-coherence .charge c q i .•→◦ =
-  isProp→PathP
-    (λ i → ●ᶜ ⟨ B◦ ⟩ᶜ .is-set
-      (β .U (f• .charge c (q .•) i))
-      (η• (f◦ .charge c (q .◦) i)))
-    (squareᶜ
-      {A• = A•} {A◦ = A◦} {α = α}
-      {B• = B•} {B◦ = B◦} {β = β}
-      f• f◦ f-coherence .U (Glueᶜ A• A◦ α .charge c q) .•→◦)
-    (Glueᶜ B• B◦ β .charge c
-      (squareᶜ
-        {A• = A•} {A◦ = A◦} {α = α}
-        {B• = B•} {B◦ = B◦} {β = β}
-        f• f◦ f-coherence .U q)
-      .•→◦)
-    i
+squareᶜ {B◦ = B◦} f• f◦ f-coherence .charge c q =
+  Σ≡Prop (λ _ → is-set (●ᶜ B◦) _ _)
+    (ΣPathP (f• .charge c (• q) , f◦ .charge c (◦ q)))
 
-⊸-Glueᶜ-≃ : {A : 𝒞} {F : 𝒞-FRACTURE}
-  → (A ⊸ 𝒞-Glue F)
-  ≃ (Σ[ (h◦ , h•) ∈ (A ⊸ ⟨ F .A◦ ⟩ᶜ) × (A ⊸ ⟨ F .A• ⟩ᶜ) ]
-      (h◦ ⨾ᶜ η•ᶜ ≡ h• ⨾ᶜ F .α•))
+⊸-Glueᶜ-≃ : {A : 𝒞} {F : Fractureᶜ}
+  → (A ⊸ fromFractureᶜ F)
+  ≃ (Σ[ (h• , h◦) ∈ (A ⊸ ⟨ F .A• ⟩ᶜ) × (A ⊸ ⟨ F .A◦ ⟩ᶜ) ]
+      (h• ⨾ᶜ F .α• ≡ h◦ ⨾ᶜ η•ᶜ))
 ⊸-Glueᶜ-≃ {A} {F} = isoToEquiv (iso fwd bwd sec ret)
   where
-    fwd : (A ⊸ 𝒞-Glue F)
-      → Σ[ (h◦ , h•) ∈ (A ⊸ ⟨ F .A◦ ⟩ᶜ) × (A ⊸ ⟨ F .A• ⟩ᶜ) ]
-          (h◦ ⨾ᶜ η•ᶜ ≡ h• ⨾ᶜ F .α•)
-    fwd k = (k ⨾ᶜ proj◦ᶜ F , k ⨾ᶜ proj•ᶜ F) ,
-      ⊸-path refl refl (funExt λ a → sym (k .U a .•→◦))
+    fwd : (A ⊸ fromFractureᶜ F)
+      → Σ[ (h• , h◦) ∈ (A ⊸ ⟨ F .A• ⟩ᶜ) × (A ⊸ ⟨ F .A◦ ⟩ᶜ) ]
+          (h• ⨾ᶜ F .α• ≡ h◦ ⨾ᶜ η•ᶜ)
+    fwd k = (k ⨾ᶜ proj•ᶜ F , k ⨾ᶜ proj◦ᶜ F) ,
+      ⊸-path refl refl (funExt λ a → •→◦ (k .U a))
 
-    bwd : (Σ[ (h◦ , h•) ∈ (A ⊸ ⟨ F .A◦ ⟩ᶜ) × (A ⊸ ⟨ F .A• ⟩ᶜ) ]
-            (h◦ ⨾ᶜ η•ᶜ ≡ h• ⨾ᶜ F .α•))
-      → (A ⊸ 𝒞-Glue F)
-    bwd ((h◦ , h•) , coh) .U a .• = h• .U a
-    bwd ((h◦ , h•) , coh) .U a .◦ = h◦ .U a
-    bwd ((h◦ , h•) , coh) .U a .•→◦ = sym (funExt⁻ (cong (λ w → w .U) coh) a)
-    bwd ((h◦ , h•) , coh) .charge c a =
-      Glue-path (⟨ F .A◦ ⟩ᶜ .is-set) (h• .charge c a) (h◦ .charge c a)
+    bwd : (Σ[ (h• , h◦) ∈ (A ⊸ ⟨ F .A• ⟩ᶜ) × (A ⊸ ⟨ F .A◦ ⟩ᶜ) ]
+            (h• ⨾ᶜ F .α• ≡ h◦ ⨾ᶜ η•ᶜ))
+      → (A ⊸ fromFractureᶜ F)
+    bwd ((h• , h◦) , coh) .U a =
+      (h• .U a , h◦ .U a) , funExt⁻ (cong (λ w → w .U) coh) a
+    bwd ((h• , h◦) , coh) .charge c a =
+      Glue-path (is-set ⟨ F .A◦ ⟩ᶜ) (h• .charge c a) (h◦ .charge c a)
 
     sec : section fwd bwd
-    sec ((h◦ , h•) , coh) =
+    sec ((h• , h◦) , coh) =
       Σ≡Prop (λ _ → isSet⊸ _ _)
         (ΣPathP (⊸-path refl refl refl , ⊸-path refl refl refl))
 
     ret : retract fwd bwd
-    ret k = ⊸-path refl refl (funExt λ a i → record
-      { • = k .U a .•
-      ; ◦ = k .U a .◦
-      ; •→◦ = ●ᶜ ⟨ F .A◦ ⟩ᶜ .is-set _ _
-          (bwd (fwd k) .U a .•→◦)
-          (k .U a .•→◦)
-          i
-      })
-
-Squareᶜ-pullback-≃ : {F G : 𝒞-FRACTURE}
-  → 𝒞-Square F G
-  ≃ (Σ[ (f◦ , f•) ∈ (⟨ F .A◦ ⟩ᶜ ⊸ ⟨ G .A◦ ⟩ᶜ) × (⟨ F .A• ⟩ᶜ ⊸ ⟨ G .A• ⟩ᶜ) ]
-      (F .α• ⨾ᶜ ●ᶜ.map f◦ ≡ f• ⨾ᶜ G .α•))
-Squareᶜ-pullback-≃ {F} {G} = isoToEquiv (iso fwd bwd sec ret)
-  where
-    fwd : 𝒞-Square F G
-      → Σ[ (f◦ , f•) ∈ (⟨ F .A◦ ⟩ᶜ ⊸ ⟨ G .A◦ ⟩ᶜ) × (⟨ F .A• ⟩ᶜ ⊸ ⟨ G .A• ⟩ᶜ) ]
-          (F .α• ⨾ᶜ ●ᶜ.map f◦ ≡ f• ⨾ᶜ G .α•)
-    fwd S = (S .𝒞-Square.f◦ , S .𝒞-Square.f•) ,
-      ⊸-path refl refl (funExt λ a• → sym (S .𝒞-Square.f-coh a•))
-
-    bwd : (Σ[ (f◦ , f•) ∈ (⟨ F .A◦ ⟩ᶜ ⊸ ⟨ G .A◦ ⟩ᶜ) × (⟨ F .A• ⟩ᶜ ⊸ ⟨ G .A• ⟩ᶜ) ]
-            (F .α• ⨾ᶜ ●ᶜ.map f◦ ≡ f• ⨾ᶜ G .α•))
-      → 𝒞-Square F G
-    bwd ((f◦ , f•) , coh) = record
-      { f• = f•
-      ; f◦ = f◦
-      ; f-coh = λ a• → sym (funExt⁻ (cong (λ w → w .U) coh) a•)
-      }
-
-    sec : section fwd bwd
-    sec w = Σ≡Prop (λ _ → isSet⊸ _ _) refl
-
-    ret : retract fwd bwd
-    ret S i = record
-      { f• = S .𝒞-Square.f•
-      ; f◦ = S .𝒞-Square.f◦
-      ; f-coh =
-          isPropΠ (λ a• → ●ᶜ ⟨ G .A◦ ⟩ᶜ .is-set _ _)
-            (bwd (fwd S) .𝒞-Square.f-coh)
-            (S .𝒞-Square.f-coh)
-            i
-      }
+    ret k = ⊸-path refl refl (funExt λ a →
+      Σ≡Prop (λ _ → is-set (●ᶜ ⟨ F .A◦ ⟩ᶜ) _ _) refl)

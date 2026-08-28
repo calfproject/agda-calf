@@ -1,4 +1,5 @@
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Univalence using (ua→; ua-gluePath)
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Structure
 
@@ -7,6 +8,7 @@ module Calf.Computation where
 open import Calf.Core.Abstract
 open import Calf.Value
 open import Calf.Core.Cost
+open import Cubical.Data.Nat using (ℕ; zero; suc) renaming (_+_ to _+ℕ_)
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.Isomorphism
@@ -15,21 +17,80 @@ open import Cubical.Foundations.Univalence using (ua; ua→; ua-gluePath)
 record 𝒞 : 𝒱₁ where
   field
     U : 𝒱
-    is-set : isSet U
+    is-preorder : isPreorder U
+
+  is-set : isSet U
+  is-set = isPreorder→isSet is-preorder
 
   field
     charge : ℂ → U → U
-    charge/0 : ∀ {a} → charge 0ℂ a ≡ a
-    charge/+ : ∀ {a c₁ c₂} → charge (c₁ +ℂ c₂) a ≡ charge c₁ (charge c₂ a)
+    charge-0 : ∀ {a} → charge 0ℂ a ≡ a
+    charge-+ : ∀ {a c₁ c₂} → charge (c₁ +ℂ c₂) a ≡ charge c₁ (charge c₂ a)
 
   opaque
-    charge/comm : ∀ {c} {c'} {a}
+    charge-comm : ∀ {c} {c'} {a}
       → charge c (charge c' a) ≡ charge c' (charge c a)
-    charge/comm = sym charge/+ ∙ cong (flip charge _) (+ℂ-comm _ _) ∙ charge/+
+    charge-comm = sym charge-+ ∙ cong (flip charge _) (+ℂ-comm _ _) ∙ charge-+
+
+  charge-BEH : ∀ {c} {a} → BEH → charge c a ≡ a
+  charge-BEH {c} {a} beh =
+    cong (flip charge a) (isContr→isProp (isAlgorithmicℂ beh) c 0ℂ) ∙ charge-0
+
+  chargeℕ : ℕ → U → U
+  chargeℕ zero a = a
+  chargeℕ (suc n) a = charge 1ℂ (chargeℕ n a)
+
+  chargeℕ-charge : ∀ n {a} → chargeℕ n a ≡ charge (# n) a
+  chargeℕ-charge zero = sym charge-0
+  chargeℕ-charge (suc n) = cong (charge 1ℂ) (chargeℕ-charge n) ∙ sym charge-+
+
+  chargeℕ-+ : ∀ m n {a} → chargeℕ (m +ℕ n) a ≡ chargeℕ m (chargeℕ n a)
+  chargeℕ-+ zero n = refl
+  chargeℕ-+ (suc m) n = cong (charge 1ℂ) (chargeℕ-+ m n)
+
+  chargeℕ-BEH : ∀ n {a} → BEH → chargeℕ n a ≡ a
+  chargeℕ-BEH zero beh = refl
+  chargeℕ-BEH (suc n) beh = charge-BEH beh ∙ chargeℕ-BEH n beh
 open 𝒞 public
 
 variable
   A B C : 𝒞
+
+Uₚ : 𝒞 → 𝒱ₚ
+Uₚ A = U A , A .is-preorder
+
+⊑-syntax : U A → U A → 𝒱
+⊑-syntax {A} = _⊑_ {U A}
+
+syntax ⊑-syntax {A} a a' = a ⊑[ A ] a'
+
+module ⊑-Reasoning (A : 𝒞) where
+  open import Relation.Binary
+
+  ≡-isEquivalence : IsEquivalence (_≡_ {A = U A})
+  ≡-isEquivalence = record { refl = refl ; sym = sym ; trans = _∙_ }
+
+  open Preorder hiding (refl)
+  open IsPreorder hiding (refl)
+
+  ⊑-preorder : Preorder _ _ _
+  ⊑-preorder .Carrier = U A
+  ⊑-preorder ._≈_ = _≡_
+  ⊑-preorder ._≲_ = _⊑_ {U A}
+  ⊑-preorder .Preorder.isPreorder .isEquivalence = ≡-isEquivalence
+  ⊑-preorder .Preorder.isPreorder .reflexive = ⊑-reflexive
+  ⊑-preorder .Preorder.isPreorder .trans = ⊑-trans (A .is-preorder)
+
+  open import Relation.Binary.Reasoning.Preorder ⊑-preorder as P public
+    renaming (_∎ to _∎ᴾ)
+
+  infixr 2 step-⊑
+  step-⊑ = step-≲
+  syntax step-⊑ x yRz x⊑ᵛy = x ⊑⟨ x⊑ᵛy ⟩ yRz
+
+  infixr 2 step-≡'
+  step-≡' = step-≈
+  syntax step-≡' x yRz x⊑ᵛy = x ≡ᴾ⟨ x⊑ᵛy ⟩ yRz
 
 infix 1 _⊸_
 record _⊸_ (A B : 𝒞) : 𝒱 where
@@ -53,9 +114,9 @@ _⨾ᶜ_ : (A ⊸ B) → (B ⊸ C) → (A ⊸ C)
 (f ⨾ᶜ g) .U = g .U ∘ f .U
 (f ⨾ᶜ g) .charge c a = cong (g .U) (f .charge c a) ∙ g .charge c (f .U a)
 
-CHARGE : ℂ → A ⊸ A
-CHARGE {A} c .U = charge A c
-CHARGE {A} c .charge c' a = charge/comm A {c} {c'} {a}
+chargeᶜ : ℂ → A ⊸ A
+chargeᶜ {A} c .U = charge A c
+chargeᶜ {A} c .charge c' a = charge-comm A {c} {c'} {a}
 
 opaque
   isPropCharge/0
@@ -83,36 +144,41 @@ opaque
 𝒞-path {A} {B} U-path charge-path i =
   record
     { U = U-path i
-    ; is-set = isSetUi i
+    ; is-preorder =
+      isProp→PathP
+        (λ i → isPropIsPreorder {X = U-path i})
+        (A .is-preorder)
+        (B .is-preorder)
+        i
     ; charge = charge-path i
-    ; charge/0 =
+    ; charge-0 =
         isProp→PathP
           (λ i → isPropCharge/0 {U = U-path i} {isSetUi i} (charge-path i))
-          (A .charge/0)
-          (B .charge/0)
+          (A .charge-0)
+          (B .charge-0)
           i
-    ; charge/+ =
+    ; charge-+ =
         isProp→PathP
           (λ i → isPropCharge/+ {U = U-path i} {isSetUi i} (charge-path i))
-          (A .charge/+)
-          (B .charge/+)
+          (A .charge-+)
+          (B .charge-+)
           i
     }
   where
     opaque
-      isSetUi : PathP (λ i → isSet (U-path i)) (A .is-set) (B .is-set)
+      isSetUi : PathP (λ i → isSet (U-path i)) (is-set A) (is-set B)
       isSetUi =
         isProp→PathP
           (λ i → isPropIsSet {A = U-path i})
-          (A .is-set)
-          (B .is-set)
+          (is-set A)
+          (is-set B)
 
 opaque
   isProp⊸charge
     : (A B : 𝒞) (f : U A → U B)
     → isProp ((c : ℂ) (a : U A) → f (A .charge c a) ≡ B .charge c (f a))
   isProp⊸charge A B f =
-    isPropΠ2 λ c a → B .is-set (f (A .charge c a)) (B .charge c (f a))
+    isPropΠ2 λ c a → is-set B (f (A .charge c a)) (B .charge c (f a))
 
 opaque
   ⊸-path
@@ -145,43 +211,30 @@ opaque
   isSet⊸ : isSet (A ⊸ B)
   isSet⊸ {A} {B} =
     isOfHLevelRetractFromIso 2 ⊸-Σ-Iso
-      (isSetΣ (isSet→ (B .is-set)) λ h → isProp→isSet (isProp⊸charge A B h))
+      (isSetΣ (isSet→ (is-set B)) λ h → isProp→isSet (isProp⊸charge A B h))
 
-CHARGE-commute
+chargeᶜ-commute
   : ∀ c (e : A ⊸ B)
-  → CHARGE c ⨾ᶜ e ≡ e ⨾ᶜ CHARGE c
-CHARGE-commute c e =
+  → chargeᶜ c ⨾ᶜ e ≡ e ⨾ᶜ chargeᶜ c
+chargeᶜ-commute c e =
   ⊸-path refl refl (funExt λ a → e .charge c a)
 
-CHARGE-comm : ∀ c₁ c₂ → CHARGE {A} c₁ ⨾ᶜ CHARGE c₂ ≡ CHARGE c₂ ⨾ᶜ CHARGE c₁
-CHARGE-comm c₁ c₂ = CHARGE-commute c₁ (CHARGE c₂)
+chargeᶜ-comm : ∀ c₁ c₂ → chargeᶜ {A} c₁ ⨾ᶜ chargeᶜ c₂ ≡ chargeᶜ c₂ ⨾ᶜ chargeᶜ c₁
+chargeᶜ-comm c₁ c₂ = chargeᶜ-commute c₁ (chargeᶜ c₂)
 
-CHARGE-0 : CHARGE {A} 0ℂ ≡ idᶜ
-CHARGE-0 {A = A} =
-  ⊸-path refl refl (funExt λ a → A .charge/0)
+chargeᶜ-0 : chargeᶜ {A} 0ℂ ≡ idᶜ
+chargeᶜ-0 {A = A} =
+  ⊸-path refl refl (funExt λ a → A .charge-0)
 
-CHARGE-+ : ∀ c₁ c₂ → CHARGE {A} (c₁ +ℂ c₂) ≡ CHARGE c₂ ⨾ᶜ CHARGE c₁
-CHARGE-+ {A = A} c₁ c₂ =
-  ⊸-path refl refl (funExt λ a → A .charge/+)
+chargeᶜ-+ : ∀ c₁ c₂ → chargeᶜ {A} (c₁ +ℂ c₂) ≡ chargeᶜ c₂ ⨾ᶜ chargeᶜ c₁
+chargeᶜ-+ {A = A} c₁ c₂ =
+  ⊸-path refl refl (funExt λ a → A .charge-+)
 
-idᶜ⨾ᶜf≡f : (f : A ⊸ B) → idᶜ ⨾ᶜ f ≡ f
-idᶜ⨾ᶜf≡f f = ⊸-path refl refl refl
+⨾ᶜ-identityˡ : (f : A ⊸ B) → idᶜ ⨾ᶜ f ≡ f
+⨾ᶜ-identityˡ f = ⊸-path refl refl refl
 
-f⨾ᶜidᶜ≡f : (f : A ⊸ B) → f ⨾ᶜ idᶜ ≡ f
-f⨾ᶜidᶜ≡f f = ⊸-path refl refl (funExt (λ x → refl))
-
-charge-path-inv
-  : {X Y : 𝒱}
-  → (e : X ≃ Y)
-  → (chargeX : ℂ → X → X)
-  → (chargeY : ℂ → Y → Y)
-  → ((c : ℂ) (y : Y) → invEq e (chargeY c y) ≡ chargeX c (invEq e y))
-  → PathP
-      (λ i → ℂ → ua (invEquiv e) i → ua (invEquiv e) i)
-      chargeY
-      chargeX
-charge-path-inv e chargeX chargeY h =
-  funExt λ c → ua→ λ y → ua-gluePath (invEquiv e) (h c y)
+⨾ᶜ-identityʳ : (f : A ⊸ B) → f ⨾ᶜ idᶜ ≡ f
+⨾ᶜ-identityʳ f = ⊸-path refl refl (funExt (λ x → refl))
 
 opaque
   charge-path
@@ -209,6 +262,22 @@ conservativity {A} {B} f f-equiv =
 uaᶜ : A ≃ᶜ B → A ≡ B
 uaᶜ = uncurry conservativity
 
+conservativity-⊸ :
+  {A A' B B' : 𝒞} (e : A ⊸ A') (ee : isEquivᶜ e) (e' : B ⊸ B') (ee' : isEquivᶜ e')
+  {f : A ⊸ B} {g : A' ⊸ B'}
+  → f ⨾ᶜ e' ≡ e ⨾ᶜ g
+  → PathP (λ i → conservativity e ee i ⊸ conservativity e' ee' i) f g
+conservativity-⊸ e ee e' ee' nat =
+  ⊸-path (conservativity e ee) (conservativity e' ee')
+    (ua→ {e = e .U , ee} λ a → ua-gluePath (e' .U , ee') (funExt⁻ (cong U nat) a))
+
+opaque
+  uaᶜ-⊸ :
+    {A A' B B' : 𝒞} (e : A ≃ᶜ A') (e' : B ≃ᶜ B') {f : A ⊸ B} {g : A' ⊸ B'}
+    → f ⨾ᶜ e' .fst ≡ e .fst ⨾ᶜ g
+    → PathP (λ i → uaᶜ e i ⊸ uaᶜ e' i) f g
+  uaᶜ-⊸ (e , ee) (e' , ee') = conservativity-⊸ e ee e' ee'
+
 invEquivᶜ : (f : A ⊸ B) → isEquivᶜ f → B ⊸ A
 invEquivᶜ {A} {B} f fe .U = invEq (f .U , fe)
 invEquivᶜ {A} {B} f fe .charge c b =
@@ -223,17 +292,10 @@ _∙ₑᶜ_ : A ≃ᶜ B → B ≃ᶜ C → A ≃ᶜ C
 (e ∙ₑᶜ f) .fst = e .fst ⨾ᶜ f .fst
 (e ∙ₑᶜ f) .snd = ((e .fst .U , e .snd) ∙ₑ (f .fst .U , f .snd)) .snd
 
-⊸-inv : (e : B ⊸ C) → isEquivᶜ e → C ⊸ B
-⊸-inv e h .U = invIsEq h
-⊸-inv {B = B} {C = C} e h .charge c x =
-    sym (cong (invIsEq h)
-      (e .charge c (invIsEq h x) ∙ cong (C .charge c) (secIsEq h x)))
-  ∙ retIsEq h (B .charge c (invIsEq h x))
-
 ⊸-postcomp-isEquiv : {A B C : 𝒞} (e : B ⊸ C) → isEquivᶜ e
   → isEquiv (λ (f : A ⊸ B) → f ⨾ᶜ e)
 ⊸-postcomp-isEquiv e h =
-  isoToIsEquiv (iso (_⨾ᶜ e) (_⨾ᶜ ⊸-inv e h)
+  isoToIsEquiv (iso (_⨾ᶜ e) (_⨾ᶜ invEquivᶜ e h)
     (λ g → ⊸-path refl refl (funExt λ a → secIsEq h (g .U a)))
     (λ f → ⊸-path refl refl (funExt λ a → retIsEq h (f .U a))))
 

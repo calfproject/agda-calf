@@ -1,8 +1,8 @@
 open import Calf.Core.Abstract
 open import Calf.Value
+open import Calf.Value.Product
 open import Calf.Value.Sigma
 
-open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Isomorphism
@@ -18,8 +18,8 @@ module Calf.Value.Open where
 ◯ : 𝒱 → 𝒱
 ◯ X = (abs : ⟨ ABS ⟩) → X
 
-◯' : (⟨ ABS ⟩ → 𝒱) → 𝒱
-◯' X = (abs : ⟨ ABS ⟩) → X abs
+◯Π : (⟨ ABS ⟩ → 𝒱) → 𝒱
+◯Π X = (abs : ⟨ ABS ⟩) → X abs
 
 η◦ : X → ◯ X
 η◦ x _ = x
@@ -27,21 +27,21 @@ module Calf.Value.Open where
 isModal : 𝒱 → 𝒱
 isModal X = isEquiv (η◦ {X = X})
 
-◯'-isModal : {X : ⟨ ABS ⟩ → 𝒱} → isModal (◯' X)
-◯'-isModal {X = X} = isoToIsEquiv (iso η◦ join' sec ret)
+isModal◯Π : {X : ⟨ ABS ⟩ → 𝒱} → isModal (◯Π X)
+isModal◯Π {X = X} = isoToIsEquiv (iso η◦ join′ sec ret)
   where
-    join' : ◯ (◯' X) → ◯' X
-    join' x abs = x abs abs
+    join′ : ◯ (◯Π X) → ◯Π X
+    join′ x abs = x abs abs
 
-    sec : (x : ◯ (◯' X)) → η◦ (join' x) ≡ x
+    sec : (x : ◯ (◯Π X)) → η◦ (join′ x) ≡ x
     sec x = funExt λ abs → funExt λ abs' → cong (λ a → x a abs') (str ABS abs' abs)
 
-    ret : (x : ◯' X) → join' (η◦ x) ≡ x
+    ret : (x : ◯Π X) → join′ (η◦ x) ≡ x
     ret x = refl
 
 opaque
   isModal◯ : isModal (◯ X)
-  isModal◯ = ◯'-isModal
+  isModal◯ = isModal◯Π
 
 ◯Modality : Modality _
 ◯Modality .Modality.◯ = ◯
@@ -55,7 +55,7 @@ opaque
 ◯Modality .Modality.◯-elim-β {X} {Y} isModalY f x =
   retIsEq (isModalY (η◦ x)) (subst Y refl (f x)) ∙ substRefl {B = Y} (f x)
 ◯Modality .Modality.◯-=-isModal x◦ x◦' =
-  subst isModal (ua funExtEquiv) (◯'-isModal {X = λ abs → x◦ abs ≡ x◦' abs})
+  subst isModal (ua funExtEquiv) (isModal◯Π {X = λ abs → x◦ abs ≡ x◦' abs})
 
 open Modality ◯Modality public
   renaming
@@ -111,24 +111,21 @@ isConnected→◯isContr c abs .snd x = funExt⁻ (c .snd (λ _ → x)) abs
 
 opaque
   isLex◯ : IsLex◯
-  isLex◯ =
-    subst isEquiv
-      (funExt $
-        Modality.◯-elim ◯Modality
-          (λ _ → Modality.isModal≡ ◯Modality η-=-isModal)
-          (sym ∘ Modality.◯-rec-β ◯Modality η-=-isModal (cong η◦)))
-      (equivIsEquiv funExtEquiv)
+  isLex◯ = reflection-isEquiv η-=-isModal (isConnectedMap-∘ₑ funExtEquiv isConnectedMapη)
 
 opaque
   isSet◯ : isSet X → isSet (◯ X)
   isSet◯ = isSet◯-lex isLex◯
 
+isPreorder◯ : isPreorder X → isPreorder (◯ X)
+isPreorder◯ isPreorderX = isLocalΠ λ _ → isPreorderX
+
 ◯-pullback : {X Y Z : 𝒱} {f : X → Z} {g : Y → Z} →
-  ◯ (Σ[ x ∈ X ] Σ[ y ∈ Y ] (f x ≡ g y))
-  ≃ (Σ[ x◦ ∈ ◯ X ] Σ[ y◦ ∈ ◯ Y ] (map f x◦ ≡ map g y◦))
+  ◯ (Σ[ (x , y) ∈ X × Y ] (f x ≡ g y))
+  ≃ (Σ[ (x◦ , y◦) ∈ ◯ X × ◯ Y ] (map f x◦ ≡ map g y◦))
 ◯-pullback {X} {Y} {Z} {f} {g} =
   ◯-pullback-lex isLex◯
-  ∙ₑ Σ-cong-equiv-snd λ x◦ → Σ-cong-equiv-snd λ y◦ →
+  ∙ₑ Σ-cong-equiv-snd λ (x◦ , y◦) →
       compPathrEquiv (funExt⁻ (funExt⁻ map′≡map g) y◦)
     ∙ₑ compPathlEquiv (sym (funExt⁻ (funExt⁻ map′≡map f) x◦))
 

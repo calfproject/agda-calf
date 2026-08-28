@@ -42,7 +42,7 @@ _⊢_ : Context → 𝒞 → Type
 idᴳ :
   q ⋎₀
   → A , q ⊢ A
-idᴳ {q} {A} split = transport (cong (_⊸ A) (sym ▷/0 ∙ cong (▷[_] _) split)) idᶜ
+idᴳ {q} {A} split = transport (cong (_⊸ A) (sym ▷-0 ∙ cong (▷[_] _) split)) idᶜ
 
 letᴳ :
   q ⋎₂ (q₁ , q₂)
@@ -50,18 +50,16 @@ letᴳ :
   → B , q₂ ⊢ C
   → A , q ⊢ C
 letᴳ {C = C} split e1 e2 =
-  transport (cong (_⊸ C) (sym ▷/+ ∙ cong (▷[_] _) (+ℂ-comm _ _ ∙ split))) ((▷-map e1) ⨾ᶜ e2)
+  transport (cong (_⊸ C) (sym ▷-+ ∙ cong (▷[_] _) (+ℂ-comm _ _ ∙ split))) ((▷-map e1) ⨾ᶜ e2)
 
 cmpᴳ : 𝒞 → Type
 cmpᴳ = ⊤ , 0ℂ ⊢_
 
 cmpᴳ→cmp : cmpᴳ A → U A
-cmpᴳ→cmp e = e .U (subst U (sym (▷/0 {⊤})) 0ℂ)
+cmpᴳ→cmp e = e .U (subst U (sym (▷-0 {⊤})) 0ℂ)
 
 cmp→cmpᴳ : U A → cmpᴳ A
-cmp→cmpᴳ {A} e =
-  subst (_⊸ A) (sym ▷/0) $
-  record { U = flip (A .charge) e ; charge = λ _ _ → A .charge/+ }
+cmp→cmpᴳ = ▷⊤-rec
 
 module _ where
   substᵐᴳ :
@@ -96,7 +94,7 @@ module _ where
     → q ⋎₂ (p , q')
     → Δ , q' ⊢ A
     → Δ , q ⊢ ▷[ p ] A
-  storeᴳ {A = A} p split e = subst (_⊸ ▷[ p ] A) (sym ▷/+ ∙ cong (▷[_] _) split) (▷-map e)
+  storeᴳ {A = A} p split e = subst (_⊸ ▷[ p ] A) (sym ▷-+ ∙ cong (▷[_] _) split) (▷-map e)
 
   releaseᴳ :
     Δ , q ⊢ ▷[ p ] B
@@ -115,51 +113,51 @@ module _ where
     → q' ⋎₂ (p , q)
     → Δ , q' ⊢ A
     → Δ , q ⊢ ◁[ p ] A
-  getᴳ {A = A} p split = transport (sym (▷⊣◁ ∙ cong (_⊸ A) (sym ▷/+ ∙ cong (▷[_] _) split)))
+  getᴳ {A = A} p split = transport (sym (▷⊣◁ ∙ cong (_⊸ A) (sym ▷-+ ∙ cong (▷[_] _) split)))
 
   payᴳ :
     q ⋎₂ (p , q')
     → Δ , q' ⊢ ◁[ p ] A
     → Δ , q ⊢ A
-  payᴳ {A = A} split = transport (▷⊣◁ ∙ cong (_⊸ A) (sym ▷/+ ∙ cong (▷[_] _) split))
+  payᴳ {A = A} split = transport (▷⊣◁ ∙ cong (_⊸ A) (sym ▷-+ ∙ cong (▷[_] _) split))
 
 module _ where
-  nil₁ᴳ : cmpᴳ (CList₁ p X)
-  nil₁ᴳ = cmp→cmpᴳ cnil₁
+  nil₁ᴳ : cmpᴳ (CList₁ p X₌)
+  nil₁ᴳ = cmp→cmpᴳ nil₁
 
   cons₁ᴳ :
     q ⋎₂ (p , q')
-    → X
-    → Δ , q' ⊢ CList₁ p X
-    → Δ , q ⊢ CList₁ p X
-  cons₁ᴳ split x e = storeᴳ _ split e ⨾ᶜ ccons₁ x
+    → ⟨ X₌ ⟩
+    → Δ , q' ⊢ CList₁ p X₌
+    → Δ , q ⊢ CList₁ p X₌
+  cons₁ᴳ split x e = storeᴳ _ split e ⨾ᶜ cons₁ x
 
   foldr₁ᴳ :
     cmpᴳ A
-    → (X → A , p ⊢ A)
-    → Δ , q ⊢ CList₁ p X
+    → (⟨ X₌ ⟩ → A , p ⊢ A)
+    → Δ , q ⊢ CList₁ p X₌
     → Δ , q ⊢ A
-  foldr₁ᴳ e-nil e-cons e = e ⨾ᶜ cfoldr₁ (cmpᴳ→cmp e-nil) e-cons
+  foldr₁ᴳ e-nil e-cons e = e ⨾ᶜ foldr₁ (cmpᴳ→cmp e-nil) e-cons
 
 module _ where
-  nil₂ᴳ : q ⋎₀ → ⊤ , q ⊢ (CList₂ p₁ p₂ X)
-  nil₂ᴳ split = subst (λ x → ▷[ x ] _ ⊸ _) split (cmp→cmpᴳ cnil₂)
+  nil₂ᴳ : q ⋎₀ → ⊤ , q ⊢ (CList₂ p₁ p₂ X₌)
+  nil₂ᴳ split = subst (λ x → ▷[ x ] _ ⊸ _) split (cmp→cmpᴳ nil₂)
 
   cons₂ᴳ :
     q ⋎₂ (p₁ , q')
-    → X
-    → Δ , q' ⊢ CList₂ (p₂ +ℂ p₁) p₂ X
-    → Δ , q ⊢ CList₂ p₁ p₂ X
+    → ⟨ X₌ ⟩
+    → Δ , q' ⊢ CList₂ (p₂ +ℂ p₁) p₂ X₌
+    → Δ , q ⊢ CList₂ p₁ p₂ X₌
   cons₂ᴳ split-q x e =
-    storeᴳ _ split-q e ⨾ᶜ ccons₂ x
+    storeᴳ _ split-q e ⨾ᶜ cons₂ x
 
   foldr₂ᴳ :
     (A : ℂ → 𝒞)
     → (∀ r → cmpᴳ (A r))
-    → (∀ r → X → A (p₂ +ℂ r) , r ⊢ A r)
-    → Δ , q ⊢ CList₂ p₁ p₂ X
+    → (∀ r → ⟨ X₌ ⟩ → A (p₂ +ℂ r) , r ⊢ A r)
+    → Δ , q ⊢ CList₂ p₁ p₂ X₌
     → Δ , q ⊢ A p₁
-  foldr₂ᴳ A e-nil e-cons e = e ⨾ᶜ cfoldr₂ A (cmpᴳ→cmp ∘ e-nil) e-cons
+  foldr₂ᴳ A e-nil e-cons e = e ⨾ᶜ foldr₂ A (cmpᴳ→cmp ∘ e-nil) e-cons
 
 module _ where
   pairᴳ :
@@ -182,9 +180,9 @@ module _ where
   powlamᴳ :
     (X → Δ , q ⊢ A)
     → Δ , q ⊢ X ⇀ A
-  powlamᴳ {X = X} = powlam {X = X}
+  powlamᴳ {X = X} = ⇀-lam {X = X}
 
   powappᴳ :
     X → Δ , q ⊢ X ⇀ A
     → Δ , q ⊢ A
-  powappᴳ {X = X} x e = powapp {X = X} e x
+  powappᴳ {X = X} x e = ⇀-app {X = X} e x
