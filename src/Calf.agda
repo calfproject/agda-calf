@@ -41,6 +41,7 @@ import Calf.Computation.Tensor
 import Calf.Computation.Unit
 
 import Calf.Giralf
+import Calf.Giralf.Nat
 
 import Examples
 

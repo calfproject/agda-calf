@@ -6,4 +6,4 @@ import Examples.Giralf.Id
 import Examples.Giralf.InsertionSort
 import Examples.Giralf.Reverse
 
--- import Examples.Giralf.Inference
+import Examples.Giralf.Inference

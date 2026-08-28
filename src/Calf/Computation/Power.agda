@@ -26,3 +26,11 @@ opaque
   powapp : A ⊸ (X ⇀ B) → X → A ⊸ B
   powapp e x .U a = e .U a x
   powapp e x .charge c a = cong (_$ x) (e .charge c a)
+
+  Πᶜ-lam : {C : X → 𝒞} → ((x : X) → A ⊸ C x) → A ⊸ Πᶜ X C
+  Πᶜ-lam e .U a x = e x .U a
+  Πᶜ-lam e .charge c a = funExt λ x → e x .charge c a
+
+  Πᶜ-app : {C : X → 𝒞} (x : X) → Πᶜ X C ⊸ C x
+  Πᶜ-app x .U e = e x
+  Πᶜ-app x .charge c e = refl
