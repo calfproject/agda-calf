@@ -14,135 +14,226 @@ open import Cubical.Data.Nat.Order using (_≤_)
 open import Cubical.Data.Vec
 open import Calf.Computation
 
-open import Calf.Solver.Nat using (solveNat0; solveNat)
-
 open import Cubical.Data.Bool hiding (_≤_)
 import Cubical.Data.Nat.Properties as Nat
 open import Cubical.Data.Nat.Order
+open <-Reasoning
 open import Cubical.Relation.Nullary
 
+one≤-of-suc≤ : ∀ {q p : ℕ} → suc q ≤ p → 1 ≤ p
+one≤-of-suc≤ h = 1 ≤⟨ suc-≤-suc zero-≤ ⟩ h
+
+one-plus-pred : ∀ {n : ℕ} → 1 ≤ n → 1 + (n ∸ 1) ≡ n
+one-plus-pred {n} h =
+  1 + (n ∸ 1)       ≡⟨ Nat.+-comm 1 (n ∸ 1) ⟩
+  (n ∸ 1) + 1       ≡⟨ ≤-∸-+-cancel h ⟩
+  n                 ∎
+
+pred-plus-cancel : ∀ (k : ℕ) {n : ℕ} → 1 ≤ n → ((k + n) ∸ 1) ∸ k ≡ n ∸ 1
+pred-plus-cancel k {n} h =
+  ((k + n) ∸ 1) ∸ k       ≡⟨ cong (_∸ k) (sym (≤-∸-k h)) ⟩
+  (k + (n ∸ 1)) ∸ k       ≡⟨ Nat.∸+ (n ∸ 1) k ⟩
+  n ∸ 1                   ∎
+
+pred-plus-left : ∀ {m : ℕ} (n : ℕ) → 1 ≤ m → (m + n) ∸ 1 ≡ (m ∸ 1) + n
+pred-plus-left {m} n h =
+  (m + n) ∸ 1       ≡⟨ cong (_∸ 1) (Nat.+-comm m n) ⟩
+  (n + m) ∸ 1       ≡⟨ sym (≤-∸-k h) ⟩
+  n + (m ∸ 1)       ≡⟨ Nat.+-comm n (m ∸ 1) ⟩
+  (m ∸ 1) + n       ∎
+
+pred-plus-cancel-left : ∀ {m : ℕ} (n : ℕ) → 1 ≤ m → ((m + n) ∸ 1) ∸ (m ∸ 1) ≡ n
+pred-plus-cancel-left {m} n h =
+  ((m + n) ∸ 1) ∸ (m ∸ 1)       ≡⟨ cong (_∸ (m ∸ 1)) (pred-plus-left n h) ⟩
+  ((m ∸ 1) + n) ∸ (m ∸ 1)       ≡⟨ Nat.∸+ n (m ∸ 1) ⟩
+  n                             ∎
+
+split-pred : ∀ {q p : ℕ} → (h : suc q ≤ p) → q + ((p ∸ 1) ∸ q) ≡ p ∸ 1
+split-pred {q} {p} h =
+  q + ((p ∸ 1) ∸ q)       ≡⟨ Nat.+-comm q ((p ∸ 1) ∸ q) ⟩
+  ((p ∸ 1) ∸ q) + q       ≡⟨ ≤-∸-+-cancel (≤-∸-≤ (suc q) p 1 h) ⟩
+  p ∸ 1                   ∎
+
+nested-cancel : ∀ {q p : ℕ} (h : suc q ≤ p) →
+  ((((p ∸ 1) ∸ q) + (p ∸ 1)) ∸ ((p ∸ 1) ∸ q)) ∸ (((p ∸ 1) ∸ q) + q) ≡ 0
+nested-cancel {q} {p} h =
+  ((r + s) ∸ r) ∸ (r + q)       ≡⟨ cong (_∸ (r + q)) (Nat.∸+ s r) ⟩
+  s ∸ (r + q)                   ≡⟨ cong (s ∸_) (Nat.+-comm r q) ⟩
+  s ∸ (q + r)                   ≡⟨ cong (_∸ (q + r)) (sym (split-pred h)) ⟩
+  (q + r) ∸ (q + r)             ≡⟨ Nat.n∸n (q + r) ⟩
+  0                             ∎
+  where
+  r = (p ∸ 1) ∸ q
+  s = p ∸ 1
+
 arithmetic-0 : ∀ {l1 q2 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ l1
-arithmetic-0 h = solveNat h
+arithmetic-0 h = h
 
 arithmetic-1 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → ((p5 ∸ 1) ∸ q2) + ((((p5 ∸ 1) ∸ q2) + 0) ∸ ((p5 ∸ 1) ∸ q2)) ≡ ((p5 ∸ 1) ∸ q2) + 0
-arithmetic-1 h h' = solveNat (h , h')
+arithmetic-1 {q2 = q} {p5 = p} _ _ =
+  cong (((p ∸ 1) ∸ q) +_) (Nat.∸+ 0 ((p ∸ 1) ∸ q))
 
 arithmetic-2 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → 0 ≡ ((((p5 ∸ 1) ∸ q2) + 0) ∸ ((p5 ∸ 1) ∸ q2))
-arithmetic-2 h h' = solveNat (h , h')
+arithmetic-2 {q2 = q} {p5 = p} _ _ = sym (Nat.∸+ 0 ((p ∸ 1) ∸ q))
 
 arithmetic-3 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → 1 + ((((p5 ∸ 1) ∸ q2) + p5) ∸ 1) ≡ ((p5 ∸ 1) ∸ q2) + p5
-arithmetic-3 h h' = solveNat (h , h')
+arithmetic-3 _ h = one-plus-pred (1 ≤⟨ one≤-of-suc≤ h ⟩ ≤SumRight)
 
 arithmetic-4 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → ((p5 ∸ 1) ∸ q2) + (((((p5 ∸ 1) ∸ q2) + p5) ∸ 1) ∸ ((p5 ∸ 1) ∸ q2)) ≡ ((((p5 ∸ 1) ∸ q2) + p5) ∸ 1)
-arithmetic-4 h h' = solveNat (h , h')
+arithmetic-4 {q2 = q} {p5 = p} _ h =
+  r + (((r + p) ∸ 1) ∸ r)       ≡⟨ cong (r +_) (pred-plus-cancel r (one≤-of-suc≤ h)) ⟩
+  r + (p ∸ 1)                   ≡⟨ ≤-∸-k (one≤-of-suc≤ h) ⟩
+  (r + p) ∸ 1                   ∎
+  where
+  r = (p ∸ 1) ∸ q
 
 arithmetic-5 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → ((((q2 + p5) ∸ 1) ∸ q2) + 0) ≡ (((((p5 ∸ 1) ∸ q2) + p5) ∸ 1) ∸ ((p5 ∸ 1) ∸ q2))
-arithmetic-5 h h' = solveNat (h , h')
+arithmetic-5 {q2 = q} {p5 = p} _ h =
+  (((q + p) ∸ 1) ∸ q) + 0       ≡⟨ cong (_+ 0) (pred-plus-cancel q (one≤-of-suc≤ h)) ⟩
+  (p ∸ 1) + 0                   ≡⟨ Nat.+-zero (p ∸ 1) ⟩
+  p ∸ 1                         ≡⟨ sym (pred-plus-cancel r (one≤-of-suc≤ h)) ⟩
+  ((r + p) ∸ 1) ∸ r             ∎
+  where
+  r = (p ∸ 1) ∸ q
 
 arithmetic-6 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → (((q2 + p5) ∸ 1) ∸ q2) ≡ q2 + ((p5 ∸ 1) ∸ q2)
-arithmetic-6 h h' = solveNat (h , h')
+arithmetic-6 {q2 = q} {p5 = p} _ h =
+  ((q + p) ∸ 1) ∸ q       ≡⟨ pred-plus-cancel q (one≤-of-suc≤ h) ⟩
+  p ∸ 1                   ≡⟨ sym (split-pred h) ⟩
+  q + ((p ∸ 1) ∸ q)       ∎
 
 arithmetic-7 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → q2 ≡ q2
-arithmetic-7 _ _ = solveNat0
+arithmetic-7 _ _ = refl
 
 arithmetic-8 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → suc q2 ≤ q2 + p5
-arithmetic-8 h h' = solveNat (h , h')
+arithmetic-8 _ h = suc _ ≤⟨ h ⟩ ≤SumRight
 
 arithmetic-9-left : ∀ {l1 q2 : ℕ} → 1 ≤ l1 → suc q2 ≤ l1 → 1 ≤ l1
-arithmetic-9-left h h' = solveNat (h , h')
+arithmetic-9-left h _ = h
 
 arithmetic-9-right : ∀ {l1 q2 : ℕ} → 1 ≤ l1 → suc q2 ≤ l1 → 1 + q2 ≤ l1
-arithmetic-9-right h h' = solveNat (h , h')
+arithmetic-9-right _ h = h
 
 arithmetic-10 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → ((p5 ∸ 1) ∸ q2) + ((((p5 ∸ 1) ∸ q2) + 0) ∸ ((p5 ∸ 1) ∸ q2)) ≡ ((p5 ∸ 1) ∸ q2) + 0
-arithmetic-10 h h' = solveNat (h , h')
+arithmetic-10 = arithmetic-1
 
 arithmetic-11 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → 0 ≡ ((((p5 ∸ 1) ∸ q2) + 0) ∸ ((p5 ∸ 1) ∸ q2))
-arithmetic-11 h h' = solveNat (h , h')
+arithmetic-11 = arithmetic-2
 
 arithmetic-12 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → zero ≡ zero
-arithmetic-12 _ _ = solveNat0
+arithmetic-12 _ _ = refl
 
 arithmetic-13 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → 1 + (p5 ∸ 1) ≡ p5
-arithmetic-13 h h' = solveNat (h , h')
+arithmetic-13 _ h = one-plus-pred (one≤-of-suc≤ h)
 
 arithmetic-14 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → ((p5 ∸ 1) ∸ q2) + ((((p5 ∸ 1) ∸ q2) + (p5 ∸ 1)) ∸ ((p5 ∸ 1) ∸ q2)) ≡ ((p5 ∸ 1) ∸ q2) + (p5 ∸ 1)
-arithmetic-14 h h' = solveNat (h , h')
+arithmetic-14 {q2 = q} {p5 = p} _ _ =
+  cong (((p ∸ 1) ∸ q) +_) (Nat.∸+ (p ∸ 1) ((p ∸ 1) ∸ q))
 
 arithmetic-15 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → (q2 + ((p5 ∸ 1) ∸ q2)) + ((((p5 ∸ 1) ∸ q2) + (p5 ∸ 1)) ∸ ((p5 ∸ 1) ∸ q2) ∸ (((p5 ∸ 1) ∸ q2) + q2)) ≡ (((p5 ∸ 1) ∸ q2) + (p5 ∸ 1)) ∸ ((p5 ∸ 1) ∸ q2)
-arithmetic-15 h h' = solveNat (h , h')
+arithmetic-15 {q2 = q} {p5 = p} _ h =
+  (q + r) + (((r + s) ∸ r) ∸ (r + q))       ≡⟨ cong₂ _+_ refl (nested-cancel h) ⟩
+  (q + r) + 0                               ≡⟨ Nat.+-zero (q + r) ⟩
+  q + r                                     ≡⟨ split-pred h ⟩
+  s                                         ≡⟨ sym (Nat.∸+ s r) ⟩
+  (r + s) ∸ r                               ∎
+  where
+  r = (p ∸ 1) ∸ q
+  s = p ∸ 1
 
 arithmetic-16 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → 0 + 0 ≡ ((((p5 ∸ 1) ∸ q2) + (p5 ∸ 1)) ∸ ((p5 ∸ 1) ∸ q2) ∸ (((p5 ∸ 1) ∸ q2) + q2))
-arithmetic-16 h h' = solveNat (h , h')
+arithmetic-16 {q2 = q} {p5 = p} _ h =
+  0 + 0                         ≡⟨ sym (nested-cancel h) ⟩
+  ((r + s) ∸ r) ∸ (r + q)       ∎
+  where
+  r = (p ∸ 1) ∸ q
+  s = p ∸ 1
 
 arithmetic-17 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → (q2 + p5) ∸ 1 ≡ q2 + (q2 + ((p5 ∸ 1) ∸ q2))
-arithmetic-17 h h' = solveNat (h , h')
+arithmetic-17 {q2 = q} {p5 = p} _ h =
+  (q + p) ∸ 1                   ≡⟨ sym (≤-∸-k (one≤-of-suc≤ h)) ⟩
+  q + (p ∸ 1)                   ≡⟨ cong (q +_) (sym (split-pred h)) ⟩
+  q + (q + ((p ∸ 1) ∸ q))       ∎
 
 arithmetic-18 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → q2 ≡ q2
-arithmetic-18 _ _ = solveNat0
+arithmetic-18 _ _ = refl
 
 arithmetic-19-left : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → 1 ≤ q2 + p5
-arithmetic-19-left h h' = solveNat (h , h')
+arithmetic-19-left _ h = 1 ≤⟨ one≤-of-suc≤ h ⟩ ≤SumRight
 
 arithmetic-19-right : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → 1 + q2 ≤ q2 + p5
-arithmetic-19-right h h' = solveNat (h , h')
+arithmetic-19-right _ h = suc _ ≤⟨ h ⟩ ≤SumRight
 
 arithmetic-20 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → ((p5 ∸ 1) ∸ q2) + ((((p5 ∸ 1) ∸ q2) + (p5 ∸ 1)) ∸ ((p5 ∸ 1) ∸ q2)) ≡ ((p5 ∸ 1) ∸ q2) + (p5 ∸ 1)
-arithmetic-20 h h' = solveNat (h , h')
+arithmetic-20 = arithmetic-14
 
 arithmetic-21 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → ((((q2 + p5) ∸ 1) ∸ q2) + 0) ≡ (((p5 ∸ 1) ∸ q2) + (p5 ∸ 1)) ∸ ((p5 ∸ 1) ∸ q2)
-arithmetic-21 h h' = solveNat (h , h')
+arithmetic-21 {q2 = q} {p5 = p} _ h =
+  (((q + p) ∸ 1) ∸ q) + 0       ≡⟨ cong (_+ 0) (pred-plus-cancel q (one≤-of-suc≤ h)) ⟩
+  (p ∸ 1) + 0                   ≡⟨ Nat.+-zero (p ∸ 1) ⟩
+  p ∸ 1                         ≡⟨ sym (Nat.∸+ (p ∸ 1) r) ⟩
+  (r + (p ∸ 1)) ∸ r             ∎
+  where
+  r = (p ∸ 1) ∸ q
 
 arithmetic-22 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → (((q2 + p5) ∸ 1) ∸ q2) ≡ q2 + ((p5 ∸ 1) ∸ q2)
-arithmetic-22 h h' = solveNat (h , h')
+arithmetic-22 = arithmetic-6
 
 arithmetic-23 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → q2 ≡ q2
-arithmetic-23 _ _ = solveNat0
+arithmetic-23 _ _ = refl
 
 arithmetic-24-left : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → 1 ≤ q2 + p5
-arithmetic-24-left h h' = solveNat (h , h')
+arithmetic-24-left = arithmetic-19-left
 
 arithmetic-24-right : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → 1 + q2 ≤ q2 + p5
-arithmetic-24-right h h' = solveNat (h , h')
+arithmetic-24-right = arithmetic-19-right
 
 arithmetic-25 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → (p5 ∸ 1) + ((0 + (p5 ∸ 1)) ∸ (p5 ∸ 1)) ≡ 0 + (p5 ∸ 1)
-arithmetic-25 h h' = solveNat (h , h')
+arithmetic-25 {p5 = p} _ _ =
+  (p ∸ 1) + ((0 + (p ∸ 1)) ∸ (p ∸ 1))       ≡⟨ cong ((p ∸ 1) +_) (Nat.+∸ 0 (p ∸ 1)) ⟩
+  (p ∸ 1) + 0                               ≡⟨ Nat.+-zero (p ∸ 1) ⟩
+  0 + (p ∸ 1)                               ∎
 
 arithmetic-26 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → 0 + 0 ≡ (0 + (p5 ∸ 1)) ∸ (p5 ∸ 1)
-arithmetic-26 h h' = solveNat (h , h')
+arithmetic-26 {p5 = p} _ _ = sym (Nat.+∸ 0 (p ∸ 1))
 
 arithmetic-27 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → (q2 + p5) ∸ 1 ≡ q2 + (p5 ∸ 1)
-arithmetic-27 h h' = solveNat (h , h')
+arithmetic-27 _ h = sym (≤-∸-k (one≤-of-suc≤ h))
 
 arithmetic-28 : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → q2 ≡ q2
-arithmetic-28 _ _ = solveNat0
+arithmetic-28 _ _ = refl
 
 arithmetic-29-left : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → 1 ≤ q2 + p5
-arithmetic-29-left h h' = solveNat (h , h')
+arithmetic-29-left = arithmetic-19-left
 
 arithmetic-29-right : ∀ {l1 q2 p5 : ℕ} → suc q2 ≤ l1 → suc q2 ≤ p5 → 1 + q2 ≤ q2 + p5
-arithmetic-29-right h h' = solveNat (h , h')
+arithmetic-29-right = arithmetic-19-right
 
 arithmetic-30 : ∀ {q2 : ℕ} → 1 ≤ q2 → 1 ≤ q2
-arithmetic-30 h = solveNat h
+arithmetic-30 h = h
 
 arithmetic-31 : 0 ≡ 0 + 0
-arithmetic-31 = solveNat0
+arithmetic-31 = refl
 
-arithmetic-32 : ∀ {q2 p17 : ℕ} → 1 ≤ q2 → (((q2 + p17) ∸ 1) ∸ (q2 ∸ 1)) + 0 ≡ 0 + p17
-arithmetic-32 h = solveNat h
+arithmetic-32 : ∀ {q2 p17 : ℕ} → 1 ≤ q2 → (((q2 + p17) ∸ 1) ∸ (q2 ∸ 1)) + 0 ≡ p17
+arithmetic-32 {q2 = q} {p17 = p} h =
+  (((q + p) ∸ 1) ∸ (q ∸ 1)) + 0       ≡⟨ cong (_+ 0) (pred-plus-cancel-left p h) ⟩
+  p + 0                               ≡⟨ Nat.+-zero p ⟩
+  p                                   ∎
 
 arithmetic-33 : ∀ {q2 p17 : ℕ} → 1 ≤ q2 → ((q2 + p17) ∸ 1) ∸ (q2 ∸ 1) ≡ p17
-arithmetic-33 h = solveNat h
+arithmetic-33 {p17 = p} h = pred-plus-cancel-left p h
 
 arithmetic-34 : ∀ {q2 : ℕ} → 1 ≤ q2 → q2 ∸ 1 ≡ q2 ∸ 1
-arithmetic-34 _ = solveNat0
+arithmetic-34 _ = refl
 
 arithmetic-35 : ∀ {q2 p17 : ℕ} → 1 ≤ q2 → 1 + (q2 ∸ 1) ≤ q2 + p17
-arithmetic-35 h = solveNat h
+arithmetic-35 {q2 = q} h =
+  1 + (q ∸ 1) ≡≤⟨ one-plus-pred h ⟩
+  ≤SumLeft
 
 arithmetic-36-left : ∀ {q2 p17 : ℕ} → 1 ≤ q2 → 1 ≤ q2 + p17
-arithmetic-36-left h = solveNat h
+arithmetic-36-left h = 1 ≤⟨ h ⟩ ≤SumLeft
 
 _≤ᵇ_ : ℕ → ℕ → Bool
 m ≤ᵇ n with ≤Dec m n
