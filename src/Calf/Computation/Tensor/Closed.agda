@@ -27,7 +27,7 @@ module _ {A B : 𝒞} where
 
   private
     comb : U (●ᶜ A) → U (●ᶜ B) → U (●ᶜ (A ⊗ B))
-    comb a• b• = ●.elim (λ _ → ●.isModal●) (λ a → ●.map (a ∥_) b•) a•
+    comb a• b• = ●.elim (λ _ → ●.isModal●) (λ a → ●.map (a ⊗ᵁ_) b•) a•
 
     comb-chargeˡ : ∀ c a• b• → comb (●ᶜ A .charge c a•) b• ≡ ●ᶜ (A ⊗ B) .charge c (comb a• b•)
     comb-chargeˡ c =
@@ -37,7 +37,7 @@ module _ {A B : 𝒞} where
     comb-chargeʳ : ∀ c a• b• → comb a• (●ᶜ B .charge c b•) ≡ ●ᶜ (A ⊗ B) .charge c (comb a• b•)
     comb-chargeʳ c =
       ●.elim (λ _ → ●.isModalΠ λ _ → ●.●-≡-isModal _ _) λ a →
-        ●.elim (λ _ → ●.●-≡-isModal _ _) λ b → cong ●.η• (sym (∥-slide c a b))
+        ●.elim (λ _ → ●.●-≡-isModal _ _) λ b → cong ●.η• (sym (⊗ᵁ-slide c a b))
 
     sect-pt : ∀ a• b• → ●ᶜ-⊗-fwd .U (comb a• b•) ≡ ηᴾ (inj a• b•)
     sect-pt a• b• =

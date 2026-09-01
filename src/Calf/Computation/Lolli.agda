@@ -38,11 +38,11 @@ opaque
     ua (isoToEquiv (iso curryᶜ uncurryᶜ curryᶜ-uncurryᶜ uncurryᶜ-curryᶜ))
     where
       curryᶜ : (A ⊗ B ⊸ C) → (A ⊸ (B ⊸ᶜ C))
-      curryᶜ f .U a .U b = f .U (a ∥ b)
+      curryᶜ f .U a .U b = f .U (a ⊗ᵁ b)
       curryᶜ f .U a .charge c b =
-        cong (f .U) (sym (∥-slide {A = A} {B = B} c a b)) ∙ f .charge c (a ∥ b)
+        cong (f .U) (sym (⊗ᵁ-slide {A = A} {B = B} c a b)) ∙ f .charge c (a ⊗ᵁ b)
       curryᶜ f .charge c a =
-        ⊸-path refl refl (funExt λ b → f .charge c (a ∥ b))
+        ⊸-path refl refl (funExt λ b → f .charge c (a ⊗ᵁ b))
 
       uncurryᶜ : (A ⊸ (B ⊸ᶜ C)) → (A ⊗ B ⊸ C)
       uncurryᶜ f =

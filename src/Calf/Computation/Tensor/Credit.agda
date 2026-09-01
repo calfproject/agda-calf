@@ -74,7 +74,7 @@ opaque
 
 map₂-idᶜ-chargeᶜ : ∀ c → map₂ (idᶜ {A}) (chargeᶜ {B} c) ≡ chargeᶜ {A ⊗ B} c
 map₂-idᶜ-chargeᶜ c =
-  ⊸-path refl refl (funExt (⊗₀-rec-unique isPreorderᴾ _ _ λ a b → sym (∥-slide c a b)))
+  ⊸-path refl refl (funExt (⊗₀-rec-unique isPreorderᴾ _ _ λ a b → sym (⊗ᵁ-slide c a b)))
 
 opaque
   unfolding ▷[_]_
