@@ -55,9 +55,6 @@ opaque
       bwd-equiv : isEquivᶜ bwd
       bwd-equiv = isoToIsEquiv (iso (bwd .U) fwd bwd-sect bwd-retr)
 
-par : U (F X) → U (F Y) → U (F (X × Y))
-par ex ey = transport (cong U F-monoidal) (ex ⊗ᵁ ey)
-
 module _ (X : 𝒱₌) where
   open import Calf.Computation.Copower
 
