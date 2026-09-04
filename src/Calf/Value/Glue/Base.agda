@@ -1,11 +1,12 @@
-module Calf.Value.Glue.Base where
+open import Cubical.Foundations.HLevels
+open import Cubical.Data.Sigma using (ΣPathP; Σ≡Prop)
+
+module Calf.Value.Glue.Base (φ : hProp _) where
 
 open import Calf.Value
-open import Calf.Value.Closed as ●
-open import Calf.Value.Open as ◯
+open import Calf.Value.Closed φ as ●
+open import Calf.Value.Open φ as ◯
 open import Calf.Value.Product
-
-open import Cubical.Data.Sigma using (ΣPathP; Σ≡Prop)
 
 Glue : (X• X◦ : 𝒱) (χ• : X• → ● X◦) → 𝒱
 Glue X• X◦ χ• = Σ[ (x• , x◦) ∈ X• × X◦ ] χ• x• ≡ η• x◦

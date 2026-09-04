@@ -161,6 +161,6 @@ opaque
   unfolding F
 
   _∥_ : U (F X) → U (F Y) → U (F (X × Y))
-  _∥_ {X} {Y} (cx , xᴾ) (cy , yᴾ) =
+  (cx , xᴾ) ∥ (cy , yᴾ) =
     cx ⊔ℂ cy ,
     rec isPreorderᴾ (λ x → mapᴾ (x ,_) yᴾ) xᴾ

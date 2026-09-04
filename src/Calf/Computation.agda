@@ -59,11 +59,6 @@ variable
 Uₚ : 𝒞 → 𝒱ₚ
 Uₚ A = U A , A .is-preorder
 
-⊑-syntax : U A → U A → 𝒱
-⊑-syntax {A} = _⊑_ {U A}
-
-syntax ⊑-syntax {A} a a' = a ⊑[ A ] a'
-
 module ⊑-Reasoning (A : 𝒞) where
   open import Relation.Binary
 

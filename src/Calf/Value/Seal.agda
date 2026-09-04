@@ -1,17 +1,18 @@
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
+open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Structure
 
-module Calf.Value.Seal where
+module Calf.Value.Seal (φ : hProp _) where
 
 open import Calf.Core.Cost
 open import Calf.Core.Directed
 open import Calf.Computation
 open import Calf.Value
 open import Calf.Value.Product
-open import Calf.Value.Closed
-open import Calf.Value.Open
-open import Calf.Value.Glue using (Fracture; toFracture)
+open import Calf.Value.Closed φ
+open import Calf.Value.Open φ
+open import Calf.Value.Glue φ using (Fracture; toFracture)
 
 Glueᵈ : (X• X◦ : 𝒱) (χ• : X• → ● X◦) → 𝒱
 Glueᵈ X• X◦ χ• = Σ[ (x• , x◦) ∈ X• × X◦ ] χ• x• ⊑ η• x◦

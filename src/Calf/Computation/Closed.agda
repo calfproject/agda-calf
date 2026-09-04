@@ -1,17 +1,17 @@
 open import Cubical.Modalities.Modality
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Path using (compPathlEquiv; compPathrEquiv)
 open import Cubical.Foundations.Structure
 open import Cubical.Data.Sigma
 
-module Calf.Computation.Closed where
+module Calf.Computation.Closed (φ : hProp _) where
 
-open import Calf.Core.Abstract
 open import Calf.Core.Cost
 open import Calf.Value
-open import Calf.Value.Closed as ● hiding (map; map-∘; join; bind) public
+open import Calf.Value.Closed φ as ● hiding (map; map-∘; join; bind) public
 open import Calf.Computation
 
 ●ᶜ : 𝒞 → 𝒞
@@ -82,7 +82,7 @@ opaque
   map-id-equiv {A} = subst isEquiv (cong (λ h → h .U) (sym (map-id {A}))) (idIsEquiv _)
 
 opaque
-  map-open : ⟨ ABS ⟩ → (f g : A ⊸ B) → map f ≡ map g
+  map-open : ⟨ φ ⟩ → (f g : A ⊸ B) → map f ≡ map g
   map-open {A} {B} p f g =
     ⊸-path
       {A₀ = ●ᶜ A}
@@ -162,10 +162,10 @@ module _ {A B C : 𝒞} where
       e : U (●ᶜ (Pullback f g)) ≃ U (Pullback (map f) (map g))
       e = ●.●-pullback
 
-      isProp-at : ⟨ ABS ⟩ → isProp (U (Pullback (map f) (map g)))
-      isProp-at abs =
-        isPropΣ (isProp× (◯-isProp● abs) (◯-isProp● abs)) λ _ →
-        isProp→isSet (◯-isProp● abs) _ _
+      isProp-at : ⟨ φ ⟩ → isProp (U (Pullback (map f) (map g)))
+      isProp-at p =
+        isPropΣ (isProp× (◯-isProp● p) (◯-isProp● p)) λ _ →
+        isProp→isSet (◯-isProp● p) _ _
 
       fwd-charge : (c : ℂ) (a• : U (●ᶜ (Pullback f g)))
         → equivFun e (●ᶜ (Pullback f g) .charge c a•)
@@ -179,7 +179,7 @@ module _ {A B C : 𝒞} where
               , ●.●-pullback-β₂ (Pullback f g .charge c t)
                 ∙ sym (cong (●ᶜ B .charge c) (●.●-pullback-β₂ t)) )
             , isProp→PathP (λ i → is-set (●ᶜ C) _ _) _ _))
-          (λ abs → isProp-at abs _ _)
+          (λ p → isProp-at p _ _)
 
       fwd : ●ᶜ (Pullback f g) ⊸ Pullback (map f) (map g)
       fwd .U = equivFun e

@@ -1,12 +1,13 @@
 module Calf.Computation.Abstraction.Base where
 
+open import Calf.Core.Abstract
 open import Calf.Value
-import Calf.Value.Closed as ●
+import Calf.Value.Closed ABS as ●
 import Calf.Value.Abstraction as Abstraction
 open import Calf.Computation
-open import Calf.Computation.Open as ◯ᶜ
-open import Calf.Computation.Closed as ●ᶜ
-open import Calf.Computation.Glue as Glueᶜ hiding (squareᶜ)
+open import Calf.Computation.Open ABS as ◯ᶜ
+open import Calf.Computation.Closed ABS as ●ᶜ
+open import Calf.Computation.Glue ABS as Glueᶜ hiding (squareᶜ)
 open import Cubical.Foundations.Univalence using (ua→; ua-gluePath)
 
 open Fractureᶜ

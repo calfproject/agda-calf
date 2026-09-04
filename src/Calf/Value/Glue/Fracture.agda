@@ -1,13 +1,13 @@
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.HLevels
 
-module Calf.Value.Glue.Fracture where
+module Calf.Value.Glue.Fracture (φ : hProp _) where
 
-open import Calf.Core.Abstract
 open import Calf.Value
-open import Calf.Value.Open as ◯
-open import Calf.Value.Closed as ●
+open import Calf.Value.Open φ as ◯
+open import Calf.Value.Closed φ as ●
 
-open import Calf.Value.Glue.Base
+open import Calf.Value.Glue.Base φ
 
 open import Cubical.Data.Sigma
 open import Cubical.Foundations.Path
@@ -89,9 +89,9 @@ module _ where
           (●.isModalΣ (F .X• .snd) λ x• → ●-≡-isModal _ _))
 
   proj◦-connected : (F : Fracture) → ◯.isConnectedMap (λ (g : fromFracture F) → ◦ g)
-  proj◦-connected F x◦ .fst abs =
-    ( (invIsEq (F .X• .snd) (∗ abs) , x◦)
-    , ◯-isProp● abs (F .χ• (invIsEq (F .X• .snd) (∗ abs))) (η• x◦)
+  proj◦-connected F x◦ .fst p =
+    ( (invIsEq (F .X• .snd) (∗ p) , x◦)
+    , ◯-isProp● p (F .χ• (invIsEq (F .X• .snd) (∗ p))) (η• x◦)
     ) , refl
   proj◦-connected F x◦ .snd =
     isContr→isProp (proj◦-connected-contract F x◦) _
@@ -160,10 +160,10 @@ module _ where
   fracture-and-gluing =
     isoToEquiv (iso toFracture fromFracture glue-fracture-section glue-fracture-retract)
 
-  Glue-open-≃ : (F : Fracture) → ⟨ ABS ⟩ → fromFracture F ≃ ⟨ F .X◦ ⟩
-  Glue-open-≃ F abs .fst g = ◦ g
-  Glue-open-≃ F abs .snd .equiv-proof x◦ =
-    ◯.isConnected→◯isContr (proj◦-connected F x◦) abs
+  Glue-open-≃ : (F : Fracture) → ⟨ φ ⟩ → fromFracture F ≃ ⟨ F .X◦ ⟩
+  Glue-open-≃ F p .fst g = ◦ g
+  Glue-open-≃ F p .snd .equiv-proof x◦ =
+    ◯.isConnected→◯isContr (proj◦-connected F x◦) p
 
 module _ where
   toSquare : (X → Y) → Fracture-Square (toFracture X) (toFracture Y)
