@@ -22,10 +22,10 @@ opaque
   DOUBLE zero = 0
   DOUBLE (suc n) = suc (suc (DOUBLE n))
 
-  double-bound : double ⊑[ ℕ ⇀ F ℕ ] (λ n → F _ .charge (# n) (ret (DOUBLE n)))
+  double-bound : double ⊑ (λ n → F _ .charge (# n) (ret (DOUBLE n)))
   double-bound = ⊑-funext lemma
     where
-      lemma : ∀ n → double n ⊑[ F ℕ ] F _ .charge (# n) (ret (DOUBLE n))
+      lemma : ∀ n → double n ⊑ F _ .charge (# n) (ret (DOUBLE n))
       lemma zero = ⊑-reflexive (sym (F _ .charge-0))
       lemma (suc n) =
         let open ⊑-Reasoning (F ℕ) in
@@ -45,7 +45,7 @@ opaque
           F _ .charge (# suc n) (ret (DOUBLE (suc n)))
         ∎ᴾ
 
-  double-bound-suc : double ⊑[ ℕ ⇀ F ℕ ] (λ n → F _ .charge (# suc n) (ret (DOUBLE n)))
+  double-bound-suc : double ⊑ (λ n → F _ .charge (# suc n) (ret (DOUBLE n)))
   double-bound-suc =
     let open ⊑-Reasoning (ℕ ⇀ F ℕ) in
     begin
