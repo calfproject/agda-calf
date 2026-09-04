@@ -3,9 +3,11 @@ module Examples.Id where
 open import Calf.Core.Cost
 open import Calf.Value hiding (id)
 open import Calf.Value.Nat
+open import Calf.Value.BigO
 open import Calf.Computation
 open import Calf.Computation.Free
 open import Calf.Computation.Power
+open import Calf.Computation.Tensor
 
 
 module Easy where
@@ -21,6 +23,12 @@ module Easy where
   id-correct : BEH → id ≡ ret
   id-correct beh = ⊑-BEH beh id-bounded
 
+  id-asymptotic : given ℕ measured-via (λ n → n) , id ∈𝓞(λ n → 0)
+  id-asymptotic =
+    f[n]≤g[n]via λ n →
+      ⊑∙≡
+        (⊑-mono (λ e → bind {A = ⊤} (e n) (const 0ℂ)) id-bounded)
+        bind-β
 
 module Hard where
   id : U (ℕ ⇀ F ℕ)
@@ -51,6 +59,13 @@ module Hard where
 
   id-correct : BEH → id ≡ ret
   id-correct beh = ⊑-BEH beh id-bounded ∙ funExt (λ n → chargeℕ-BEH (F _) n beh)
+
+  id-asymptotic : given ℕ measured-via (λ n → n) , id ∈𝓞(λ n → # n)
+  id-asymptotic =
+    f[n]≤g[n]via λ n →
+      ⊑∙≡
+        (⊑-mono (λ e → bind {A = ⊤} (e n) (const 0ℂ)) id-bounded)
+        (bind-chargeℕ-ret n ∙ chargeℕ-charge ⊤ n ∙ +ℂ-identityʳ _)
 
 
 easy≡hard : BEH → Easy.id ≡ Hard.id
