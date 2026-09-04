@@ -57,7 +57,7 @@ opaque
 
 fractureᶜ : A ⊸ FractureGlueᶜ A
 fractureᶜ .U = fracture
-fractureᶜ {A} .charge c a = Glue-path (isSet◯ (is-set A)) refl refl
+fractureᶜ {A} .charge c a = Glue-path (is-set (◯ᶜ A)) refl refl
 
 opaque
   glue-fracture-retractᶜ : retract toFractureᶜ fromFractureᶜ

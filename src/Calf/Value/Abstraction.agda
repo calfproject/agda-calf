@@ -1,3 +1,5 @@
+open import Cubical.Foundations.Univalence using (ua-gluePath)
+
 module Calf.Value.Abstraction where
 
 open import Calf.Value
@@ -24,6 +26,14 @@ square {X-⊤} {X-abs} {Y-⊤} {Y-abs} χ ψ f-⊤ f-abs f-coherence =
     (◯.map f-abs)
     (●.elim (λ x• → ●-≡-isModal _ _) (λ x → cong (η• ∘ η◦) (f-coherence x)))
 
-triangle : ∀ {X-⊤ X-abs χ}
+triangle : ∀ {X-⊤ X-abs} (χ : X-⊤ → X-abs) (x-⊤ : X-⊤) (x-abs : X-abs)
+  → χ x-⊤ ≡ x-abs
+  → Abstraction X-⊤ X-abs χ
+triangle χ x-⊤ x-abs h = (η• x-⊤ , η◦ x-abs) , cong (η• ∘ η◦) h
+
+triangle′ : ∀ {X-⊤ X-abs} (χ : X-⊤ → X-abs)
   → X-⊤ → Abstraction X-⊤ X-abs χ
-triangle {χ = χ} x = (η• x , η◦ (χ x)) , refl
+triangle′ χ x = triangle χ x (χ x) refl
+
+triangle′-id : PathP (λ i → X → Abstraction-id X i) (triangle′ id) id
+triangle′-id = funExt λ x → symP (ua-gluePath (_ , fracture-isEquiv) refl)
