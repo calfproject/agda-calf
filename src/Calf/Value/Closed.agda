@@ -1,45 +1,45 @@
-module Calf.Value.Closed where
-
-open import Calf.Core.Abstract
-open import Calf.Value
-open import Calf.Value.Open as ◯ using (◯)
-open import Calf.Value.Product
-open import Calf.Value.Sigma
-open import Calf.Value.Unit
-
 open import 1Lab.Set.Pi
 open import Cubical.Foundations.CartesianKanOps
+open import Cubical.Foundations.Equiv.Properties using (congEquiv)
+open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Path using (compPathlEquiv; compPathrEquiv)
 open import Cubical.Foundations.Univalence using (hPropExt)
-open import Cubical.Foundations.Equiv.Properties using (congEquiv)
 
 open import Cubical.Foundations.Equiv.PathSplit using (fromIsEquiv; toIsEquiv)
 open import Cubical.Data.Unit using (UnitToType≃)
 open import Cubical.Modalities.Modality
 
+module Calf.Value.Closed (φ : hProp _) where
+
+open import Calf.Value
+open import Calf.Value.Open φ as ◯ using (◯)
+open import Calf.Value.Product
+open import Calf.Value.Sigma
+open import Calf.Value.Unit
+
 data ● (X : 𝒱) : 𝒱 where
   η• : (x : X) → ● X
-  ∗ : (abs : ⟨ ABS ⟩) → ● X
-  push : (x : X) (abs : ⟨ ABS ⟩) → η• x ≡ ∗ abs
+  ∗ : (p : ⟨ φ ⟩) → ● X
+  push : (x : X) (p : ⟨ φ ⟩) → η• x ≡ ∗ p
 
 ind : (Y : ● X → 𝒱)
   → (η•-case : (x : X) → Y (η• x))
-  → (∗-case : (abs : ⟨ ABS ⟩) → Y (∗ abs))
-  → (push-case : (x : X) (abs : ⟨ ABS ⟩) → PathP (λ i → Y (push x abs i)) (η•-case x) (∗-case abs))
+  → (∗-case : (p : ⟨ φ ⟩) → Y (∗ p))
+  → (push-case : (x : X) (p : ⟨ φ ⟩) → PathP (λ i → Y (push x p i)) (η•-case x) (∗-case p))
   → (x• : ● X) → Y x•
 ind Y η•-case ∗-case push-case (η• x) = η•-case x
-ind Y η•-case ∗-case push-case (∗ abs) = ∗-case abs
-ind Y η•-case ∗-case push-case (push x abs i) = push-case x abs i
+ind Y η•-case ∗-case push-case (∗ p) = ∗-case p
+ind Y η•-case ∗-case push-case (push x p i) = push-case x p i
 
 opaque
   ind-prop : (Y : ● X → 𝒱)
     → ((x• : ● X) → isProp (Y x•))
     → ((x : X) → Y (η• x))
-    → ((abs : ⟨ ABS ⟩) → Y (∗ abs))
+    → ((p : ⟨ φ ⟩) → Y (∗ p))
     → (x• : ● X) → Y x•
   ind-prop Y isPropY η•-case ∗-case =
     ind Y η•-case ∗-case
-      (λ x abs → isProp→PathP (λ i → isPropY (push x abs i)) (η•-case x) (∗-case abs))
+      (λ x p → isProp→PathP (λ i → isPropY (push x p i)) (η•-case x) (∗-case p))
 
 isModal : 𝒱 → 𝒱
 isModal X = isEquiv (η• {X})
@@ -47,38 +47,38 @@ isModal X = isEquiv (η• {X})
 isConnected : 𝒱 → 𝒱
 isConnected X = isContr (● X)
 
-∗-open : (abs : ⟨ ABS ⟩) → (x• : ● X) → x• ≡ ∗ abs
-∗-open abs (η• x) = push x abs
-∗-open abs (∗ abs') = cong ∗ (str ABS abs' abs)
-∗-open abs (push x abs' i) j =
+∗-open : (p : ⟨ φ ⟩) → (x• : ● X) → x• ≡ ∗ p
+∗-open p (η• x) = push x p
+∗-open p (∗ p') = cong ∗ (str φ p' p)
+∗-open p (push x p' i) j =
   hcomp
     (λ k → λ
-      { (i = i0) → push x abs (j ∧ k)
-      ; (i = i1) → push x (str ABS abs' abs j) k
-      ; (j = i0) → push x abs' (i ∧ k)
-      ; (j = i1) → push x abs k })
+      { (i = i0) → push x p (j ∧ k)
+      ; (i = i1) → push x (str φ p' p j) k
+      ; (j = i0) → push x p' (i ∧ k)
+      ; (j = i1) → push x p k })
     (η• x)
 
 ◯-isConnected : ◯ (isConnected X)
-◯-isConnected abs = ∗ abs , sym ∘ ∗-open abs
+◯-isConnected p = ∗ p , sym ∘ ∗-open p
 
 ◯-isProp● : ◯ (isProp (● X))
 ◯-isProp● = isContr→isProp ∘ ◯-isConnected
 
 map : (X → Y) → ● X → ● Y
 map f (η• x) = η• (f x)
-map f (∗ abs) = ∗ abs
-map f (push x abs i) = push (f x) abs i
+map f (∗ p) = ∗ p
+map f (push x p i) = push (f x) p i
 
 map-∘ : (f : X → Y) (g : Y → Z) (x• : ● X) → map g (map f x•) ≡ map (g ∘ f) x•
 map-∘ f g (η• x) = refl
-map-∘ f g (∗ abs) = refl
-map-∘ f g (push x abs i) = refl
+map-∘ f g (∗ p) = refl
+map-∘ f g (push x p i) = refl
 
 join : ● (● X) → ● X
 join (η• x) = x
-join (∗ abs) = ∗ abs
-join (push x abs i) = ∗-open abs x i
+join (∗ p) = ∗ p
+join (push x p i) = ∗-open p x i
 
 opaque
   isModal● : isModal (● X)
@@ -89,20 +89,20 @@ opaque
 
       sec : (x•• : ● (● X)) → η• (join x••) ≡ x••
       sec (η• x•) = refl
-      sec (∗ abs) = push (∗ abs) abs
-      sec (push x• abs i) =
+      sec (∗ p) = push (∗ p) p
+      sec (push x• p i) =
         isProp→PathP
-          (λ i → isProp→isSet (◯-isProp● abs)
-            (η• (∗-open abs x• i))
-            (push x• abs i))
+          (λ i → isProp→isSet (◯-isProp● p)
+            (η• (∗-open p x• i))
+            (push x• p i))
           refl
-          (push (∗ abs) abs)
+          (push (∗ p) p)
           i
 
 opaque
   isModal●→isConnected◯ : isModal X → ◯.isConnected X
   isModal●→isConnected◯ X-modal =
-    isContrΠ λ abs → isOfHLevelRespectEquiv 0 (invEquiv (η• , X-modal)) (◯-isConnected abs)
+    isContrΠ λ p → isOfHLevelRespectEquiv 0 (invEquiv (η• , X-modal)) (◯-isConnected p)
 
 isConnected◯→isModal● : ◯.isConnected X → isModal X
 isConnected◯→isModal● {X} c = isoToIsEquiv (iso η• inv sec ret)
@@ -111,7 +111,7 @@ isConnected◯→isModal● {X} c = isoToIsEquiv (iso η• inv sec ret)
     ◯-isContr = ◯.isConnected→◯isContr c
 
     inv : ● X → X
-    inv = ind _ id (fst ∘ ◯-isContr) (λ x abs → sym (◯-isContr abs .snd x))
+    inv = ind _ id (fst ∘ ◯-isContr) (λ x p → sym (◯-isContr p .snd x))
 
     ret : (x : X) → inv (η• x) ≡ x
     ret x = refl
@@ -119,24 +119,24 @@ isConnected◯→isModal● {X} c = isoToIsEquiv (iso η• inv sec ret)
     sec : (x• : ● X) → η• (inv x•) ≡ x•
     sec = ind (λ x• → η• (inv x•) ≡ x•)
       (λ x → refl)
-      (λ abs → push (inv (∗ abs)) abs)
-      (λ x abs → isProp→PathP
-        (λ i → isProp→isSet (◯-isProp● abs) (η• (inv (push x abs i))) (push x abs i))
+      (λ p → push (inv (∗ p)) p)
+      (λ x p → isProp→PathP
+        (λ i → isProp→isSet (◯-isProp● p) (η• (inv (push x p i))) (push x p i))
         refl
-        (push (inv (∗ abs)) abs))
+        (push (inv (∗ p)) p))
 
 elim : {X : 𝒱} {Y : ● X → 𝒱}
   → ((x : ● X) → isModal (Y x)) → ((x : X) → Y (η• x)) → (x : ● X) → Y x
 elim {X} {Y} isModalY f =
   ind Y
     f
-    (λ abs → invIsEq (isModalY (∗ abs)) (∗ abs))
-    (λ x abs →
+    (λ p → invIsEq (isModalY (∗ p)) (∗ p))
+    (λ x p →
       isProp→PathP
         (λ i → isContr→isProp
-          (◯.isConnected→◯isContr (isModal●→isConnected◯ (isModalY (push x abs i))) abs))
+          (◯.isConnected→◯isContr (isModal●→isConnected◯ (isModalY (push x p i))) p))
         (f x)
-        (invIsEq (isModalY (∗ abs)) (∗ abs)))
+        (invIsEq (isModalY (∗ p)) (∗ p)))
 
 ●Modality : Modality _
 ●Modality .Modality.◯ = ●
@@ -147,7 +147,7 @@ elim {X} {Y} isModalY f =
 ●Modality .Modality.◯-elim = elim
 ●Modality .Modality.◯-elim-β _ _ _ = refl
 ●Modality .Modality.◯-=-isModal x• x•' =
-  isConnected◯→isModal● (isContrΠ λ abs → isContr→isContrPath (◯-isConnected abs) x• x•')
+  isConnected◯→isModal● (isContrΠ λ p → isContr→isContrPath (◯-isConnected p) x• x•')
 
 open Modality ●Modality public
   renaming
@@ -185,19 +185,19 @@ opaque
     where
       ●-encode : ∀ {X} → X → ● X → 𝒱
       ●-encode x (η• x') = ● (x ≡ x')
-      ●-encode x (∗ abs) = ⊤
-      ●-encode x (push x' abs i) = isContr→≡Unit (◯-isConnected {X = x ≡ x'} abs) i
+      ●-encode x (∗ p) = ⊤
+      ●-encode x (push x' p i) = isContr→≡Unit (◯-isConnected {X = x ≡ x'} p) i
 
       ●-lex : ∀ {X} {x : X} {y : ● X} → η• x ≡ y → ●-encode x y
       ●-lex {x = x} h = J (λ y _ → ●-encode x y) (η• refl) h
 
       ●-unlex : ∀ {X} {x x' : X} → ● (x ≡ x') → η• x ≡ η• x'
       ●-unlex (η• h) = cong η• h
-      ●-unlex {x = x} {x'} (∗ abs) = push x abs ∙ sym (push x' abs)
-      ●-unlex {x = x} {x'} (push h abs i) =
-        isProp→isSet (◯-isProp● abs) (η• x) (η• x')
+      ●-unlex {x = x} {x'} (∗ p) = push x p ∙ sym (push x' p)
+      ●-unlex {x = x} {x'} (push h p i) =
+        isProp→isSet (◯-isProp● p) (η• x) (η• x')
           (cong η• h)
-          (push x abs ∙ sym (push x' abs))
+          (push x p ∙ sym (push x' p))
           i
 
       ●-unlex′ : ∀ {X} {x : X} {y : ● X} → ●-encode x y → η• x ≡ y
@@ -210,18 +210,18 @@ opaque
         η•-case : (x' : X) → R (η• x')
         η•-case x' e = ●-unlex e
 
-        ∗-case : (abs : ⟨ ABS ⟩) → R (∗ abs)
-        ∗-case abs _ = push x abs
+        ∗-case : (p : ⟨ φ ⟩) → R (∗ p)
+        ∗-case p _ = push x p
 
-        push-case : (x' : X) (abs : ⟨ ABS ⟩) → PathP (λ i → R (push x' abs i)) (η•-case x') (∗-case abs)
-        push-case x' abs =
+        push-case : (x' : X) (p : ⟨ φ ⟩) → PathP (λ i → R (push x' p i)) (η•-case x') (∗-case p)
+        push-case x' p =
           funext-dep-i0 λ e →
             isProp→PathP
-              (λ i → isProp→isSet (◯-isProp● abs)
+              (λ i → isProp→isSet (◯-isProp● p)
                 (η• x)
-                (push x' abs i))
+                (push x' p i))
               (η•-case x' e)
-              (∗-case abs (coe0→1 (λ i → ●-encode x (push x' abs i)) e))
+              (∗-case p (coe0→1 (λ i → ●-encode x (push x' p i)) e))
 
       ●-lex-unlex : ∀ {X} {x x' : X} (e : ● (x ≡ x')) → ●-lex (●-unlex e) ≡ e
       ●-lex-unlex {x = x} (η• h) =
@@ -229,17 +229,17 @@ opaque
           (λ x' h → ●-lex (cong η• h) ≡ η• h)
           (JRefl {x = η• x} (λ y _ → ●-encode x y) (η• refl))
           h
-      ●-lex-unlex {x = x} {x'} (∗ abs) =
-        ◯-isProp● abs
-          (●-lex (push x abs ∙ sym (push x' abs)))
-          (∗ abs)
-      ●-lex-unlex {x = x} {x'} (push h abs i) =
+      ●-lex-unlex {x = x} {x'} (∗ p) =
+        ◯-isProp● p
+          (●-lex (push x p ∙ sym (push x' p)))
+          (∗ p)
+      ●-lex-unlex {x = x} {x'} (push h p i) =
         isProp→PathP
-          (λ i → isProp→isSet (◯-isProp● abs)
-            (●-lex (●-unlex (push h abs i)))
-            (push h abs i))
+          (λ i → isProp→isSet (◯-isProp● p)
+            (●-lex (●-unlex (push h p i)))
+            (push h p i))
           (●-lex-unlex (η• h))
-          (●-lex-unlex (∗ abs))
+          (●-lex-unlex (∗ p))
           i
 
       ●-unlex-lex : ∀ {X} {x x' : X} (h : η• x ≡ η• x') → ●-unlex (●-lex h) ≡ h

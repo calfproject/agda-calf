@@ -1,4 +1,6 @@
-module Calf.Value.Glue where
+open import Cubical.Foundations.HLevels
 
-open import Calf.Value.Glue.Base public
-open import Calf.Value.Glue.Fracture public
+module Calf.Value.Glue (φ : hProp _) where
+
+open import Calf.Value.Glue.Base φ public
+open import Calf.Value.Glue.Fracture φ public

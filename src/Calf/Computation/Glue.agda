@@ -1,5 +1,7 @@
-module Calf.Computation.Glue where
+open import Cubical.Foundations.HLevels
 
-open import Calf.Computation.Glue.Base public
-open import Calf.Computation.Glue.Fracture public
-open import Calf.Computation.Glue.Properties public
+module Calf.Computation.Glue (φ : hProp _) where
+
+open import Calf.Computation.Glue.Base φ public
+open import Calf.Computation.Glue.Fracture φ public
+open import Calf.Computation.Glue.Properties φ public

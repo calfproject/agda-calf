@@ -1,9 +1,10 @@
 module Calf.Value.Abstraction where
 
+open import Calf.Core.Abstract
 open import Calf.Value
-open import Calf.Value.Open as ◯
-open import Calf.Value.Closed as ●
-open import Calf.Value.Glue as Glue hiding (square)
+open import Calf.Value.Open ABS as ◯
+open import Calf.Value.Closed ABS as ●
+open import Calf.Value.Glue ABS as Glue hiding (square)
 
 Abstraction : (X-⊤ X-abs : 𝒱) → (X-⊤ → X-abs) → 𝒱
 Abstraction X-⊤ X-abs χ = Glue (● X-⊤) (◯ X-abs) (●.map (η◦ ∘ χ))

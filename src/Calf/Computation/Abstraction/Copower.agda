@@ -8,14 +8,14 @@ open import Cubical.Data.Sigma using (ΣPathP)
 open import Calf.Core.Abstract using (ABS)
 open import Calf.Core.Cost
 open import Calf.Value
-open import Calf.Value.Open as ◯
-open import Calf.Value.Closed as ●
-open import Calf.Value.Glue hiding (square)
+open import Calf.Value.Open ABS as ◯
+open import Calf.Value.Closed ABS as ●
+open import Calf.Value.Glue ABS hiding (square)
 open import Calf.Value.Abstraction using (square)
 open import Calf.Computation
 open import Calf.Computation.Copower
-open import Calf.Computation.Open as ◯ᶜ
-open import Calf.Computation.Closed as ●ᶜ hiding (push)
+open import Calf.Computation.Open ABS as ◯ᶜ
+open import Calf.Computation.Closed ABS as ●ᶜ hiding (push)
 open import Calf.Computation.Abstraction.Base
 open import Calf.Computation.Abstraction.Properties
 
@@ -47,7 +47,7 @@ module _ (X : 𝒱ₚ) where
         ⋊-proj₁-glue-charge : (c : ℂ) (g : U (Abstractionᶜ (X ⋊ A-⊤) (X ⋊ A-abs) (⋊-map α)))
           → ⋊-proj₁-glue (Abstractionᶜ (X ⋊ A-⊤) (X ⋊ A-abs) (⋊-map α) .charge c g) ≡ ⋊-proj₁-glue g
         ⋊-proj₁-glue-charge c g =
-          Glue-path (isSet◯ (isPreorder→isSet (str X))) (⋊-proj₁-●-charge c (• g)) refl
+          Glue-path (◯.isSet◯ (isPreorder→isSet (str X))) (⋊-proj₁-●-charge c (• g)) refl
 
     opaque
       ⋊-Abstractionᶜ : Abstractionᶜ (X ⋊ A-⊤) (X ⋊ A-abs) (⋊-map α) ⊸ X ⋊ Abstractionᶜ A-⊤ A-abs α

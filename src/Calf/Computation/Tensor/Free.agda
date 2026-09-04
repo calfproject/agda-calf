@@ -17,7 +17,7 @@ opaque
   F-monoidal {X} {Y} = sym (conservativity bwd bwd-equiv)
     where
       bwd : F (X × Y) ⊸ F X ⊗ F Y
-      bwd = F-rec (λ (x , y) → ret x ∥ ret y)
+      bwd = F-rec (λ (x , y) → ret x ⊗ᵁ ret y)
 
       fwd : U (F X ⊗ F Y) → U (F (X × Y))
       fwd = rec (F (X × Y) .is-preorder) λ
@@ -38,9 +38,9 @@ opaque
               (λ x y → bwd .U ((c₁ +ℂ c₂) , map2ᴾ _,_ x y))
               (λ x y → ηᴾ (inj (c₁ , x) (c₂ , y)))
               (λ x y →
-                  (F X ⊗ F Y) .charge-+ {ret x ∥ ret y} {c₁} {c₂}
-                ∙ cong ((F X ⊗ F Y) .charge c₁) (∥-slide {A = F X} {B = F Y} c₂ (ret x) (ret y))
-                ∙ cong₂ _∥_ (charge-ret c₁ x) (charge-ret c₂ y))
+                  (F X ⊗ F Y) .charge-+ {ret x ⊗ᵁ ret y} {c₁} {c₂}
+                ∙ cong ((F X ⊗ F Y) .charge c₁) (⊗ᵁ-slide {A = F X} {B = F Y} c₂ (ret x) (ret y))
+                ∙ cong₂ _⊗ᵁ_ (charge-ret c₁ x) (charge-ret c₂ y))
               x y)
 
       bwd-retr : ∀ u → fwd (bwd .U u) ≡ u
@@ -54,9 +54,6 @@ opaque
 
       bwd-equiv : isEquivᶜ bwd
       bwd-equiv = isoToIsEquiv (iso (bwd .U) fwd bwd-sect bwd-retr)
-
-par : U (F X) → U (F Y) → U (F (X × Y))
-par ex ey = transport (cong U F-monoidal) (ex ∥ ey)
 
 module _ (X : 𝒱₌) where
   open import Calf.Computation.Copower

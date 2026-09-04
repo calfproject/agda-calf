@@ -6,12 +6,12 @@ open import Cubical.Foundations.Equiv using (composesToId→Equiv)
 open import Calf.Core.Abstract
 open import Calf.Core.Cost using (ℂ)
 open import Calf.Value
-import Calf.Value.Open as ◯
-import Calf.Value.Closed as ●
+import Calf.Value.Open ABS as ◯
+import Calf.Value.Closed ABS as ●
 open import Calf.Computation
-open import Calf.Computation.Open as ◯ᶜ
-open import Calf.Computation.Closed as ●ᶜ
-open import Calf.Computation.Glue as Glueᶜ hiding (squareᶜ)
+open import Calf.Computation.Open ABS as ◯ᶜ
+open import Calf.Computation.Closed ABS as ●ᶜ
+open import Calf.Computation.Glue ABS as Glueᶜ hiding (squareᶜ)
 open Fractureᶜ
 
 open import Calf.Computation.Abstraction.Base

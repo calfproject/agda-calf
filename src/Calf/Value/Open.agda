@@ -1,4 +1,3 @@
-open import Calf.Core.Abstract
 open import Calf.Value
 open import Calf.Value.Product
 open import Calf.Value.Sigma
@@ -13,13 +12,13 @@ open import Cubical.Functions.FunExtEquiv
 
 open import Cubical.Modalities.Modality
 
-module Calf.Value.Open where
+module Calf.Value.Open (φ : hProp _) where
 
 ◯ : 𝒱 → 𝒱
-◯ X = (abs : ⟨ ABS ⟩) → X
+◯ X = (p : ⟨ φ ⟩) → X
 
-◯Π : (⟨ ABS ⟩ → 𝒱) → 𝒱
-◯Π X = (abs : ⟨ ABS ⟩) → X abs
+◯Π : (⟨ φ ⟩ → 𝒱) → 𝒱
+◯Π X = (p : ⟨ φ ⟩) → X p
 
 η◦ : X → ◯ X
 η◦ x _ = x
@@ -27,14 +26,14 @@ module Calf.Value.Open where
 isModal : 𝒱 → 𝒱
 isModal X = isEquiv (η◦ {X = X})
 
-isModal◯Π : {X : ⟨ ABS ⟩ → 𝒱} → isModal (◯Π X)
+isModal◯Π : {X : ⟨ φ ⟩ → 𝒱} → isModal (◯Π X)
 isModal◯Π {X = X} = isoToIsEquiv (iso η◦ join′ sec ret)
   where
     join′ : ◯ (◯Π X) → ◯Π X
-    join′ x abs = x abs abs
+    join′ x p = x p p
 
     sec : (x : ◯ (◯Π X)) → η◦ (join′ x) ≡ x
-    sec x = funExt λ abs → funExt λ abs' → cong (λ a → x a abs') (str ABS abs' abs)
+    sec x = funExt λ p → funExt λ p' → cong (λ a → x a p') (str φ p' p)
 
     ret : (x : ◯Π X) → join′ (η◦ x) ≡ x
     ret x = refl
@@ -50,12 +49,12 @@ opaque
 ◯Modality .Modality.isPropIsModal = isPropIsEquiv η◦
 ◯Modality .Modality.◯-isModal = isModal◯
 ◯Modality .Modality.◯-elim {X} {Y} isModalY f x◦ =
-  invIsEq (isModalY x◦) λ abs →
-  subst Y (funExt λ abs' → cong x◦ (str ABS abs abs')) (f (x◦ abs))
+  invIsEq (isModalY x◦) λ p →
+  subst Y (funExt λ p' → cong x◦ (str φ p p')) (f (x◦ p))
 ◯Modality .Modality.◯-elim-β {X} {Y} isModalY f x =
   retIsEq (isModalY (η◦ x)) (subst Y refl (f x)) ∙ substRefl {B = Y} (f x)
 ◯Modality .Modality.◯-=-isModal x◦ x◦' =
-  subst isModal (ua funExtEquiv) (isModal◯Π {X = λ abs → x◦ abs ≡ x◦' abs})
+  subst isModal (ua funExtEquiv) (isModal◯Π {X = λ p → x◦ p ≡ x◦' p})
 
 open Modality ◯Modality public
   renaming
@@ -80,7 +79,7 @@ open import Cubical.Modalities.Extras ◯Modality
   using (η-=-isModal)
 
 map : (X → Y) → ◯ X → ◯ Y
-map f x◦ abs = f (x◦ abs)
+map f x◦ p = f (x◦ p)
 
 map′≡map : map′ {X} {Y} ≡ map
 map′≡map = funExt λ f → sym (◯-rec-unique isModal◯ refl)
@@ -90,23 +89,23 @@ map-∘ : (f : X → Y) (g : Y → Z) (x◦ : ◯ X) →
 map-∘ f g x◦ = refl
 
 join : ◯ (◯ X) → ◯ X
-join x◦◦ abs = x◦◦ abs abs
+join x◦◦ p = x◦◦ p p
 
 join′≡join : join′ {X} ≡ join
 join′≡join = sym (◯-rec-unique isModal◯ refl)
 
 isConnected→◯isContr : isConnected X → ◯ (isContr X)
-isConnected→◯isContr c abs .fst = c .fst abs
-isConnected→◯isContr c abs .snd x = funExt⁻ (c .snd (λ _ → x)) abs
+isConnected→◯isContr c p .fst = c .fst p
+isConnected→◯isContr c p .snd x = funExt⁻ (c .snd (λ _ → x)) p
 
 ◯isContr→isConnected : ◯ (isContr X) → isConnected X
-◯isContr→isConnected h .fst abs = h abs .fst
-◯isContr→isConnected h .snd x◦ = funExt λ abs → h abs .snd (x◦ abs)
+◯isContr→isConnected h .fst p = h p .fst
+◯isContr→isConnected h .snd x◦ = funExt λ p → h p .snd (x◦ p)
 
-◯isModal : ⟨ ABS ⟩ → isModal X
-◯isModal abs =
-  isoToIsEquiv (iso η◦ (λ f → f abs)
-    (λ f → funExt λ q → cong f (str ABS abs q))
+◯isModal : ⟨ φ ⟩ → isModal X
+◯isModal p =
+  isoToIsEquiv (iso η◦ (λ f → f p)
+    (λ f → funExt λ q → cong f (str φ p q))
     (λ x → refl))
 
 opaque

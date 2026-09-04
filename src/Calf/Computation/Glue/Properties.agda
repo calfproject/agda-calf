@@ -1,19 +1,19 @@
-module Calf.Computation.Glue.Properties where
-
-open import Calf.Core.Abstract
-open import Calf.Core.Cost
-open import Calf.Value
-import Calf.Value.Open as ◯
-import Calf.Value.Closed as ●
-open import Calf.Value.Glue public
-open import Calf.Computation
-open import Calf.Computation.Open as ◯ᶜ
-open import Calf.Computation.Closed as ●ᶜ
+open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Univalence using (ua→; ua-gluePath)
 open import Cubical.Data.Sigma using (ΣPathP; Σ≡Prop)
 
-open import Calf.Computation.Glue.Base
-open import Calf.Computation.Glue.Fracture
+module Calf.Computation.Glue.Properties (φ : hProp _) where
+
+open import Calf.Core.Cost
+open import Calf.Value
+import Calf.Value.Open φ as ◯
+import Calf.Value.Closed φ as ●
+open import Calf.Computation
+open import Calf.Computation.Open φ as ◯ᶜ
+open import Calf.Computation.Closed φ as ●ᶜ
+
+open import Calf.Computation.Glue.Base φ
+open import Calf.Computation.Glue.Fracture φ
 open Fractureᶜ
 
 fracture-map
@@ -37,18 +37,18 @@ fracture-map-fracture
 fracture-map-fracture {A} {B} f a =
   Σ≡Prop (λ _ → is-set (●ᶜ (◯ᶜ B)) _ _) refl
 
-Glueᶜ-open-≃ : (F : Fractureᶜ) → ⟨ ABS ⟩ → fromFractureᶜ F ≃ᶜ ⟨ F .A◦ ⟩ᶜ
-Glueᶜ-open-≃ F abs =
-  proj◦ᶜ F , Glue-open-≃ (U-Fracture F) abs .snd
+Glueᶜ-open-≃ : (F : Fractureᶜ) → ⟨ φ ⟩ → fromFractureᶜ F ≃ᶜ ⟨ F .A◦ ⟩ᶜ
+Glueᶜ-open-≃ F p =
+  proj◦ᶜ F , Glue-open-≃ (U-Fracture F) p .snd
 
-Glueᶜ-open : (F : Fractureᶜ) → ⟨ ABS ⟩ → fromFractureᶜ F ≡ ⟨ F .A◦ ⟩ᶜ
-Glueᶜ-open F abs = uaᶜ (Glueᶜ-open-≃ F abs)
+Glueᶜ-open : (F : Fractureᶜ) → ⟨ φ ⟩ → fromFractureᶜ F ≡ ⟨ F .A◦ ⟩ᶜ
+Glueᶜ-open F p = uaᶜ (Glueᶜ-open-≃ F p)
 
 squareᶜ-openP : {F G : Fractureᶜ}
   → (f• : ⟨ F .A• ⟩ᶜ ⊸ ⟨ G .A• ⟩ᶜ) (f◦ : ⟨ F .A◦ ⟩ᶜ ⊸ ⟨ G .A◦ ⟩ᶜ)
-  → (coh : f• ⨾ᶜ G .α• ≡ F .α• ⨾ᶜ ●ᶜ.map f◦) (abs : ⟨ ABS ⟩)
-  → PathP (λ i → Glueᶜ-open F abs i ⊸ Glueᶜ-open G abs i)
+  → (coh : f• ⨾ᶜ G .α• ≡ F .α• ⨾ᶜ ●ᶜ.map f◦) (p : ⟨ φ ⟩)
+  → PathP (λ i → Glueᶜ-open F p i ⊸ Glueᶜ-open G p i)
       (squareᶜ f• f◦ coh)
       f◦
-squareᶜ-openP {F} {G} f• f◦ coh abs =
-  uaᶜ-⊸ (Glueᶜ-open-≃ F abs) (Glueᶜ-open-≃ G abs) (⊸-path refl refl refl)
+squareᶜ-openP {F} {G} f• f◦ coh p =
+  uaᶜ-⊸ (Glueᶜ-open-≃ F p) (Glueᶜ-open-≃ G p) (⊸-path refl refl refl)

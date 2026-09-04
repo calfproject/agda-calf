@@ -16,3 +16,12 @@ opaque
 
 ℕₚ : 𝒱ₚ
 ℕₚ = ⟨ ℕ₌ ⟩ₚ
+
+-- imported from agda-stdlib
+
+infixl 6 _⊔_
+
+_⊔_ : ℕ → ℕ → ℕ
+zero  ⊔ n     = n
+suc m ⊔ zero  = suc m
+suc m ⊔ suc n = suc (m ⊔ n)

@@ -1,5 +1,6 @@
 import Examples.Id
 import Examples.Double
+import Examples.TreeSum
 import Examples.Queue
 
 import Examples.Giralf.Id

@@ -49,6 +49,10 @@ opaque
   ⊑-sucℂ : ∀ c → c ⊑ 1ℂ +ℂ c
   ⊑-sucℂ = ⊑-suc
 
+  infixl 6 _⊔ℂ_
+  _⊔ℂ_ : ℂ → ℂ → ℂ
+  _⊔ℂ_ = _⊔_
+
 instance
   fromNatℂ : HasFromNat ℂ
   fromNatℂ = record { Constraint = λ _ → ⊤ ; fromNat = λ n → iter n (1ℂ +ℂ_) 0ℂ }

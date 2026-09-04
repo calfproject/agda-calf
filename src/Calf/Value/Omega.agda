@@ -156,6 +156,11 @@ private
 +-comm : Commutative _+_
 +-comm = rec-unique2 isPreorderᴾ _+_ (λ m n → n + m) +₀-comm
 
+infixl 6 _⊔_
+
+_⊔_ : ω → ω → ω
+_⊔_ = {!   !}
+
 isAlgorithmicω : isAlgorithmic ω
 isAlgorithmicω beh =
   isContrᴾ zero

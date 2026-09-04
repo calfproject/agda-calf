@@ -155,3 +155,12 @@ costed-map : (f : X → Y) (g : Y → Z) (Ψ : Y → ℂ)
   → map f ⨾ᶜ costed g Ψ ≡ costed (g ∘ f) (Ψ ∘ f)
 costed-map f g Ψ =
   F-rec-path _ _ (funExt λ x → cong (costed g Ψ .U) F-rec-β ∙ F-rec-β ∙ sym F-rec-β)
+
+
+opaque
+  unfolding F
+
+  _∥_ : U (F X) → U (F Y) → U (F (X × Y))
+  (cx , xᴾ) ∥ (cy , yᴾ) =
+    cx ⊔ℂ cy ,
+    rec isPreorderᴾ (λ x → mapᴾ (x ,_) yᴾ) xᴾ

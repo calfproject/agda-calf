@@ -63,12 +63,12 @@ module _ where
       (λ a b → cong (λ z → ηᴾ (inj {A} z b)) (A .charge-+ {a} {c₁} {c₂}))
       x
 
-  _∥_ : U A → U B → U (A ⊗ B)
-  a ∥ b = ηᴾ (inj a b)
+  _⊗ᵁ_ : U A → U B → U (A ⊗ B)
+  a ⊗ᵁ b = ηᴾ (inj a b)
 
-  ∥-slide : ∀ c (a : U A) (b : U B)
-    → _∥_ {A} {B} (A .charge c a) b ≡ a ∥ B .charge c b
-  ∥-slide c a b = cong ηᴾ (slide c a b)
+  ⊗ᵁ-slide : ∀ c (a : U A) (b : U B)
+    → _⊗ᵁ_ {A} {B} (A .charge c a) b ≡ a ⊗ᵁ B .charge c b
+  ⊗ᵁ-slide c a b = cong ηᴾ (slide c a b)
 
   ⊗-rec : {A B C : 𝒞}
     → (h : U A → U B → U C)
