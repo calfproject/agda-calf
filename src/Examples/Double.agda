@@ -6,7 +6,6 @@ open import Calf.Value.Nat
 open import Calf.Computation
 open import Calf.Computation.Free
 open import Calf.Computation.Power
-import Cubical.Data.Nat.Order as Nat
 
 double : U (ℕ ⇀ F ℕ)
 double zero = ret 0
@@ -52,6 +51,6 @@ opaque
       double
     ⊑⟨ double-bound ⟩
       (λ n → F _ .charge (# n) (ret (DOUBLE n)))
-    ⊑⟨ ⊑-funext (λ n → ⊑-mono (λ e → F _ .charge e (ret (DOUBLE n))) (≤⇒⊑ℂ {n} {suc n} (Nat.≤-suc Nat.≤-refl))) ⟩
+    ⊑⟨ ⊑-funext (λ n → ⊑-mono (λ e → F _ .charge e (ret (DOUBLE n))) (≤⇒⊑ℂ {n} {suc n} (≤-suc ≤-refl))) ⟩
       (λ n → F _ .charge (# suc n) (ret (DOUBLE n)))
     ∎ᴾ

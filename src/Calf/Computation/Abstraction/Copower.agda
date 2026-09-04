@@ -1,21 +1,20 @@
 module Calf.Computation.Abstraction.Copower where
 
-open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Univalence using (ua→; ua-gluePath)
 open import Cubical.Data.Sigma using (ΣPathP)
 
 open import Calf.Core.Abstract using (ABS)
 open import Calf.Core.Cost
 open import Calf.Value
-open import Calf.Value.Open as ◯
+open import Calf.Value.Abstraction using (square)
 open import Calf.Value.Closed as ●
 open import Calf.Value.Glue hiding (square)
-open import Calf.Value.Abstraction using (square)
+open import Calf.Value.Open as ◯
 open import Calf.Computation
+open import Calf.Computation.Closed as ●ᶜ hiding (push)
 open import Calf.Computation.Copower
 open import Calf.Computation.Open as ◯ᶜ
-open import Calf.Computation.Closed as ●ᶜ hiding (push)
+
 open import Calf.Computation.Abstraction.Base
 open import Calf.Computation.Abstraction.Properties
 

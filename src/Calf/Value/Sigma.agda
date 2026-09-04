@@ -1,13 +1,13 @@
 module Calf.Value.Sigma where
 
-open import Cubical.Data.Sigma
+open import Calf.Value
+
+open import Cubical.Foundations.HLevels public
+  using (isSetΣ)
+open import Cubical.Data.Sigma public
   using (Σ; _,_; ΣPathP)
   renaming (fst to proj₁; snd to proj₂)
-  public
 open import Cubical.Data.Sigma.Properties public
-open import Cubical.Foundations.HLevels using (isSetΣ) public
-open import Cubical.Foundations.Equiv using (isEquiv)
-open import Calf.Value
 
 opaque
   isDiscreteΣ : {X : 𝒱} {Y : X → 𝒱}

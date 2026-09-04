@@ -1,12 +1,12 @@
 module Calf.Computation.Tensor.Free where
 
+open import Cubical.Foundations.Univalence using (ua→; ua-gluePath)
+
 open import Calf.Core.Cost
 open import Calf.Value
-open import Calf.Value.Product
 open import Calf.Computation
+open import Calf.Computation.Copower
 open import Calf.Computation.Free
-
-open import Cubical.Foundations.Univalence using (ua→; ua-gluePath)
 
 open import Calf.Computation.Tensor.Base
 
@@ -59,8 +59,6 @@ par : U (F X) → U (F Y) → U (F (X × Y))
 par ex ey = transport (cong U F-monoidal) (ex ∥ ey)
 
 module _ (X : 𝒱₌) where
-  open import Calf.Computation.Copower
-
   opaque
     unfolding F
 

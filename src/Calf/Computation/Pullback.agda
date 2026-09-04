@@ -1,9 +1,10 @@
 module Calf.Computation.Pullback where
 
 open import Calf.Value
-open import Calf.Value.Sigma public
 open import Calf.Value.Product
 open import Calf.Computation
+
+open import Calf.Value.Sigma public
 
 Pullback : ∀ {A B C} → (f : A ⊸ C) (g : B ⊸ C) → 𝒞
 Pullback {A} {B} {C} f g .U =

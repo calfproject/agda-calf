@@ -1,8 +1,9 @@
 module Calf.Computation.Product where
 
 open import Calf.Value
-open import Calf.Value.Product public
 open import Calf.Computation
+
+open import Calf.Value.Product public
 
 infixr 2 _×ᶜ_
 

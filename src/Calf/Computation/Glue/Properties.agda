@@ -1,19 +1,21 @@
 module Calf.Computation.Glue.Properties where
 
-open import Calf.Core.Abstract
-open import Calf.Core.Cost
-open import Calf.Value
-import Calf.Value.Open as ◯
-import Calf.Value.Closed as ●
-open import Calf.Value.Glue public
-open import Calf.Computation
-open import Calf.Computation.Open as ◯ᶜ
-open import Calf.Computation.Closed as ●ᶜ
 open import Cubical.Foundations.Univalence using (ua→; ua-gluePath)
 open import Cubical.Data.Sigma using (ΣPathP; Σ≡Prop)
 
+open import Calf.Core.Abstract
+open import Calf.Value
+import Calf.Value.Closed as ●
+import Calf.Value.Open as ◯
+open import Calf.Computation
+open import Calf.Computation.Closed as ●ᶜ
+open import Calf.Computation.Open as ◯ᶜ
+
 open import Calf.Computation.Glue.Base
 open import Calf.Computation.Glue.Fracture
+
+open import Calf.Value.Glue public
+
 open Fractureᶜ
 
 fracture-map

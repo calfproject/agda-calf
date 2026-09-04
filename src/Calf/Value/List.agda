@@ -1,29 +1,24 @@
 module Calf.Value.List where
 
-open import Calf.Value
-open import Cubical.Data.List
-  using (List; []; _∷_; foldr; _++_; [_]; length)
-  renaming (rev to reverse)
-  public
 open import Cubical.Data.List using (isOfHLevelList)
+open import Cubical.Data.Nat
 
-open import Calf.Core.Directed
+open import Calf.Value
 open import Calf.Value.Nat
 open import Calf.Value.Product
 open import Calf.Value.Sigma
 open import Calf.Value.Unit
-open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.Function
-open import Cubical.Data.Nat
-open import Cubical.Data.Sigma
-open import Cubical.Data.Unit
+
+open import Cubical.Data.List public
+  using (List; []; _∷_; foldr; _++_; [_]; length)
+  renaming (rev to reverse)
 
 isSetList : isSet X → isSet (List X)
 isSetList = isOfHLevelList 0
 
 module _ {X : 𝒱} where
   private
-    Vec : ℕ → Type
+    Vec : ℕ → 𝒱
     Vec n = iter n (X ×_) Unit
 
     fwd : Σ ℕ Vec → List X

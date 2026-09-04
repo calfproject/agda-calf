@@ -1,5 +1,5 @@
-import Examples.Id
 import Examples.Double
+import Examples.Id
 import Examples.Queue
 
 import Examples.Giralf.Id

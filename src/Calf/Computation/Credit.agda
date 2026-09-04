@@ -1,24 +1,18 @@
-open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.Equiv
-open import Cubical.Foundations.Function
-open import Cubical.Foundations.Isomorphism
-open import Cubical.Foundations.Structure
-open import Cubical.Foundations.Univalence using (ua)
+module Calf.Computation.Credit where
+
 open import Cubical.Foundations.Path using (fromPathP⁻)
 open import Cubical.Foundations.Transport using (transport⁻-fillerExt⁻)
-open import Cubical.Data.Sigma
-
-module Calf.Computation.Credit where
+open import Cubical.Foundations.Univalence using (ua)
 
 open import Calf.Core.Abstract
 open import Calf.Core.Cost
 open import Calf.Value
 open import Calf.Value.Closed as ●
 open import Calf.Computation
-open import Calf.Computation.Open as ◯ᶜ
+open import Calf.Computation.Abstraction
 open import Calf.Computation.Closed as ●ᶜ
 open import Calf.Computation.Glue hiding (squareᶜ)
-open import Calf.Computation.Abstraction
+open import Calf.Computation.Open as ◯ᶜ
 
 open Fractureᶜ
 

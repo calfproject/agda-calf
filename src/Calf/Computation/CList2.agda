@@ -1,6 +1,3 @@
-open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.Function
-
 module Calf.Computation.CList2 where
 
 open import Calf.Core.Cost
@@ -10,8 +7,8 @@ open import Calf.Value.Nat
 open import Calf.Computation
 open import Calf.Computation.Copower
 open import Calf.Computation.Credit
-open import Calf.Computation.Tensor
 open import Calf.Computation.Potential using (▷-Σᶜ)
+open import Calf.Computation.Tensor
 
 CList₂-potential : ℂ → ℂ → ℕ → ℂ
 CList₂-potential c-lin c-quad zero = 0ℂ

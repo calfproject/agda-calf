@@ -1,13 +1,15 @@
 module Calf.Value where
 
-open import Cubical.Foundations.Prelude renaming (Type to 𝒱) public
-
-open import Calf.Core.Directed public
+open import Cubical.Foundations.Prelude public
+  renaming (Type to 𝒱)
 open import Cubical.Foundations.Equiv public
-open import Cubical.Foundations.Function public hiding (idfun)
+open import Cubical.Foundations.Function public
+  hiding (idfun)
 open import Cubical.Foundations.HLevels public
 open import Cubical.Foundations.Isomorphism public
 open import Cubical.Foundations.Structure public
+
+open import Calf.Core.Directed public
 
 variable
   X Y Z : 𝒱

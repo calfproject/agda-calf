@@ -1,17 +1,13 @@
-open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.Function
-
 module Calf.Computation.CList1 where
 
 open import Calf.Core.Cost
 open import Calf.Value
 open import Calf.Value.List
-open import Calf.Value.Nat
 open import Calf.Computation
 open import Calf.Computation.Copower
 open import Calf.Computation.Credit
-open import Calf.Computation.Tensor
 open import Calf.Computation.Potential using (▷-Σᶜ)
+open import Calf.Computation.Tensor
 
 opaque
   CList₁ : ℂ → 𝒱₌ → 𝒞

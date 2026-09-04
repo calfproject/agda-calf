@@ -1,18 +1,17 @@
-open import Cubical.Modalities.Modality
-open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.Equiv
-open import Cubical.Foundations.Isomorphism
-open import Cubical.Foundations.Path using (compPathlEquiv; compPathrEquiv)
-open import Cubical.Foundations.Structure
-open import Cubical.Data.Sigma
-
 module Calf.Computation.Closed where
+
+open import Cubical.Foundations.Path
+  using (compPathlEquiv; compPathrEquiv)
 
 open import Calf.Core.Abstract
 open import Calf.Core.Cost
 open import Calf.Value
-open import Calf.Value.Closed as ● hiding (map; map-∘; join; bind) public
 open import Calf.Computation
+open import Calf.Computation.Copower
+open import Calf.Computation.Pullback
+
+open import Calf.Value.Closed as ● public
+  hiding (map; map-∘; join; bind)
 
 ●ᶜ : 𝒞 → 𝒞
 ●ᶜ A .U = ● (A .U)
@@ -154,7 +153,6 @@ opaque
   ●.elim (λ _ → ●-≡-isModal _ _) (λ _ → refl)
 
 module _ {A B C : 𝒞} where
-  open import Calf.Computation.Pullback
 
   Pullback-●ᶜ : (f : A ⊸ C) (g : B ⊸ C) → ●ᶜ (Pullback f g) ≡ Pullback (map f) (map g)
   Pullback-●ᶜ f g = conservativity fwd (equivIsEquiv e)
@@ -185,20 +183,17 @@ module _ {A B C : 𝒞} where
       fwd .U = equivFun e
       fwd .charge = fwd-charge
 
-module _ where
-  open import Calf.Computation.Copower
+private
+  embed : ∀ {X A} → Σᶜ X A .U → Σᶜ X (●ᶜ ∘ A) .U
+  embed (x , a) = x , η• a
 
-  private
-    embed : ∀ {X A} → Σᶜ X A .U → Σᶜ X (●ᶜ ∘ A) .U
-    embed (x , a) = x , η• a
+Σᶜ-●ᶜ-fwd : (X : 𝒱₌) (A : ⟨ X ⟩ → 𝒞) → ●ᶜ (Σᶜ X A) ⊸ ●ᶜ (Σᶜ X (●ᶜ ∘ A))
+Σᶜ-●ᶜ-fwd X A = map (Σᶜ-map {X} {A} λ _ → η•ᶜ)
 
-  Σᶜ-●ᶜ-fwd : (X : 𝒱₌) (A : ⟨ X ⟩ → 𝒞) → ●ᶜ (Σᶜ X A) ⊸ ●ᶜ (Σᶜ X (●ᶜ ∘ A))
-  Σᶜ-●ᶜ-fwd X A = map (Σᶜ-map {X} {A} λ _ → η•ᶜ)
+Σᶜ-●ᶜ-fwd-equiv : (X : 𝒱₌) (A : ⟨ X ⟩ → 𝒞) → isEquivᶜ (Σᶜ-●ᶜ-fwd X A)
+Σᶜ-●ᶜ-fwd-equiv X A =
+  subst isEquiv (funExt⁻ ●.map′≡map (embed {X} {A})) (invEquiv ●Σ●≃●Σ .snd)
 
-  Σᶜ-●ᶜ-fwd-equiv : (X : 𝒱₌) (A : ⟨ X ⟩ → 𝒞) → isEquivᶜ (Σᶜ-●ᶜ-fwd X A)
-  Σᶜ-●ᶜ-fwd-equiv X A =
-    subst isEquiv (funExt⁻ ●.map′≡map (embed {X} {A})) (invEquiv ●Σ●≃●Σ .snd)
-
-  Σᶜ-●ᶜ : (X : 𝒱₌) (A : ⟨ X ⟩ → 𝒞) → ●ᶜ (Σᶜ X A) ≡ ●ᶜ (Σᶜ X (●ᶜ ∘ A))
-  Σᶜ-●ᶜ X A =
-    conservativity (Σᶜ-●ᶜ-fwd X A) (Σᶜ-●ᶜ-fwd-equiv X A)
+Σᶜ-●ᶜ : (X : 𝒱₌) (A : ⟨ X ⟩ → 𝒞) → ●ᶜ (Σᶜ X A) ≡ ●ᶜ (Σᶜ X (●ᶜ ∘ A))
+Σᶜ-●ᶜ X A =
+  conservativity (Σᶜ-●ᶜ-fwd X A) (Σᶜ-●ᶜ-fwd-equiv X A)

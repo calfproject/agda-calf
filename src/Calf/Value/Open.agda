@@ -1,19 +1,15 @@
+module Calf.Value.Open where
+
+open import Cubical.Foundations.Path
+  using (compPathlEquiv; compPathrEquiv)
+open import Cubical.Foundations.Univalence
+open import Cubical.Functions.FunExtEquiv
+open import Cubical.Modalities.Modality
+
 open import Calf.Core.Abstract
 open import Calf.Value
 open import Calf.Value.Product
 open import Calf.Value.Sigma
-
-open import Cubical.Foundations.Equiv
-open import Cubical.Foundations.HLevels
-open import Cubical.Foundations.Isomorphism
-open import Cubical.Foundations.Path using (compPathlEquiv; compPathrEquiv)
-open import Cubical.Foundations.Structure
-open import Cubical.Foundations.Univalence
-open import Cubical.Functions.FunExtEquiv
-
-open import Cubical.Modalities.Modality
-
-module Calf.Value.Open where
 
 ◯ : 𝒱 → 𝒱
 ◯ X = (abs : ⟨ ABS ⟩) → X

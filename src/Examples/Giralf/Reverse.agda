@@ -1,7 +1,5 @@
 module Examples.Giralf.Reverse where
 
-open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.Function
 open import Calf.Core.Cost
 open import Calf.Value
 open import Calf.Computation.CList1

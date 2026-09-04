@@ -1,10 +1,11 @@
 module Calf.Directed.Thin where
 
 open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.Equiv.Properties using (isEquiv[equivFunA≃B∘f]→isEquiv[f])
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Equiv.Fiberwise
 open import Cubical.Foundations.Equiv.PathSplit
+open import Cubical.Foundations.Equiv.Properties
+  using (isEquiv[equivFunA≃B∘f]→isEquiv[f])
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Isomorphism
@@ -13,10 +14,11 @@ open import Cubical.Data.Bool
 open import Cubical.Data.Sigma
 open import Cubical.Data.Unit
 open import Cubical.HITs.Localization
-open import Cubical.HITs.Pushout public
 
 open import Calf.Core.Interval
 open import Calf.Directed.Path
+
+open import Cubical.HITs.Pushout public
 
 private variable X Y : Type
 

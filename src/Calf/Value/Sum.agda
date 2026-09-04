@@ -1,13 +1,11 @@
 module Calf.Value.Sum where
 
-open import Calf.Core.Directed
 open import Calf.Value
-open import Cubical.Data.Sum renaming (inl to inj₁; inr to inj₂) public
-
-open import Cubical.Foundations.Prelude
-open import Cubical.Data.Bool
 open import Calf.Value.Bool
 open import Calf.Value.Sigma
+
+open import Cubical.Data.Sum public
+  renaming (inl to inj₁; inr to inj₂)
 
 isPreorder⊎ : isPreorder X → isPreorder Y → isPreorder (X ⊎ Y)
 isPreorder⊎ {X} {Y} isPreorderX isPreorderY =

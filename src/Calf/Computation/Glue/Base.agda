@@ -1,15 +1,11 @@
 module Calf.Computation.Glue.Base where
 
 open import Cubical.Data.Sigma
-open import Cubical.Foundations.Equiv
-open import Cubical.Foundations.HLevels using (isPropΠ)
-open import Cubical.Foundations.Isomorphism
 
-open import Calf.Core.Cost
 open import Calf.Value
 open import Calf.Computation
-open import Calf.Computation.Open as ◯ᶜ
 open import Calf.Computation.Closed as ●ᶜ
+open import Calf.Computation.Open as ◯ᶜ
 
 open import Calf.Value.Glue public
 

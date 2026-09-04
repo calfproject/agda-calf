@@ -1,32 +1,25 @@
-open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.Function
-open import Cubical.Foundations.HLevels
-open import Cubical.Foundations.Structure
-open import Cubical.Data.Sigma
-
 module Calf.Giralf where
 
-open import Calf.Value
 open import Calf.Core.Cost
+open import Calf.Value
 open import Calf.Computation
-open import Calf.Computation.Product
-open import Calf.Computation.Tensor
-open import Calf.Computation.Lolli
-open import Calf.Computation.Credit
-open import Calf.Computation.Debit
 open import Calf.Computation.CList1
 open import Calf.Computation.CList2
+open import Calf.Computation.Credit
+open import Calf.Computation.Debit
 open import Calf.Computation.Free
 open import Calf.Computation.Power
+open import Calf.Computation.Product
+open import Calf.Computation.Tensor
 
-Context : Type₁
+Context : 𝒱₁
 Context = 𝒞 × ℂ
 
 module _ where
-  _⋎₀ : ℂ → Type
+  _⋎₀ : ℂ → 𝒱
   q ⋎₀ = 0ℂ ≡ q
 
-  _⋎₂_ : ℂ → (ℂ × ℂ) → Type
+  _⋎₂_ : ℂ → (ℂ × ℂ) → 𝒱
   q ⋎₂ (q₁ , q₂) = q₁ +ℂ q₂ ≡ q
 
 
@@ -36,7 +29,7 @@ variable
 
 infix 1 _⊢_
 
-_⊢_ : Context → 𝒞 → Type
+_⊢_ : Context → 𝒞 → 𝒱
 Δ , q ⊢ A = ▷[ q ] Δ ⊸ A
 
 idᴳ :
@@ -52,7 +45,7 @@ letᴳ :
 letᴳ {C = C} split e1 e2 =
   transport (cong (_⊸ C) (sym ▷-+ ∙ cong (▷[_] _) (+ℂ-comm _ _ ∙ split))) ((▷-map e1) ⨾ᶜ e2)
 
-cmpᴳ : 𝒞 → Type
+cmpᴳ : 𝒞 → 𝒱
 cmpᴳ = ⊤ , 0ℂ ⊢_
 
 cmpᴳ→cmp : cmpᴳ A → U A

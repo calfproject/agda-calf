@@ -1,23 +1,24 @@
 module Calf.Computation.Tensor.Credit where
 
+open import Cubical.Foundations.Equiv.Properties
+  using (isEquiv[equivFunA≃B∘f]→isEquiv[f])
+open import Cubical.Foundations.Univalence using (ua→; ua-gluePath)
+
 open import Calf.Core.Abstract using (ABS)
 open import Calf.Core.Cost
 open import Calf.Value
 import Calf.Value.Closed as ●
 open import Calf.Computation
-open import Calf.Computation.Open as ◯ᶜ
-open import Calf.Computation.Closed as ●ᶜ
-open import Calf.Computation.Power using (Πᶜ)
-open import Calf.Computation.Glue hiding (squareᶜ)
 open import Calf.Computation.Abstraction
+open import Calf.Computation.Closed as ●ᶜ
 open import Calf.Computation.Credit
-
-open import Cubical.Foundations.Univalence using (ua→; ua-gluePath)
-open import Cubical.Foundations.Equiv.Properties using (isEquiv[equivFunA≃B∘f]→isEquiv[f])
-open import Cubical.Foundations.HLevels using (isOfHLevelPathP')
+open import Calf.Computation.Glue hiding (squareᶜ)
+open import Calf.Computation.Open as ◯ᶜ
+open import Calf.Computation.Power using (Πᶜ)
 
 open import Calf.Computation.Tensor.Base
 open import Calf.Computation.Tensor.Closed
+
 open Fractureᶜ
 
 opaque

@@ -1,16 +1,16 @@
 module Calf.Directed.Set where
 
 open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.Function
-open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Equiv.PathSplit
-open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
+open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence
 open import Cubical.Data.Unit
-open import Cubical.HITs.S1
 open import Cubical.HITs.Nullification
-open import Cubical.HITs.Truncation.Properties using (isSphereFilled→isOfHLevel; isOfHLevel→isSphereFilled)
+open import Cubical.HITs.S1
+open import Cubical.HITs.Truncation.Properties
+  using (isSphereFilled→isOfHLevel; isOfHLevel→isSphereFilled)
 
 private variable X : Type
 

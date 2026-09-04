@@ -1,12 +1,7 @@
-open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.Function
-open import Cubical.Foundations.HLevels
-open import Cubical.Foundations.Isomorphism
-open import Cubical.Foundations.Univalence using (ua)
-
 module Calf.Computation.Lolli where
 
-open import Calf.Core.Cost
+open import Cubical.Foundations.Univalence using (ua)
+
 open import Calf.Value
 open import Calf.Computation
 open import Calf.Computation.Tensor

@@ -1,9 +1,11 @@
 module Calf.Value.Nat where
 
-open import Calf.Core.Directed
 open import Calf.Value
-open import Cubical.Data.Nat using (ℕ; zero; suc; _+_; isSetℕ) public
-open import Cubical.Data.Nat.Order using (_≤_; isProp≤) public
+
+open import Cubical.Data.Nat public
+  using (ℕ; zero; suc; _+_; isSetℕ)
+open import Cubical.Data.Nat.Order public
+  using (_≤_; isProp≤; ≤-refl; ≤-suc)
 
 opaque
   unfolding 𝟚

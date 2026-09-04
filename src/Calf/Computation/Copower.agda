@@ -1,12 +1,10 @@
 module Calf.Computation.Copower where
 
 open import Calf.Value
+open import Calf.Computation
+
 open import Calf.Value.Product public
 open import Calf.Value.Sigma public
-open import Calf.Computation
-open import Cubical.Foundations.Prelude using (cong)
-open import Cubical.Foundations.HLevels
-open import Cubical.Foundations.Structure
 
 Σᶜ : (X : 𝒱₌) → (⟨ X ⟩ → 𝒞) → 𝒞
 Σᶜ X A .U = Σ[ x ∈ ⟨ X ⟩ ] U (A x)

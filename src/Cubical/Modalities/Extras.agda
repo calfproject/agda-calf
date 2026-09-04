@@ -3,13 +3,14 @@ open import Cubical.Modalities.Modality
 
 module Cubical.Modalities.Extras {ℓ : Level} (M : Modality ℓ) where
 
-open import Cubical.Foundations.Function
-open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Equiv.Properties
+  using (equivAdjointEquiv)
+open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
+open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Path
   using (PathP≡Path⁻; PathP≃Path; compPathlEquiv; compPathrEquiv)
-open import Cubical.Foundations.Equiv.Properties using (equivAdjointEquiv)
 open import Cubical.Foundations.Univalence using (isEquivTransport)
 open import Cubical.Data.Sigma
 

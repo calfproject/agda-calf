@@ -1,20 +1,20 @@
 module Calf.Computation.Abstraction.Properties where
 
 open import Cubical.Foundations.Univalence using (ua; ua→; ua-gluePath)
-open import Cubical.Foundations.Equiv using (composesToId→Equiv)
 
 open import Calf.Core.Abstract
 open import Calf.Core.Cost using (ℂ)
 open import Calf.Value
-import Calf.Value.Open as ◯
 import Calf.Value.Closed as ●
+import Calf.Value.Open as ◯
 open import Calf.Computation
-open import Calf.Computation.Open as ◯ᶜ
 open import Calf.Computation.Closed as ●ᶜ
 open import Calf.Computation.Glue as Glueᶜ hiding (squareᶜ)
-open Fractureᶜ
+open import Calf.Computation.Open as ◯ᶜ
 
 open import Calf.Computation.Abstraction.Base
+
+open Fractureᶜ
 
 opaque
   unfolding Abstractionᶜ

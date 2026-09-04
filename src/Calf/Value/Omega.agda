@@ -1,11 +1,10 @@
 module Calf.Value.Omega where
 
-open import Calf.Core.Directed
+open import Cubical.Data.Nat
+  using (ℕ; zero; suc; HasFromNat) renaming (_+_ to _+ℕ_)
+open import Data.Unit using (⊤)
+
 open import Calf.Value
-open import Cubical.Data.Nat using (ℕ; zero; suc; HasFromNat) renaming (_+_ to _+ℕ_)
-open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.Function
-open import Data.Unit
 
 data ω₀ : 𝒱 where
   zero : ω₀
@@ -14,7 +13,7 @@ data ω₀ : 𝒱 where
   rel-0𝟚 : ∀ n → rel 0𝟚 n ≡ n
   rel-1𝟚 : ∀ n → rel 1𝟚 n ≡ suc n
 
-ω₀-elimProp : (P : ω₀ → Type) → (∀ n → isProp (P n))
+ω₀-elimProp : (P : ω₀ → 𝒱) → (∀ n → isProp (P n))
   → P zero → (∀ n → P n → P (suc n)) → (∀ 𝕚 n → P n → P (rel 𝕚 n)) → ∀ n → P n
 ω₀-elimProp P isPropP z s r = go
   where
@@ -51,7 +50,6 @@ rel-1𝟚 m i +₀ n = rel-1𝟚 (m +₀ n) i
 ℕ→ω₀ : ℕ → ω₀
 ℕ→ω₀ zero = zero
 ℕ→ω₀ (suc n) = suc (ℕ→ω₀ n)
-
 
 ω : 𝒱
 ω = ∥ ω₀ ∥ᴾ
@@ -98,7 +96,6 @@ open import Algebra.Definitions {A = ω} _≡_
     (λ 𝕚 → mapᴾ (rel 𝕚) c)
   , rec-unique isPreorderᴾ (mapᴾ (rel 0𝟚)) (λ c → c) (λ n → cong ηᴾ (rel-0𝟚 n)) c
   , rec-unique isPreorderᴾ (mapᴾ (rel 1𝟚)) (1ω +_) (λ n → cong ηᴾ (rel-1𝟚 n)) c
-
 
 private
   isSetω : isSet ω

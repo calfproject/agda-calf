@@ -1,11 +1,11 @@
 module Calf.Directed.Behavior where
 
 open import Cubical.Foundations.Prelude
-open import Cubical.Data.Unit using (isContrUnit; terminal)
-open import Cubical.Foundations.Equiv.Properties using (isEquivPreComp; isEquivFromIsContr)
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Equiv.PathSplit
-open import Cubical.Foundations.Function
+open import Cubical.Foundations.Equiv.Properties
+  using (isEquivPreComp; isEquivFromIsContr)
+open import Cubical.Data.Unit using (isContrUnit; terminal)
 
 open import Calf.Core.Interval
 open import Calf.Directed.Discrete

@@ -1,9 +1,10 @@
 module Calf.Computation.Empty where
 
-open import Calf.Value
-open import Calf.Value.Empty public
 open import Calf.Core.Cost
+open import Calf.Value
 open import Calf.Computation
+
+open import Calf.Value.Empty public
 
 0ᶜ : 𝒞
 0ᶜ .U = ∥ ⊥ ∥ᴾ

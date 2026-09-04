@@ -1,20 +1,17 @@
-open import Cubical.Foundations.Prelude
-
 module Calf.Value.Glue.Fracture where
+
+open import Cubical.Foundations.Equiv.Properties using (congEquiv)
+open import Cubical.Foundations.Path
+open import Cubical.Foundations.Univalence using (ua; ua→; ua-gluePath)
+open import Cubical.Data.Sigma
+open import Cubical.Functions.FunExtEquiv using (funExtEquiv)
 
 open import Calf.Core.Abstract
 open import Calf.Value
-open import Calf.Value.Open as ◯
 open import Calf.Value.Closed as ●
+open import Calf.Value.Open as ◯
 
 open import Calf.Value.Glue.Base
-
-open import Cubical.Data.Sigma
-open import Cubical.Foundations.Path
-open import Cubical.Foundations.Univalence using (ua; ua→; ua-gluePath)
-open import Cubical.Foundations.Equiv.Properties using (congEquiv)
-open import Cubical.Functions.FunExtEquiv using (funExtEquiv)
-open import Cubical.Modalities.Modality
 
 module _ where
   open Fracture

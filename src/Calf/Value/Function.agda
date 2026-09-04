@@ -1,3 +1,4 @@
 module Calf.Value.Function where
 
-open import Cubical.Foundations.HLevels using (isSet→) public
+open import Cubical.Foundations.HLevels public
+  using (isSet→)

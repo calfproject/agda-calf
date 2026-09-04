@@ -1,11 +1,11 @@
-open import Cubical.Foundations.Univalence using (ua-gluePath)
-
 module Calf.Value.Abstraction where
 
+open import Cubical.Foundations.Univalence using (ua-gluePath)
+
 open import Calf.Value
-open import Calf.Value.Open as ◯
 open import Calf.Value.Closed as ●
 open import Calf.Value.Glue as Glue hiding (square)
+open import Calf.Value.Open as ◯
 
 Abstraction : (X-⊤ X-abs : 𝒱) → (X-⊤ → X-abs) → 𝒱
 Abstraction X-⊤ X-abs χ = Glue (● X-⊤) (◯ X-abs) (●.map (η◦ ∘ χ))

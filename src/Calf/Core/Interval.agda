@@ -3,6 +3,7 @@ module Calf.Core.Interval where
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Unit
 open import Relation.Binary.Definitions
+  using (Antisymmetric; Maximum; Minimum; Reflexive; Transitive)
 
 opaque
   𝟚 : Type

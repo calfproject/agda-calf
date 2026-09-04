@@ -1,16 +1,16 @@
-open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.Equiv
-open import Cubical.Foundations.Structure
-open import Cubical.Foundations.Univalence using (ua; ua→; ua-gluePath)
-open import Cubical.Data.Sigma
-
 module Calf.Computation.Open where
+
+open import Cubical.Foundations.Univalence using (ua; ua→; ua-gluePath)
 
 open import Calf.Core.Abstract
 open import Calf.Value
-open import Calf.Value.Open as ◯ hiding (map; map-∘; join; bind) public
 open import Calf.Computation
+open import Calf.Computation.Copower
 open import Calf.Computation.Power
+open import Calf.Computation.Pullback
+
+open import Calf.Value.Open as ◯ public
+  hiding (map; map-∘; join; bind)
 
 ◯ᶜ : 𝒞 → 𝒞
 ◯ᶜ = ⟨ ABS ⟩ ⇀_
@@ -70,24 +70,21 @@ opaque
 ⊸-precomp-η◦ᶜ-≃ : {A : 𝒞} (B◦ : 𝒞◦) → (◯ᶜ A ⊸ ⟨ B◦ ⟩ᶜ) ≃ (A ⊸ ⟨ B◦ ⟩ᶜ)
 ⊸-precomp-η◦ᶜ-≃ B◦ = (η◦ᶜ ⨾ᶜ_) , ⊸-precomp-η◦ᶜ-isEquiv B◦
 
-module _ where
-  open import Calf.Computation.Pullback
+Pullback-◯ᶜ : ∀ {A B C} (f : A ⊸ C) (g : B ⊸ C) → ◯ᶜ (Pullback f g) ≡ Pullback (map f) (map g)
+Pullback-◯ᶜ {A} {B} {C} f g = conservativity fwd fwd-equiv
+  where
+    fwd : ◯ᶜ (Pullback f g) ⊸ Pullback (map f) (map g)
+    fwd .U e =
+      ((λ abs → e abs .fst .fst) , (λ abs → e abs .fst .snd)) ,
+      funExt (λ abs → e abs .snd)
+    fwd .charge c e =
+      ΣPathP (refl , isProp→PathP (λ i → is-set (◯ᶜ C) _ _) _ _)
 
-  Pullback-◯ᶜ : ∀ {A B C} (f : A ⊸ C) (g : B ⊸ C) → ◯ᶜ (Pullback f g) ≡ Pullback (map f) (map g)
-  Pullback-◯ᶜ {A} {B} {C} f g = conservativity fwd fwd-equiv
-    where
-      fwd : ◯ᶜ (Pullback f g) ⊸ Pullback (map f) (map g)
-      fwd .U e =
-        ((λ abs → e abs .fst .fst) , (λ abs → e abs .fst .snd)) ,
-        funExt (λ abs → e abs .snd)
-      fwd .charge c e =
-        ΣPathP (refl , isProp→PathP (λ i → is-set (◯ᶜ C) _ _) _ _)
+    inv : U (Pullback (map f) (map g)) → U (◯ᶜ (Pullback f g))
+    inv ((a◦ , b◦) , p) abs = (a◦ abs , b◦ abs) , funExt⁻ p abs
 
-      inv : U (Pullback (map f) (map g)) → U (◯ᶜ (Pullback f g))
-      inv ((a◦ , b◦) , p) abs = (a◦ abs , b◦ abs) , funExt⁻ p abs
-
-      fwd-equiv : isEquivᶜ fwd
-      fwd-equiv = isoToIsEquiv (iso (fwd .U) inv (λ _ → refl) (λ _ → refl))
+    fwd-equiv : isEquivᶜ fwd
+    fwd-equiv = isoToIsEquiv (iso (fwd .U) inv (λ _ → refl) (λ _ → refl))
 
 ◯ᶜ-eval-open : ⟨ ABS ⟩ → (A : 𝒞) → ◯ᶜ A ⊸ A
 ◯ᶜ-eval-open abs A .U a◦ = a◦ abs
@@ -134,20 +131,17 @@ module _ where
     (◯ᶜ-eval-open abs A .U , ◯ᶜ-eval-open-isEquiv abs A)
     p
 
-module _ where
-  open import Calf.Computation.Copower
+private
+  embed : ∀ {X A} → Σᶜ X A .U → Σᶜ X (◯ᶜ ∘ A) .U
+  embed (x , a) = x , η◦ a
 
-  private
-    embed : ∀ {X A} → Σᶜ X A .U → Σᶜ X (◯ᶜ ∘ A) .U
-    embed (x , a) = x , η◦ a
+Σᶜ-◯ᶜ-fwd : (X : 𝒱₌) (A : ⟨ X ⟩ → 𝒞) → ◯ᶜ (Σᶜ X A) ⊸ ◯ᶜ (Σᶜ X (◯ᶜ ∘ A))
+Σᶜ-◯ᶜ-fwd X A = map (Σᶜ-map {X} {A} λ _ → η◦ᶜ)
 
-  Σᶜ-◯ᶜ-fwd : (X : 𝒱₌) (A : ⟨ X ⟩ → 𝒞) → ◯ᶜ (Σᶜ X A) ⊸ ◯ᶜ (Σᶜ X (◯ᶜ ∘ A))
-  Σᶜ-◯ᶜ-fwd X A = map (Σᶜ-map {X} {A} λ _ → η◦ᶜ)
+Σᶜ-◯ᶜ-fwd-equiv : (X : 𝒱₌) (A : ⟨ X ⟩ → 𝒞) → isEquivᶜ (Σᶜ-◯ᶜ-fwd X A)
+Σᶜ-◯ᶜ-fwd-equiv X A =
+  subst isEquiv (funExt⁻ ◯.map′≡map (embed {X} {A})) (invEquiv ○Σ○≃○Σ .snd)
 
-  Σᶜ-◯ᶜ-fwd-equiv : (X : 𝒱₌) (A : ⟨ X ⟩ → 𝒞) → isEquivᶜ (Σᶜ-◯ᶜ-fwd X A)
-  Σᶜ-◯ᶜ-fwd-equiv X A =
-    subst isEquiv (funExt⁻ ◯.map′≡map (embed {X} {A})) (invEquiv ○Σ○≃○Σ .snd)
-
-  Σᶜ-◯ᶜ : (X : 𝒱₌) (A : ⟨ X ⟩ → 𝒞) → ◯ᶜ (Σᶜ X A) ≡ ◯ᶜ (Σᶜ X (◯ᶜ ∘ A))
-  Σᶜ-◯ᶜ X A =
-    conservativity (Σᶜ-◯ᶜ-fwd X A) (Σᶜ-◯ᶜ-fwd-equiv X A)
+Σᶜ-◯ᶜ : (X : 𝒱₌) (A : ⟨ X ⟩ → 𝒞) → ◯ᶜ (Σᶜ X A) ≡ ◯ᶜ (Σᶜ X (◯ᶜ ∘ A))
+Σᶜ-◯ᶜ X A =
+  conservativity (Σᶜ-◯ᶜ-fwd X A) (Σᶜ-◯ᶜ-fwd-equiv X A)

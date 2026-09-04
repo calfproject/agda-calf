@@ -1,28 +1,24 @@
 module Calf.Directed.Modality where
 
 open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.Univalence using (hPropExt)
-open import Cubical.HITs.Truncation.Properties using (isSphereFilled→isOfHLevel)
 open import Cubical.Foundations.Equiv
-open import Cubical.Foundations.Equiv.Fiberwise
 open import Cubical.Foundations.Equiv.PathSplit
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
-open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Univalence using (hPropExt)
 open import Cubical.Data.Bool hiding (elim)
 open import Cubical.Data.Sigma
 open import Cubical.Data.Unit
 open import Cubical.HITs.Localization as Localization hiding (rec)
 open import Cubical.HITs.S1 hiding (rec; elim)
-open import Relation.Binary.Definitions
+open import Cubical.HITs.Truncation.Properties
+  using (isSphereFilled→isOfHLevel)
 
 open import Calf.Core.Interval
-open import Calf.Directed.Set
-open import Calf.Directed.Transitive
-open import Calf.Directed.Thin
-import Calf.Directed.Localization
 open import Calf.Directed.Localization hiding (rec-unique)
-open import Calf.Directed.Path
+open import Calf.Directed.Set
+open import Calf.Directed.Thin
+open import Calf.Directed.Transitive
 
 private variable X Y Z : Type
 

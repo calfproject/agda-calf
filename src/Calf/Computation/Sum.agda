@@ -1,8 +1,9 @@
 module Calf.Computation.Sum where
 
 open import Calf.Value
-open import Calf.Value.Sum public
 open import Calf.Computation
+
+open import Calf.Value.Sum public
 
 _+ᶜ_ : 𝒞 → 𝒞 → 𝒞
 (A +ᶜ B) .U = A .U ⊎ B .U

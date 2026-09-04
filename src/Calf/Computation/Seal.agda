@@ -1,23 +1,17 @@
-open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.Function
-open import Cubical.Foundations.Structure
-open import Cubical.Data.Sigma using (ΣPathP; Σ≡Prop)
-
 module Calf.Computation.Seal where
 
-open import Calf.Core.Cost
-open import Calf.Core.Directed
-open import Calf.Computation
+open import Cubical.Data.Sigma using (ΣPathP; Σ≡Prop)
+
 open import Calf.Value
 import Calf.Value.Closed as ●
 import Calf.Value.Open as ◯
 open import Calf.Value.Seal
-open import Calf.Computation.Power
-open import Calf.Computation.Open as ◯ᶜ
+open import Calf.Computation
+open import Calf.Computation.Abstraction
 open import Calf.Computation.Closed as ●ᶜ
 open import Calf.Computation.Glue
   using (Fractureᶜ; toFractureᶜ; fromFractureᶜ; glue-fracture-sectionᶜ; proj•ᶜ; proj◦ᶜ)
-open import Calf.Computation.Abstraction
+open import Calf.Computation.Open as ◯ᶜ
 
 private
   thin● : (A : 𝒞) → isThin (● (U A))

@@ -1,24 +1,19 @@
 module Examples.Giralf.InsertionSort where
 
-open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.Function
+open import Cubical.Data.Bool
+open import Cubical.Data.Nat
+open import Cubical.Data.Nat.Order
+import Cubical.Data.Nat.Properties as Nat
+open import Cubical.Relation.Nullary
+
 open import Calf.Core.Cost
 open import Calf.Value
 open import Calf.Value.Nat using (ℕ₌)
-open import Calf.Computation
-open import Calf.Computation.Product
-open import Calf.Computation.Tensor
-open import Calf.Computation.Credit
-open import Calf.Computation.Debit
 open import Calf.Computation.CList1
 open import Calf.Computation.CList2
+open import Calf.Computation.Debit
+open import Calf.Computation.Product
 open import Calf.Giralf
-
-open import Cubical.Data.Bool
-open import Cubical.Data.Nat
-import Cubical.Data.Nat.Properties as Nat
-open import Cubical.Data.Nat.Order
-open import Cubical.Relation.Nullary
 
 _≤ᵇ_ : ℕ → ℕ → Bool
 m ≤ᵇ n with ≤Dec m n

@@ -1,18 +1,23 @@
 module Examples.Queue where
 
+import Cubical.Data.List.Properties as List
+import Cubical.Data.Nat.Properties as Nat
+
 open import Calf.Core.Abstract
 open import Calf.Core.Cost
 open import Calf.Core.Monad using (M)
 open import Calf.Value hiding (empty)
+open import Calf.Value.Abstraction using (square)
+open import Calf.Value.Closed as ●
 open import Calf.Value.List
 open import Calf.Value.Nat
-open import Calf.Value.Product
+open import Calf.Value.Open as ◯
 open import Calf.Computation
+open import Calf.Computation.Abstraction
+open import Calf.Computation.Closed as ●ᶜ hiding (push)
 open import Calf.Computation.Copower
 open import Calf.Computation.Free
-open import Calf.Computation.Power
-import Cubical.Data.List.Properties as List
-import Cubical.Data.Nat.Properties as Nat
+open import Calf.Computation.Open as ◯ᶜ
 
 
 record PreQueue : 𝒱₁ where
@@ -74,15 +79,6 @@ record Queue : 𝒱₁ where
     prequeue : PreQueue
     spec : ⟨ ABS ⟩ → prequeue ≡ list-prequeue
 open Queue
-
-open import Cubical.Foundations.Equiv
-open import Calf.Value.Open as ◯
-open import Calf.Value.Closed as ●
-open import Calf.Value.Glue hiding (square)
-open import Calf.Value.Abstraction using (square)
-open import Calf.Computation.Open as ◯ᶜ
-open import Calf.Computation.Closed as ●ᶜ hiding (push)
-open import Calf.Computation.Abstraction
 
 α : BQ ⊸ LQ
 α = F-rec λ (l₁ , l₂) → LQ .charge (# length l₁) (ret (l₂ ++ reverse l₁))

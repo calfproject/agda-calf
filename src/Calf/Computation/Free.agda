@@ -1,14 +1,11 @@
 module Calf.Computation.Free where
 
+open import Cubical.Data.Nat using (zero; suc)
+
 open import Calf.Core.Monad
 open import Calf.Value
 open import Calf.Value.Product
 open import Calf.Computation
-open import Cubical.Data.Nat using (zero; suc)
-open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.Equiv
-open import Cubical.Foundations.Function
-open import Cubical.Foundations.Isomorphism
 
 opaque
   unfolding M

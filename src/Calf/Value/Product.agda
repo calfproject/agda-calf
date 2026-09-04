@@ -1,11 +1,12 @@
 module Calf.Value.Product where
 
-open import Cubical.Data.Sigma
+open import Calf.Value
+
+open import Cubical.Foundations.HLevels public
+  using (isSet×)
+open import Cubical.Data.Sigma public
   using (_×_; _,_)
   renaming (fst to proj₁; snd to proj₂)
-  public
-open import Cubical.Foundations.HLevels using (isSet×) public
-open import Calf.Value
 
 opaque
   isDiscrete× : isDiscrete X → isDiscrete Y → isDiscrete (X × Y)

@@ -2,23 +2,20 @@ module Calf.Directed.Discrete where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
-open import Cubical.Foundations.Equiv.Fiberwise
 open import Cubical.Foundations.Equiv.PathSplit
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Isomorphism
-open import Cubical.HITs.Localization
 open import Cubical.Data.Bool
 open import Cubical.Data.Sigma
 open import Cubical.Data.Unit
-open import Cubical.HITs.S1
+open import Cubical.HITs.Localization
 
 open import Calf.Core.Interval
-open import Calf.Directed.Transitive
+open import Calf.Directed.Modality
 open import Calf.Directed.Path
 open import Calf.Directed.Thin
-open import Calf.Directed.Modality
-open import Calf.Directed.Set
+open import Calf.Directed.Transitive
 
 private variable X Y : Type
 

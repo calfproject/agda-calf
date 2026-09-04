@@ -2,8 +2,8 @@ module Examples.Id where
 
 open import Calf.Core.Cost
 open import Calf.Value hiding (id)
-open import Calf.Value.Nat
 open import Calf.Value.BigO
+open import Calf.Value.Nat
 open import Calf.Computation
 open import Calf.Computation.Free
 open import Calf.Computation.Power

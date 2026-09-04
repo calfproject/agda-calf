@@ -4,7 +4,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
 open import Cubical.Data.Sigma
 open import Relation.Binary using (_⇒_)
-open import Relation.Binary.Definitions
+open import Relation.Binary.Definitions using (Reflexive)
 
 open import Calf.Core.Interval
 

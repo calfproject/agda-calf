@@ -1,12 +1,9 @@
 module Calf.Value.Unit where
 
 open import Calf.Value
-open import Cubical.Data.Unit public
-open import Cubical.Foundations.Prelude
 
-open import Cubical.Data.Unit
+open import Cubical.Data.Unit public
   renaming (Unit to ⊤; isSetUnit to isSet⊤)
-  public
 
 opaque
   isDiscrete⊤ : isDiscrete ⊤

@@ -1,18 +1,11 @@
-open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.Univalence using (ua→; ua-gluePath)
-open import Cubical.Foundations.HLevels
-open import Cubical.Foundations.Structure
-
 module Calf.Computation where
 
-open import Calf.Core.Abstract
-open import Calf.Value
-open import Calf.Core.Cost
-open import Cubical.Data.Nat using (ℕ; zero; suc) renaming (_+_ to _+ℕ_)
-open import Cubical.Foundations.Equiv
-open import Cubical.Foundations.Function
-open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence using (ua; ua→; ua-gluePath)
+open import Cubical.Data.Nat
+  using (ℕ; zero; suc) renaming (_+_ to _+ℕ_)
+
+open import Calf.Core.Cost
+open import Calf.Value
 
 record 𝒞 : 𝒱₁ where
   field
@@ -66,6 +59,7 @@ syntax ⊑-syntax {A} a a' = a ⊑[ A ] a'
 
 module ⊑-Reasoning (A : 𝒞) where
   open import Relation.Binary
+    using (IsEquivalence; Preorder; IsPreorder)
 
   ≡-isEquivalence : IsEquivalence (_≡_ {A = U A})
   ≡-isEquivalence = record { refl = refl ; sym = sym ; trans = _∙_ }

@@ -1,22 +1,23 @@
 module Calf.Computation.Glue.Fracture where
 
-open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Equiv.Properties using (congEquiv)
-open import Cubical.Foundations.Path using (compPathlEquiv; compPathrEquiv; symIso)
+open import Cubical.Foundations.Path
+  using (compPathlEquiv; compPathrEquiv; symIso)
 open import Cubical.Foundations.Univalence using (ua)
 
-open import Calf.Core.Cost
 open import Calf.Value
-import Calf.Value.Open as ◯
 import Calf.Value.Closed as ●
-open import Calf.Value.Glue public
+import Calf.Value.Open as ◯
 open import Calf.Value.Product
 open import Calf.Value.Sigma
 open import Calf.Computation
-open import Calf.Computation.Open as ◯ᶜ
 open import Calf.Computation.Closed as ●ᶜ
+open import Calf.Computation.Open as ◯ᶜ
 
 open import Calf.Computation.Glue.Base
+
+open import Calf.Value.Glue public
+
 open Fractureᶜ
 
 FractureGlueᶜ : 𝒞 → 𝒞

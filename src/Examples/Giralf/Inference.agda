@@ -1,24 +1,18 @@
 module Examples.Giralf.Inference where
 
-open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.Function
-open import Calf.Core.Cost
+open import Cubical.Data.Bool hiding (_≤_)
+open import Cubical.Data.Nat
+open import Cubical.Data.Nat.Order
+import Cubical.Data.Nat.Properties as Nat
+open import Cubical.Relation.Nullary
+
 open import Calf.Value
 open import Calf.Value.Nat using (ℕ₌)
 open import Calf.Computation.Power
 open import Calf.Computation.Product
 open import Calf.Giralf.Nat
 
-open import Cubical.Data.Nat
-open import Cubical.Data.Nat.Order using (_≤_)
-open import Cubical.Data.Vec
-open import Calf.Computation
-
-open import Cubical.Data.Bool hiding (_≤_)
-import Cubical.Data.Nat.Properties as Nat
-open import Cubical.Data.Nat.Order
 open <-Reasoning
-open import Cubical.Relation.Nullary
 
 one≤-of-suc≤ : ∀ {q p : ℕ} → suc q ≤ p → 1 ≤ p
 one≤-of-suc≤ h = 1 ≤⟨ suc-≤-suc zero-≤ ⟩ h

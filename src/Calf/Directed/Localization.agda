@@ -4,17 +4,16 @@ module Calf.Directed.Localization
   {A : Type} {S : A → Type} {T : A → Type} {F : ∀ α → S α → T α}
   where
 
-open import Cubical.Foundations.Path
 open import Cubical.Foundations.Equiv
-open import Cubical.Foundations.Equiv.Properties
 open import Cubical.Foundations.Equiv.PathSplit
+open import Cubical.Foundations.Equiv.Properties
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Isomorphism
-open import Cubical.Foundations.Transport
-open import Cubical.Functions.FunExtEquiv
+open import Cubical.Foundations.Path
 open import Cubical.Data.Sigma
 open import Cubical.Data.Unit
+open import Cubical.Functions.FunExtEquiv
 open import Cubical.HITs.Localization
 open import Cubical.HITs.Nullification.Properties using (toPathP⁻-sq)
 

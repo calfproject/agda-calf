@@ -1,17 +1,16 @@
 module Calf.Computation.Tensor.Closed where
 
-open import Cubical.Foundations.Structure
+open import Cubical.Foundations.Equiv.Properties
+  using (isEquiv[equivFunA≃B∘f]→isEquiv[f])
 
 open import Calf.Core.Abstract
 open import Calf.Value
-open import Calf.Computation
-open import Calf.Computation.Tensor.Base
-
-open import Cubical.Foundations.Equiv.Properties using (isEquiv[equivFunA≃B∘f]→isEquiv[f])
-
-open import Calf.Computation.Closed as ●ᶜ hiding (map)
 import Calf.Value.Closed as ●
 import Calf.Value.Open as ◯
+open import Calf.Computation
+open import Calf.Computation.Closed as ●ᶜ hiding (map)
+
+open import Calf.Computation.Tensor.Base
 
 module _ {A B : 𝒞} where
   private

@@ -1,21 +1,22 @@
 module Calf.Value.Closed where
 
+open import 1Lab.Set.Pi
+open import Cubical.Foundations.CartesianKanOps
+open import Cubical.Foundations.Equiv.PathSplit
+  using (fromIsEquiv; toIsEquiv)
+open import Cubical.Foundations.Equiv.Properties using (congEquiv)
+open import Cubical.Foundations.Path
+  using (compPathlEquiv; compPathrEquiv)
+open import Cubical.Foundations.Univalence using (hPropExt)
+open import Cubical.Data.Unit using (UnitToType≃)
+open import Cubical.Modalities.Modality
+
 open import Calf.Core.Abstract
 open import Calf.Value
 open import Calf.Value.Open as ◯ using (◯)
 open import Calf.Value.Product
 open import Calf.Value.Sigma
 open import Calf.Value.Unit
-
-open import 1Lab.Set.Pi
-open import Cubical.Foundations.CartesianKanOps
-open import Cubical.Foundations.Path using (compPathlEquiv; compPathrEquiv)
-open import Cubical.Foundations.Univalence using (hPropExt)
-open import Cubical.Foundations.Equiv.Properties using (congEquiv)
-
-open import Cubical.Foundations.Equiv.PathSplit using (fromIsEquiv; toIsEquiv)
-open import Cubical.Data.Unit using (UnitToType≃)
-open import Cubical.Modalities.Modality
 
 data ● (X : 𝒱) : 𝒱 where
   η• : (x : X) → ● X

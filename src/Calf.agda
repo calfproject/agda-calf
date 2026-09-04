@@ -4,9 +4,11 @@ import Calf.Core.Monad
 
 import Calf.Value
 import Calf.Value.Abstraction
+import Calf.Value.BigO
 import Calf.Value.Bool
 import Calf.Value.Closed
 import Calf.Value.Empty
+import Calf.Value.Function
 import Calf.Value.Glue
 import Calf.Value.List
 import Calf.Value.Nat

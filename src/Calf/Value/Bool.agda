@@ -2,8 +2,8 @@ module Calf.Value.Bool where
 
 open import Calf.Value
 open import Calf.Value.Nat
+
 open import Cubical.Data.Bool public
-open import Cubical.Foundations.Isomorphism
 
 isDiscreteBool : isDiscrete Bool
 isDiscreteBool = isLocalRetract inj prj isRetract isDiscreteℕ

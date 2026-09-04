@@ -3,9 +3,9 @@ module Calf.Computation.Abstraction.Base where
 open import Calf.Value
 open import Calf.Value.Abstraction
 open import Calf.Computation
-open import Calf.Computation.Open as ◯ᶜ
 open import Calf.Computation.Closed as ●ᶜ
 open import Calf.Computation.Glue as Glueᶜ hiding (squareᶜ)
+open import Calf.Computation.Open as ◯ᶜ
 
 open Fractureᶜ
 

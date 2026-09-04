@@ -1,7 +1,9 @@
 module Calf.Value.Pi where
 
-open import Cubical.Foundations.HLevels using (isSetΠ) public
 open import Calf.Value
+
+open import Cubical.Foundations.HLevels public
+  using (isSetΠ)
 
 opaque
   isDiscreteΠ : {Y : X → 𝒱} → ((x : X) → isDiscrete (Y x)) → isDiscrete ((x : X) → Y x)
