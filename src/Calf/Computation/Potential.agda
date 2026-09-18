@@ -155,12 +155,11 @@ opaque
   ▷-Σᶜ {X} {A} c =
     cong (Abstractionᶜ (Σᶜ₌ X A) (Σᶜ₌ X A)) (sym (Σᶜ-map-chargeᶜ c)) ∙ Σᶜ-Abstractionᶜ (λ _ → chargeᶜ c)
 
-  Potential-credit : ∀ Φ →
-    Potential Φ ≡ [ x ∈ X₌ ] ⋊ ▷[ Φ x ] ⊤
-  Potential-credit {X₌ = X} Φ =
+  Potential-credit : ∀ Φ → Potential Φ ≡ [ x ∈ X₌ ] ⋊ ▷[ Φ x ] ⊤
+  Potential-credit {X} Φ =
       Potential Φ
     ≡⟨ (λ i → Abstractionᶜ (F-Σᶜ X i) (F-Σᶜ X i) (F-Σᶜ-potential X Φ i)) ⟩
-      Abstractionᶜ ([ x ∈ X ] ⋊ ⊤) ([ x ∈ X ] ⋊ ⊤) (Σᶜ-map {A = const ⊤} {B = const ⊤} (λ x → chargeᶜ (Φ x)))
+      Abstractionᶜ ([ x ∈ X ] ⋊ ⊤) ([ x ∈ X ] ⋊ ⊤) (Σᶜ-map (chargeᶜ ∘ Φ))
     ≡⟨ Σᶜ-Abstractionᶜ (λ x → chargeᶜ (Φ x)) ⟩
       [ x ∈ X ] ⋊ ▷[ Φ x ] ⊤
     ∎
