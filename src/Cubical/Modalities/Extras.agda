@@ -44,6 +44,10 @@ module _ where
   map-η≡η : map (η {X}) ≡ η
   map-η≡η = funExt (◯-elim (λ _ → ◯-=-isModal _ _) (◯-map-β η))
 
+  opaque
+    map-η-isEquiv : isEquiv (map (η {X}))
+    map-η-isEquiv = subst isEquiv (sym map-η≡η) (isModalToIsEquiv ◯-isModal)
+
 -- ○Σ○ is equivalent to ○Σ
 module _ {X : Type ℓ} {Y : X → Type ℓ} where
   ○Σ○≃○Σ : ◯ (Σ X (◯ ∘ Y)) ≃ ◯ (Σ X Y)

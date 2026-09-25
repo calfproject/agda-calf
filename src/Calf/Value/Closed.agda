@@ -166,6 +166,7 @@ open import Cubical.Modalities.Extras ●Modality public
     ( map to map′
     ; map-∘ to map′-∘
     ; join to join′
+    ; map-η-isEquiv to map′-η-isEquiv
     ; η-isNatural to η•-isNatural
     ; ○Σ○≃○Σ to ●Σ●≃●Σ
     )
@@ -174,6 +175,10 @@ open import Cubical.Modalities.Extras ●Modality public
 opaque
   map′≡map : map′ {X} {Y} ≡ map
   map′≡map = funExt λ f → sym (◯-rec-unique isModal● refl)
+
+opaque
+  map-η-isEquiv : isEquiv (map (η• {X}))
+  map-η-isEquiv = subst isEquiv (funExt⁻ map′≡map η•) map′-η-isEquiv
 
 opaque
   isLex● : IsLex◯
@@ -291,8 +296,8 @@ module _ {X Y Z : 𝒱} {f : X → Z} {g : Y → Z} where
 𝒱• : 𝒱₁
 𝒱• = TypeWithStr _ isModal
 
-𝒱•-path : (X• X•' : 𝒱•) → ⟨ X• ⟩ ≡ ⟨ X•' ⟩ → X• ≡ X•'
-𝒱•-path X• X•' = Σ≡Prop λ _ → isPropIsEquiv _
+𝒱•-path : {X• X•' : 𝒱•} → ⟨ X• ⟩ ≡ ⟨ X•' ⟩ → X• ≡ X•'
+𝒱•-path = Σ≡Prop λ _ → isPropIsEquiv _
 
 ●• : 𝒱 → 𝒱•
 ●• X = ● X , isModal●

@@ -129,8 +129,8 @@ isPreorder◯ isPreorderX = isLocalΠ λ _ → isPreorderX
 𝒱◦ : 𝒱₁
 𝒱◦ = TypeWithStr _ isModal
 
-𝒱◦-path : (X◦ X◦' : 𝒱◦) → ⟨ X◦ ⟩ ≡ ⟨ X◦' ⟩ → X◦ ≡ X◦'
-𝒱◦-path X◦ X◦' = Σ≡Prop λ _ → isPropIsEquiv _
+𝒱◦-path : {X◦ X◦' : 𝒱◦} → ⟨ X◦ ⟩ ≡ ⟨ X◦' ⟩ → X◦ ≡ X◦'
+𝒱◦-path = Σ≡Prop λ _ → isPropIsEquiv _
 
 ◯◦ : 𝒱 _ → 𝒱◦
 ◯◦ X = ◯ X , isModal◯

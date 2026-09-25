@@ -38,8 +38,8 @@ module _ {X• X◦ : 𝒱} {χ• : X• → ● X◦} where
 
   opaque
     isPreorderGlue : isPreorder X• → isPreorder X◦ → isPreorder (Glue X• X◦ χ•)
-    isPreorderGlue pre• pre◦ =
-      isLocalPullback pre• pre◦ (isPreorder● pre◦) χ• η•
+    isPreorderGlue isPreorderX• isPreorderX◦ =
+      isLocalPullback isPreorderX• isPreorderX◦ (isPreorder● isPreorderX◦) χ• η•
 
 record Fracture : 𝒱₁ where
   field
@@ -49,14 +49,14 @@ record Fracture : 𝒱₁ where
 open Fracture
 
 Fracture-path
-  : {F G : Fracture}
-  → (X•-path : F .X• ≡ G .X•)
-  → (X◦-path : F .X◦ ≡ G .X◦)
+  : {F F' : Fracture}
+  → (X•-path : F .X• ≡ F' .X•)
+  → (X◦-path : F .X◦ ≡ F' .X◦)
   → PathP
       (λ i → X•-path i .fst → ● (X◦-path i .fst))
       (F .χ•)
-      (G .χ•)
-  → F ≡ G
+      (F' .χ•)
+  → F ≡ F'
 Fracture-path X•-path X◦-path χ•-path i .X• = X•-path i
 Fracture-path X•-path X◦-path χ•-path i .X◦ = X◦-path i
 Fracture-path X•-path X◦-path χ•-path i .χ• = χ•-path i
@@ -70,9 +70,9 @@ toFracture X .X◦ = ◯◦ X
 toFracture X .χ• = ●.map η◦
 
 Fracture-Square : Fracture → Fracture → 𝒱
-Fracture-Square F G =
-  Σ[ (f• , f◦) ∈ (⟨ F .X• ⟩ → ⟨ G .X• ⟩) × (⟨ F .X◦ ⟩ → ⟨ G .X◦ ⟩) ]
-    G .χ• ∘ f• ≡ ●.map f◦ ∘ F .χ•
+Fracture-Square F₁ F₂ =
+  Σ[ (f• , f◦) ∈ (⟨ F₁ .X• ⟩ → ⟨ F₂ .X• ⟩) × (⟨ F₁ .X◦ ⟩ → ⟨ F₂ .X◦ ⟩) ]
+    F₂ .χ• ∘ f• ≡ ●.map f◦ ∘ F₁ .χ•
 
 square
   : ∀ {X• X◦ χ Y• Y◦ ψ}
