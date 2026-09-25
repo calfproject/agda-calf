@@ -7,7 +7,7 @@ open import Cubical.Foundations.Equiv.PathSplit
 open import Cubical.Foundations.Equiv.Properties using (congEquiv)
 open import Cubical.Foundations.Path
   using (compPathlEquiv; compPathrEquiv)
-open import Cubical.Foundations.Univalence using (hPropExt)
+open import Cubical.Foundations.Univalence using (hPropExt; ua)
 open import Cubical.Data.Unit using (UnitToType≃)
 open import Cubical.Modalities.Modality
 
@@ -292,6 +292,12 @@ module _ {X Y Z : 𝒱} {f : X → Z} {g : Y → Z} where
     (u : Σ[ (x , y) ∈ X × Y ] (f x ≡ g y))
     → equivFun ●-pullback (η• u) .fst .snd ≡ η• (u .fst .snd)
   ●-pullback-β₂ u = cong (snd ∘ fst) (◯-pullback-lex-β isLex● u)
+
+module _ {X Y : 𝒱} (e : X ≃ Y) where
+  ●-ua-gluePath : {x• : ● X} {y• : ● Y}
+    → map (equivFun e) x• ≡ y• → PathP (λ i → ● (ua e i)) x• y•
+  ●-ua-gluePath {x•} p =
+    ◯-ua-gluePath e (funExt⁻ (funExt⁻ map′≡map (equivFun e)) x• ∙ p)
 
 𝒱• : 𝒱₁
 𝒱• = TypeWithStr _ isModal

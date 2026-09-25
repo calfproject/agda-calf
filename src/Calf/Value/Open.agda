@@ -116,15 +116,25 @@ opaque
 isPreorder◯ : isPreorder X → isPreorder (◯ X)
 isPreorder◯ isPreorderX = isLocalΠ λ _ → isPreorderX
 
-◯-pullback : {X Y Z : 𝒱} {f : X → Z} {g : Y → Z} →
-  ◯ (Σ[ (x , y) ∈ X × Y ] (f x ≡ g y))
-  ≃ (Σ[ (x◦ , y◦) ∈ ◯ X × ◯ Y ] (map f x◦ ≡ map g y◦))
-◯-pullback {X} {Y} {Z} {f} {g} =
-  ◯-pullback-lex isLex◯
-  ∙ₑ Σ-cong-equiv-snd λ (x◦ , y◦) →
-      compPathrEquiv (funExt⁻ (funExt⁻ map′≡map g) y◦)
-    ∙ₑ compPathlEquiv (sym (funExt⁻ (funExt⁻ map′≡map f) x◦))
+module _ {X Y Z : 𝒱} {f : X → Z} {g : Y → Z} where
+  ◯-pullback :
+    ◯ (Σ[ (x , y) ∈ X × Y ] (f x ≡ g y))
+    ≃ (Σ[ (x◦ , y◦) ∈ ◯ X × ◯ Y ] (map f x◦ ≡ map g y◦))
+  ◯-pullback =
+    ◯-pullback-lex isLex◯
+    ∙ₑ Σ-cong-equiv-snd λ (x◦ , y◦) →
+        compPathrEquiv (funExt⁻ (funExt⁻ map′≡map g) y◦)
+      ∙ₑ compPathlEquiv (sym (funExt⁻ (funExt⁻ map′≡map f) x◦))
 
+  ◯-pullback-β₁ :
+    (u : Σ[ (x , y) ∈ X × Y ] (f x ≡ g y))
+    → equivFun ◯-pullback (η◦ u) .fst .fst ≡ η◦ (u .fst .fst)
+  ◯-pullback-β₁ u = cong (fst ∘ fst) (◯-pullback-lex-β isLex◯ u)
+
+  ◯-pullback-β₂ :
+    (u : Σ[ (x , y) ∈ X × Y ] (f x ≡ g y))
+    → equivFun ◯-pullback (η◦ u) .fst .snd ≡ η◦ (u .fst .snd)
+  ◯-pullback-β₂ u = cong (snd ∘ fst) (◯-pullback-lex-β isLex◯ u)
 
 𝒱◦ : 𝒱₁
 𝒱◦ = TypeWithStr _ isModal

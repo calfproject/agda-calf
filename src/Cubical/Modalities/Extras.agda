@@ -11,7 +11,8 @@ open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Path
   using (PathP≡Path⁻; PathP≃Path; compPathlEquiv; compPathrEquiv)
-open import Cubical.Foundations.Univalence using (isEquivTransport)
+open import Cubical.Foundations.Univalence
+  using (isEquivTransport; ua; ua-gluePath)
 open import Cubical.Data.Sigma
 
 open Modality M
@@ -135,6 +136,17 @@ module _ where
   ◯-rec-const : (isModalZ : isModal Y) (y : Y) (x◦ : ◯ X) → ◯-rec isModalZ (λ _ → y) x◦ ≡ y
   ◯-rec-const isModalZ y =
     funExt⁻ (η-ext (λ _ → isModalZ) (funExt (◯-rec-β isModalZ (λ _ → y))))
+
+module _ (e : X ≃ Y) where
+  opaque
+    ◯-ua-gluePath : {x◦ : ◯ X} {y◦ : ◯ Y}
+      → map (equivFun e) x◦ ≡ y◦ → PathP (λ i → ◯ (ua e i)) x◦ y◦
+    ◯-ua-gluePath {x◦} p = gluePt x◦ ▷ p
+      where
+        gluePt : (x◦ : ◯ X) → PathP (λ i → ◯ (ua e i)) x◦ (map (equivFun e) x◦)
+        gluePt =
+          ◯-elim (λ _ → isModalPathP ◯-isModal) λ x →
+            congP (λ _ → η) (ua-gluePath e refl) ▷ sym (◯-map-β (equivFun e) x)
 
 -- lemmas about isConnected
 module _ where

@@ -2,7 +2,7 @@ module Calf.Value.Glue.Fracture where
 
 open import Cubical.Foundations.Equiv.Properties using (congEquiv)
 open import Cubical.Foundations.Path
-open import Cubical.Foundations.Univalence using (ua; ua→; ua-gluePath)
+open import Cubical.Foundations.Univalence using (ua)
 open import Cubical.Data.Sigma
 open import Cubical.Functions.FunExtEquiv using (funExtEquiv)
 
@@ -71,6 +71,16 @@ module _ where
       ⟨ F .X• ⟩
     ■
 
+  glue•-β : (F : Fracture) (g : fromFracture F)
+    → equivFun (glue•-equiv F) (η• g) ≡ • g
+  glue•-β F g =
+      equivFun (glue•-equiv F) (η• g)
+    ≡⟨ cong (invIsEq (str (F .X•))) (●-pullback-β₁ g) ⟩
+      invIsEq (str (F .X•)) (η• (• g))
+    ≡⟨ retIsEq (str (F .X•)) (• g) ⟩
+      • g
+    ∎
+
   Glue-open-≃ : (F : Fracture) → ⟨ ABS ⟩ → fromFracture F ≃ ⟨ F .X◦ ⟩
   Glue-open-≃ F abs =
       Σ[ (x• , x◦) ∈ ⟨ F .X• ⟩ × ⟨ F .X◦ ⟩ ] F .χ• x• ≡ η• x◦
@@ -93,40 +103,23 @@ module _ where
       ⟨ F .X◦ ⟩
     ■
 
---   glue•-β : (F : Fracture) (g : fromFracture F)
---     → equivFun (glue•-equiv F) (η• g) ≡ • g
---   glue•-β F = ●.elim-β (λ _ → F .X• .snd) (λ g → • g)
-
---   glue◦-β : (F : Fracture) (g : fromFracture F)
---     → equivFun (glue◦-equiv F) (η◦ g) ≡ ◦ g
---   glue◦-β F = ◯.elim-β (λ _ → F .X◦ .snd) (λ g → ◦ g)
-
---   opaque
---     square-χ•-path : {F G : Fracture}
---       → (h : fromFracture F → fromFracture G)
---       → (k : ⟨ F .X• ⟩ → ● ⟨ G .X◦ ⟩)
---       → ((g : fromFracture F) → η• (◦ (h g)) ≡ k (• g))
---       → PathP (λ i → ua (glue•-equiv F) i → ● (ua (glue◦-equiv G) i))
---           (●.map (η◦ ∘ h))
---           k
---     square-χ•-path {F} {G} h k coh =
---       ua→ (●.elim (λ _ → ●.isModalPathP ●.isModal●) λ g →
---         congP (λ _ → η•) (ua-gluePath (glue◦-equiv G) (glue◦-β G (h g)))
---         ▷ (coh g ∙ cong k (sym (glue•-β F g))))
-
---   glue-fracture-χ•-path : (F : Fracture)
---     → PathP (λ i → ua (glue•-equiv F) i → ● (ua (glue◦-equiv F) i))
---         (●.map η◦)
---         (F .χ•)
---   glue-fracture-χ•-path F = square-χ•-path (λ g → g) (F .χ•) (λ g → sym (•→◦ g))
+  glue◦-β : (F : Fracture) (g : fromFracture F)
+    → equivFun (glue◦-equiv F) (η◦ g) ≡ ◦ g
+  glue◦-β F g =
+      equivFun (glue◦-equiv F) (η◦ g)
+    ≡⟨ cong (invIsEq (str (F .X◦))) (transportRefl _) ⟩
+      invIsEq (str (F .X◦)) (equivFun ◯-pullback (η◦ g) .fst .snd)
+    ≡⟨ cong (invIsEq (str (F .X◦))) (◯-pullback-β₂ g) ⟩
+      invIsEq (str (F .X◦)) (η◦ (◦ g))
+    ≡⟨ retIsEq (str (F .X◦)) (◦ g) ⟩
+      ◦ g
+    ∎
 
   glue-fracture-section : section toFracture fromFracture
   glue-fracture-section F =
-    Fracture-path
-      (𝒱•-path (ua (glue•-equiv F)))
-      (𝒱◦-path (ua (glue◦-equiv F)))
-      {!   !}
-      -- (glue-fracture-χ•-path F)
+    Fracture-ua (glue•-equiv F) (glue◦-equiv F) $
+    ●.η-ext (λ _ → ●.isModal●) $ funExt λ x →
+      cong (F .χ•) (glue•-β F x) ∙ •→◦ x ∙ cong η• (sym (glue◦-β F x))
 
   fracture-and-gluing : 𝒱 ≃ Fracture
   fracture-and-gluing =

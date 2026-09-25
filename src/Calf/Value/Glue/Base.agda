@@ -1,5 +1,6 @@
 module Calf.Value.Glue.Base where
 
+open import Cubical.Foundations.Univalence using (ua; ua→)
 open import Cubical.Data.Sigma using (ΣPathP; Σ≡Prop)
 
 open import Calf.Value
@@ -60,6 +61,18 @@ Fracture-path
 Fracture-path X•-path X◦-path χ•-path i .X• = X•-path i
 Fracture-path X•-path X◦-path χ•-path i .X◦ = X◦-path i
 Fracture-path X•-path X◦-path χ•-path i .χ• = χ•-path i
+
+Fracture-ua
+  : {F F' : Fracture}
+  → (e• : ⟨ F .X• ⟩ ≃ ⟨ F' .X• ⟩)
+  → (e◦ : ⟨ F .X◦ ⟩ ≃ ⟨ F' .X◦ ⟩)
+  → F' .χ• ∘ equivFun e• ≡ ●.map (equivFun e◦) ∘ F .χ•
+  → F ≡ F'
+Fracture-ua {F} e• e◦ e•→◦ =
+  Fracture-path
+    (𝒱•-path (ua e•))
+    (𝒱◦-path (ua e◦))
+    (ua→ λ x• → ●-ua-gluePath e◦ (sym (funExt⁻ e•→◦ x•)))
 
 fromFracture : Fracture → 𝒱
 fromFracture F = Glue ⟨ F .X• ⟩ ⟨ F .X◦ ⟩ (F .χ•)
