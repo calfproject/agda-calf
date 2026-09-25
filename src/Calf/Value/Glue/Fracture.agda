@@ -81,8 +81,8 @@ module _ where
       • g
     ∎
 
-  Glue-open-≃ : (F : Fracture) → ⟨ ABS ⟩ → fromFracture F ≃ ⟨ F .X◦ ⟩
-  Glue-open-≃ F abs =
+  Glue-open : (F : Fracture) → ⟨ ABS ⟩ → fromFracture F ≃ ⟨ F .X◦ ⟩
+  Glue-open F abs =
       Σ[ (x• , x◦) ∈ ⟨ F .X• ⟩ × ⟨ F .X◦ ⟩ ] F .χ• x• ≡ η• x◦
     ≃⟨ Σ-contractSnd (λ _ → isContr→isContrPath (◯-isConnected abs) _ _) ⟩
       ⟨ F .X• ⟩ × ⟨ F .X◦ ⟩
