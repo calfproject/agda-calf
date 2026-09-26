@@ -1,14 +1,10 @@
 module Calf.Value.Closed where
 
-open import 1Lab.Set.Pi
-open import Cubical.Foundations.CartesianKanOps
-open import Cubical.Foundations.Equiv.PathSplit
-  using (fromIsEquiv; toIsEquiv)
-open import Cubical.Foundations.Equiv.Properties using (congEquiv)
+open import Cubical.Foundations.Equiv.Fiberwise using (fiberEquiv)
+open import Cubical.Foundations.Equiv.Properties using (isEquivFromIsContr)
 open import Cubical.Foundations.Path
   using (compPathlEquiv; compPathrEquiv)
-open import Cubical.Foundations.Univalence using (hPropExt; ua)
-open import Cubical.Data.Unit using (UnitToType≃)
+open import Cubical.Foundations.Univalence using (ua)
 open import Cubical.Modalities.Modality
 
 open import Calf.Core.Abstract
@@ -181,84 +177,31 @@ opaque
   map-η-isEquiv = subst isEquiv (funExt⁻ map′≡map η•) map′-η-isEquiv
 
 opaque
+  -- Based identity-system argument (https://1lab.dev/1Lab.Path.IdentitySystem.html#based-identity-systems)
+  -- This lex proof is adapted from: https://github.com/ncfavier/agda-stuff/blob/main/src-1lab/ErasureOpen.lagda.md
   isLex● : IsLex◯
   isLex● {X} {x} {x'} =
-    subst isEquiv
-      (funExt (Modality.◯-elim ●Modality
-        (λ _ → Modality.isModal≡ ●Modality (η-=-isModal {x = x} {x' = x'}))
-        (λ h → sym (Modality.◯-rec-β ●Modality η-=-isModal (cong η•) h))))
-      (equivIsEquiv ●-≡-equiv)
+    fiberEquiv code (η• x ≡_) decode
+      (isEquivFromIsContr _ code-contr (isContrSingl (η• x)))
+      (η• x')
     where
-      ●-encode : ∀ {X} → X → ● X → 𝒱
-      ●-encode x (η• x') = ● (x ≡ x')
-      ●-encode x (∗ abs) = 1ᵛ
-      ●-encode x (push x' abs i) = isContr→≡1ᵛ (◯-isConnected {X = x ≡ x'} abs) i
+      code : ● X → 𝒱
+      code (η• y) = ● (x ≡ y)
+      code (∗ abs) = 1ᵛ
+      code (push y abs i) = isContr→≡1ᵛ (◯-isConnected {X = x ≡ y} abs) i
 
-      ●-lex : ∀ {X} {x : X} {y : ● X} → η• x ≡ y → ●-encode x y
-      ●-lex {x = x} h = J (λ y _ → ●-encode x y) (η• refl) h
+      decode : (y• : ● X) → code y• → η• x ≡ y•
+      decode = elim (λ _ → isModalΠ λ _ → ●-≡-isModal _ _) λ y →
+        elim (λ _ → ●-≡-isModal _ _) (cong η•)
 
-      ●-unlex : ∀ {X} {x x' : X} → ● (x ≡ x') → η• x ≡ η• x'
-      ●-unlex (η• h) = cong η• h
-      ●-unlex {x = x} {x'} (∗ abs) = push x abs ∙ sym (push x' abs)
-      ●-unlex {x = x} {x'} (push h abs i) =
-        isProp→isSet (◯-isProp● abs) (η• x) (η• x')
-          (cong η• h)
-          (push x abs ∙ sym (push x' abs))
-          i
+      decode-over : ∀ y• (c : code y•)
+        → PathP (λ i → code (decode y• c i)) (η• refl) c
+      decode-over = elim (λ _ → isModalΠ λ _ → isModalPathP isModal●) λ y →
+        elim (λ _ → isModalPathP isModal●) λ p i → η• (λ j → p (i ∧ j))
 
-      ●-unlex′ : ∀ {X} {x : X} {y : ● X} → ●-encode x y → η• x ≡ y
-      ●-unlex′ {X} {x} {y} e =
-        ind R η•-case ∗-case push-case y e
-        where
-        R : ● X → 𝒱
-        R y = ●-encode x y → η• x ≡ y
-
-        η•-case : (x' : X) → R (η• x')
-        η•-case x' e = ●-unlex e
-
-        ∗-case : (abs : ⟨ ABS ⟩) → R (∗ abs)
-        ∗-case abs _ = push x abs
-
-        push-case : (x' : X) (abs : ⟨ ABS ⟩) → PathP (λ i → R (push x' abs i)) (η•-case x') (∗-case abs)
-        push-case x' abs =
-          funext-dep-i0 λ e →
-            isProp→PathP
-              (λ i → isProp→isSet (◯-isProp● abs)
-                (η• x)
-                (push x' abs i))
-              (η•-case x' e)
-              (∗-case abs (coe0→1 (λ i → ●-encode x (push x' abs i)) e))
-
-      ●-lex-unlex : ∀ {X} {x x' : X} (e : ● (x ≡ x')) → ●-lex (●-unlex e) ≡ e
-      ●-lex-unlex {x = x} (η• h) =
-        J
-          (λ x' h → ●-lex (cong η• h) ≡ η• h)
-          (JRefl {x = η• x} (λ y _ → ●-encode x y) (η• refl))
-          h
-      ●-lex-unlex {x = x} {x'} (∗ abs) =
-        ◯-isProp● abs
-          (●-lex (push x abs ∙ sym (push x' abs)))
-          (∗ abs)
-      ●-lex-unlex {x = x} {x'} (push h abs i) =
-        isProp→PathP
-          (λ i → isProp→isSet (◯-isProp● abs)
-            (●-lex (●-unlex (push h abs i)))
-            (push h abs i))
-          (●-lex-unlex (η• h))
-          (●-lex-unlex (∗ abs))
-          i
-
-      ●-unlex-lex : ∀ {X} {x x' : X} (h : η• x ≡ η• x') → ●-unlex (●-lex h) ≡ h
-      ●-unlex-lex {X} {x} h =
-        J
-          (λ y h → ●-unlex′ (●-lex h) ≡ h)
-          (cong
-            (λ e → ●-unlex′ {X = X} {x = x} {y = η• x} e)
-            (JRefl {x = η• x} (λ y _ → ●-encode x y) (η• {X = x ≡ x} refl)))
-          h
-
-      ●-≡-equiv : {x x' : X} → ● (x ≡ x') ≃ (η• x ≡ η• x')
-      ●-≡-equiv = isoToEquiv (iso ●-unlex ●-lex ●-unlex-lex ●-lex-unlex)
+      code-contr : isContr (Σ (● X) code)
+      code-contr .fst = η• x , η• refl
+      code-contr .snd (y• , c) i = decode y• c i , decode-over y• c i
 
 opaque
   isSet● : isSet X → isSet (● X)
