@@ -46,7 +46,7 @@ module _ (X : 𝒱ₚ) where
         ⋊-proj₁-glue-charge : (c : ℂ) (g : U (Abstractionᶜ (X ⋊ A-⊤) (X ⋊ A-abs) (⋊-map α)))
           → ⋊-proj₁-glue (Abstractionᶜ (X ⋊ A-⊤) (X ⋊ A-abs) (⋊-map α) .charge c g) ≡ ⋊-proj₁-glue g
         ⋊-proj₁-glue-charge c g =
-          Glue-path (isSet◯ (isPreorder→isSet (str X))) (⋊-proj₁-●-charge c (• g)) refl
+          Glue-path (isSet◯ (isPreorder→isSet (str X))) (⋊-proj₁-●-charge c (proj• g)) refl
 
     opaque
       ⋊-Abstractionᶜ : Abstractionᶜ (X ⋊ A-⊤) (X ⋊ A-abs) (⋊-map α) ⊸ X ⋊ Abstractionᶜ A-⊤ A-abs α
@@ -82,7 +82,7 @@ module _ (X : 𝒱ₚ) where
             ΣPathP
               {A = λ _ → ⟨ X ⟩}
               {B = λ i _ → U (Abstractionᶜ-open α abs i)}
-              ( cong (λ h → ◦ h abs) (secIsEq fracture-isEquiv (⋊-proj₁-glue g))
+              ( cong (λ h → proj◦ h abs) (secIsEq fracture-isEquiv (⋊-proj₁-glue g))
               , λ i →
                   ⋊-proj₂ᵃ-abs abs i .U
                     (ua-gluePath (Abstractionᶜ-open-≃ (⋊-map α) abs .fst .U , Abstractionᶜ-open-≃ (⋊-map α) abs .snd)

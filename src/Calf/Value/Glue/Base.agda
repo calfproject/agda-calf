@@ -12,20 +12,20 @@ Glue : (X• X◦ : 𝒱) (χ• : X• → ● X◦) → 𝒱
 Glue X• X◦ χ• = Σ[ (x• , x◦) ∈ X• × X◦ ] χ• x• ≡ η• x◦
 
 module _ {X• X◦ : 𝒱} {χ• : X• → ● X◦} where
-  • : Glue X• X◦ χ• → X•
-  • g = g .fst .fst
+  proj• : Glue X• X◦ χ• → X•
+  proj• ((x• , _) , _) = x•
 
-  ◦ : Glue X• X◦ χ• → X◦
-  ◦ g = g .fst .snd
+  proj◦ : Glue X• X◦ χ• → X◦
+  proj◦ ((_ , x◦) , _) = x◦
 
-  •→◦ : (g : Glue X• X◦ χ•) → χ• (• g) ≡ η• (◦ g)
-  •→◦ g = g .snd
+  proj•→◦ : (x : Glue X• X◦ χ•) → χ• (proj• x) ≡ η• (proj◦ x)
+  proj•→◦ = proj₂
 
   opaque
     Glue-path : ∀ {g g' : Glue X• X◦ χ•}
       → isSet X◦
-      → • g ≡ • g'
-      → ◦ g ≡ ◦ g'
+      → proj• g ≡ proj• g'
+      → proj◦ g ≡ proj◦ g'
       → g ≡ g'
     Glue-path isSetX◦ p• p◦ =
       Σ≡Prop (λ _ → isSet● isSetX◦ _ _) (ΣPathP (p• , p◦))

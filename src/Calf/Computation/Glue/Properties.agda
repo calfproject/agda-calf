@@ -21,7 +21,7 @@ open Fractureᶜ
 fracture-map
   : (f : A ⊸ B)
   → FractureGlueᶜ A ⊸ FractureGlueᶜ B
-fracture-map f = squareᶜ (●ᶜ.map f) (◯ᶜ.map f) (toSquareᶜ f .snd)
+fracture-map f = squareᶜ (●ᶜ.map f) (◯ᶜ.map f) {!   !} -- (toSquareᶜ f .snd)
 
 fracture-map-coh
   : (f : A ⊸ B)
@@ -31,7 +31,7 @@ fracture-map-coh
   → ●.map (η◦ᶜ {A = B} .U) (●ᶜ.map f .U q•)
     ≡ η• (◯.map (f .U) q◦)
 fracture-map-coh f q• q◦ qcoh =
-  •→◦ (fracture-map f .U ((q• , q◦) , qcoh))
+  proj•→◦ (fracture-map f .U ((q• , q◦) , qcoh))
 
 fracture-map-fracture
   : (f : A ⊸ B) (a : U A)
@@ -40,8 +40,8 @@ fracture-map-fracture {A} {B} f a =
   Σ≡Prop (λ _ → is-set (●ᶜ (◯ᶜ B)) _ _) refl
 
 Glueᶜ-open-≃ : (F : Fractureᶜ) → ⟨ ABS ⟩ → fromFractureᶜ F ≃ᶜ ⟨ F .A◦ ⟩ᶜ
-Glueᶜ-open-≃ F abs =
-  proj◦ᶜ F , Glue-open-≃ (U-Fracture F) abs .snd
+Glueᶜ-open-≃ F abs = {!   !}
+  -- proj◦ᶜ F , Glue-open (U-Fracture F) abs .snd
 
 Glueᶜ-open : (F : Fractureᶜ) → ⟨ ABS ⟩ → fromFractureᶜ F ≡ ⟨ F .A◦ ⟩ᶜ
 Glueᶜ-open F abs = uaᶜ (Glueᶜ-open-≃ F abs)

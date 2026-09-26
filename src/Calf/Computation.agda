@@ -88,6 +88,7 @@ module ⊑-Reasoning (A : 𝒞) where
 
 infix 1 _⊸_
 record _⊸_ (A B : 𝒞) : 𝒱 where
+  -- no-eta-equality
   field
     U : U A → U B
     charge : ∀ c a → U (A .charge c a) ≡ B .charge c (U a)
@@ -199,7 +200,7 @@ opaque
 ⊸-Σ-Iso .Iso.inv (h , ch) .U = h
 ⊸-Σ-Iso .Iso.inv (h , ch) .charge = ch
 ⊸-Σ-Iso .Iso.rightInv _ = refl
-⊸-Σ-Iso .Iso.leftInv _ = refl
+⊸-Σ-Iso .Iso.leftInv _ = ⊸-path refl refl refl
 
 opaque
   isSet⊸ : isSet (A ⊸ B)
@@ -229,6 +230,9 @@ chargeᶜ-+ {A = A} c₁ c₂ =
 
 ⨾ᶜ-identityʳ : (f : A ⊸ B) → f ⨾ᶜ idᶜ ≡ f
 ⨾ᶜ-identityʳ f = ⊸-path refl refl (funExt (λ x → refl))
+
+⨾ᶜ-assoc : {A B C D : 𝒞} (f : A ⊸ B) (g : B ⊸ C) (h : C ⊸ D) → (f ⨾ᶜ g) ⨾ᶜ h ≡ f ⨾ᶜ (g ⨾ᶜ h)
+⨾ᶜ-assoc f g h = ⊸-path refl refl refl
 
 opaque
   charge-path
@@ -293,8 +297,8 @@ _∙ₑᶜ_ : A ≃ᶜ B → B ≃ᶜ C → A ≃ᶜ C
     (λ g → ⊸-path refl refl (funExt λ a → secIsEq h (g .U a)))
     (λ f → ⊸-path refl refl (funExt λ a → retIsEq h (f .U a))))
 
-⊸-postcomp-≃ : {A B C : 𝒞} (e : B ⊸ C) → isEquivᶜ e → (A ⊸ B) ≃ (A ⊸ C)
-⊸-postcomp-≃ e h = (_⨾ᶜ e) , ⊸-postcomp-isEquiv e h
+equiv⊸Cod : {A B C : 𝒞} (e : B ≃ᶜ C) → (A ⊸ B) ≃ (A ⊸ C)
+equiv⊸Cod (e , h) = (_⨾ᶜ e) , ⊸-postcomp-isEquiv e h
 
 𝒞WithStr : (B : 𝒞 → 𝒱) → 𝒱₁
 𝒞WithStr B = Σ[ A ∈ 𝒞 ] B A

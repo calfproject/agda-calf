@@ -36,10 +36,10 @@ opaque
     composesToId→Equiv (equivFun ge) (●ᶜ.map (triangleᶜ α) .U) (funExt proj-unit) (ge .snd)
     where
       ge : U (●ᶜ (Abstractionᶜ A-⊤ A-abs α)) ≃ U (●ᶜ A-⊤)
-      ge = glue•-equiv (U-Fracture (Abstractionᶜ-Fracture A-⊤ A-abs α))
+      ge = glue• (U-Fracture (Abstractionᶜ-Fracture A-⊤ A-abs α))
 
       proj-unit : ∀ w → equivFun ge (●ᶜ.map (triangleᶜ α) .U w) ≡ w
-      proj-unit = ●.elim (λ _ → ●.●-≡-isModal _ _) (λ _ → refl)
+      proj-unit = ●.elim (λ _ → ●.●-≡-isModal _ _) {!   !} -- (λ _ → refl)
 
 ●ᶜ-Abstractionᶜ-≃ᶜ : ∀ {A-⊤ A-abs} (α : A-⊤ ⊸ A-abs) → ●ᶜ A-⊤ ≃ᶜ ●ᶜ (Abstractionᶜ A-⊤ A-abs α)
 ●ᶜ-Abstractionᶜ-≃ᶜ α = ●ᶜ.map (triangleᶜ α) , ●ᶜ-triangleᶜ-isEquiv α
@@ -69,9 +69,9 @@ opaque
         ●ᶜ (sym (◯ᶜ-Abstractionᶜ α) i))
       (●ᶜ.map (α ⨾ᶜ η◦ᶜ {A = A-abs}))
       (●ᶜ.map (η◦ᶜ {A = Abstractionᶜ A-⊤ A-abs α}))
-  Abstractionᶜ-coherence {A-⊤} {A-abs} α =
-    glue-fracture-sectionᶜ-α•
-      (Abstractionᶜ-Fracture A-⊤ A-abs α)
+  Abstractionᶜ-coherence {A-⊤} {A-abs} α = {!   !}
+    -- glue-fracture-sectionᶜ-α•
+    --   (Abstractionᶜ-Fracture A-⊤ A-abs α)
 
 opaque
   unfolding Abstractionᶜ
@@ -112,22 +112,23 @@ opaque
         {e = Abstractionᶜ-open-≃ α abs .fst .U
            , Abstractionᶜ-open-≃ α abs .snd}
         {B = λ i → U (Abstractionᶜ-open β abs i)}
-        (λ _ →
-          ua-gluePath
-            ( Abstractionᶜ-open-≃ β abs .fst .U
-            , Abstractionᶜ-open-≃ β abs .snd)
-            refl))
+        {!   !})
+        -- (λ _ →
+        --   ua-gluePath
+        --     ( Abstractionᶜ-open-≃ β abs .fst .U
+        --     , Abstractionᶜ-open-≃ β abs .snd)
+        --     refl))
 
   triangle-U-openP : ∀ {B-⊤ B-abs} (β : B-⊤ ⊸ B-abs)
       (b-⊤ : U B-⊤) (b-abs : U B-abs) (b-coh : β .U b-⊤ ≡ b-abs) (abs : ⟨ ABS ⟩) →
     PathP (λ i → U (Abstractionᶜ-open β abs i))
       (triangle-U β b-⊤ b-abs b-coh)
       b-abs
-  triangle-U-openP β b-⊤ b-abs b-coh abs =
-    ua-gluePath
-      ( Abstractionᶜ-open-≃ β abs .fst .U
-      , Abstractionᶜ-open-≃ β abs .snd)
-      refl
+  triangle-U-openP β b-⊤ b-abs b-coh abs = {!   !}
+    -- ua-gluePath
+    --   ( Abstractionᶜ-open-≃ β abs .fst .U
+    --   , Abstractionᶜ-open-≃ β abs .snd)
+    --   refl
 
 
 opaque
@@ -154,11 +155,11 @@ opaque
     → squareᶜ α β f-⊤ f-abs fc ⨾ᶜ squareᶜ β γ g-⊤ g-abs gc
       ≡ squareᶜ α γ (f-⊤ ⨾ᶜ g-⊤) (f-abs ⨾ᶜ g-abs)
           (λ a → gc (f-⊤ .U a) ∙ cong (g-abs .U) (fc a))
-  squareᶜ-⨾ᶜ {C-⊤ = C-⊤} {C-abs} {γ} f-⊤ f-abs fc g-⊤ g-abs gc =
+  squareᶜ-⨾ᶜ {C-abs = C-abs} {γ} f-⊤ f-abs fc g-⊤ g-abs gc =
     ⊸-path refl refl $ funExt λ a →
       Glue-path (is-set (◯ᶜ C-abs))
-        (●.map-∘ (f-⊤ .U) (g-⊤ .U) (• a))
-        (◯.map-∘ (f-abs .U) (g-abs .U) (◦ a))
+        (●.map-∘ (f-⊤ .U) (g-⊤ .U) (proj• a))
+        (◯.map-∘ (f-abs .U) (g-abs .U) (proj◦ a))
 
   squareᶜ-≡ : ∀ {A-⊤ A-abs α B-⊤ B-abs β}
     {f-⊤ f-⊤' : A-⊤ ⊸ B-⊤} {f-abs f-abs' : A-abs ⊸ B-abs}
@@ -169,8 +170,8 @@ opaque
   squareᶜ-≡ {B-⊤ = B-⊤} {B-abs} {β} {fc = fc} {fc' = fc'} p q =
     ⊸-path refl refl $ funExt λ a →
       Glue-path (is-set (◯ᶜ B-abs))
-        (cong (λ f → ●.map (f .U) (• a)) p)
-        (cong (λ f → ◯.map (f .U) (◦ a)) q)
+        (cong (λ f → ●.map (f .U) (proj• a)) p)
+        (cong (λ f → ◯.map (f .U) (proj◦ a)) q)
 
   Abstractionᶜ-fuse : ∀ {A-⊤ A-abs B-⊤ B-abs}
       (α : A-⊤ ⊸ A-abs) (β : B-⊤ ⊸ B-abs)
@@ -189,9 +190,10 @@ opaque
     ⊸-path
       (λ i → ⟨ glue•-pathᶜ (Abstractionᶜ-Fracture A-⊤ A-abs α) i ⟩ᶜ)
       (λ i → ●ᶜ ⟨ glue◦-pathᶜ (Abstractionᶜ-Fracture B-⊤ B-abs β) i ⟩ᶜ)
-      (square-χ•-path
-        (squareᶜ α β f-⊤ f-abs f-coherence .U)
-        (●ᶜ.map ((α ⨾ᶜ f-abs) ⨾ᶜ η◦ᶜ) .U)
-        (λ g →
-            cong (●.map (◯.map (f-abs .U))) (sym (•→◦ g))
-          ∙ ●.map-∘ ((α ⨾ᶜ η◦ᶜ) .U) (◯.map (f-abs .U)) (• g)))
+      {!   !}
+      -- (square-χ•-path
+      --   (squareᶜ α β f-⊤ f-abs f-coherence .U)
+      --   (●ᶜ.map ((α ⨾ᶜ f-abs) ⨾ᶜ η◦ᶜ) .U)
+      --   (λ g →
+      --       cong (●.map (◯.map (f-abs .U))) (sym (•→◦ g))
+      --     ∙ ●.map-∘ ((α ⨾ᶜ η◦ᶜ) .U) (◯.map (f-abs .U)) (• g)))

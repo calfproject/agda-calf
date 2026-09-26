@@ -23,7 +23,7 @@ module _ where
   fracture x = (η• x , η◦ x) , refl
 
   fracture-modal : ●.isModalMap (fracture {X})
-  fracture-modal {X} g =
+  fracture-modal g =
     ●.isModal-≃ (invEquiv e) $
     ●.isModalΣ (isConnected◯→isModal● (◯.isConnectedMapη _)) λ _ →
     ●.isModalPathP $ ●.isModalΣ ●.isModal● λ _ → ●-≡-isModal _ _
@@ -36,7 +36,7 @@ module _ where
         ∙ₑ invEquiv Σ-assoc-≃
 
   fracture-connected : ●.isConnectedMap (fracture {X})
-  fracture-connected {X} g =
+  fracture-connected g =
     ●.isConnected-≃ (invEquiv e) $
     ●.isConnectedΣ (●.isConnectedMapη _) λ _ →
     ●.isConnectedPathP isLex● $ ●.isConnectedMapη _
@@ -56,8 +56,8 @@ module _ where
   glue-fracture-retract : retract toFracture fromFracture
   glue-fracture-retract X = sym (ua (fracture , fracture-isEquiv))
 
-  glue•-equiv : (F : Fracture) → ● (fromFracture F) ≃ ⟨ F .X• ⟩
-  glue•-equiv F =
+  glue• : (F : Fracture) → ● (fromFracture F) ≃ ⟨ F .X• ⟩
+  glue• F =
       ● (Glue ⟨ F .X• ⟩ ⟨ F .X◦ ⟩ (F .χ•))
     ≃⟨ ●-pullback ⟩
       (Σ[ (x•• , x◦•) ∈ ● ⟨ F .X• ⟩ × ● ⟨ F .X◦ ⟩ ] ●.map (F .χ•) x•• ≡ ●.map η• x◦•)
@@ -72,13 +72,13 @@ module _ where
     ■
 
   glue•-β : (F : Fracture) (g : fromFracture F)
-    → equivFun (glue•-equiv F) (η• g) ≡ • g
+    → equivFun (glue• F) (η• g) ≡ proj• g
   glue•-β F g =
-      equivFun (glue•-equiv F) (η• g)
+      equivFun (glue• F) (η• g)
     ≡⟨ cong (invIsEq (str (F .X•))) (●-pullback-β₁ g) ⟩
-      invIsEq (str (F .X•)) (η• (• g))
-    ≡⟨ retIsEq (str (F .X•)) (• g) ⟩
-      • g
+      invIsEq (str (F .X•)) (η• (proj• g))
+    ≡⟨ retIsEq (str (F .X•)) (proj• g) ⟩
+      proj• g
     ∎
 
   Glue-open : (F : Fracture) → ⟨ ABS ⟩ → fromFracture F ≃ ⟨ F .X◦ ⟩
@@ -90,8 +90,8 @@ module _ where
       ⟨ F .X◦ ⟩
     ■
 
-  glue◦-equiv : (F : Fracture) → ◯ (fromFracture F) ≃ ⟨ F .X◦ ⟩
-  glue◦-equiv F =
+  glue◦ : (F : Fracture) → ◯ (fromFracture F) ≃ ⟨ F .X◦ ⟩
+  glue◦ F =
       ◯ (Glue ⟨ F .X• ⟩ ⟨ F .X◦ ⟩ (F .χ•))
     ≃⟨ ◯-pullback ⟩
       (Σ[ (x•◦ , x◦◦) ∈ ◯ ⟨ F .X• ⟩ × ◯ ⟨ F .X◦ ⟩ ] ◯.map (F .χ•) x•◦ ≡ ◯.map η• x◦◦)
@@ -104,26 +104,31 @@ module _ where
     ■
 
   glue◦-β : (F : Fracture) (g : fromFracture F)
-    → equivFun (glue◦-equiv F) (η◦ g) ≡ ◦ g
+    → equivFun (glue◦ F) (η◦ g) ≡ proj◦ g
   glue◦-β F g =
-      equivFun (glue◦-equiv F) (η◦ g)
+      equivFun (glue◦ F) (η◦ g)
     ≡⟨ cong (invIsEq (str (F .X◦))) (transportRefl _) ⟩
       invIsEq (str (F .X◦)) (equivFun ◯-pullback (η◦ g) .fst .snd)
     ≡⟨ cong (invIsEq (str (F .X◦))) (◯-pullback-β₂ g) ⟩
-      invIsEq (str (F .X◦)) (η◦ (◦ g))
-    ≡⟨ retIsEq (str (F .X◦)) (◦ g) ⟩
-      ◦ g
+      invIsEq (str (F .X◦)) (η◦ (proj◦ g))
+    ≡⟨ retIsEq (str (F .X◦)) (proj◦ g) ⟩
+      proj◦ g
     ∎
 
   glue-fracture-section : section toFracture fromFracture
   glue-fracture-section F =
-    Fracture-ua (glue•-equiv F) (glue◦-equiv F) $
+    Fracture-ua (glue• F) (glue◦ F) $
     ●.η-ext (λ _ → ●.isModal●) $ funExt λ x →
-      cong (F .χ•) (glue•-β F x) ∙ •→◦ x ∙ cong η• (sym (glue◦-β F x))
+      cong (F .χ•) (glue•-β F x) ∙ proj•→◦ x ∙ cong η• (sym (glue◦-β F x))
 
   fracture-and-gluing : 𝒱 ≃ Fracture
   fracture-and-gluing =
-    isoToEquiv (iso toFracture fromFracture glue-fracture-section glue-fracture-retract)
+    isoToEquiv
+      (iso
+        toFracture
+        fromFracture
+        glue-fracture-section
+        glue-fracture-retract)
 
 module _ where
   fracture-and-gluing-square : (X → Y) ≃ Fracture-Square (toFracture X) (toFracture Y)
