@@ -276,6 +276,9 @@ opaque
     → PathP (λ i → uaᶜ e i ⊸ uaᶜ e' i) f g
   uaᶜ-⊸ (e , ee) (e' , ee') = conservativity-⊸ e ee e' ee'
 
+idEquivᶜ : (A : 𝒞) → (A ≃ᶜ A)
+idEquivᶜ A = idᶜ , idEquiv _ .snd
+
 invEquivᶜ : (f : A ⊸ B) → isEquivᶜ f → B ⊸ A
 invEquivᶜ {A} {B} f fe .U = invEq (f .U , fe)
 invEquivᶜ {A} {B} f fe .charge c b =
@@ -289,6 +292,15 @@ infixr 30 _∙ₑᶜ_
 _∙ₑᶜ_ : A ≃ᶜ B → B ≃ᶜ C → A ≃ᶜ C
 (e ∙ₑᶜ f) .fst = e .fst ⨾ᶜ f .fst
 (e ∙ₑᶜ f) .snd = ((e .fst .U , e .snd) ∙ₑ (f .fst .U , f .snd)) .snd
+
+_≃ᶜ⟨_⟩_ : (A : 𝒞) → (A ≃ᶜ B) → (B ≃ᶜ C) → (A ≃ᶜ C)
+_ ≃ᶜ⟨ f ⟩ g = f ∙ₑᶜ g
+
+_■ᶜ : (A : 𝒞) → (A ≃ᶜ A)
+_■ᶜ = idEquivᶜ
+
+infixr  0 _≃ᶜ⟨_⟩_
+infix   1 _■ᶜ
 
 ⊸-postcomp-isEquiv : {A B C : 𝒞} (e : B ⊸ C) → isEquivᶜ e
   → isEquiv (λ (f : A ⊸ B) → f ⨾ᶜ e)
