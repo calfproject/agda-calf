@@ -68,7 +68,7 @@ Fracture-ua
   → (e◦ : ⟨ F .X◦ ⟩ ≃ ⟨ F' .X◦ ⟩)
   → F' .χ• ∘ equivFun e• ≡ ●.map (equivFun e◦) ∘ F .χ•
   → F ≡ F'
-Fracture-ua {F} e• e◦ e•→◦ =
+Fracture-ua e• e◦ e•→◦ =
   Fracture-path
     (𝒱•-path (ua e•))
     (𝒱◦-path (ua e◦))

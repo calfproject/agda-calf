@@ -165,6 +165,7 @@ open import Cubical.Modalities.Extras ●Modality public
     ; map-η-isEquiv to map′-η-isEquiv
     ; η-isNatural to η•-isNatural
     ; ○Σ○≃○Σ to ●Σ●≃●Σ
+    ; ◯-rec-isEquiv to rec-isEquiv
     )
   hiding (isConnected)
 

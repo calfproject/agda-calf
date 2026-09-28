@@ -1,5 +1,6 @@
 module Calf.Computation.Glue.Base where
 
+open import Cubical.Foundations.Univalence using (ua; ua→)
 open import Cubical.Data.Sigma
 
 open import Calf.Value
@@ -65,19 +66,6 @@ open Fractureᶜ
 
 Fractureᶜ-path
   : {F F' : Fractureᶜ}
-  → (A•-path : F .A• ≡ F' .A•)
-  → (A◦-path : F .A◦ ≡ F' .A◦)
-  → PathP
-      (λ i → A•-path i .fst ⊸ ●ᶜ (A◦-path i .fst))
-      (F .α•)
-      (F' .α•)
-  → F ≡ F'
-Fractureᶜ-path A•-path A◦-path α•-path i .A• = A•-path i
-Fractureᶜ-path A•-path A◦-path α•-path i .A◦ = A◦-path i
-Fractureᶜ-path A•-path A◦-path α•-path i .α• = α•-path i
-
-Fractureᶜ-path-U :
-  {F F' : Fractureᶜ}
   → (p• : ⟨ F .A• ⟩ᶜ ≡ ⟨ F' .A• ⟩ᶜ)
   → (p◦ : ⟨ F .A◦ ⟩ᶜ ≡ ⟨ F' .A◦ ⟩ᶜ)
   → PathP
@@ -85,11 +73,24 @@ Fractureᶜ-path-U :
       (F .α•)
       (F' .α•)
   → F ≡ F'
-Fractureᶜ-path-U p• p◦ pα =
+Fractureᶜ-path {F} {F'} A•-path A◦-path α•-path i .A• = 𝒞•-path {F .A•} {F' .A•} A•-path i
+Fractureᶜ-path {F} {F'} A•-path A◦-path α•-path i .A◦ = 𝒞◦-path {F .A◦} {F' .A◦} A◦-path i
+Fractureᶜ-path {F} {F'} A•-path A◦-path α•-path i .α• = α•-path i
+
+Fractureᶜ-ua
+  : {F F' : Fractureᶜ}
+  → (e• : ⟨ F .A• ⟩ᶜ ≃ᶜ ⟨ F' .A• ⟩ᶜ)
+  → (e◦ : ⟨ F .A◦ ⟩ᶜ ≃ᶜ ⟨ F' .A◦ ⟩ᶜ)
+  → F' .α• .U ∘ equivFunᶜ e• .U ≡ ●ᶜ.map (equivFunᶜ e◦) .U ∘ F .α• .U
+  → F ≡ F'
+Fractureᶜ-ua {F} e• e◦ e•→◦ =
   Fractureᶜ-path
-    (●ᶜ.𝒞•-path p•)
-    (◯ᶜ.𝒞◦-path p◦)
-    pα
+    (uaᶜ e•)
+    (uaᶜ e◦)
+    (⊸-path
+      (uaᶜ e•)
+      (cong ●ᶜ (uaᶜ e◦))
+      (ua→ λ a• → ●-ua-gluePath (U-≃ e◦) (funExt⁻ (sym e•→◦) a•)))
 
 fromFractureᶜ : Fractureᶜ → 𝒞
 fromFractureᶜ F = Glueᶜ ⟨ F .A• ⟩ᶜ ⟨ F .A◦ ⟩ᶜ (F .α•)

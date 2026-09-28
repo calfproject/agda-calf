@@ -137,6 +137,12 @@ module _ where
   ◯-rec-const isModalZ y =
     funExt⁻ (η-ext (λ _ → isModalZ) (funExt (◯-rec-β isModalZ (λ _ → y))))
 
+  opaque
+    ◯-rec-isEquiv : (isModalY : isModal Y) {f : X → Y} (e : ◯ X ≃ Y)
+      → ((x : X) → equivFun e (η x) ≡ f x) → isEquiv (◯-rec isModalY f)
+    ◯-rec-isEquiv isModalY e β =
+      subst isEquiv (◯-rec-unique isModalY (funExt β)) (equivIsEquiv e)
+
 module _ (e : X ≃ Y) where
   opaque
     ◯-ua-gluePath : {x◦ : ◯ X} {y◦ : ◯ Y}

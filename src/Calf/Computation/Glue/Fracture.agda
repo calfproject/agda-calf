@@ -32,39 +32,29 @@ module _ where
   glue-fracture-retractᶜ A = sym (conservativity fractureᶜ fracture-isEquiv)
 
   glue•ᶜ : (F : Fractureᶜ) → ●ᶜ (fromFractureᶜ F) ≃ᶜ ⟨ F .A• ⟩ᶜ
-  glue•ᶜ F = ●ᶜ-rec (F .A•) proj•ᶜ , {! equivIsEquiv (glue• (U-Fracture F))  !}
-  -- ●ᶜ-rec (F .A•) (proj•ᶜ F) , equivIsEquiv (glue• (U-Fracture F))
+  glue•ᶜ F =
+    ●ᶜ-rec (F .A•) (proj•ᶜ {α• = F .α•}) ,
+    ●.rec-isEquiv (strᶜ (F .A•)) (glue• (U-Fracture F)) (glue•-β (U-Fracture F))
+
+  glue•ᶜ-β : (F : Fractureᶜ) (a : U (fromFractureᶜ F))
+    → equivFunᶜ (glue•ᶜ F) .U (η• a) ≡ proj• a
+  glue•ᶜ-β F a = refl
 
   glue◦ᶜ : (F : Fractureᶜ) → ◯ᶜ (fromFractureᶜ F) ≃ᶜ ⟨ F .A◦ ⟩ᶜ
-  glue◦ᶜ F = {!   !} -- ◯ᶜ-rec (F .A◦) (proj◦ᶜ F) , equivIsEquiv (glue◦ (U-Fracture F))
+  glue◦ᶜ F =
+    ◯ᶜ-rec (F .A◦) (proj◦ᶜ {α• = F .α•}) ,
+    ◯.rec-isEquiv (strᶜ (F .A◦)) (glue◦ (U-Fracture F)) (glue◦-β (U-Fracture F))
 
-  glue•-pathᶜ : (F : Fractureᶜ) → ●ᶜ• (fromFractureᶜ F) ≡ F .A•
-  glue•-pathᶜ F = 𝒞•-path (uaᶜ (glue•ᶜ F))
-
-  glue◦-pathᶜ : (F : Fractureᶜ) → ◯ᶜ◦ (fromFractureᶜ F) ≡ F .A◦
-  glue◦-pathᶜ F = 𝒞◦-path (uaᶜ (glue◦ᶜ F))
+  glue◦ᶜ-β : (F : Fractureᶜ) (a : U (fromFractureᶜ F))
+    → equivFunᶜ (glue◦ᶜ F) .U (η◦ a) ≡ proj◦ a
+  glue◦ᶜ-β F a = ◯.elim-β (λ _ → strᶜ (F .A◦)) proj◦ a
 
   opaque
     glue-fracture-sectionᶜ : section toFractureᶜ fromFractureᶜ
-    glue-fracture-sectionᶜ = {!   !}
---   glue-fracture-sectionᶜ F =
---     Fractureᶜ-path
---       (glue•-pathᶜ F)
---       (glue◦-pathᶜ F)
---       (⊸-path
---         (λ i → ⟨ glue•-pathᶜ F i ⟩ᶜ)
---         (λ i → ●ᶜ ⟨ glue◦-pathᶜ F i ⟩ᶜ)
---         (λ i → Fracture.χ• (glue-fracture-section (U-Fracture F) i)))
-
---   glue-fracture-sectionᶜ-α• : (F : Fractureᶜ) →
---     PathP
---       (λ i →
---         ⟨ glue•-pathᶜ F (~ i) ⟩ᶜ ⊸
---         ●ᶜ ⟨ glue◦-pathᶜ F (~ i) ⟩ᶜ)
---       (F .α•)
---       (toFractureᶜ (fromFractureᶜ F) .α•)
---   glue-fracture-sectionᶜ-α• F i =
---     glue-fracture-sectionᶜ F (~ i) .α•
+    glue-fracture-sectionᶜ F =
+      Fractureᶜ-ua (glue•ᶜ F) (glue◦ᶜ F) $
+      ●.η-ext (λ _ → ●.isModal●) $ funExt λ a →
+        cong (F .α• .U) (glue•ᶜ-β F a) ∙ proj•→◦ a ∙ cong η• (sym (glue◦ᶜ-β F a))
 
   fracture-and-gluingᶜ : 𝒞 ≃ Fractureᶜ
   fracture-and-gluingᶜ =

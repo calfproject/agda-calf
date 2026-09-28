@@ -70,6 +70,7 @@ open import Cubical.Modalities.Extras ◯Modality public
     ; map-∘ to map′-∘
     ; join to join′
     ; η-isNatural to η◦-isNatural
+    ; ◯-rec-isEquiv to rec-isEquiv
     )
 
 open import Cubical.Modalities.Extras ◯Modality

@@ -100,6 +100,12 @@ isEquivᶜ f = isEquiv (U f)
 _≃ᶜ_ : 𝒞 → 𝒞 → 𝒱
 A ≃ᶜ B = Σ (A ⊸ B) isEquivᶜ
 
+equivFunᶜ : A ≃ᶜ B → A ⊸ B
+equivFunᶜ = fst
+
+U-≃ : A ≃ᶜ B → U A ≃ U B
+U-≃ e = U (e .fst) , e .snd
+
 idᶜ : A ⊸ A
 idᶜ .U a = a
 idᶜ .charge _ _ = refl
