@@ -35,31 +35,26 @@ module _ {A• A◦ : 𝒞} {α• : A• ⊸ ●ᶜ A◦} where
   ⊸-Glueᶜ-≃ : {A : 𝒞}
     → (A ⊸ Glueᶜ A• A◦ α•)
     ≃ (Σ[ (f• , f◦) ∈ (A ⊸ A•) × (A ⊸ A◦) ] f• ⨾ᶜ α• ≡ f◦ ⨾ᶜ η•ᶜ)
-  ⊸-Glueᶜ-≃ = {!   !}
-  -- {A} {F} = isoToEquiv (iso fwd bwd sec ret)
-  --   where
-  --     fwd : (A ⊸ fromFractureᶜ F)
-  --       → Σ[ (h• , h◦) ∈ (A ⊸ ⟨ F .A• ⟩ᶜ) × (A ⊸ ⟨ F .A◦ ⟩ᶜ) ]
-  --           (h• ⨾ᶜ F .α• ≡ h◦ ⨾ᶜ η•ᶜ)
-  --     fwd k = (k ⨾ᶜ proj•ᶜ F , k ⨾ᶜ proj◦ᶜ F) ,
-  --       ⊸-path refl refl (funExt λ a → •→◦ (k .U a))
+  ⊸-Glueᶜ-≃ {A} = isoToEquiv (iso fwd bwd sec ret)
+    where
+      fwd : (A ⊸ Glueᶜ A• A◦ α•) → Σ[ (f• , f◦) ∈ (A ⊸ A•) × (A ⊸ A◦) ] f• ⨾ᶜ α• ≡ f◦ ⨾ᶜ η•ᶜ
+      fwd f =
+        (f ⨾ᶜ proj•ᶜ , f ⨾ᶜ proj◦ᶜ) ,
+        ⨾ᶜ-assoc f proj•ᶜ α• ∙ cong (f ⨾ᶜ_) proj•→◦ᶜ ∙ sym (⨾ᶜ-assoc f proj◦ᶜ η•ᶜ)
 
-  --     bwd : (Σ[ (h• , h◦) ∈ (A ⊸ ⟨ F .A• ⟩ᶜ) × (A ⊸ ⟨ F .A◦ ⟩ᶜ) ]
-  --             (h• ⨾ᶜ F .α• ≡ h◦ ⨾ᶜ η•ᶜ))
-  --       → (A ⊸ fromFractureᶜ F)
-  --     bwd ((h• , h◦) , coh) .U a =
-  --       (h• .U a , h◦ .U a) , funExt⁻ (cong (λ w → w .U) coh) a
-  --     bwd ((h• , h◦) , coh) .charge c a =
-  --       Glue-path (is-set ⟨ F .A◦ ⟩ᶜ) (h• .charge c a) (h◦ .charge c a)
+      bwd : (Σ[ (f• , f◦) ∈ (A ⊸ A•) × (A ⊸ A◦) ] f• ⨾ᶜ α• ≡ f◦ ⨾ᶜ η•ᶜ) → (A ⊸ Glueᶜ A• A◦ α•)
+      bwd ((f• , f◦) , f-coh) .U a =
+        (f• .U a , f◦ .U a) , funExt⁻ (cong U f-coh) a
+      bwd ((f• , f◦) , f-coh) .charge c a =
+        Glue-path (is-set A◦) (f• .charge c a) (f◦ .charge c a)
 
-  --     sec : section fwd bwd
-  --     sec ((h• , h◦) , coh) =
-  --       Σ≡Prop (λ _ → isSet⊸ _ _)
-  --         (ΣPathP (⊸-path refl refl refl , ⊸-path refl refl refl))
+      sec : section fwd bwd
+      sec ((f• , f◦) , f-coh) =
+        Σ≡Prop (λ _ → isSet⊸ _ _)
+          (ΣPathP (⊸-path refl refl refl , ⊸-path refl refl refl))
 
-  --     ret : retract fwd bwd
-  --     ret k = ⊸-path refl refl (funExt λ a →
-  --       Σ≡Prop (λ _ → is-set (●ᶜ ⟨ F .A◦ ⟩ᶜ) _ _) refl)
+      ret : retract fwd bwd
+      ret f = ⊸-path refl refl (funExt λ a → Σ≡Prop (λ _ → is-set (●ᶜ A◦) _ _) refl)
 
 record Fractureᶜ : 𝒱₁ where
   field
