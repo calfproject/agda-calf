@@ -42,7 +42,7 @@ map f .U = ◯.map (f .U)
 map f .charge c a◦ = funExt λ abs → f .charge c (a◦ abs)
 
 map-∘ : (f : A ⊸ B) (g : B ⊸ C) → map f ⨾ᶜ map g ≡ map (f ⨾ᶜ g)
-map-∘ f g = ⊸-path refl refl (funExt (◯.map-∘ (f .U) (g .U)))
+map-∘ f g = funExtᶜ (◯.map-∘ (f .U) (g .U))
 
 join : ◯ᶜ (◯ᶜ A) ⊸ ◯ᶜ A
 join .U = ◯.join
@@ -64,15 +64,15 @@ opaque
     → isEquiv (λ (f : ◯ᶜ A ⊸ ⟨ B◦ ⟩ᶜ) → η◦ᶜ {A} ⨾ᶜ f)
   ⊸-precomp-η◦ᶜ-isEquiv B◦ =
     isoToIsEquiv (iso (η◦ᶜ ⨾ᶜ_) (◯ᶜ-rec B◦)
-      (λ g → ⊸-path refl refl (funExt (◯.elim-β (λ _ → strᶜ B◦) (g .U))))
-      (λ f → ⊸-path refl refl (sym (◯.◯-rec-unique (strᶜ B◦) refl))))
+      (λ g → funExtᶜ (◯.elim-β (λ _ → strᶜ B◦) (g .U)))
+      (λ f → funExtᶜ (funExt⁻ (sym (◯.◯-rec-unique (strᶜ B◦) refl)))))
 
 ⊸-precomp-η◦ᶜ-≃ : {A : 𝒞} (B◦ : 𝒞◦) → (◯ᶜ A ⊸ ⟨ B◦ ⟩ᶜ) ≃ (A ⊸ ⟨ B◦ ⟩ᶜ)
 ⊸-precomp-η◦ᶜ-≃ B◦ = (η◦ᶜ ⨾ᶜ_) , ⊸-precomp-η◦ᶜ-isEquiv B◦
 
 η◦ᶜ-isNatural : (f : A ⊸ B) → f ⨾ᶜ η◦ᶜ ≡ η◦ᶜ ⨾ᶜ map f
 η◦ᶜ-isNatural f =
-  ⊸-path refl refl (η◦-isNatural (U f) ∙ cong (λ map → map (U f) ∘ η◦) map′≡map)
+  funExtᶜ (funExt⁻ (η◦-isNatural (U f) ∙ cong (λ map → map (U f) ∘ η◦) map′≡map))
 
 Pullback-◯ᶜ : ∀ {A B C} (f : A ⊸ C) (g : B ⊸ C) → ◯ᶜ (Pullback f g) ≡ Pullback (map f) (map g)
 Pullback-◯ᶜ {A} {B} {C} f g = conservativity fwd fwd-equiv
@@ -105,35 +105,8 @@ Pullback-◯ᶜ {A} {B} {C} f g = conservativity fwd fwd-equiv
       (λ _ → refl)
       (λ a◦ → funExt λ abs' → cong a◦ (str ABS abs abs')))
 
-◯ᶜ-open-≃ : ⟨ ABS ⟩ → ◯ᶜ A ≃ᶜ A
-◯ᶜ-open-≃ {A} abs = ◯ᶜ-eval-open abs A , ◯ᶜ-eval-open-isEquiv abs A
-
-◯ᶜ-open : ⟨ ABS ⟩ → ◯ᶜ A ≡ A
-◯ᶜ-open abs = uaᶜ (◯ᶜ-open-≃ abs)
-
-◯ᶜ-map-openP : ∀ (abs : ⟨ ABS ⟩) (f : A ⊸ B)
-  → PathP (λ i → ◯ᶜ-open {A} abs i ⊸ ◯ᶜ-open {B} abs i)
-      (map f)
-      f
-◯ᶜ-map-openP {A} {B} abs f =
-  ⊸-path
-    (◯ᶜ-open {A} abs)
-    (◯ᶜ-open {B} abs)
-    (ua→
-      {e = ◯ᶜ-eval-open abs A .U , ◯ᶜ-eval-open-isEquiv abs A}
-      {B = λ i → U (◯ᶜ-open {B} abs i)}
-      (λ a◦ →
-        ua-gluePath
-          (◯ᶜ-eval-open abs B .U , ◯ᶜ-eval-open-isEquiv abs B)
-          refl))
-
-◯ᶜ-point-openP : ∀ (abs : ⟨ ABS ⟩) (a◦ : U (◯ᶜ A)) (a : U A)
-  → a◦ abs ≡ a
-  → PathP (λ i → U (◯ᶜ-open {A} abs i)) a◦ a
-◯ᶜ-point-openP {A} abs a◦ a p =
-  ua-gluePath
-    (◯ᶜ-eval-open abs A .U , ◯ᶜ-eval-open-isEquiv abs A)
-    p
+◯ᶜ-open : ⟨ ABS ⟩ → ◯ᶜ A ≃ᶜ A
+◯ᶜ-open {A} abs = ◯ᶜ-eval-open abs A , ◯ᶜ-eval-open-isEquiv abs A
 
 private
   embed : ∀ {X A} → Σᶜ₌ X A .U → Σᶜ₌ X (◯ᶜ ∘ A) .U

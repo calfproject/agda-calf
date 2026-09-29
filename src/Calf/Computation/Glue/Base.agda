@@ -31,7 +31,7 @@ module _ {A• A◦ : 𝒞} {α• : A• ⊸ ●ᶜ A◦} where
   proj◦ᶜ .charge _ _ = refl
 
   proj•→◦ᶜ : proj•ᶜ ⨾ᶜ α• ≡ proj◦ᶜ ⨾ᶜ η•ᶜ
-  proj•→◦ᶜ = ⊸-path refl refl (funExt proj•→◦)
+  proj•→◦ᶜ = funExtᶜ proj•→◦
 
   ⊸-Glueᶜ-≃ : {A : 𝒞}
     → (A ⊸ Glueᶜ A• A◦ α•)
@@ -52,10 +52,10 @@ module _ {A• A◦ : 𝒞} {α• : A• ⊸ ●ᶜ A◦} where
       sec : section fwd bwd
       sec ((f• , f◦) , f-coh) =
         Σ≡Prop (λ _ → isSet⊸ _ _)
-          (ΣPathP (⊸-path refl refl refl , ⊸-path refl refl refl))
+          (ΣPathP (funExtᶜ (λ _ → refl) , funExtᶜ (λ _ → refl)))
 
       ret : retract fwd bwd
-      ret f = ⊸-path refl refl (funExt λ a → Σ≡Prop (λ _ → is-set (●ᶜ A◦) _ _) refl)
+      ret f = funExtᶜ λ a → Σ≡Prop (λ _ → is-set (●ᶜ A◦) _ _) refl
 
 record Fractureᶜ : 𝒱₁ where
   field
@@ -114,16 +114,16 @@ Fractureᶜ-Square F G =
     f• ⨾ᶜ G .α• ≡ F .α• ⨾ᶜ ●ᶜ.map f◦
 
 squareᶜ
-  : ∀ {A• A◦ α B• B◦ β}
+  : ∀ {A• A◦ α• B• B◦ β•}
   → (f• : A• ⊸ B•)
   → (f◦ : A◦ ⊸ B◦)
-  → f• ⨾ᶜ β ≡ α ⨾ᶜ ●ᶜ.map f◦
-  → Glueᶜ A• A◦ α ⊸ Glueᶜ B• B◦ β
+  → f• ⨾ᶜ β• ≡ α• ⨾ᶜ ●ᶜ.map f◦
+  → Glueᶜ A• A◦ α• ⊸ Glueᶜ B• B◦ β•
 squareᶜ f• f◦ f-coherence .U =
   square
     (f• .U)
     (f◦ .U)
-    (λ a• → cong ((_$ a•) ∘ U) f-coherence)
+    (funExt⁻ (cong U f-coherence))
 squareᶜ {B◦ = B◦} f• f◦ f-coherence .charge c q =
   Σ≡Prop (λ _ → is-set (●ᶜ B◦) _ _)
     (ΣPathP (f• .charge c (proj• q) , f◦ .charge c (proj◦ q)))

@@ -68,13 +68,12 @@ map f .U = ●.map (f .U)
 map f .charge = map-charge f
 
 map-∘ : (f : A ⊸ B) (g : B ⊸ C) → map f ⨾ᶜ map g ≡ map (f ⨾ᶜ g)
-map-∘ f g = ⊸-path refl refl (funExt (●.map-∘ (f .U) (g .U)))
+map-∘ f g = funExtᶜ (●.map-∘ (f .U) (g .U))
 
 opaque
   map-id : map (idᶜ {A}) ≡ idᶜ
   map-id {A} =
-    ⊸-path refl refl
-      (funExt (●.ind-prop _ (λ _ → ●.isSet● (is-set A) _ _) (λ _ → refl) (λ _ → refl)))
+    funExtᶜ (●.ind-prop _ (λ _ → ●.isSet● (is-set A) _ _) (λ _ → refl) (λ _ → refl))
 
 opaque
   map-id-equiv : isEquiv (map (idᶜ {A}) .U)
@@ -83,17 +82,10 @@ opaque
 opaque
   map-open : ⟨ ABS ⟩ → (f g : A ⊸ B) → map f ≡ map g
   map-open {A} {B} p f g =
-    ⊸-path
-      {A₀ = ●ᶜ A}
-      {A₁ = ●ᶜ A}
-      {B₀ = ●ᶜ B}
-      {B₁ = ●ᶜ B}
-      refl
-      refl
-      (funExt λ a• →
-        ◯-isProp● p
-          (map {A = A} {B = B} f .U a•)
-          (map {A = A} {B = B} g .U a•))
+    funExtᶜ λ a• →
+      ◯-isProp● p
+        (map {A = A} {B = B} f .U a•)
+        (map {A = A} {B = B} g .U a•)
 
 opaque
   join-charge : (c : ℂ) (a•• : U (●ᶜ (●ᶜ A)))
@@ -111,14 +103,12 @@ bind k = map k ⨾ᶜ join
 opaque
   bind-map : (k : A ⊸ ●ᶜ B) (f : B ⊸ C) → bind k ⨾ᶜ map f ≡ bind (k ⨾ᶜ map f)
   bind-map k f =
-    ⊸-path refl refl
-      (funExt (●.elim (λ _ → ●-≡-isModal _ _) (λ _ → refl)))
+    funExtᶜ (●.elim (λ _ → ●-≡-isModal _ _) (λ _ → refl))
 
 opaque
   bind-η• : (f : A ⊸ B) → bind (f ⨾ᶜ η•ᶜ) ≡ map f
   bind-η• f =
-    ⊸-path refl refl
-      (funExt (●.elim (λ _ → ●-≡-isModal _ _) (λ _ → refl)))
+    funExtᶜ (●.elim (λ _ → ●-≡-isModal _ _) (λ _ → refl))
 
 opaque
   ●ᶜ-rec-charge : (B• : 𝒞•) (g : A ⊸ ⟨ B• ⟩ᶜ) (c : ℂ) (a• : U (●ᶜ A))
@@ -139,9 +129,8 @@ opaque
     → isEquiv (λ (f : ●ᶜ A ⊸ ⟨ B• ⟩ᶜ) → η•ᶜ ⨾ᶜ f)
   ⊸-precomp-η•ᶜ-isEquiv B• =
     isoToIsEquiv (iso (η•ᶜ ⨾ᶜ_) (●ᶜ-rec B•)
-      (λ g → ⊸-path refl refl refl)
-      (λ f → ⊸-path refl refl
-        (funExt (●.elim (λ a• → ●.isModal≡ (strᶜ B•)) (λ a → refl)))))
+      (λ g → funExtᶜ λ _ → refl)
+      (λ f → funExtᶜ (●.elim (λ a• → ●.isModal≡ (strᶜ B•)) (λ a → refl))))
 
 ⊸-precomp-η•ᶜ-≃ : {A : 𝒞} (B• : 𝒞•) → (●ᶜ A ⊸ ⟨ B• ⟩ᶜ) ≃ (A ⊸ ⟨ B• ⟩ᶜ)
 ⊸-precomp-η•ᶜ-≃ B• = (η•ᶜ ⨾ᶜ_) , ⊸-precomp-η•ᶜ-isEquiv B•

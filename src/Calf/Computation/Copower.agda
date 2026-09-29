@@ -40,7 +40,7 @@ module _ {X : 𝒱} {A : X → 𝒞} {h : isPreorder (Σ X (U ∘ A))} where
 
 Σᶜ-map-idᶜ : {A : X → 𝒞} {h : isPreorder (Σ X (U ∘ A))} →
   Σᶜ-map {hA = h} {hB = h} (λ x → idᶜ {A = A x}) ≡ idᶜ
-Σᶜ-map-idᶜ = ⊸-path refl refl refl
+Σᶜ-map-idᶜ = funExtᶜ λ _ → refl
 
 Σᶜ-map-⨾ᶜ : {A B C : X → 𝒞}
   {hA : isPreorder (Σ X (U ∘ A))}
@@ -50,7 +50,7 @@ module _ {X : 𝒱} {A : X → 𝒞} {h : isPreorder (Σ X (U ∘ A))} where
   (g : (x : X) → B x ⊸ C x) →
   Σᶜ-map {hA = hA} {hB = hB} f ⨾ᶜ Σᶜ-map {hA = hB} {hB = hC} g ≡
   Σᶜ-map {hA = hA} {hB = hC} (λ x → f x ⨾ᶜ g x)
-Σᶜ-map-⨾ᶜ f g = ⊸-path refl refl refl
+Σᶜ-map-⨾ᶜ f g = funExtᶜ λ _ → refl
 
 Σᶜ-1ᵛ : Σᶜ₌ 1ᵛ₌ (λ _ → A) ≡ A
 Σᶜ-1ᵛ =

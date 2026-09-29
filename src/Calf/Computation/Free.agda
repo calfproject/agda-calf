@@ -64,13 +64,13 @@ opaque
 
   F-rec-η : F-rec (ret {X}) ≡ idᶜ
   F-rec-η =
-    ⊸-path refl refl (funExt λ (c , x) →
+    funExtᶜ λ (c , x) →
       rec-unique
         (F _ .is-preorder)
         (λ z → F-rec {A = F _} ret .U (c , z))
         (λ z → c , z)
         (λ x → cong (_, ηᴾ x) (+ℂ-identityʳ c))
-        x)
+        x
 
   F-rec-assoc :
       (h : X → U (F Y))
@@ -117,7 +117,7 @@ private
     iso
       (F-rec {X} {A})
       (λ f → f .U ∘ ret {X})
-      (λ f → ⊸-path refl refl (funExt λ e → sym (F-rec-map f ret e) ∙ cong (f .U) (cong ((_$ e) ∘ U) F-rec-η)))
+      (λ f → funExtᶜ λ e → sym (F-rec-map f ret e) ∙ cong (f .U) (cong ((_$ e) ∘ U) F-rec-η))
       (λ g → funExt λ x → F-rec-β)
 
 F-adjoint : (X → U A) ≃ (F X ⊸ A)

@@ -25,15 +25,10 @@ opaque
     → ((a-⊤ : U A-⊤) → U β (U f-⊤ a-⊤) ≡ U f-abs (U α a-⊤))
     → Abstractionᶜ A-⊤ A-abs α ⊸ Abstractionᶜ B-⊤ B-abs β
   squareᶜ α β f-⊤ f-abs f-coherence =
-    Glueᶜ.squareᶜ
+    Glueᶜ.squareᶜ {α• = ●ᶜ.map (α ⨾ᶜ η◦ᶜ)} {β• = ●ᶜ.map (β ⨾ᶜ η◦ᶜ)}
       (●ᶜ.map f-⊤)
       (◯ᶜ.map f-abs)
-      coh
-    where
-      coh : ●ᶜ.map f-⊤ ⨾ᶜ ●ᶜ.map (β ⨾ᶜ η◦ᶜ) ≡ ●ᶜ.map (α ⨾ᶜ η◦ᶜ) ⨾ᶜ ●ᶜ.map (◯ᶜ.map f-abs)
-      coh =
-        ⊸-path refl refl
-          (funExt (●ᶜ.elim (λ _ → ●ᶜ.●-≡-isModal _ _) λ a → cong (η• ∘ η◦) (f-coherence a)))
+      (funExtᶜ (●ᶜ.elim (λ _ → ●ᶜ.●-≡-isModal _ _) λ a → cong (η• ∘ η◦) (f-coherence a)))
 
   triangle-U : ∀ {A-⊤ A-abs} (α : A-⊤ ⊸ A-abs) (a-⊤ : U A-⊤) (a-abs : U A-abs)
     → α .U a-⊤ ≡ a-abs

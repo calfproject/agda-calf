@@ -82,7 +82,7 @@ module _ where
           (λ (f• , f◦) →
             congEquiv (⊸-precomp-η•ᶜ-≃ (●ᶜ• (◯ᶜ B)))
             ∙ₑ compPathlEquiv (⨾ᶜ-assoc η•ᶜ f• (●ᶜ.map η◦ᶜ))
-            ∙ₑ compPathrEquiv (⊸-path refl refl refl)))
+            ∙ₑ compPathrEquiv (funExtᶜ λ _ → refl)))
     ⟩
       Fractureᶜ-Square (toFractureᶜ A) (toFractureᶜ B)
     ■

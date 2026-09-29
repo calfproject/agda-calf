@@ -146,7 +146,7 @@ opaque
         ∎
 
 Σᶜ-map-chargeᶜ : ∀ {A : ⟨ X₌ ⟩ → 𝒞} c → Σᶜ-map {A = A} {B = A} (λ _ → chargeᶜ c) ≡ chargeᶜ {A = Σᶜ₌ X₌ A} c
-Σᶜ-map-chargeᶜ c = ⊸-path refl refl refl
+Σᶜ-map-chargeᶜ c = funExtᶜ λ _ → refl
 
 opaque
   unfolding ▷[_]_
