@@ -83,7 +83,7 @@ Fractureᶜ-ua
   → (e◦ : ⟨ F .A◦ ⟩ᶜ ≃ᶜ ⟨ F' .A◦ ⟩ᶜ)
   → F' .α• .U ∘ equivFunᶜ e• .U ≡ ●ᶜ.map (equivFunᶜ e◦) .U ∘ F .α• .U
   → F ≡ F'
-Fractureᶜ-ua {F} e• e◦ e•→◦ =
+Fractureᶜ-ua e• e◦ e•→◦ =
   Fractureᶜ-path
     (uaᶜ e•)
     (uaᶜ e◦)
@@ -127,3 +127,13 @@ squareᶜ f• f◦ f-coherence .U =
 squareᶜ {B◦ = B◦} f• f◦ f-coherence .charge c q =
   Σ≡Prop (λ _ → is-set (●ᶜ B◦) _ _)
     (ΣPathP (f• .charge c (proj• q) , f◦ .charge c (proj◦ q)))
+
+Glueᶜ-≃
+  : ∀ {A• A◦ α• B• B◦ β•}
+  → (e• : A• ≃ᶜ B•)
+  → (e◦ : A◦ ≃ᶜ B◦)
+  → equivFunᶜ e• ⨾ᶜ β• ≡ α• ⨾ᶜ ●ᶜ.map (equivFunᶜ e◦)
+  → Glueᶜ A• A◦ α• ≃ᶜ Glueᶜ B• B◦ β•
+Glueᶜ-≃ {α• = α•} {β• = β•} e• e◦ coh =
+  squareᶜ (equivFunᶜ e•) (equivFunᶜ e◦) coh ,
+  square-isEquiv (U α•) (U β•) (funExt⁻ (cong U coh)) (equivIsEquivᶜ e•) (equivIsEquivᶜ e◦)

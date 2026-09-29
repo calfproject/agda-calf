@@ -178,6 +178,10 @@ opaque
   map-η-isEquiv = subst isEquiv (funExt⁻ map′≡map η•) map′-η-isEquiv
 
 opaque
+  map-isEquiv : {f : X → Y} → isEquiv f → isEquiv (map f)
+  map-isEquiv {f = f} e = subst isEquiv (funExt⁻ map′≡map f) (equivIsEquiv (●-equiv (f , e)))
+
+opaque
   -- Based identity-system argument (https://1lab.dev/1Lab.Path.IdentitySystem.html#based-identity-systems)
   -- This lex proof is adapted from: https://github.com/ncfavier/agda-stuff/blob/main/src-1lab/ErasureOpen.lagda.md
   isLex● : IsLex◯

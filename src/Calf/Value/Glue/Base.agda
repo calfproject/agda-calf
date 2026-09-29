@@ -1,7 +1,9 @@
 module Calf.Value.Glue.Base where
 
+open import Cubical.Foundations.Equiv.Properties using (congEquiv)
+open import Cubical.Foundations.Path using (compPathlEquiv)
 open import Cubical.Foundations.Univalence using (ua; ua→)
-open import Cubical.Data.Sigma using (ΣPathP; Σ≡Prop)
+open import Cubical.Data.Sigma using (ΣPathP; Σ≡Prop; Σ-cong-equiv; ≃-×)
 
 open import Calf.Value
 open import Calf.Value.Closed as ●
@@ -95,3 +97,12 @@ square
   → Glue X• X◦ χ → Glue Y• Y◦ ψ
 square f• f◦ f-coh ((x• , x◦) , h) =
   (f• x• , f◦ x◦) , f-coh x• ∙ cong (●.map f◦) h
+
+square-isEquiv
+  : ∀ {X• X◦} (χ : X• → ● X◦) {Y• Y◦} (ψ : Y• → ● Y◦) {f• : X• → Y•} {f◦ : X◦ → Y◦}
+  → (f-coh : (x• : X•) → ψ (f• x•) ≡ ●.map f◦ (χ x•))
+  → isEquiv f• → isEquiv f◦ → isEquiv (square {χ = χ} {ψ = ψ} f• f◦ f-coh)
+square-isEquiv χ ψ {f•} {f◦} f-coh e• e◦ =
+  equivIsEquiv
+    (Σ-cong-equiv (≃-× (f• , e•) (f◦ , e◦)) λ (x• , x◦) →
+      congEquiv (●.map f◦ , ●.map-isEquiv e◦) ∙ₑ compPathlEquiv (f-coh x•))
