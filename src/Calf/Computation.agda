@@ -284,17 +284,21 @@ opaque
     → PathP (λ i → uaᶜ e i ⊸ uaᶜ e' i) f g
   uaᶜ-⊸ (e , ee) (e' , ee') = conservativity-⊸ e ee e' ee'
 
-idEquivᶜ : (A : 𝒞) → (A ≃ᶜ A)
+idEquivᶜ : (A : 𝒞) → A ≃ᶜ A
 idEquivᶜ A = idᶜ , idEquiv _ .snd
 
-invEquivᶜ : (f : A ⊸ B) → isEquivᶜ f → B ⊸ A
-invEquivᶜ {A} {B} f fe .U = invEq (f .U , fe)
-invEquivᶜ {A} {B} f fe .charge c b =
-    cong (invEq e) (cong (B .charge c) (sym (secEq e b)))
-  ∙ cong (invEq e) (sym (f .charge c (invEq e b)))
-  ∙ retEq e (A .charge c (invEq e b))
-  where
-    e = (f .U , fe)
+invIsEqᶜ : (f : A ⊸ B) → isEquivᶜ f → B ⊸ A
+invIsEqᶜ {A} {B} f fe .U = invIsEq fe
+invIsEqᶜ {A} {B} f fe .charge c b =
+    cong (invIsEq fe) (cong (B .charge c) (sym (secEq (_ , fe) b)))
+  ∙ cong (invIsEq fe) (sym (f .charge c (invIsEq fe b)))
+  ∙ retEq (_ , fe) (A .charge c (invIsEq fe b))
+
+invEqᶜ : A ≃ᶜ B → B ⊸ A
+invEqᶜ e = invIsEqᶜ (equivFunᶜ e) (equivIsEquivᶜ e)
+
+invEquivᶜ : A ≃ᶜ B → B ≃ᶜ A
+invEquivᶜ e = invEqᶜ e , equivIsEquiv (invEquiv (U-≃ e))
 
 infixr 30 _∙ₑᶜ_
 _∙ₑᶜ_ : A ≃ᶜ B → B ≃ᶜ C → A ≃ᶜ C
@@ -304,16 +308,20 @@ _∙ₑᶜ_ : A ≃ᶜ B → B ≃ᶜ C → A ≃ᶜ C
 _≃ᶜ⟨_⟩_ : (A : 𝒞) → (A ≃ᶜ B) → (B ≃ᶜ C) → (A ≃ᶜ C)
 _ ≃ᶜ⟨ f ⟩ g = f ∙ₑᶜ g
 
+_≃ᶜ⟨⟩_ : (A : 𝒞) → (A ≃ᶜ B) → (A ≃ᶜ B)
+_ ≃ᶜ⟨⟩ g = g
+
 _■ᶜ : (A : 𝒞) → (A ≃ᶜ A)
 _■ᶜ = idEquivᶜ
 
 infixr  0 _≃ᶜ⟨_⟩_
+infixr  0 _≃ᶜ⟨⟩_
 infix   1 _■ᶜ
 
 ⊸-postcomp-isEquiv : {A B C : 𝒞} (e : B ⊸ C) → isEquivᶜ e
   → isEquiv (λ (f : A ⊸ B) → f ⨾ᶜ e)
 ⊸-postcomp-isEquiv e h =
-  isoToIsEquiv (iso (_⨾ᶜ e) (_⨾ᶜ invEquivᶜ e h)
+  isoToIsEquiv (iso (_⨾ᶜ e) (_⨾ᶜ invIsEqᶜ e h)
     (λ g → funExtᶜ λ a → secIsEq h (g .U a))
     (λ f → funExtᶜ λ a → retIsEq h (f .U a)))
 

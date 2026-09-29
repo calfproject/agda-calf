@@ -144,12 +144,12 @@ opaque
     → isEquivᶜ (map₂ f g)
   map₂-equivᶜ {f = f} {g = g} fe ge =
     isoToIsEquiv
-      (iso (map₂ f g .U) (map₂ (invEquivᶜ f fe) (invEquivᶜ g ge) .U)
+      (iso (map₂ f g .U) (map₂ (invIsEqᶜ f fe) (invIsEqᶜ g ge) .U)
         (⊗₀-rec-unique isPreorderᴾ
-          (λ z → map₂ f g .U (map₂ (invEquivᶜ f fe) (invEquivᶜ g ge) .U z)) (λ z → z)
+          (λ z → map₂ f g .U (map₂ (invIsEqᶜ f fe) (invIsEqᶜ g ge) .U z)) (λ z → z)
           (λ a b i → ηᴾ (inj (secEq (f .U , fe) a i) (secEq (g .U , ge) b i))))
         (⊗₀-rec-unique isPreorderᴾ
-          (λ z → map₂ (invEquivᶜ f fe) (invEquivᶜ g ge) .U (map₂ f g .U z)) (λ z → z)
+          (λ z → map₂ (invIsEqᶜ f fe) (invIsEqᶜ g ge) .U (map₂ f g .U z)) (λ z → z)
           (λ a b i → ηᴾ (inj (retEq (f .U , fe) a i) (retEq (g .U , ge) b i)))))
 
 ⊗-isContr : isContr (U A) → isContr (U B) → isContr (U (A ⊗ B))
