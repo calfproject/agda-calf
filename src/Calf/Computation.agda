@@ -100,6 +100,8 @@ open _⊸_ public
 isEquivᶜ : (A ⊸ B) → 𝒱
 isEquivᶜ f = isEquiv (U f)
 
+infix 4 _≃ᶜ_
+
 _≃ᶜ_ : 𝒞 → 𝒞 → 𝒱
 A ≃ᶜ B = Σ (A ⊸ B) isEquivᶜ
 
@@ -285,7 +287,7 @@ opaque
   uaᶜ-⊸ (e , ee) (e' , ee') = conservativity-⊸ e ee e' ee'
 
 idEquivᶜ : (A : 𝒞) → A ≃ᶜ A
-idEquivᶜ A = idᶜ , idEquiv _ .snd
+idEquivᶜ A = idᶜ , equivIsEquiv (idEquiv (U A))
 
 invIsEqᶜ : (f : A ⊸ B) → isEquivᶜ f → B ⊸ A
 invIsEqᶜ {A} {B} f fe .U = invIsEq fe
