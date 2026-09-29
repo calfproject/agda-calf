@@ -88,7 +88,6 @@ module ⊑-Reasoning (A : 𝒞) where
 
 infix 1 _⊸_
 record _⊸_ (A B : 𝒞) : 𝒱 where
-  -- no-eta-equality
   field
     U : U A → U B
     charge : ∀ c a → U (A .charge c a) ≡ B .charge c (U a)
