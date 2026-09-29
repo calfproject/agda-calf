@@ -25,7 +25,7 @@ opaque
 
   ⇀-app : A ⊸ (X ⇀ B) → X → A ⊸ B
   ⇀-app e x .U a = e .U a x
-  ⇀-app e x .charge c a = cong (_$ x) (e .charge c a)
+  ⇀-app e x .charge c a = funExt⁻ (e .charge c a) x
 
   Πᶜ-lam : {C : X → 𝒞} → ((x : X) → A ⊸ C x) → A ⊸ Πᶜ X C
   Πᶜ-lam e .U a x = e x .U a

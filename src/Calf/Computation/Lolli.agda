@@ -23,7 +23,7 @@ _⊸ᶜ_ : 𝒞 → 𝒞 → 𝒞
 (A ⊸ᶜ B) .charge c f .U a = B .charge c (f .U a)
 (A ⊸ᶜ B) .charge c f .charge c' a =
   cong (B .charge c) (f .charge c' a)
-  ∙ cong ((_$ f .U a) ∘ U) (chargeᶜ-comm {B} c' c)
+  ∙ funExt⁻ (cong U (chargeᶜ-comm {B} c' c)) ?
 (A ⊸ᶜ B) .charge-0 = funExtᶜ λ a → B .charge-0
 (A ⊸ᶜ B) .charge-+ = funExtᶜ λ a → B .charge-+
 
