@@ -8,6 +8,8 @@ open import Calf.Core.Cost
 open import Calf.Value
 
 record 𝒞 : 𝒱₁ where
+  no-eta-equality
+
   field
     U : 𝒱
     is-preorder : isPreorder U
@@ -88,6 +90,8 @@ module ⊑-Reasoning (A : 𝒞) where
 
 infix 1 _⊸_
 record _⊸_ (A B : 𝒞) : 𝒱 where
+  no-eta-equality
+
   field
     U : U A → U B
     charge : ∀ c a → U (A .charge c a) ≡ B .charge c (U a)
@@ -136,6 +140,13 @@ opaque
     isPropImplicitΠ3 λ a c₁ c₂ →
       isSetU (charge (c₁ +ℂ c₂) a) (charge c₁ (charge c₂ a))
 
+private
+  opaque
+    is-set-path : {A B : 𝒞} (U-path : A .U ≡ B .U)
+      → PathP (λ i → isSet (U-path i)) (is-set A) (is-set B)
+    is-set-path {A} {B} U-path =
+      isProp→PathP (λ i → isPropIsSet {A = U-path i}) (is-set A) (is-set B)
+
 𝒞-path
   : {A B : 𝒞}
   → (U-path : A .U ≡ B .U)
@@ -144,37 +155,26 @@ opaque
       (charge A)
       (charge B)
   → A ≡ B
-𝒞-path {A} {B} U-path charge-path i =
-  record
-    { U = U-path i
-    ; is-preorder =
-      isProp→PathP
-        (λ i → isPropIsPreorder {X = U-path i})
-        (A .is-preorder)
-        (B .is-preorder)
-        i
-    ; charge = charge-path i
-    ; charge-0 =
-        isProp→PathP
-          (λ i → isPropCharge/0 {U = U-path i} {isSetUi i} (charge-path i))
-          (A .charge-0)
-          (B .charge-0)
-          i
-    ; charge-+ =
-        isProp→PathP
-          (λ i → isPropCharge/+ {U = U-path i} {isSetUi i} (charge-path i))
-          (A .charge-+)
-          (B .charge-+)
-          i
-    }
-  where
-    opaque
-      isSetUi : PathP (λ i → isSet (U-path i)) (is-set A) (is-set B)
-      isSetUi =
-        isProp→PathP
-          (λ i → isPropIsSet {A = U-path i})
-          (is-set A)
-          (is-set B)
+𝒞-path {A} {B} U-path charge-path i .U = U-path i
+𝒞-path {A} {B} U-path charge-path i .is-preorder =
+  isProp→PathP
+    (λ i → isPropIsPreorder {X = U-path i})
+    (A .is-preorder)
+    (B .is-preorder)
+    i
+𝒞-path {A} {B} U-path charge-path i .charge = charge-path i
+𝒞-path {A} {B} U-path charge-path i .charge-0 =
+  isProp→PathP
+    (λ i → isPropCharge/0 {U = U-path i} {is-set-path {A} {B} U-path i} (charge-path i))
+    (A .charge-0)
+    (B .charge-0)
+    i
+𝒞-path {A} {B} U-path charge-path i .charge-+ =
+  isProp→PathP
+    (λ i → isPropCharge/+ {U = U-path i} {is-set-path {A} {B} U-path i} (charge-path i))
+    (A .charge-+)
+    (B .charge-+)
+    i
 
 opaque
   isProp⊸charge
