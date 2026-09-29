@@ -13,13 +13,15 @@ open import Calf.Computation.Abstraction
 open import Calf.Computation.Closed as ●ᶜ
 open import Calf.Computation.Glue hiding (squareᶜ)
 open import Calf.Computation.Open as ◯ᶜ
-open import Calf.Computation.Seal
+-- open import Calf.Computation.Seal
 
 open Fractureᶜ
 
 opaque
+  infixl 5 ▷[_]_
+
   ▷[_]_ : ℂ → 𝒞 → 𝒞
-  ▷[ c ] A = Abstractionᶜ A A (chargeᶜ c)
+  ▷[ c ] A = Abstractionᶜ (chargeᶜ {A} c)
 
   ▷-map : (A ⊸ B) → (▷[ c ] A ⊸ ▷[ c ] B)
   ▷-map {A} {B} {c} f =
@@ -28,62 +30,54 @@ opaque
       f
       (sym ∘ f .charge c)
 
-  ▷-0 : ▷[ 0ℂ ] A ≡ A
-  ▷-0 {A} = cong (Abstractionᶜ A A) chargeᶜ-0 ∙ Abstractionᶜ-id A
+  ▷-0 : ▷[ 0ℂ ] A ≃ᶜ A
+  ▷-0 {A} =
+    subst (λ f → Abstractionᶜ f ≃ᶜ A)
+      (sym chargeᶜ-0)
+      (invEquivᶜ (Abstractionᶜ-id A))
 
-  ▷-+ : ▷[ c₁ +ℂ c₂ ] A ≡ ▷[ c₁ ] ▷[ c₂ ] A
+  ▷-+ : ▷[ c₁ +ℂ c₂ ] A ≃ᶜ ▷[ c₁ ] ▷[ c₂ ] A
   ▷-+ {c₁} {c₂} {A} =
       ▷[ c₁ +ℂ c₂ ] A
-    ≡⟨⟩
-      Abstractionᶜ A A (chargeᶜ (c₁ +ℂ c₂))
-    ≡⟨ cong (Abstractionᶜ A A) (chargeᶜ-+ c₁ c₂) ⟩
-      Abstractionᶜ A A (chargeᶜ c₂ ⨾ᶜ chargeᶜ c₁)
-    ≡⟨ sym
+    ≃ᶜ⟨⟩
+      Abstractionᶜ (chargeᶜ (c₁ +ℂ c₂))
+    ≃ᶜ⟨ Abstractionᶜ-≃ (idEquivᶜ A) (idEquivᶜ A) (funExtᶜ λ _ → sym (A .charge-+)) ⟩
+      Abstractionᶜ (chargeᶜ {A} c₂ ⨾ᶜ chargeᶜ c₁)
+    ≃ᶜ⟨
+      invEquivᶜ
         (Abstractionᶜ-fuse
           (chargeᶜ c₂) (chargeᶜ c₂)
           (chargeᶜ c₁) (chargeᶜ c₁)
-          (λ a → cong ((_$ a) ∘ U) (chargeᶜ-comm {A} c₁ c₂)))
+          (funExt⁻ (cong U (chargeᶜ-comm {A} c₁ c₂))))
     ⟩
-      Abstractionᶜ
-        (Abstractionᶜ A A (chargeᶜ c₂))
-        (Abstractionᶜ A A (chargeᶜ c₂))
-        (squareᶜ (chargeᶜ c₂) (chargeᶜ c₂) (chargeᶜ c₁) (chargeᶜ c₁) λ a → cong ((_$ a) ∘ U) (chargeᶜ-comm {A} c₁ c₂))
-    ≡⟨
-      cong
-        (Abstractionᶜ (Abstractionᶜ A A (chargeᶜ c₂)) (Abstractionᶜ A A (chargeᶜ c₂)))
-        (squareᶜ-charge (chargeᶜ c₂) c₁ λ a → cong ((_$ a) ∘ U) (chargeᶜ-comm {A} c₁ c₂))
-    ⟩
-      Abstractionᶜ (Abstractionᶜ A A (chargeᶜ c₂)) (Abstractionᶜ A A (chargeᶜ c₂)) (chargeᶜ c₁)
-    ≡⟨⟩
-      ▷[ c₁ ] (▷[ c₂ ] A)
-    ∎
+      Abstractionᶜ (squareᶜ (chargeᶜ c₂) (chargeᶜ c₂) (chargeᶜ c₁) (chargeᶜ c₁) _)
+    ≃ᶜ⟨ Abstractionᶜ-≃ (idEquivᶜ _) (idEquivᶜ _) (funExtᶜ λ _ → Glue-path (is-set (◯ᶜ A)) refl refl) ⟩
+      Abstractionᶜ (chargeᶜ c₁)
+    ≃ᶜ⟨⟩
+      ▷[ c₁ ] ▷[ c₂ ] A
+    ■ᶜ
 
-  ▷-Fracture : ℂ → 𝒞 → Fractureᶜ
-  ▷-Fracture c A .A• = ●ᶜ• A
-  ▷-Fracture c A .A◦ = ◯ᶜ◦ A
-  ▷-Fracture c A .α• = ●ᶜ.map (chargeᶜ c ⨾ᶜ η◦ᶜ)
-
-  ▷-open : ⟨ ABS ⟩ → (c : ℂ) (A : 𝒞) → ▷[ c ] A ≡ A
+  ▷-open : ⟨ ABS ⟩ → (c : ℂ) (A : 𝒞) → ▷[ c ] A ≃ᶜ A
   ▷-open abs c A = Abstractionᶜ-open (chargeᶜ c) abs
 
-  ▷-●ᶜ : (c : ℂ) (A : 𝒞) → ●ᶜ (▷[ c ] A) ≡ ●ᶜ A
+  ▷-●ᶜ : (c : ℂ) (A : 𝒞) → ●ᶜ (▷[ c ] A) ≃ᶜ ●ᶜ A
   ▷-●ᶜ c A = ●ᶜ-Abstractionᶜ (chargeᶜ c)
 
-  ▷-◯ᶜ : (c : ℂ) (A : 𝒞) → ◯ᶜ (▷[ c ] A) ≡ ◯ᶜ A
+  ▷-◯ᶜ : (c : ℂ) (A : 𝒞) → ◯ᶜ (▷[ c ] A) ≃ᶜ ◯ᶜ A
   ▷-◯ᶜ c A = ◯ᶜ-Abstractionᶜ (chargeᶜ c)
 
-  ▷-coherence : (c : ℂ) (A : 𝒞) →
-    PathP
-      (λ i → sym (▷-●ᶜ c A) i ⊸ ●ᶜ (sym (▷-◯ᶜ c A) i))
-      (●ᶜ.map (chargeᶜ c ⨾ᶜ η◦ᶜ {A = A}))
-      (●ᶜ.map (η◦ᶜ {A = ▷[ c ] A}))
-  ▷-coherence c A =
-    Abstractionᶜ-coherence (chargeᶜ c)
+  -- ▷-coherence : (c : ℂ) (A : 𝒞) →
+  --   PathP
+  --     (λ i → sym (▷-●ᶜ c A) i ⊸ ●ᶜ (sym (▷-◯ᶜ c A) i))
+  --     (●ᶜ.map (chargeᶜ c ⨾ᶜ η◦ᶜ {A = A}))
+  --     (●ᶜ.map (η◦ᶜ {A = ▷[ c ] A}))
+  -- ▷-coherence c A =
+  --   Abstractionᶜ-coherence (chargeᶜ c)
 
-  waste : (A : 𝒞) → c ⊑ c' → ▷[ c' ] A ⊸ᵈ ▷[ c ] A
-  waste {c} {c'} A c⊑c' =
-    squareᵈᶜ (chargeᶜ c') (chargeᶜ c) idᶜ idᶜ λ a →
-    ⊑-mono (flip (A .charge) a) c⊑c'
+  -- waste : (A : 𝒞) → c ⊑ c' → ▷[ c' ] A ⊸ᵈ ▷[ c ] A
+  -- waste {c} {c'} A c⊑c' =
+  --   squareᵈᶜ (chargeᶜ c') (chargeᶜ c) idᶜ idᶜ λ a →
+  --   ⊑-mono (flip (A .charge) a) c⊑c'
 
   save : (A : 𝒞) (c : ℂ) → A ⊸ ▷[ c ] A
   save A c = triangle-⊤ (chargeᶜ c) idᶜ
@@ -91,28 +85,28 @@ opaque
   spend : (A : 𝒞) (c : ℂ) → ▷[ c ] A ⊸ A
   spend A c = triangle-abs idᶜ
 
-  save⨾spend≡chargeᶜ : (A : 𝒞) (c : ℂ) → save A c ⨾ᶜ spend A c ≡ chargeᶜ c
-  save⨾spend≡chargeᶜ A c =
-      save A c ⨾ᶜ spend A c
-    ≡⟨ cong (_⨾ᶜ spend A c) (⨾ᶜ-identityˡ (triangleᶜ (chargeᶜ c))) ⟩
-      triangleᶜ (chargeᶜ c) ⨾ᶜ spend A c
-    ≡⟨ sym (fromPathP (λ i → triangleᶜ (chargeᶜ c) ⨾ᶜ spend-path i)) ⟩
-      transport (λ i → A ⊸ Abstractionᶜ-id A i) (triangleᶜ (chargeᶜ c) ⨾ᶜ SQ₂)
-    ≡⟨ cong (transport (λ i → A ⊸ Abstractionᶜ-id A i)) lemma ⟩
-      transport (λ i → A ⊸ Abstractionᶜ-id A i) (chargeᶜ c ⨾ᶜ triangleᶜ idᶜ)
-    ≡⟨ fromPathP (λ i → chargeᶜ {A} c ⨾ᶜ triangleᶜ-id i) ⟩
-      chargeᶜ c ⨾ᶜ idᶜ
-    ≡⟨ ⨾ᶜ-identityʳ (chargeᶜ c) ⟩
-      chargeᶜ c
-    ∎
-    where
-      SQ₂ : Abstractionᶜ A A (chargeᶜ c) ⊸ Abstractionᶜ A A idᶜ
-      SQ₂ = squareᶜ (chargeᶜ c) idᶜ (chargeᶜ c ⨾ᶜ idᶜ) idᶜ (λ _ → refl)
+  -- save⨾spend≡chargeᶜ : (A : 𝒞) (c : ℂ) → save A c ⨾ᶜ spend A c ≡ chargeᶜ c
+  -- save⨾spend≡chargeᶜ A c =
+  --     save A c ⨾ᶜ spend A c
+  --   ≡⟨ cong (_⨾ᶜ spend A c) (⨾ᶜ-identityˡ (triangleᶜ (chargeᶜ c))) ⟩
+  --     triangleᶜ (chargeᶜ c) ⨾ᶜ spend A c
+  --   ≡⟨ sym (fromPathP (λ i → triangleᶜ (chargeᶜ c) ⨾ᶜ spend-path i)) ⟩
+  --     transport (λ i → A ⊸ Abstractionᶜ-id A i) (triangleᶜ (chargeᶜ c) ⨾ᶜ SQ₂)
+  --   ≡⟨ cong (transport (λ i → A ⊸ Abstractionᶜ-id A i)) lemma ⟩
+  --     transport (λ i → A ⊸ Abstractionᶜ-id A i) (chargeᶜ c ⨾ᶜ triangleᶜ idᶜ)
+  --   ≡⟨ fromPathP (λ i → chargeᶜ {A} c ⨾ᶜ triangleᶜ-id i) ⟩
+  --     chargeᶜ c ⨾ᶜ idᶜ
+  --   ≡⟨ ⨾ᶜ-identityʳ (chargeᶜ c) ⟩
+  --     chargeᶜ c
+  --   ∎
+  --   where
+  --     SQ₂ : Abstractionᶜ (chargeᶜ c) ⊸ Abstractionᶜ idᶜ
+  --     SQ₂ = squareᶜ (chargeᶜ c) idᶜ (chargeᶜ c ⨾ᶜ idᶜ) idᶜ (λ _ → refl)
 
-      spend-path : PathP (λ i → Abstractionᶜ A A (chargeᶜ c) ⊸ Abstractionᶜ-id A i) SQ₂ (spend A c)
-      spend-path = transport-filler (λ i → Abstractionᶜ A A (chargeᶜ c) ⊸ Abstractionᶜ-id A i) SQ₂
+  --     spend-path : PathP (λ i → Abstractionᶜ (chargeᶜ c) ⊸ Abstractionᶜ-id A i) SQ₂ (spend A c)
+  --     spend-path = transport-filler (λ i → Abstractionᶜ (chargeᶜ c) ⊸ Abstractionᶜ-id A i) SQ₂
 
-      lemma : triangleᶜ (chargeᶜ c) ⨾ᶜ SQ₂ ≡ chargeᶜ c ⨾ᶜ triangleᶜ idᶜ
-      lemma =
-          triangleᶜ-natural (chargeᶜ c ⨾ᶜ idᶜ) idᶜ (λ _ → refl)
-        ∙ cong (_⨾ᶜ triangleᶜ idᶜ) (⨾ᶜ-identityʳ (chargeᶜ c))
+  --     lemma : triangleᶜ (chargeᶜ c) ⨾ᶜ SQ₂ ≡ chargeᶜ c ⨾ᶜ triangleᶜ idᶜ
+  --     lemma =
+  --         triangleᶜ-natural (chargeᶜ c ⨾ᶜ idᶜ) idᶜ (λ _ → refl)
+  --       ∙ cong (_⨾ᶜ triangleᶜ idᶜ) (⨾ᶜ-identityʳ (chargeᶜ c))
