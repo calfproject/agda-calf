@@ -7,11 +7,11 @@ open import Calf.Value.Closed as ●
 open import Calf.Value.Glue as Glue hiding (square)
 open import Calf.Value.Open as ◯
 
-Abstraction : (X-⊤ X-abs : 𝒱) → (X-⊤ → X-abs) → 𝒱
-Abstraction X-⊤ X-abs χ = Glue (● X-⊤) (◯ X-abs) (●.map (η◦ ∘ χ))
+Abstraction : {X-⊤ X-abs : 𝒱} → (X-⊤ → X-abs) → 𝒱
+Abstraction {X-⊤} {X-abs} χ = Glue (● X-⊤) (◯ X-abs) (●.map (η◦ ∘ χ))
 
-Abstraction-id : (X : 𝒱) → Abstraction X X id ≡ X
-Abstraction-id X = glue-fracture-retract X
+Abstraction-id : (X : 𝒱) → X ≃ Abstraction (id {X})
+Abstraction-id X = fracture , fracture-isEquiv
 
 square
   : ∀ {X-⊤ X-abs Y-⊤ Y-abs}
@@ -19,7 +19,7 @@ square
   → (f-⊤ : X-⊤ → Y-⊤)
   → (f-abs : X-abs → Y-abs)
   → ((x-⊤ : X-⊤) → ψ (f-⊤ x-⊤) ≡ f-abs (χ x-⊤))
-  → Abstraction X-⊤ X-abs χ → Abstraction Y-⊤ Y-abs ψ
+  → Abstraction χ → Abstraction ψ
 square {X-⊤} {X-abs} {Y-⊤} {Y-abs} χ ψ f-⊤ f-abs f-coherence =
   Glue.square
     (●.map f-⊤)
@@ -28,12 +28,9 @@ square {X-⊤} {X-abs} {Y-⊤} {Y-abs} χ ψ f-⊤ f-abs f-coherence =
 
 triangle : ∀ {X-⊤ X-abs} (χ : X-⊤ → X-abs) (x-⊤ : X-⊤) (x-abs : X-abs)
   → χ x-⊤ ≡ x-abs
-  → Abstraction X-⊤ X-abs χ
+  → Abstraction χ
 triangle χ x-⊤ x-abs h = (η• x-⊤ , η◦ x-abs) , cong (η• ∘ η◦) h
 
 triangle′ : ∀ {X-⊤ X-abs} (χ : X-⊤ → X-abs)
-  → X-⊤ → Abstraction X-⊤ X-abs χ
+  → X-⊤ → Abstraction χ
 triangle′ χ x = triangle χ x (χ x) refl
-
-triangle′-id : PathP (λ i → X → Abstraction-id X i) (triangle′ id) id
-triangle′-id = funExt λ x → symP (ua-gluePath (_ , fracture-isEquiv) refl)

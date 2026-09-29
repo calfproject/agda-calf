@@ -14,13 +14,12 @@ open import Calf.Computation.Open as ◯ᶜ
 
 open import Calf.Computation.Abstraction.Base
 
-open Fractureᶜ
 
-●ᶜ-Abstractionᶜ : ∀ {A-⊤ A-abs} (α : A-⊤ ⊸ A-abs) → ●ᶜ (Abstractionᶜ A-⊤ A-abs α) ≃ᶜ ●ᶜ A-⊤
-●ᶜ-Abstractionᶜ {A-⊤} {A-abs} α = glue•ᶜ (Abstractionᶜ-Fracture A-⊤ A-abs α)
+●ᶜ-Abstractionᶜ : ∀ {A-⊤ A-abs} (α : A-⊤ ⊸ A-abs) → ●ᶜ (Abstractionᶜ α) ≃ᶜ ●ᶜ A-⊤
+●ᶜ-Abstractionᶜ {A-⊤} {A-abs} α = glue•ᶜ (Abstractionᶜ-Fracture α)
 
-◯ᶜ-Abstractionᶜ : ∀ {A-⊤ A-abs} (α : A-⊤ ⊸ A-abs) → ◯ᶜ (Abstractionᶜ A-⊤ A-abs α) ≃ᶜ ◯ᶜ A-abs
-◯ᶜ-Abstractionᶜ {A-⊤} {A-abs} α = glue◦ᶜ (Abstractionᶜ-Fracture A-⊤ A-abs α)
+◯ᶜ-Abstractionᶜ : ∀ {A-⊤ A-abs} (α : A-⊤ ⊸ A-abs) → ◯ᶜ (Abstractionᶜ α) ≃ᶜ ◯ᶜ A-abs
+◯ᶜ-Abstractionᶜ {A-⊤} {A-abs} α = glue◦ᶜ (Abstractionᶜ-Fracture α)
 
 triangleᶜ-natural : ∀ {A-⊤ A-abs α B-⊤ B-abs β}
   (f-⊤ : A-⊤ ⊸ B-⊤) (f-abs : A-abs ⊸ B-abs)
@@ -42,17 +41,17 @@ triangleᶜ-natural {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs coh =
 --         sym (●ᶜ-Abstractionᶜ α) i ⊸
 --         ●ᶜ (sym (◯ᶜ-Abstractionᶜ α) i))
 --       (●ᶜ.map (α ⨾ᶜ η◦ᶜ {A = A-abs}))
---       (●ᶜ.map (η◦ᶜ {A = Abstractionᶜ A-⊤ A-abs α}))
+--       (●ᶜ.map (η◦ᶜ {A = Abstractionᶜ α}))
 --   Abstractionᶜ-coherence {A-⊤} {A-abs} α = {!   !}
 --     -- glue-fracture-sectionᶜ-α•
---     --   (Abstractionᶜ-Fracture A-⊤ A-abs α)
+--     --   (Abstractionᶜ-Fracture α)
 
 Abstractionᶜ-open
   : ∀ {A-⊤ A-abs} (α : A-⊤ ⊸ A-abs)
   → ⟨ ABS ⟩
-  → Abstractionᶜ A-⊤ A-abs α ≃ᶜ A-abs
+  → Abstractionᶜ α ≃ᶜ A-abs
 Abstractionᶜ-open {A-⊤} {A-abs} α abs =
-  Glueᶜ-open (Abstractionᶜ-Fracture A-⊤ A-abs α) abs ∙ₑᶜ ◯ᶜ-open abs
+  Glueᶜ-open (Abstractionᶜ-Fracture α) abs ∙ₑᶜ ◯ᶜ-open abs
 
 --   square-openP
 --     : ∀ {A-⊤ A-abs B-⊤ B-abs}
@@ -99,7 +98,7 @@ squareᶜ-charge
   → squareᶜ α α
       (chargeᶜ {A-⊤} c) (chargeᶜ {A-abs} c)
       α-charge
-    ≡ chargeᶜ {Abstractionᶜ A-⊤ A-abs α} c
+    ≡ chargeᶜ {Abstractionᶜ α} c
 squareᶜ-charge {A-⊤} {A-abs} α c α-charge =
   funExtᶜ λ _ → Glue-path (is-set (◯ᶜ A-abs)) refl refl
 
@@ -134,20 +133,13 @@ Abstractionᶜ-fuse : ∀ {A-⊤ A-abs B-⊤ B-abs}
     (α : A-⊤ ⊸ A-abs) (β : B-⊤ ⊸ B-abs)
     (f-⊤ : A-⊤ ⊸ B-⊤) (f-abs : A-abs ⊸ B-abs)
     (f-coh : (a-⊤ : U A-⊤) → U β (U f-⊤ a-⊤) ≡ U f-abs (U α a-⊤)) →
-  Abstractionᶜ
-    (Abstractionᶜ A-⊤ A-abs α)
-    (Abstractionᶜ B-⊤ B-abs β)
-    (squareᶜ α β f-⊤ f-abs f-coh)
-  ≃ᶜ Abstractionᶜ A-⊤ B-abs (α ⨾ᶜ f-abs)
+  Abstractionᶜ (squareᶜ α β f-⊤ f-abs f-coh) ≃ᶜ Abstractionᶜ (α ⨾ᶜ f-abs)
 Abstractionᶜ-fuse {A-⊤} {A-abs} {B-⊤} {B-abs} α β f-⊤ f-abs f-coh =
-    Abstractionᶜ
-      (Abstractionᶜ A-⊤ A-abs α)
-      (Abstractionᶜ B-⊤ B-abs β)
-      (squareᶜ α β f-⊤ f-abs f-coh)
+    Abstractionᶜ (squareᶜ α β f-⊤ f-abs f-coh)
   ≃ᶜ⟨⟩
     Glueᶜ
-      (●ᶜ (Abstractionᶜ A-⊤ A-abs α))
-      (◯ᶜ (Abstractionᶜ B-⊤ B-abs β))
+      (●ᶜ (Abstractionᶜ α))
+      (◯ᶜ (Abstractionᶜ β))
       (●ᶜ.map (squareᶜ α β f-⊤ f-abs f-coh ⨾ᶜ η◦ᶜ))
   ≃ᶜ⟨
     Glueᶜ-≃
@@ -162,7 +154,7 @@ Abstractionᶜ-fuse {A-⊤} {A-abs} {B-⊤} {B-abs} α β f-⊤ f-abs f-coh =
       (◯ᶜ B-abs)
       (●ᶜ.map (α ⨾ᶜ f-abs ⨾ᶜ η◦ᶜ))
   ≃ᶜ⟨⟩
-    Abstractionᶜ A-⊤ B-abs (α ⨾ᶜ f-abs)
+    Abstractionᶜ (α ⨾ᶜ f-abs)
   ■ᶜ
   where
     lemma : ∀ a →

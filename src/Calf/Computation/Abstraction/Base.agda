@@ -9,20 +9,28 @@ open import Calf.Computation.Open as ◯ᶜ
 
 open Fractureᶜ
 
-Abstractionᶜ-Fracture : (A-⊤ A-abs : 𝒞) → (A-⊤ ⊸ A-abs) → Fractureᶜ
-Abstractionᶜ-Fracture A-⊤ A-abs α .A• = ●ᶜ• A-⊤
-Abstractionᶜ-Fracture A-⊤ A-abs α .A◦ = ◯ᶜ◦ A-abs
-Abstractionᶜ-Fracture A-⊤ A-abs α .α• = ●ᶜ.map (α ⨾ᶜ η◦ᶜ)
+Abstractionᶜ-Fracture : {A-⊤ A-abs : 𝒞} → (A-⊤ ⊸ A-abs) → Fractureᶜ
+Abstractionᶜ-Fracture {A-⊤} {A-abs} α .A• = ●ᶜ• A-⊤
+Abstractionᶜ-Fracture {A-⊤} {A-abs} α .A◦ = ◯ᶜ◦ A-abs
+Abstractionᶜ-Fracture {A-⊤} {A-abs} α .α• = ●ᶜ.map (α ⨾ᶜ η◦ᶜ)
 
-Abstractionᶜ : (A-⊤ A-abs : 𝒞) → (A-⊤ ⊸ A-abs) → 𝒞
-Abstractionᶜ A-⊤ A-abs α = fromFractureᶜ (Abstractionᶜ-Fracture A-⊤ A-abs α)
+Abstractionᶜ : {A-⊤ A-abs : 𝒞} → (A-⊤ ⊸ A-abs) → 𝒞
+Abstractionᶜ α = fromFractureᶜ (Abstractionᶜ-Fracture α)
+
+Abstractionᶜ-≃
+  : ∀ {A-⊤ A-abs α B-⊤ B-abs β}
+  → (e-⊤ : A-⊤ ≃ᶜ B-⊤)
+  → (e-abs : A-abs ≃ᶜ B-abs)
+  → equivFunᶜ e-⊤ ⨾ᶜ β ≡ α ⨾ᶜ equivFunᶜ e-abs
+  → Abstractionᶜ α ≃ᶜ Abstractionᶜ β
+Abstractionᶜ-≃ e-⊤ e-abs e-coh = Glueᶜ-≃ {!   !} {!   !} {!   !}
 
 squareᶜ
   : ∀ {A-⊤ A-abs B-⊤ B-abs}
   → (α : A-⊤ ⊸ A-abs) (β : B-⊤ ⊸ B-abs)
   → (f-⊤ : A-⊤ ⊸ B-⊤) (f-abs : A-abs ⊸ B-abs)
   → ((a-⊤ : U A-⊤) → U β (U f-⊤ a-⊤) ≡ U f-abs (U α a-⊤))
-  → Abstractionᶜ A-⊤ A-abs α ⊸ Abstractionᶜ B-⊤ B-abs β
+  → Abstractionᶜ α ⊸ Abstractionᶜ β
 squareᶜ α β f-⊤ f-abs f-coherence =
   Glueᶜ.squareᶜ {α• = ●ᶜ.map (α ⨾ᶜ η◦ᶜ)} {β• = ●ᶜ.map (β ⨾ᶜ η◦ᶜ)}
     (●ᶜ.map f-⊤)
@@ -31,20 +39,20 @@ squareᶜ α β f-⊤ f-abs f-coherence =
 
 triangle-U : ∀ {A-⊤ A-abs} (α : A-⊤ ⊸ A-abs) (a-⊤ : U A-⊤) (a-abs : U A-abs)
   → α .U a-⊤ ≡ a-abs
-  → U (Abstractionᶜ A-⊤ A-abs α)
+  → U (Abstractionᶜ α)
 triangle-U α = triangle (α .U)
 
-triangleᶜ : ∀ {A-⊤ A-abs} (α : A-⊤ ⊸ A-abs) → A-⊤ ⊸ Abstractionᶜ A-⊤ A-abs α
+triangleᶜ : ∀ {A-⊤ A-abs} (α : A-⊤ ⊸ A-abs) → A-⊤ ⊸ Abstractionᶜ α
 triangleᶜ α .U = triangle′ (α .U)
 triangleᶜ {A-abs = A-abs} α .charge c a =
   Glue-path (is-set (◯ᶜ A-abs)) refl (cong η◦ (α .charge c a))
 
-Abstractionᶜ-id : (A : 𝒞) → A ≃ᶜ Abstractionᶜ A A idᶜ
+Abstractionᶜ-id : (A : 𝒞) → A ≃ᶜ Abstractionᶜ (idᶜ {A})
 Abstractionᶜ-id A = triangleᶜ idᶜ , fracture-isEquiv
 
-triangle-abs : ∀ {A-⊤ A-abs α B}
+triangle-abs : ∀ {A-⊤ A-abs} {α : A-⊤ ⊸ A-abs} {B}
   → A-abs ⊸ B
-  → Abstractionᶜ A-⊤ A-abs α ⊸ B
+  → Abstractionᶜ α ⊸ B
 triangle-abs {α = α} {B} f-abs =
   squareᶜ α idᶜ (α ⨾ᶜ f-abs) f-abs (λ _ → refl)
   ⨾ᶜ invEqᶜ (Abstractionᶜ-id B)
@@ -52,5 +60,5 @@ triangle-abs {α = α} {B} f-abs =
 triangle-⊤ : ∀ {A B-⊤ B-abs}
   → (β : B-⊤ ⊸ B-abs)
   → A ⊸ B-⊤
-  → A ⊸ Abstractionᶜ B-⊤ B-abs β
+  → A ⊸ Abstractionᶜ β
 triangle-⊤ β f-⊤ = f-⊤ ⨾ᶜ triangleᶜ β
