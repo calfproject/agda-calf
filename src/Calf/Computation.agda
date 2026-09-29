@@ -102,8 +102,11 @@ A ≃ᶜ B = Σ (A ⊸ B) isEquivᶜ
 equivFunᶜ : A ≃ᶜ B → A ⊸ B
 equivFunᶜ = fst
 
+equivIsEquivᶜ : (e : A ≃ᶜ B) → isEquivᶜ (equivFunᶜ e)
+equivIsEquivᶜ = snd
+
 U-≃ : A ≃ᶜ B → U A ≃ U B
-U-≃ e = U (e .fst) , e .snd
+U-≃ e = U (equivFunᶜ e) , equivIsEquivᶜ e
 
 idᶜ : A ⊸ A
 idᶜ .U a = a

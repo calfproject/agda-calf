@@ -5,6 +5,7 @@ open import Cubical.Foundations.Path
   using (compPathlEquiv; compPathrEquiv; symIso)
 open import Cubical.Foundations.Univalence using (ua)
 
+open import Calf.Core.Abstract
 open import Calf.Value
 import Calf.Value.Closed as ●
 import Calf.Value.Open as ◯
@@ -34,11 +35,7 @@ module _ where
   glue•ᶜ : (F : Fractureᶜ) → ●ᶜ (fromFractureᶜ F) ≃ᶜ ⟨ F .A• ⟩ᶜ
   glue•ᶜ F =
     ●ᶜ-rec (F .A•) (proj•ᶜ {α• = F .α•}) ,
-    ●.rec-isEquiv (strᶜ (F .A•)) (glue• (U-Fracture F)) (glue•-β (U-Fracture F))
-
-  glue•ᶜ-β : (F : Fractureᶜ) (a : U (fromFractureᶜ F))
-    → equivFunᶜ (glue•ᶜ F) .U (η• a) ≡ proj• a
-  glue•ᶜ-β F a = refl
+    equivIsEquiv (glue• (U-Fracture F))
 
   glue◦ᶜ : (F : Fractureᶜ) → ◯ᶜ (fromFractureᶜ F) ≃ᶜ ⟨ F .A◦ ⟩ᶜ
   glue◦ᶜ F =
@@ -47,14 +44,14 @@ module _ where
 
   glue◦ᶜ-β : (F : Fractureᶜ) (a : U (fromFractureᶜ F))
     → equivFunᶜ (glue◦ᶜ F) .U (η◦ a) ≡ proj◦ a
-  glue◦ᶜ-β F a = ◯.elim-β (λ _ → strᶜ (F .A◦)) proj◦ a
+  glue◦ᶜ-β = glue◦-β ∘ U-Fracture
 
   opaque
     glue-fracture-sectionᶜ : section toFractureᶜ fromFractureᶜ
     glue-fracture-sectionᶜ F =
       Fractureᶜ-ua (glue•ᶜ F) (glue◦ᶜ F) $
       ●.η-ext (λ _ → ●.isModal●) $ funExt λ a →
-        cong (F .α• .U) (glue•ᶜ-β F a) ∙ proj•→◦ a ∙ cong η• (sym (glue◦ᶜ-β F a))
+        proj•→◦ a ∙ cong η• (sym (glue◦ᶜ-β F a))
 
   fracture-and-gluingᶜ : 𝒞 ≃ Fractureᶜ
   fracture-and-gluingᶜ =
@@ -64,6 +61,11 @@ module _ where
         fromFractureᶜ
         glue-fracture-sectionᶜ
         glue-fracture-retractᶜ)
+
+  Glueᶜ-open : (F : Fractureᶜ) → ⟨ ABS ⟩ → fromFractureᶜ F ≃ᶜ ⟨ F .A◦ ⟩ᶜ
+  Glueᶜ-open F abs =
+    proj◦ᶜ {⟨ F .A• ⟩ᶜ} {⟨ F .A◦ ⟩ᶜ} {F .α•} ,
+    equivIsEquiv (Glue-open (U-Fracture F) abs)
 
 module _ where
   fracture-and-gluing-squareᶜ : (A ⊸ B) ≃ Fractureᶜ-Square (toFractureᶜ A) (toFractureᶜ B)
