@@ -270,6 +270,10 @@ conservativity {A} {B} f f-equiv =
 uaᶜ : A ≃ᶜ B → A ≡ B
 uaᶜ = uncurry conservativity
 
+uaᶜ-gluePath : (e : A ≃ᶜ B) {a : U A} {b : U B}
+  → equivFunᶜ e .U a ≡ b → PathP (λ i → U (uaᶜ e i)) a b
+uaᶜ-gluePath = ua-gluePath ∘ U-≃
+
 conservativity-⊸ :
   {A A' B B' : 𝒞} (e : A ⊸ A') (ee : isEquivᶜ e) (e' : B ⊸ B') (ee' : isEquivᶜ e')
   {f : A ⊸ B} {g : A' ⊸ B'}
