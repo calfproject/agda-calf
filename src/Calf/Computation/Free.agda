@@ -134,9 +134,12 @@ F-rec-path f g pf-ret = sym (secEq F-adjoint f) ∙ cong F-rec pf-ret ∙ secEq 
 costed : (X → Y) → (X → ℂ) → (F X ⊸ F Y)
 costed f Φ = F-rec λ x → F _ .charge (Φ x) (ret (f x))
 
-costed-cong : {f g : X → Y} {Φ Ψ : X → ℂ}
-  → (∀ x → f x ≡ g x) → (∀ x → Φ x ≡ Ψ x) → costed f Φ ≡ costed g Ψ
-costed-cong p q i = costed (λ x → p x i) (λ x → q x i)
+costed-cong : {f f' : X → Y} {Φ Φ' : X → ℂ}
+  → (∀ x → f x ≡ f' x) → (∀ x → Φ x ≡ Φ' x) → costed f Φ ≡ costed f' Φ'
+costed-cong p q = cong₂ costed (funExt p) (funExt q)
+
+costed-idᶜ : idᶜ ≡ costed (id {X}) (const 0ℂ)
+costed-idᶜ = sym F-rec-η ∙ cong F-rec (funExt λ _ → sym (F _ .charge-0))
 
 costed-⨾ᶜ : (f : X → Y) (Φ : X → ℂ) (g : Y → Z) (Ψ : Y → ℂ)
   → costed f Φ ⨾ᶜ costed g Ψ ≡ costed (g ∘ f) (λ x → Φ x +ℂ Ψ (f x))
