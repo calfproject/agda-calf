@@ -28,17 +28,6 @@ Abstractionᶜ-open
 Abstractionᶜ-open {A-⊤} {A-abs} α abs =
   Glueᶜ-open (Abstractionᶜ-Fracture α) abs ∙ₑᶜ ◯ᶜ-open abs
 
-triangleᶜ-natural : ∀ {A-⊤ A-abs α B-⊤ B-abs β}
-  (f-⊤ : A-⊤ ⊸ B-⊤) (f-abs : A-abs ⊸ B-abs)
-  (coh : (a : U A-⊤) → β .U (f-⊤ .U a) ≡ f-abs .U (α .U a))
-  → triangleᶜ α ⨾ᶜ squareᶜ α β f-⊤ f-abs coh
-    ≡ f-⊤ ⨾ᶜ triangleᶜ β
-triangleᶜ-natural {A-⊤} {A-abs} {α} {B-⊤} {B-abs} {β} f-⊤ f-abs coh =
-  funExtᶜ λ a →
-    Glue-path (is-set (◯ᶜ B-abs))
-      refl
-      (funExt λ _ → sym (coh a))
-
 square-openP
   : ∀ {A-⊤ A-abs} (α : A-⊤ ⊸ A-abs) {B-⊤ B-abs} (β : B-⊤ ⊸ B-abs)
   → (f-⊤ : A-⊤ ⊸ B-⊤) (f-abs : A-abs ⊸ B-abs)
@@ -54,14 +43,14 @@ square-openP α β _ _ _ abs =
     (uaᶜ (Abstractionᶜ-open β abs))
     (ua→ λ a → uaᶜ-gluePath (Abstractionᶜ-open β abs) refl)
 
-triangle-U-openP
+triangleᶜ-openP
   : ∀ {A-⊤ A-abs} (α : A-⊤ ⊸ A-abs)
   → (a-⊤ : U A-⊤) (a-abs : U A-abs) (a-coh : α .U a-⊤ ≡ a-abs)
   → (abs : ⟨ ABS ⟩)
   → PathP (λ i → U (uaᶜ (Abstractionᶜ-open α abs) i))
-      (triangle-U α a-⊤ a-abs a-coh)
+      (triangleᶜ α a-⊤ a-abs a-coh)
       a-abs
-triangle-U-openP α _ _ _ abs =
+triangleᶜ-openP α _ _ _ abs =
   uaᶜ-gluePath (Abstractionᶜ-open α abs) refl
 
 squareᶜ-⨾ᶜ : ∀ {A-⊤ A-abs α B-⊤ B-abs β C-⊤ C-abs γ}

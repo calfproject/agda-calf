@@ -66,47 +66,16 @@ opaque
   ▷-◯ᶜ : (c : ℂ) (A : 𝒞) → ◯ᶜ (▷[ c ] A) ≃ᶜ ◯ᶜ A
   ▷-◯ᶜ c A = ◯ᶜ-Abstractionᶜ (chargeᶜ c)
 
-  -- ▷-coherence : (c : ℂ) (A : 𝒞) →
-  --   PathP
-  --     (λ i → sym (▷-●ᶜ c A) i ⊸ ●ᶜ (sym (▷-◯ᶜ c A) i))
-  --     (●ᶜ.map (chargeᶜ c ⨾ᶜ η◦ᶜ {A = A}))
-  --     (●ᶜ.map (η◦ᶜ {A = ▷[ c ] A}))
-  -- ▷-coherence c A =
-  --   Abstractionᶜ-coherence (chargeᶜ c)
-
   -- waste : (A : 𝒞) → c ⊑ c' → ▷[ c' ] A ⊸ᵈ ▷[ c ] A
   -- waste {c} {c'} A c⊑c' =
   --   squareᵈᶜ (chargeᶜ c') (chargeᶜ c) idᶜ idᶜ λ a →
   --   ⊑-mono (flip (A .charge) a) c⊑c'
 
   save : (A : 𝒞) (c : ℂ) → A ⊸ ▷[ c ] A
-  save A c = triangle-⊤ (chargeᶜ c) idᶜ
+  save A c = injᶜ-⊤ (chargeᶜ c)
 
   spend : (A : 𝒞) (c : ℂ) → ▷[ c ] A ⊸ A
-  spend A c = triangle-abs idᶜ
+  spend A c = projᶜ-abs (chargeᶜ c)
 
-  -- save⨾spend≡chargeᶜ : (A : 𝒞) (c : ℂ) → save A c ⨾ᶜ spend A c ≡ chargeᶜ c
-  -- save⨾spend≡chargeᶜ A c =
-  --     save A c ⨾ᶜ spend A c
-  --   ≡⟨ cong (_⨾ᶜ spend A c) (⨾ᶜ-identityˡ (triangleᶜ (chargeᶜ c))) ⟩
-  --     triangleᶜ (chargeᶜ c) ⨾ᶜ spend A c
-  --   ≡⟨ sym (fromPathP (λ i → triangleᶜ (chargeᶜ c) ⨾ᶜ spend-path i)) ⟩
-  --     transport (λ i → A ⊸ Abstractionᶜ-id A i) (triangleᶜ (chargeᶜ c) ⨾ᶜ SQ₂)
-  --   ≡⟨ cong (transport (λ i → A ⊸ Abstractionᶜ-id A i)) lemma ⟩
-  --     transport (λ i → A ⊸ Abstractionᶜ-id A i) (chargeᶜ c ⨾ᶜ triangleᶜ idᶜ)
-  --   ≡⟨ fromPathP (λ i → chargeᶜ {A} c ⨾ᶜ triangleᶜ-id i) ⟩
-  --     chargeᶜ c ⨾ᶜ idᶜ
-  --   ≡⟨ ⨾ᶜ-identityʳ (chargeᶜ c) ⟩
-  --     chargeᶜ c
-  --   ∎
-  --   where
-  --     SQ₂ : Abstractionᶜ (chargeᶜ c) ⊸ Abstractionᶜ idᶜ
-  --     SQ₂ = squareᶜ (chargeᶜ c) idᶜ (chargeᶜ c ⨾ᶜ idᶜ) idᶜ (λ _ → refl)
-
-  --     spend-path : PathP (λ i → Abstractionᶜ (chargeᶜ c) ⊸ Abstractionᶜ-id A i) SQ₂ (spend A c)
-  --     spend-path = transport-filler (λ i → Abstractionᶜ (chargeᶜ c) ⊸ Abstractionᶜ-id A i) SQ₂
-
-  --     lemma : triangleᶜ (chargeᶜ c) ⨾ᶜ SQ₂ ≡ chargeᶜ c ⨾ᶜ triangleᶜ idᶜ
-  --     lemma =
-  --         triangleᶜ-natural (chargeᶜ c ⨾ᶜ idᶜ) idᶜ (λ _ → refl)
-  --       ∙ cong (_⨾ᶜ triangleᶜ idᶜ) (⨾ᶜ-identityʳ (chargeᶜ c))
+  save⨾spend≡chargeᶜ : (c : ℂ) → save A c ⨾ᶜ spend A c ≡ chargeᶜ c
+  save⨾spend≡chargeᶜ = injᶜ-projᶜ ∘ chargeᶜ

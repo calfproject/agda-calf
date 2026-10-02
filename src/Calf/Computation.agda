@@ -300,8 +300,15 @@ invIsEqᶜ {A} {B} f fe .charge c b =
   ∙ cong (invIsEq fe) (sym (f .charge c (invIsEq fe b)))
   ∙ retEq (_ , fe) (A .charge c (invIsEq fe b))
 
-invEqᶜ : A ≃ᶜ B → B ⊸ A
-invEqᶜ e = invIsEqᶜ (equivFunᶜ e) (equivIsEquivᶜ e)
+retractᶜ : (f : A ⊸ B) (g : B ⊸ A) → 𝒱
+retractᶜ f g = retract (f .U) (g .U)
+
+module _ (e : A ≃ᶜ B) where
+  invEqᶜ : B ⊸ A
+  invEqᶜ = invIsEqᶜ (equivFunᶜ e) (equivIsEquivᶜ e)
+
+  retEqᶜ : retractᶜ (equivFunᶜ e) invEqᶜ
+  retEqᶜ = retEq (U-≃ e)
 
 invEquivᶜ : A ≃ᶜ B → B ≃ᶜ A
 invEquivᶜ e = invEqᶜ e , equivIsEquiv (invEquiv (U-≃ e))

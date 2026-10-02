@@ -17,6 +17,9 @@ variable
 id : X → X
 id x = x
 
+_⨾_ : (X → Y) → (Y → Z) → X → Z
+f ⨾ g = g ∘ f
+
 𝒱₌ : 𝒱₁
 𝒱₌ = TypeWithStr _ λ X → isSet X × isDiscrete X
   where open import Cubical.Data.Sigma

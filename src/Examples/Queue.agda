@@ -172,7 +172,7 @@ opaque
 batched-queue : Queue
 batched-queue .prequeue .Q = Abstractionᶜ α
 batched-queue .prequeue .empty =
-  triangle-U α emptyᴮ emptyᴸ empty-coherent
+  triangleᶜ α emptyᴮ emptyᴸ empty-coherent
 batched-queue .prequeue .enqueue e =
   squareᶜ α α (enqueueᴮ e) (enqueueᴸ e) (enqueue-coherent e)
 batched-queue .prequeue .dequeue =
@@ -180,7 +180,7 @@ batched-queue .prequeue .dequeue =
 batched-queue .spec abs i .Q =
   uaᶜ (Abstractionᶜ-open α abs) i
 batched-queue .spec abs i .empty =
-  triangle-U-openP α emptyᴮ emptyᴸ empty-coherent abs i
+  triangleᶜ-openP α emptyᴮ emptyᴸ empty-coherent abs i
 batched-queue .spec abs i .enqueue e =
   square-openP α α (enqueueᴮ e) (enqueueᴸ e) (enqueue-coherent e) abs i
 batched-queue .spec abs i .dequeue = {!   !}

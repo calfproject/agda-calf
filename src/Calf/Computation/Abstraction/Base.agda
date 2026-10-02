@@ -37,28 +37,29 @@ squareᶜ α β f-⊤ f-abs f-coherence =
     (◯ᶜ.map f-abs)
     (funExtᶜ (●ᶜ.elim (λ _ → ●ᶜ.●-≡-isModal _ _) λ a → cong (η• ∘ η◦) (f-coherence a)))
 
-triangle-U : ∀ {A-⊤ A-abs} (α : A-⊤ ⊸ A-abs) (a-⊤ : U A-⊤) (a-abs : U A-abs)
-  → α .U a-⊤ ≡ a-abs
-  → U (Abstractionᶜ α)
-triangle-U α = triangle (α .U)
+module _ {A-⊤ A-abs} (α : A-⊤ ⊸ A-abs) where
+  triangleᶜ : ∀ (a-⊤ : U A-⊤) (a-abs : U A-abs)
+    → α .U a-⊤ ≡ a-abs
+    → U (Abstractionᶜ α)
+  triangleᶜ = triangle (α .U)
 
-triangleᶜ : ∀ {A-⊤ A-abs} (α : A-⊤ ⊸ A-abs) → A-⊤ ⊸ Abstractionᶜ α
-triangleᶜ α .U = triangle′ (α .U)
-triangleᶜ {A-abs = A-abs} α .charge c a =
-  Glue-path (is-set (◯ᶜ A-abs)) refl (cong η◦ (α .charge c a))
+  injᶜ-⊤ : A-⊤ ⊸ Abstractionᶜ α
+  injᶜ-⊤ .U = inj-⊤ (α .U)
+  injᶜ-⊤ .charge c a =
+    Glue-path (is-set (◯ᶜ A-abs)) refl (cong η◦ (α .charge c a))
 
 Abstractionᶜ-id : (A : 𝒞) → A ≃ᶜ Abstractionᶜ (idᶜ {A})
-Abstractionᶜ-id A = triangleᶜ idᶜ , fracture-isEquiv
+Abstractionᶜ-id A = injᶜ-⊤ idᶜ , fracture-isEquiv
 
-triangle-abs : ∀ {A-⊤ A-abs} {α : A-⊤ ⊸ A-abs} {B}
-  → A-abs ⊸ B
-  → Abstractionᶜ α ⊸ B
-triangle-abs {α = α} {B} f-abs =
-  squareᶜ α idᶜ (α ⨾ᶜ f-abs) f-abs (λ _ → refl)
-  ⨾ᶜ invEqᶜ (Abstractionᶜ-id B)
+module _ {A-⊤ A-abs} (α : A-⊤ ⊸ A-abs) where
+  projᶜ-abs : Abstractionᶜ α ⊸ A-abs
+  projᶜ-abs = squareᶜ α idᶜ α idᶜ (λ _ → refl) ⨾ᶜ invEqᶜ (Abstractionᶜ-id A-abs)
 
-triangle-⊤ : ∀ {A B-⊤ B-abs}
-  → (β : B-⊤ ⊸ B-abs)
-  → A ⊸ B-⊤
-  → A ⊸ Abstractionᶜ β
-triangle-⊤ β f-⊤ = f-⊤ ⨾ᶜ triangleᶜ β
+  injᶜ-projᶜ : injᶜ-⊤ α ⨾ᶜ projᶜ-abs ≡ α
+  injᶜ-projᶜ = funExtᶜ λ a →
+      projᶜ-abs .U (injᶜ-⊤ α .U a)
+    ≡⟨ cong (invIsEq fracture-isEquiv) (Glue-path (is-set (◯ᶜ A-abs)) refl refl) ⟩
+      invIsEq fracture-isEquiv (fracture (α .U a))
+    ≡⟨ retEqᶜ (Abstractionᶜ-id A-abs) (α .U a) ⟩
+      α .U a
+    ∎
