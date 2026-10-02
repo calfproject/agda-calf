@@ -9,31 +9,37 @@ open import Calf.Value.Glue using (Fracture; toFracture)
 open import Calf.Value.Open
 open import Calf.Value.Product
 
-Glueᵈ : (X• X◦ : 𝒱) (χ• : X• → ● X◦) → 𝒱
-Glueᵈ X• X◦ χ• = Σ[ (x• , x◦) ∈ X• × X◦ ] χ• x• ⊑ η• x◦
+Glueᵈ : {X• X◦ : 𝒱} (χ• : X• → ● X◦) → 𝒱
+Glueᵈ {X•} {X◦} χ• = Σ[ (x• , x◦) ∈ X• × X◦ ] χ• x• ⊑ η• x◦
 
 module _ {X• X◦ : 𝒱} {χ• : X• → ● X◦} where
-  • : Glueᵈ X• X◦ χ• → X•
-  • g = g .fst .fst
+  proj•ᵈ : Glueᵈ χ• → X•
+  proj•ᵈ ((x• , _) , _) = x•
 
-  ◦ : Glueᵈ X• X◦ χ• → X◦
-  ◦ g = g .fst .snd
+  proj◦ᵈ : Glueᵈ χ• → X◦
+  proj◦ᵈ ((_ , x◦) , _) = x◦
 
-  •→◦ : (g : Glueᵈ X• X◦ χ•) → χ• (• g) ⊑ η• (◦ g)
-  •→◦ g = g .snd
+  proj•→◦ᵈ : (x : Glueᵈ χ•) → χ• (proj•ᵈ x) ⊑ η• (proj◦ᵈ x)
+  proj•→◦ᵈ = proj₂
+
+  opaque
+    Glueᵈ-path : ∀ {x x' : Glueᵈ χ•}
+      → isPreorder X◦
+      → proj•ᵈ x ≡ proj•ᵈ x'
+      → proj◦ᵈ x ≡ proj◦ᵈ x'
+      → x ≡ x'
+    Glueᵈ-path isPreorderX◦ p• p◦ =
+      Σ≡Prop (λ _ → isPreorder→isThin (isPreorder● isPreorderX◦) _ _) (ΣPathP (p• , p◦))
+
+  opaque
+    isPreorderGlueᵈ : isPreorder X• → isPreorder X◦ → isPreorder (Glueᵈ χ•)
+    isPreorderGlueᵈ isPreorderX• isPreorderX◦ =
+      isLocalComma isPreorderX• isPreorderX◦ (isPreorder● isPreorderX◦)
 
 open Fracture
 
-opaque
-  isPreorderGlueᵈ : (X• X◦ : 𝒱) {χ• : X• → ● X◦}
-    → isPreorder X•
-    → isPreorder X◦
-    → isPreorder (Glueᵈ X• X◦ χ•)
-  isPreorderGlueᵈ X• X◦ isPreorderX• isPreorderX◦ =
-    isLocalComma isPreorderX• isPreorderX◦ (isPreorder● isPreorderX◦)
-
 fromFractureᵈ : Fracture → 𝒱
-fromFractureᵈ F = Glueᵈ ⟨ F .X• ⟩ ⟨ F .X◦ ⟩ (F .χ•)
+fromFractureᵈ F = Glueᵈ (F .χ•)
 
 Seal : 𝒱 → 𝒱
 Seal = fromFractureᵈ ∘ toFracture
@@ -41,7 +47,7 @@ Seal = fromFractureᵈ ∘ toFracture
 opaque
   isPreorderSeal : isPreorder X → isPreorder (Seal X)
   isPreorderSeal {X} isPreorderX =
-    isPreorderGlueᵈ (● X) (◯ X) (isPreorder● isPreorderX) (isPreorder◯ isPreorderX)
+    isPreorderGlueᵈ (isPreorder● isPreorderX) (isPreorder◯ isPreorderX)
 
 Seal-open : ⟨ ABS ⟩ → Seal X ≃ X
 Seal-open {X} abs =

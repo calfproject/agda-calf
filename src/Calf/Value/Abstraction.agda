@@ -8,7 +8,7 @@ open import Calf.Value.Glue as Glue hiding (square)
 open import Calf.Value.Open as ◯
 
 Abstraction : {X-⊤ X-abs : 𝒱} → (X-⊤ → X-abs) → 𝒱
-Abstraction {X-⊤} {X-abs} χ = Glue (● X-⊤) (◯ X-abs) (●.map (η◦ ∘ χ))
+Abstraction χ = Glue (●.map (η◦ ∘ χ))
 
 Abstraction-id : (X : 𝒱) → X ≃ Abstraction (id {X})
 Abstraction-id X = fracture , fracture-isEquiv

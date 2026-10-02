@@ -10,23 +10,23 @@ open import Calf.Computation.Open as ◯ᶜ
 
 open import Calf.Value.Glue public
 
-Glueᶜ : (A• A◦ : 𝒞) (α• : A• ⊸ ●ᶜ A◦) → 𝒞
-Glueᶜ A• A◦ α• .U = Glue (U A•) (U A◦) (α• .U)
-Glueᶜ A• A◦ α• .is-preorder = isPreorderGlue (A• .is-preorder) (A◦ .is-preorder)
-Glueᶜ A• A◦ α• .charge c ((x• , x◦) , h) =
+Glueᶜ : {A• A◦ : 𝒞} (α• : A• ⊸ ●ᶜ A◦) → 𝒞
+Glueᶜ {A•} {A◦} α• .U = Glue (α• .U)
+Glueᶜ {A•} {A◦} α• .is-preorder = isPreorderGlue (A• .is-preorder) (A◦ .is-preorder)
+Glueᶜ {A•} {A◦} α• .charge c ((x• , x◦) , h) =
   (A• .charge c x• , A◦ .charge c x◦) ,
   α• .charge c x• ∙ cong (●ᶜ A◦ .charge c) h
-Glueᶜ A• A◦ α• .charge-0 =
+Glueᶜ {A•} {A◦} α• .charge-0 =
   Glue-path (is-set A◦) (A• .charge-0) (A◦ .charge-0)
-Glueᶜ A• A◦ α• .charge-+ =
+Glueᶜ {A•} {A◦} α• .charge-+ =
   Glue-path (is-set A◦) (A• .charge-+) (A◦ .charge-+)
 
 module _ {A• A◦ : 𝒞} {α• : A• ⊸ ●ᶜ A◦} where
-  proj•ᶜ : Glueᶜ A• A◦ α• ⊸ A•
+  proj•ᶜ : Glueᶜ α• ⊸ A•
   proj•ᶜ .U = proj•
   proj•ᶜ .charge _ _ = refl
 
-  proj◦ᶜ : Glueᶜ A• A◦ α• ⊸ A◦
+  proj◦ᶜ : Glueᶜ α• ⊸ A◦
   proj◦ᶜ .U = proj◦
   proj◦ᶜ .charge _ _ = refl
 
@@ -34,16 +34,16 @@ module _ {A• A◦ : 𝒞} {α• : A• ⊸ ●ᶜ A◦} where
   proj•→◦ᶜ = funExtᶜ proj•→◦
 
   ⊸-Glueᶜ-≃ : {A : 𝒞}
-    → (A ⊸ Glueᶜ A• A◦ α•)
+    → (A ⊸ Glueᶜ α•)
     ≃ (Σ[ (f• , f◦) ∈ (A ⊸ A•) × (A ⊸ A◦) ] f• ⨾ᶜ α• ≡ f◦ ⨾ᶜ η•ᶜ)
   ⊸-Glueᶜ-≃ {A} = isoToEquiv (iso fwd bwd sec ret)
     where
-      fwd : (A ⊸ Glueᶜ A• A◦ α•) → Σ[ (f• , f◦) ∈ (A ⊸ A•) × (A ⊸ A◦) ] f• ⨾ᶜ α• ≡ f◦ ⨾ᶜ η•ᶜ
+      fwd : (A ⊸ Glueᶜ α•) → Σ[ (f• , f◦) ∈ (A ⊸ A•) × (A ⊸ A◦) ] f• ⨾ᶜ α• ≡ f◦ ⨾ᶜ η•ᶜ
       fwd f =
         (f ⨾ᶜ proj•ᶜ , f ⨾ᶜ proj◦ᶜ) ,
         ⨾ᶜ-assoc f proj•ᶜ α• ∙ cong (f ⨾ᶜ_) proj•→◦ᶜ ∙ sym (⨾ᶜ-assoc f proj◦ᶜ η•ᶜ)
 
-      bwd : (Σ[ (f• , f◦) ∈ (A ⊸ A•) × (A ⊸ A◦) ] f• ⨾ᶜ α• ≡ f◦ ⨾ᶜ η•ᶜ) → (A ⊸ Glueᶜ A• A◦ α•)
+      bwd : (Σ[ (f• , f◦) ∈ (A ⊸ A•) × (A ⊸ A◦) ] f• ⨾ᶜ α• ≡ f◦ ⨾ᶜ η•ᶜ) → (A ⊸ Glueᶜ α•)
       bwd ((f• , f◦) , f-coh) .U a =
         (f• .U a , f◦ .U a) , funExt⁻ (cong U f-coh) a
       bwd ((f• , f◦) , f-coh) .charge c a =
@@ -93,7 +93,7 @@ Fractureᶜ-ua e• e◦ e•→◦ =
       (ua→ λ a• → ●-ua-gluePath (U-≃ e◦) (funExt⁻ (sym e•→◦) a•)))
 
 fromFractureᶜ : Fractureᶜ → 𝒞
-fromFractureᶜ F = Glueᶜ ⟨ F .A• ⟩ᶜ ⟨ F .A◦ ⟩ᶜ (F .α•)
+fromFractureᶜ F = Glueᶜ (F .α•)
 
 toFractureᶜ : 𝒞 → Fractureᶜ
 toFractureᶜ A .A• = ●ᶜ• A
@@ -118,7 +118,7 @@ squareᶜ
   → (f• : A• ⊸ B•)
   → (f◦ : A◦ ⊸ B◦)
   → f• ⨾ᶜ β• ≡ α• ⨾ᶜ ●ᶜ.map f◦
-  → Glueᶜ A• A◦ α• ⊸ Glueᶜ B• B◦ β•
+  → Glueᶜ α• ⊸ Glueᶜ β•
 squareᶜ f• f◦ f-coherence .U =
   square
     (f• .U)
@@ -133,7 +133,7 @@ Glueᶜ-≃
   → (e• : A• ≃ᶜ B•)
   → (e◦ : A◦ ≃ᶜ B◦)
   → equivFunᶜ e• ⨾ᶜ β• ≡ α• ⨾ᶜ ●ᶜ.map (equivFunᶜ e◦)
-  → Glueᶜ A• A◦ α• ≃ᶜ Glueᶜ B• B◦ β•
+  → Glueᶜ α• ≃ᶜ Glueᶜ β•
 Glueᶜ-≃ {α• = α•} {β• = β•} e• e◦ coh =
   squareᶜ (equivFunᶜ e•) (equivFunᶜ e◦) coh ,
   square-isEquiv (U α•) (U β•) (funExt⁻ (cong U coh)) (equivIsEquivᶜ e•) (equivIsEquivᶜ e◦)

@@ -10,37 +10,37 @@ open import Calf.Value.Closed as ●
 open import Calf.Value.Open as ◯
 open import Calf.Value.Product
 
-Glue : (X• X◦ : 𝒱) (χ• : X• → ● X◦) → 𝒱
-Glue X• X◦ χ• = Σ[ (x• , x◦) ∈ X• × X◦ ] χ• x• ≡ η• x◦
+Glue : {X• X◦ : 𝒱} (χ• : X• → ● X◦) → 𝒱
+Glue {X•} {X◦} χ• = Σ[ (x• , x◦) ∈ X• × X◦ ] χ• x• ≡ η• x◦
 
 module _ {X• X◦ : 𝒱} {χ• : X• → ● X◦} where
-  proj• : Glue X• X◦ χ• → X•
+  proj• : Glue χ• → X•
   proj• ((x• , _) , _) = x•
 
-  proj◦ : Glue X• X◦ χ• → X◦
+  proj◦ : Glue χ• → X◦
   proj◦ ((_ , x◦) , _) = x◦
 
-  proj•→◦ : (x : Glue X• X◦ χ•) → χ• (proj• x) ≡ η• (proj◦ x)
+  proj•→◦ : (x : Glue χ•) → χ• (proj• x) ≡ η• (proj◦ x)
   proj•→◦ = proj₂
 
   opaque
-    Glue-path : ∀ {g g' : Glue X• X◦ χ•}
+    Glue-path : ∀ {x x' : Glue χ•}
       → isSet X◦
-      → proj• g ≡ proj• g'
-      → proj◦ g ≡ proj◦ g'
-      → g ≡ g'
+      → proj• x ≡ proj• x'
+      → proj◦ x ≡ proj◦ x'
+      → x ≡ x'
     Glue-path isSetX◦ p• p◦ =
       Σ≡Prop (λ _ → isSet● isSetX◦ _ _) (ΣPathP (p• , p◦))
 
   opaque
-    isSetGlue : isSet X• → isSet X◦ → isSet (Glue X• X◦ χ•)
+    isSetGlue : isSet X• → isSet X◦ → isSet (Glue χ•)
     isSetGlue isSetX• isSetX◦ =
       isSetΣ
         (isSet× isSetX• isSetX◦)
         λ _ → isProp→isSet (isSet● isSetX◦ _ _)
 
   opaque
-    isPreorderGlue : isPreorder X• → isPreorder X◦ → isPreorder (Glue X• X◦ χ•)
+    isPreorderGlue : isPreorder X• → isPreorder X◦ → isPreorder (Glue χ•)
     isPreorderGlue isPreorderX• isPreorderX◦ =
       isLocalPullback isPreorderX• isPreorderX◦ (isPreorder● isPreorderX◦) χ• η•
 
@@ -77,7 +77,7 @@ Fracture-ua e• e◦ e•→◦ =
     (ua→ λ x• → ●-ua-gluePath e◦ (sym (funExt⁻ e•→◦ x•)))
 
 fromFracture : Fracture → 𝒱
-fromFracture F = Glue ⟨ F .X• ⟩ ⟨ F .X◦ ⟩ (F .χ•)
+fromFracture F = Glue (F .χ•)
 
 toFracture : 𝒱 → Fracture
 toFracture X .X• = ●• X
@@ -94,7 +94,7 @@ square
   → (f• : X• → Y•)
   → (f◦ : X◦ → Y◦)
   → ((x• : X•) → ψ (f• x•) ≡ ●.map f◦ (χ x•))
-  → Glue X• X◦ χ → Glue Y• Y◦ ψ
+  → Glue χ → Glue ψ
 square f• f◦ f-coh ((x• , x◦) , h) =
   (f• x• , f◦ x◦) , f-coh x• ∙ cong (●.map f◦) h
 

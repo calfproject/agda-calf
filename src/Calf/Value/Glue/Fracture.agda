@@ -61,7 +61,7 @@ module _ where
     where
       e : ● (fromFracture F) ≃ ⟨ F .X• ⟩
       e =
-          ● (Glue ⟨ F .X• ⟩ ⟨ F .X◦ ⟩ (F .χ•))
+          ● (Glue (F .χ•))
         ≃⟨ ●-pullback ⟩
           (Σ[ (x•• , x◦•) ∈ ● ⟨ F .X• ⟩ × ● ⟨ F .X◦ ⟩ ] ●.map (F .χ•) x•• ≡ ●.map η• x◦•)
         ≃⟨ Σ-assoc-≃ ⟩
@@ -88,7 +88,7 @@ module _ where
     where
       e : ◯ (fromFracture F) ≃ ⟨ F .X◦ ⟩
       e =
-          ◯ (Glue ⟨ F .X• ⟩ ⟨ F .X◦ ⟩ (F .χ•))
+          ◯ (Glue (F .χ•))
         ≃⟨ ◯-pullback ⟩
           (Σ[ (x•◦ , x◦◦) ∈ ◯ ⟨ F .X• ⟩ × ◯ ⟨ F .X◦ ⟩ ] ◯.map (F .χ•) x•◦ ≡ ◯.map η• x◦◦)
         ≃⟨ Σ-contractSnd (λ _ → isContr→isContrPath (isModal●→isConnected◯ isModal●) _ _) ⟩

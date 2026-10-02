@@ -18,42 +18,45 @@ private
   thin● : (A : 𝒞) → isThin (● (U A))
   thin● A = isPreorder→isThin (isPreorder● (A .is-preorder))
 
-Glueᵈᶜ : (A• A◦ : 𝒞) (α• : A• ⊸ ●ᶜ A◦) → 𝒞
-Glueᵈᶜ A• A◦ α• .U = Glueᵈ (U A•) (U A◦) (U α•)
-Glueᵈᶜ A• A◦ α• .is-preorder =
-  isPreorderGlueᵈ (U A•) (U A◦)
+Glueᵈᶜ : {A• A◦ : 𝒞} (α• : A• ⊸ ●ᶜ A◦) → 𝒞
+Glueᵈᶜ {A•} {A◦} α• .U = Glueᵈ (U α•)
+Glueᵈᶜ {A•} {A◦} α• .is-preorder =
+  isPreorderGlueᵈ
     (A• .is-preorder)
     (A◦ .is-preorder)
-Glueᵈᶜ A• A◦ α• .charge c ((x• , x◦) , p) =
+Glueᵈᶜ {A•} {A◦} α• .charge c ((x• , x◦) , p) =
   (A• .charge c x• , A◦ .charge c x◦) ,
   ≡∙⊑ (α• .charge c x•) (⊑-mono (●ᶜ A◦ .charge c) p)
-Glueᵈᶜ A• A◦ α• .charge-0 =
-  Σ≡Prop (λ _ → thin● A◦ _ _)
-    (ΣPathP (A• .charge-0 , A◦ .charge-0))
-Glueᵈᶜ A• A◦ α• .charge-+ =
-  Σ≡Prop (λ _ → thin● A◦ _ _)
-    (ΣPathP (A• .charge-+ , A◦ .charge-+))
+Glueᵈᶜ {A•} {A◦} α• .charge-0 =
+  Σ≡Prop (λ _ → thin● A◦ _ _) (ΣPathP (A• .charge-0 , A◦ .charge-0))
+Glueᵈᶜ {A•} {A◦} α• .charge-+ =
+  Σ≡Prop (λ _ → thin● A◦ _ _) (ΣPathP (A• .charge-+ , A◦ .charge-+))
+
+module _ {A• A◦ : 𝒞} {α• : A• ⊸ ●ᶜ A◦} where
+  proj•ᵈᶜ : Glueᵈᶜ α• ⊸ A•
+  proj•ᵈᶜ .U = proj•ᵈ
+  proj•ᵈᶜ .charge c g = refl
+
+  proj◦ᵈᶜ : Glueᵈᶜ α• ⊸ A◦
+  proj◦ᵈᶜ .U = proj◦ᵈ
+  proj◦ᵈᶜ .charge c g = refl
 
 open Fractureᶜ
 
 fromFractureᵈᶜ : Fractureᶜ → 𝒞
-fromFractureᵈᶜ F = Glueᵈᶜ ⟨ F .A• ⟩ᶜ ⟨ F .A◦ ⟩ᶜ (F .α•)
+fromFractureᵈᶜ F = Glueᵈᶜ (F .α•)
 
 Sealᶜ : 𝒞 → 𝒞
 Sealᶜ = fromFractureᵈᶜ ∘ toFractureᶜ
 
-proj•ᶜᵈ : Sealᶜ A ⊸ ●ᶜ A
-proj•ᶜᵈ .U = •
-proj•ᶜᵈ .charge c g = refl
-
-proj◦ᶜᵈ : Sealᶜ A ⊸ ◯ᶜ A
-proj◦ᶜᵈ .U = ◦
-proj◦ᶜᵈ .charge c g = refl
-
 Sealᶜ-open : ⟨ ABS ⟩ → Sealᶜ A ≃ᶜ A
-Sealᶜ-open {A} abs = proj◦ᶜᵈ ⨾ᶜ ◯ᶜ-eval-open abs A , equivIsEquiv (Seal-open abs)
+Sealᶜ-open {A} abs =
+  proj◦ᵈᶜ ⨾ᶜ ◯ᶜ-eval-open abs A ,
+  subst isEquiv
+    (funExt λ a → transportRefl _ ∙ cong (proj◦ᵈ a) (transportRefl _))
+    (equivIsEquiv (Seal-open abs))
 
-
+{-
 infix 1 _⊸ᵈ_
 _⊸ᵈ_ : 𝒞 → 𝒞 → 𝒱
 A ⊸ᵈ B = A ⊸ Sealᶜ B
@@ -80,18 +83,18 @@ infixl 9 _⨾ᵈ_
 _⨾ᵈ_ : (A ⊸ᵈ B) → (B ⊸ᵈ C) → (A ⊸ᵈ C)
 _⨾ᵈ_ {A} {B} {C} f g =
   pairᵈ
-    (f ⨾ᶜ proj•ᶜᵈ ⨾ᶜ g•)
-    (f ⨾ᶜ proj◦ᶜᵈ ⨾ᶜ g◦)
+    (f ⨾ᶜ proj•ᵈᶜ ⨾ᶜ g•)
+    (f ⨾ᶜ proj◦ᵈᶜ ⨾ᶜ g◦)
     (λ a →
       ⊑-trans (●ᶜ (◯ᶜ C) .is-preorder)
         (bind-coh (• (f .U a)))
         (⊑-mono (●.map (g◦ .U)) (f .U a .snd)))
   where
     g• : ●ᶜ B ⊸ ●ᶜ C
-    g• = ●ᶜ.bind (g ⨾ᶜ proj•ᶜᵈ)
+    g• = ●ᶜ.bind (g ⨾ᶜ proj•ᵈᶜ)
 
     g◦ : ◯ᶜ B ⊸ ◯ᶜ C
-    g◦ = ◯ᶜ.bind {B} {C} (g ⨾ᶜ proj◦ᶜᵈ)
+    g◦ = ◯ᶜ.bind {B} {C} (g ⨾ᶜ proj◦ᵈᶜ)
 
     bind-coh : (b• : U (●ᶜ B)) → ●.map η◦ (g• .U b•) ⊑ ●.map (g◦ .U) (●.map η◦ b•)
     bind-coh =
@@ -111,19 +114,17 @@ squareᵈ F G f• f◦ f-coh =
 Sealᶜ-fromFracture : (F : Fractureᶜ) → Sealᶜ (fromFractureᶜ F) ≡ fromFractureᵈᶜ F
 Sealᶜ-fromFracture F = cong fromFractureᵈᶜ (glue-fracture-sectionᶜ F)
 
-opaque
-  unfolding Abstractionᶜ
-
-  squareᵈᶜ : ∀ {A-⊤ A-abs B-⊤ B-abs}
-    → (α : A-⊤ ⊸ A-abs) (β : B-⊤ ⊸ B-abs)
-    → (f-⊤ : A-⊤ ⊸ B-⊤)
-    → (f-abs : A-abs ⊸ B-abs)
-    → ((a-⊤ : U A-⊤) → U β (U f-⊤ a-⊤) ⊑ U f-abs (U α a-⊤))
-    → Abstractionᶜ A-⊤ A-abs α ⊸ᵈ Abstractionᶜ B-⊤ B-abs β
-  squareᵈᶜ {A-⊤} {A-abs} {B-⊤} {B-abs} α β f-⊤ f-abs f-coh =
-    subst (Abstractionᶜ A-⊤ A-abs α ⊸_) (sym (Sealᶜ-fromFracture (Abstractionᶜ-Fracture B-⊤ B-abs β)))
-      (squareᵈ (Abstractionᶜ-Fracture A-⊤ A-abs α) (Abstractionᶜ-Fracture B-⊤ B-abs β)
-        (●ᶜ.map f-⊤) (◯ᶜ.map f-abs)
-        (●.ind-prop _ (λ _ → thin● (◯ᶜ B-abs) _ _)
-          (λ a → ⊑-mono η• (⊑-mono η◦ (f-coh a)))
-          (λ abs → ⊑-reflexive (●.◯-isProp● abs _ _))))
+squareᵈᶜ : ∀ {A-⊤ A-abs B-⊤ B-abs}
+  → (α : A-⊤ ⊸ A-abs) (β : B-⊤ ⊸ B-abs)
+  → (f-⊤ : A-⊤ ⊸ B-⊤)
+  → (f-abs : A-abs ⊸ B-abs)
+  → ((a-⊤ : U A-⊤) → U β (U f-⊤ a-⊤) ⊑ U f-abs (U α a-⊤))
+  → Abstractionᶜ α ⊸ᵈ Abstractionᶜ β
+squareᵈᶜ {A-⊤} {A-abs} {B-⊤} {B-abs} α β f-⊤ f-abs f-coh =
+  subst (Abstractionᶜ A-⊤ A-abs α ⊸_) (sym (Sealᶜ-fromFracture (Abstractionᶜ-Fracture B-⊤ B-abs β)))
+    (squareᵈ (Abstractionᶜ-Fracture A-⊤ A-abs α) (Abstractionᶜ-Fracture B-⊤ B-abs β)
+      (●ᶜ.map f-⊤) (◯ᶜ.map f-abs)
+      (●.ind-prop _ (λ _ → thin● (◯ᶜ B-abs) _ _)
+        (λ a → ⊑-mono η• (⊑-mono η◦ (f-coh a)))
+        (λ abs → ⊑-reflexive (●.◯-isProp● abs _ _))))
+-}
