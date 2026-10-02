@@ -188,10 +188,10 @@ import Examples.Queue using
 -}
 import Calf.Computation.Seal using
   ( Sealᶜ
+  ; Sealᶜ-open
   ; _⊸ᵈ_
   ; idᵈ
   ; _⨾ᵈ_
-  ; Sealᶜ-open
   )
 
 -- Section 4. The Banker's View

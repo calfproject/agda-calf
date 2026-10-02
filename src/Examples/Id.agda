@@ -18,7 +18,7 @@ module Easy where
   id-bound n = ret n
 
   id-bounded : id ⊑ id-bound
-  id-bounded = ⊑-funext λ _ → ⊑-refl
+  id-bounded = funExtᵈ λ _ → ⊑-refl
 
   id-correct : BEH → id ≡ ret
   id-correct beh = ⊑-BEH beh id-bounded
@@ -27,7 +27,7 @@ module Easy where
   id-asymptotic =
     f[n]≤g[n]via λ n →
       ⊑∙≡
-        (⊑-mono (λ e → bind {A = ⊤} (e n) (const 0ℂ)) id-bounded)
+        (mono (λ e → bind {A = ⊤} (e n) (const 0ℂ)) id-bounded)
         bind-β
 
 module Hard where
@@ -42,16 +42,16 @@ module Hard where
   id-bound n = chargeℕ (F _) n (ret n)
 
   id-bounded : id ⊑ id-bound
-  id-bounded = ⊑-funext lemma
+  id-bounded = funExtᵈ lemma
     where
       lemma : ∀ n → id n ⊑ id-bound n
       lemma zero = ⊑-refl
       lemma (suc n) =
         let open ⊑-Reasoning (F ℕ) in
-        ⊑-mono (chargeℕ (F _) 1) $
+        mono (chargeℕ (F _) 1) $
         begin
           bind[ F _ ] n' ← id n ⨾ ret (suc n')
-        ⊑⟨ ⊑-mono (λ e → bind[ F _ ] n' ← e ⨾ ret (suc n')) (lemma n) ⟩
+        ⊑⟨ mono (λ e → bind[ F _ ] n' ← e ⨾ ret (suc n')) (lemma n) ⟩
           bind[ F _ ] n' ← id-bound n ⨾ ret (suc n')
         ≡ᴾ⟨ bind-chargeℕ-ret n ⟩
           chargeℕ (F _) n (ret (suc n))
@@ -64,7 +64,7 @@ module Hard where
   id-asymptotic =
     f[n]≤g[n]via λ n →
       ⊑∙≡
-        (⊑-mono (λ e → bind {A = ⊤} (e n) (const 0ℂ)) id-bounded)
+        (mono (λ e → bind {A = ⊤} (e n) (const 0ℂ)) id-bounded)
         (bind-chargeℕ-ret n ∙ chargeℕ-charge ⊤ n ∙ +ℂ-identityʳ _)
 
 

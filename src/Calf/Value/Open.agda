@@ -69,7 +69,8 @@ open import Cubical.Modalities.Extras ◯Modality public
     ( map to map′
     ; map-∘ to map′-∘
     ; join to join′
-    ; η-isNatural to η◦-isNatural
+    ; bind to bind′
+    ; η-isNatural to η◦-isNatural′
     ; ◯-rec-isEquiv to rec-isEquiv
     )
 
@@ -95,6 +96,12 @@ join x◦◦ abs = x◦◦ abs abs
 
 join′≡join : join′ {X} ≡ join
 join′≡join = sym (◯-rec-unique isModal◯ refl)
+
+bind : ◯ X → (X → ◯ Y) → ◯ Y
+bind x◦ f = join (map f x◦)
+
+η◦-isNatural : (f : X → Y) → η◦ ∘ f ≡ map f ∘ η◦
+η◦-isNatural f = subst (λ map → η◦ ∘ f ≡ map f ∘ η◦) map′≡map (η◦-isNatural′ f)
 
 isConnected→◯isContr : isConnected X → ◯ (isContr X)
 isConnected→◯isContr c abs .fst = c .fst abs

@@ -16,7 +16,7 @@ Abstractionᶜ-Fracture {A-⊤} {A-abs} α .A◦ = ◯ᶜ◦ A-abs
 Abstractionᶜ-Fracture {A-⊤} {A-abs} α .α• = ●ᶜ.map (α ⨾ᶜ η◦ᶜ)
 
 Abstractionᶜ : {A-⊤ A-abs : 𝒞} → (A-⊤ ⊸ A-abs) → 𝒞
-Abstractionᶜ α = fromFractureᶜ (Abstractionᶜ-Fracture α)
+Abstractionᶜ = fromFractureᶜ ∘ Abstractionᶜ-Fracture
 
 Abstractionᶜ-≃
   : ∀ {A-⊤ A-abs α B-⊤ B-abs β}

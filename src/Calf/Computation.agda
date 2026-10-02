@@ -17,6 +17,9 @@ record 𝒞 : 𝒱₁ where
   is-set : isSet U
   is-set = isPreorder→isSet is-preorder
 
+  is-thin : isThin U
+  is-thin = isPreorder→isThin is-preorder
+
   field
     charge : ℂ → U → U
     charge-0 : ∀ {a} → charge 0ℂ a ≡ a
@@ -204,6 +207,20 @@ opaque
 
 funExtᶜ : {f f' : A ⊸ B} → ((a : U A) → f .U a ≡ f' .U a) → f ≡ f'
 funExtᶜ p = ⊸-path refl refl (funExt p)
+
+⊸-⊑ : {f f' : A ⊸ B} → f .U ⊑ f' .U → f ⊑ f'
+⊸-⊑ e .fst 𝕚 .U = path e 𝕚
+⊸-⊑ {A} {B} {f} {f'} e .fst 𝕚 .charge c a =
+  funExt⁻ (isThin→𝟚-injective (is-thin B) (comm f (path₀ e)) (comm f' (path₁ e))) 𝕚
+  where
+    comm : ∀ {𝕚} (g : A ⊸ B) → path e 𝕚 ≡ g .U
+      → path e 𝕚 (A .charge c a) ≡ B .charge c (path e 𝕚 a)
+    comm g q = funExt⁻ q _ ∙ g .charge c a ∙ cong (B .charge c) (sym (funExt⁻ q a))
+⊸-⊑ e .snd .fst = ⊸-path refl refl (path₀ e)
+⊸-⊑ e .snd .snd = ⊸-path refl refl (path₁ e)
+
+funExtᵈᶜ : {f f' : A ⊸ B} → ((a : U A) → f .U a ⊑ f' .U a) → f ⊑ f'
+funExtᵈᶜ p = ⊸-⊑ (funExtᵈ p)
 
 ⊸-Σ-Iso
   : Iso (A ⊸ B)

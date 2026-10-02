@@ -22,7 +22,7 @@ opaque
   DOUBLE (suc n) = suc (suc (DOUBLE n))
 
   double-bound : double ⊑[ ℕ ⇀ F ℕ ] (λ n → F _ .charge (# n) (ret (DOUBLE n)))
-  double-bound = ⊑-funext lemma
+  double-bound = funExtᵈ lemma
     where
       lemma : ∀ n → double n ⊑[ F ℕ ] F _ .charge (# n) (ret (DOUBLE n))
       lemma zero = ⊑-reflexive (sym (F _ .charge-0))
@@ -31,9 +31,9 @@ opaque
         begin
           double (suc n)
         ≡ᴾ⟨ refl ⟩
-          F _ .charge 1 (bind (double n) (λ n' → ret (suc (suc n'))))
-        ⊑⟨ ⊑-mono (λ e → F _ .charge 1 (bind e (λ n' → ret (suc (suc n'))))) (lemma n) ⟩
-          F _ .charge 1 (bind (F _ .charge (# n) (ret (DOUBLE n))) (λ n' → ret (suc (suc n'))))
+          F _ .charge 1 (bind {A = F _} (double n) (λ n' → ret (suc (suc n'))))
+        ⊑⟨ mono (λ e → F _ .charge 1 (bind {A = F _} e (λ n' → ret (suc (suc n'))))) (lemma n) ⟩
+          F _ .charge 1 (bind {A = F _} (F _ .charge (# n) (ret (DOUBLE n))) (λ n' → ret (suc (suc n'))))
         ≡ᴾ⟨ cong (F _ .charge 1) bind-charge ⟩
           F _ .charge 1 (F _ .charge (# n) (bind {A = F _} (ret (DOUBLE n)) (λ n' → ret (suc (suc n')))))
         ≡ᴾ⟨ sym (F _ .charge-+) ⟩
@@ -51,6 +51,6 @@ opaque
       double
     ⊑⟨ double-bound ⟩
       (λ n → F _ .charge (# n) (ret (DOUBLE n)))
-    ⊑⟨ ⊑-funext (λ n → ⊑-mono (λ e → F _ .charge e (ret (DOUBLE n))) (≤⇒⊑ℂ {n} {suc n} (≤-suc ≤-refl))) ⟩
+    ⊑⟨ funExtᵈ (λ n → mono (λ e → F _ .charge e (ret (DOUBLE n))) (≤⇒⊑ℂ {n} {suc n} (≤-suc ≤-refl))) ⟩
       (λ n → F _ .charge (# suc n) (ret (DOUBLE n)))
     ∎ᴾ

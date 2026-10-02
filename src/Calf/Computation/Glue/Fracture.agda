@@ -46,12 +46,16 @@ module _ where
     → equivFunᶜ (glue◦ᶜ F) .U (η◦ a) ≡ proj◦ a
   glue◦ᶜ-β = glue◦-β ∘ U-Fracture
 
+  glue•→◦ᶜ : (F : Fractureᶜ)
+    → equivFunᶜ (glue•ᶜ F) ⨾ᶜ F .α• ≡ ●ᶜ.map η◦ᶜ ⨾ᶜ ●ᶜ.map (equivFunᶜ (glue◦ᶜ F))
+  glue•→◦ᶜ F =
+    funExtᶜ (●.elim (λ _ → ●.●-≡-isModal _ _) λ a →
+      proj•→◦ a ∙ cong η• (sym (glue◦ᶜ-β F a)))
+
   opaque
     glue-fracture-sectionᶜ : section toFractureᶜ fromFractureᶜ
     glue-fracture-sectionᶜ F =
-      Fractureᶜ-ua (glue•ᶜ F) (glue◦ᶜ F) $
-      ●.η-ext (λ _ → ●.isModal●) $ funExt λ a →
-        proj•→◦ a ∙ cong η• (sym (glue◦ᶜ-β F a))
+      Fractureᶜ-ua (glue•ᶜ F) (glue◦ᶜ F) (cong U (glue•→◦ᶜ F))
 
   fracture-and-gluingᶜ : 𝒞 ≃ Fractureᶜ
   fracture-and-gluingᶜ =
@@ -86,6 +90,3 @@ module _ where
     ⟩
       Fractureᶜ-Square (toFractureᶜ A) (toFractureᶜ B)
     ■
-
-  toSquareᶜ : (A ⊸ B) → Fractureᶜ-Square (toFractureᶜ A) (toFractureᶜ B)
-  toSquareᶜ = equivFun fracture-and-gluing-squareᶜ

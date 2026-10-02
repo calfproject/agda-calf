@@ -1,9 +1,13 @@
 module Calf.Directed.Path where
 
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Equiv.Properties using (congEquiv)
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
+open import Cubical.Foundations.Path using (compPathrEquiv)
 open import Cubical.Data.Sigma
+open import Cubical.Reflection.StrictEquiv
 open import Relation.Binary using (_⇒_)
 open import Relation.Binary.Definitions using (Reflexive)
 
@@ -38,17 +42,30 @@ module _ {X : Type} where
 
 private variable X Y : Type
 
-⊑-mono : (f : X → Y) {x x' : X} → x ⊑ x' → f x ⊑ f x'
-⊑-mono f e = f ∘ path e , cong f (path₀ e) , cong f (path₁ e)
+mono : (f : X → Y) {x x' : X} → x ⊑ x' → f x ⊑ f x'
+mono f e = f ∘ path e , cong f (path₀ e) , cong f (path₁ e)
 
-⊑-funext : {Y : X → Type}
-  → {f f' : (x : X) → Y x}
-  → ((x : X) → f x ⊑ f' x)
-  → f ⊑ f'
-⊑-funext pointwise =
-    (λ 𝕚 x → path (pointwise x) 𝕚)
-  , funExt (λ x → path₀ (pointwise x))
-  , funExt (λ x → path₁ (pointwise x))
+module _ {Y : X → Type} {f f' : (x : X) → Y x} where
+  funExtᵈ : ((x : X) → f x ⊑ f' x) → f ⊑ f'
+  funExtᵈ pointwise =
+      (λ 𝕚 x → path (pointwise x) 𝕚)
+    , funExt (path₀ ∘ pointwise)
+    , funExt (path₁ ∘ pointwise)
+
+  funExtᵈ⁻ : f ⊑ f' → ((x : X) → f x ⊑ f' x)
+  funExtᵈ⁻ p x =
+      (λ 𝕚 → path p 𝕚 x)
+    , funExt⁻ (path₀ p) x
+    , funExt⁻ (path₁ p) x
+
+  funExtᵈEquiv : ((x : X) → f x ⊑ f' x) ≃ (f ⊑ f')
+  unquoteDef funExtᵈEquiv = defStrictEquiv funExtᵈEquiv funExtᵈ funExtᵈ⁻
+
+monoEquiv : {x x' : X} (e : X ≃ Y) → (x ⊑ x') ≃ (equivFun e x ⊑ equivFun e x')
+monoEquiv e = Σ-cong-equiv (equivΠCod (const e)) λ _ → ≃-× (congEquiv e) (congEquiv e)
+
+≡∙⊑Equiv : {x y z : X} → x ≡ y → (y ⊑ z) ≃ (x ⊑ z)
+≡∙⊑Equiv h = Σ-cong-equiv-snd λ _ → ≃-× (compPathrEquiv (sym h)) (idEquiv _)
 
 isContr⊑ : isContr X → {x x' : X} → isContr (x ⊑ x')
 isContr⊑ isContrX =

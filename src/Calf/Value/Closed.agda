@@ -162,6 +162,7 @@ open import Cubical.Modalities.Extras ●Modality public
     ( map to map′
     ; map-∘ to map′-∘
     ; join to join′
+    ; bind to bind′
     ; map-η-isEquiv to map′-η-isEquiv
     ; η-isNatural to η•-isNatural
     ; ○Σ○≃○Σ to ●Σ●≃●Σ
@@ -180,6 +181,15 @@ opaque
 opaque
   map-isEquiv : {f : X → Y} → isEquiv f → isEquiv (map f)
   map-isEquiv {f = f} e = subst isEquiv (funExt⁻ map′≡map f) (equivIsEquiv (●-equiv (f , e)))
+
+bind : ● X → (X → ● Y) → ● Y
+bind x• f = join (map f x•)
+
+bind-map : (f : X → ● Y) (g : Y → Z) (x• : ● X) → map g (bind x• f) ≡ bind x• (map g ∘ f)
+bind-map f g = elim (λ _ → ●-≡-isModal _ _) λ _ → refl
+
+bind-η• : (f : X → Y) (x• : ● X) → bind x• (η• ∘ f) ≡ map f x•
+bind-η• f = elim (λ _ → ●-≡-isModal _ _) λ _ → refl
 
 opaque
   -- Based identity-system argument (https://1lab.dev/1Lab.Path.IdentitySystem.html#based-identity-systems)

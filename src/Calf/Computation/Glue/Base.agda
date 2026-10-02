@@ -109,9 +109,9 @@ U-Fracture F =
     }
 
 Fractureᶜ-Square : Fractureᶜ → Fractureᶜ → 𝒱
-Fractureᶜ-Square F G =
-  Σ[ (f• , f◦) ∈ (⟨ F .A• ⟩ᶜ ⊸ ⟨ G .A• ⟩ᶜ) × (⟨ F .A◦ ⟩ᶜ ⊸ ⟨ G .A◦ ⟩ᶜ) ]
-    f• ⨾ᶜ G .α• ≡ F .α• ⨾ᶜ ●ᶜ.map f◦
+Fractureᶜ-Square F F' =
+  Σ[ (f• , f◦) ∈ (⟨ F .A• ⟩ᶜ ⊸ ⟨ F' .A• ⟩ᶜ) × (⟨ F .A◦ ⟩ᶜ ⊸ ⟨ F' .A◦ ⟩ᶜ) ]
+    f• ⨾ᶜ F' .α• ≡ F .α• ⨾ᶜ ●ᶜ.map f◦
 
 squareᶜ
   : ∀ {A• A◦ α• B• B◦ β•}
@@ -119,14 +119,14 @@ squareᶜ
   → (f◦ : A◦ ⊸ B◦)
   → f• ⨾ᶜ β• ≡ α• ⨾ᶜ ●ᶜ.map f◦
   → Glueᶜ α• ⊸ Glueᶜ β•
-squareᶜ f• f◦ f-coherence .U =
+squareᶜ f• f◦ f-coh .U =
   square
     (f• .U)
     (f◦ .U)
-    (funExt⁻ (cong U f-coherence))
-squareᶜ {B◦ = B◦} f• f◦ f-coherence .charge c q =
+    (funExt⁻ (cong U f-coh))
+squareᶜ {B◦ = B◦} f• f◦ f-coh .charge c a =
   Σ≡Prop (λ _ → is-set (●ᶜ B◦) _ _)
-    (ΣPathP (f• .charge c (proj• q) , f◦ .charge c (proj◦ q)))
+    (ΣPathP (f• .charge c (proj• a) , f◦ .charge c (proj◦ a)))
 
 Glueᶜ-≃
   : ∀ {A• A◦ α• B• B◦ β•}

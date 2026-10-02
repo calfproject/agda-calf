@@ -6,9 +6,17 @@ open import Calf.Value
 open import Calf.Value.Closed as ●
 open import Calf.Value.Glue as Glue hiding (square)
 open import Calf.Value.Open as ◯
+open import Calf.Value.Seal as Seal hiding (squareᵈ)
+
+open Fracture
+
+Abstraction-Fracture : {X-⊤ X-abs : 𝒱} → (X-⊤ → X-abs) → Fracture
+Abstraction-Fracture {X-⊤} {X-abs} χ .X• = ●• X-⊤
+Abstraction-Fracture {X-⊤} {X-abs} χ .X◦ = ◯◦ X-abs
+Abstraction-Fracture {X-⊤} {X-abs} χ .χ• = ●.map (χ ⨾ η◦)
 
 Abstraction : {X-⊤ X-abs : 𝒱} → (X-⊤ → X-abs) → 𝒱
-Abstraction χ = Glue (●.map (η◦ ∘ χ))
+Abstraction = fromFracture ∘ Abstraction-Fracture
 
 Abstraction-id : (X : 𝒱) → X ≃ Abstraction (id {X})
 Abstraction-id X = fracture , fracture-isEquiv
@@ -20,11 +28,11 @@ square
   → (f-abs : X-abs → Y-abs)
   → ((x-⊤ : X-⊤) → ψ (f-⊤ x-⊤) ≡ f-abs (χ x-⊤))
   → Abstraction χ → Abstraction ψ
-square χ ψ f-⊤ f-abs f-coherence =
+square χ ψ f-⊤ f-abs f-coh =
   Glue.square
     (●.map f-⊤)
     (◯.map f-abs)
-    (●.elim (λ x• → ●-≡-isModal _ _) (λ x → cong (η• ∘ η◦) (f-coherence x)))
+    (●.elim (λ x• → ●-≡-isModal _ _) (cong (η• ∘ η◦) ∘ f-coh))
 
 module _ {X-⊤ X-abs} (χ : X-⊤ → X-abs) where
   triangle

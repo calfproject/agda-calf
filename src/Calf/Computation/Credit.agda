@@ -69,7 +69,7 @@ opaque
   waste : (A : 𝒞) → c ⊑ c' → ▷[ c' ] A ⊸ᵈ ▷[ c ] A
   waste {c} {c'} A c⊑c' =
     squareᵈᶜ (chargeᶜ c') (chargeᶜ c) idᶜ idᶜ λ a →
-    ⊑-mono (flip (A .charge) a) c⊑c'
+    mono (flip (A .charge) a) c⊑c'
 
   save : (A : 𝒞) (c : ℂ) → A ⊸ ▷[ c ] A
   save A c = injᶜ-⊤ (chargeᶜ c)

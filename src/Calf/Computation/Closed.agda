@@ -11,7 +11,7 @@ open import Calf.Computation.Copower
 open import Calf.Computation.Pullback
 
 open import Calf.Value.Closed as ● public
-  hiding (map; map-∘; join; bind)
+  hiding (map; map-∘; join; bind; bind-map; bind-η•)
 
 ●ᶜ : 𝒞 → 𝒞
 ●ᶜ A .U = ● (A .U)
@@ -105,13 +105,11 @@ bind k = map k ⨾ᶜ join
 
 opaque
   bind-map : (k : A ⊸ ●ᶜ B) (f : B ⊸ C) → bind k ⨾ᶜ map f ≡ bind (k ⨾ᶜ map f)
-  bind-map k f =
-    funExtᶜ (●.elim (λ _ → ●-≡-isModal _ _) (λ _ → refl))
+  bind-map k f = funExtᶜ (●.bind-map (k .U) (f .U))
 
 opaque
   bind-η• : (f : A ⊸ B) → bind (f ⨾ᶜ η•ᶜ) ≡ map f
-  bind-η• f =
-    funExtᶜ (●.elim (λ _ → ●-≡-isModal _ _) (λ _ → refl))
+  bind-η• f = funExtᶜ (●.bind-η• (f .U))
 
 opaque
   ●ᶜ-rec-charge : (B• : 𝒞•) (g : A ⊸ ⟨ B• ⟩ᶜ) (c : ℂ) (a• : U (●ᶜ A))
