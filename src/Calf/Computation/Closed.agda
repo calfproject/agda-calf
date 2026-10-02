@@ -83,14 +83,6 @@ opaque
   map-id-equiv {A} = subst isEquiv (cong (λ h → h .U) (sym (map-id {A}))) (idIsEquiv _)
 
 opaque
-  map-open : ⟨ ABS ⟩ → (f g : A ⊸ B) → map f ≡ map g
-  map-open {A} {B} p f g =
-    funExtᶜ λ a• →
-      ◯-isProp● p
-        (map {A = A} {B = B} f .U a•)
-        (map {A = A} {B = B} g .U a•)
-
-opaque
   join-charge : (c : ℂ) (a•• : U (●ᶜ (●ᶜ A)))
     → ●.join (●ᶜ (●ᶜ A) .charge c a••) ≡ ●ᶜ A .charge c (●.join a••)
   join-charge c =
@@ -102,14 +94,6 @@ join {A} .charge = join-charge {A}
 
 bind : (A ⊸ ●ᶜ B) → (●ᶜ A ⊸ ●ᶜ B)
 bind k = map k ⨾ᶜ join
-
-opaque
-  bind-map : (k : A ⊸ ●ᶜ B) (f : B ⊸ C) → bind k ⨾ᶜ map f ≡ bind (k ⨾ᶜ map f)
-  bind-map k f = funExtᶜ (●.bind-map (k .U) (f .U))
-
-opaque
-  bind-η• : (f : A ⊸ B) → bind (f ⨾ᶜ η•ᶜ) ≡ map f
-  bind-η• f = funExtᶜ (●.bind-η• (f .U))
 
 opaque
   ●ᶜ-rec-charge : (B• : 𝒞•) (g : A ⊸ ⟨ B• ⟩ᶜ) (c : ℂ) (a• : U (●ᶜ A))
@@ -135,12 +119,6 @@ opaque
 
 ⊸-precomp-η•ᶜ-≃ : {A : 𝒞} (B• : 𝒞•) → (●ᶜ A ⊸ ⟨ B• ⟩ᶜ) ≃ (A ⊸ ⟨ B• ⟩ᶜ)
 ⊸-precomp-η•ᶜ-≃ B• = (η•ᶜ ⨾ᶜ_) , ⊸-precomp-η•ᶜ-isEquiv B•
-
-●ᶜ-map-chargeᶜ
-  : (c : ℂ) (a• : U (●ᶜ A))
-  → map (chargeᶜ {A = A} c) .U a• ≡ ●ᶜ A .charge c a•
-●ᶜ-map-chargeᶜ c =
-  ●.elim (λ _ → ●-≡-isModal _ _) (λ _ → refl)
 
 module _ {A B C : 𝒞} where
 

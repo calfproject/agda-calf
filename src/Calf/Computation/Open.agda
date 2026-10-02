@@ -73,9 +73,6 @@ opaque
 ⊸-precomp-η◦ᶜ-≃ : {A : 𝒞} (B◦ : 𝒞◦) → (◯ᶜ A ⊸ ⟨ B◦ ⟩ᶜ) ≃ (A ⊸ ⟨ B◦ ⟩ᶜ)
 ⊸-precomp-η◦ᶜ-≃ B◦ = (η◦ᶜ ⨾ᶜ_) , ⊸-precomp-η◦ᶜ-isEquiv B◦
 
-η◦ᶜ-isNatural : (f : A ⊸ B) → f ⨾ᶜ η◦ᶜ ≡ η◦ᶜ ⨾ᶜ map f
-η◦ᶜ-isNatural f = funExtᶜ (funExt⁻ (η◦-isNatural (f .U)))
-
 Pullback-◯ᶜ : ∀ {A B C} (f : A ⊸ C) (g : B ⊸ C) → ◯ᶜ (Pullback f g) ≡ Pullback (map f) (map g)
 Pullback-◯ᶜ {A} {B} {C} f g = conservativity fwd fwd-equiv
   where

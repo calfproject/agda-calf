@@ -56,9 +56,6 @@ isLocalPathFun isLocalY α P₀ P₁ =
     compEquiv funExtEquiv $
     congEquiv ((λ k → k ∘ F α) , toIsEquiv _ (isLocalY α))
 
-isLocal≡ : isLocal F Y → {x y : Y} → isLocal F (x ≡ y)
-isLocal≡ isLocalY {x} {y} α = isLocalPathFun isLocalY α (λ _ → x) (λ _ → y)
-
 rec-unique :
   isLocal F Y
   → (f g : Localize F X → Y)

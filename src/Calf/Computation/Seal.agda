@@ -79,7 +79,7 @@ Glueᵈᶜ-≃ {α• = α•} {B◦ = B◦} {β•} e• e◦ e-coh = fwd , equ
     equiv : Glueᵈ (U α•) ≃ Glueᵈ (U β•)
     equiv =
       Σ-cong-equiv (≃-× (U-≃ e•) (U-≃ e◦)) λ (a• , _) →
-        monoEquiv (U-≃ (●ᶜ-≃ e◦)) ∙ₑ ≡∙⊑Equiv (funExt⁻ (cong U e-coh) a•)
+        monoEquiv (U-≃ (●ᶜ-≃ e◦)) ∙ₑ ≡∙⊑Equiv (funExtᶜ⁻ e-coh a•)
 
     fwd : _ ⊸ _
     fwd .U = equivFun equiv

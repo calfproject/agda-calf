@@ -41,17 +41,17 @@ opaque
       ▷[ c₁ +ℂ c₂ ] A
     ≃ᶜ⟨⟩
       Abstractionᶜ (chargeᶜ (c₁ +ℂ c₂))
-    ≃ᶜ⟨ Abstractionᶜ-≃ (idEquivᶜ A) (idEquivᶜ A) (funExtᶜ λ _ → sym (A .charge-+)) ⟩
+    ≃ᶜ⟨ Abstractionᶜ-≃ (idEquivᶜ A) (idEquivᶜ A) (λ _ → sym (A .charge-+)) ⟩
       Abstractionᶜ (chargeᶜ {A} c₂ ⨾ᶜ chargeᶜ c₁)
     ≃ᶜ⟨
       invEquivᶜ
         (Abstractionᶜ-fuse
           (chargeᶜ c₂) (chargeᶜ c₂)
           (chargeᶜ c₁) (chargeᶜ c₁)
-          (funExt⁻ (cong U (chargeᶜ-comm {A} c₁ c₂))))
+          (funExtᶜ⁻ (chargeᶜ-comm {A} c₁ c₂)))
     ⟩
       Abstractionᶜ (squareᶜ (chargeᶜ c₂) (chargeᶜ c₂) (chargeᶜ c₁) (chargeᶜ c₁) _)
-    ≃ᶜ⟨ Abstractionᶜ-≃ (idEquivᶜ _) (idEquivᶜ _) (funExtᶜ λ _ → Glue-path (is-set (◯ᶜ A)) refl refl) ⟩
+    ≃ᶜ⟨ Abstractionᶜ-≃ (idEquivᶜ _) (idEquivᶜ _) (λ _ → Glue-path (is-set (◯ᶜ A)) refl refl) ⟩
       Abstractionᶜ (chargeᶜ c₁)
     ≃ᶜ⟨⟩
       ▷[ c₁ ] ▷[ c₂ ] A

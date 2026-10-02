@@ -22,12 +22,12 @@ Abstractionᶜ-≃
   : ∀ {A-⊤ A-abs α B-⊤ B-abs β}
   → (e-⊤ : A-⊤ ≃ᶜ B-⊤)
   → (e-abs : A-abs ≃ᶜ B-abs)
-  → equivFunᶜ e-⊤ ⨾ᶜ β ≡ α ⨾ᶜ equivFunᶜ e-abs
+  → ((a-⊤ : U A-⊤) → β .U (equivFunᶜ e-⊤ .U a-⊤) ≡ equivFunᶜ e-abs .U (α .U a-⊤))
   → Abstractionᶜ α ≃ᶜ Abstractionᶜ β
 Abstractionᶜ-≃ e-⊤ e-abs e-coh =
   Glueᶜ-≃ (●ᶜ-≃ e-⊤) (◯ᶜ-≃ e-abs) $
     ●ᶜ.map-∘ (equivFunᶜ e-⊤) _
-    ∙ (funExtᶜ (funExt⁻ (cong (●.map ∘ (η◦ ∘_) ∘ U) e-coh)))
+    ∙ (funExtᶜ λ a• → cong (flip ●.map a• ∘ (η◦ ∘_)) (funExt e-coh))
     ∙ sym (●ᶜ.map-∘ _ (equivFunᶜ (◯ᶜ-≃ e-abs)))
 
 squareᶜ

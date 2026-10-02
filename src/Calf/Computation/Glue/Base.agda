@@ -45,7 +45,7 @@ module _ {A• A◦ : 𝒞} {α• : A• ⊸ ●ᶜ A◦} where
 
       bwd : (Σ[ (f• , f◦) ∈ (A ⊸ A•) × (A ⊸ A◦) ] f• ⨾ᶜ α• ≡ f◦ ⨾ᶜ η•ᶜ) → (A ⊸ Glueᶜ α•)
       bwd ((f• , f◦) , f-coh) .U a =
-        (f• .U a , f◦ .U a) , funExt⁻ (cong U f-coh) a
+        (f• .U a , f◦ .U a) , funExtᶜ⁻ f-coh a
       bwd ((f• , f◦) , f-coh) .charge c a =
         Glue-path (is-set A◦) (f• .charge c a) (f◦ .charge c a)
 
@@ -123,7 +123,7 @@ squareᶜ f• f◦ f-coh .U =
   square
     (f• .U)
     (f◦ .U)
-    (funExt⁻ (cong U f-coh))
+    (funExtᶜ⁻ f-coh)
 squareᶜ {B◦ = B◦} f• f◦ f-coh .charge c a =
   Σ≡Prop (λ _ → is-set (●ᶜ B◦) _ _)
     (ΣPathP (f• .charge c (proj• a) , f◦ .charge c (proj◦ a)))
@@ -136,4 +136,4 @@ Glueᶜ-≃
   → Glueᶜ α• ≃ᶜ Glueᶜ β•
 Glueᶜ-≃ {α• = α•} {β• = β•} e• e◦ coh =
   squareᶜ (equivFunᶜ e•) (equivFunᶜ e◦) coh ,
-  square-isEquiv (U α•) (U β•) (funExt⁻ (cong U coh)) (equivIsEquivᶜ e•) (equivIsEquivᶜ e◦)
+  square-isEquiv (U α•) (U β•) (funExtᶜ⁻ coh) (equivIsEquivᶜ e•) (equivIsEquivᶜ e◦)

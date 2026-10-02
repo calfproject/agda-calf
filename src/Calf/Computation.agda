@@ -205,22 +205,26 @@ opaque
       (f₁ .charge)
       i
 
-funExtᶜ : {f f' : A ⊸ B} → ((a : U A) → f .U a ≡ f' .U a) → f ≡ f'
-funExtᶜ p = ⊸-path refl refl (funExt p)
+module _ {A} {B} {f f' : A ⊸ B} where
+  funExtᶜ : ((a : U A) → f .U a ≡ f' .U a) → f ≡ f'
+  funExtᶜ p = ⊸-path refl refl (funExt p)
 
-⊸-⊑ : {f f' : A ⊸ B} → f .U ⊑ f' .U → f ⊑ f'
-⊸-⊑ e .fst 𝕚 .U = path e 𝕚
-⊸-⊑ {A} {B} {f} {f'} e .fst 𝕚 .charge c a =
-  funExt⁻ (isThin→𝟚-injective (is-thin B) (comm f (path₀ e)) (comm f' (path₁ e))) 𝕚
-  where
-    comm : ∀ {𝕚} (g : A ⊸ B) → path e 𝕚 ≡ g .U
-      → path e 𝕚 (A .charge c a) ≡ B .charge c (path e 𝕚 a)
-    comm g q = funExt⁻ q _ ∙ g .charge c a ∙ cong (B .charge c) (sym (funExt⁻ q a))
-⊸-⊑ e .snd .fst = ⊸-path refl refl (path₀ e)
-⊸-⊑ e .snd .snd = ⊸-path refl refl (path₁ e)
+  funExtᶜ⁻ : f ≡ f' → ((a : U A) → f .U a ≡ f' .U a)
+  funExtᶜ⁻ = funExt⁻ ∘ cong U
 
-funExtᵈᶜ : {f f' : A ⊸ B} → ((a : U A) → f .U a ⊑ f' .U a) → f ⊑ f'
-funExtᵈᶜ p = ⊸-⊑ (funExtᵈ p)
+  ⊸-⊑ : f .U ⊑ f' .U → f ⊑ f'
+  ⊸-⊑ e .fst 𝕚 .U = path e 𝕚
+  ⊸-⊑ e .fst 𝕚 .charge c a =
+    funExt⁻ (isThin→𝟚-injective (is-thin B) (comm f (path₀ e)) (comm f' (path₁ e))) 𝕚
+    where
+      comm : ∀ {𝕚} (g : A ⊸ B) → path e 𝕚 ≡ g .U
+        → path e 𝕚 (A .charge c a) ≡ B .charge c (path e 𝕚 a)
+      comm g q = funExt⁻ q _ ∙ g .charge c a ∙ cong (B .charge c) (sym (funExt⁻ q a))
+  ⊸-⊑ e .snd .fst = ⊸-path refl refl (path₀ e)
+  ⊸-⊑ e .snd .snd = ⊸-path refl refl (path₁ e)
+
+  funExtᵈᶜ : ((a : U A) → f .U a ⊑ f' .U a) → f ⊑ f'
+  funExtᵈᶜ p = ⊸-⊑ (funExtᵈ p)
 
 ⊸-Σ-Iso
   : Iso (A ⊸ B)
@@ -298,14 +302,7 @@ conservativity-⊸ :
   → PathP (λ i → conservativity e ee i ⊸ conservativity e' ee' i) f g
 conservativity-⊸ e ee e' ee' nat =
   ⊸-path (conservativity e ee) (conservativity e' ee')
-    (ua→ {e = e .U , ee} λ a → ua-gluePath (e' .U , ee') (funExt⁻ (cong U nat) a))
-
-opaque
-  uaᶜ-⊸ :
-    {A A' B B' : 𝒞} (e : A ≃ᶜ A') (e' : B ≃ᶜ B') {f : A ⊸ B} {g : A' ⊸ B'}
-    → f ⨾ᶜ e' .fst ≡ e .fst ⨾ᶜ g
-    → PathP (λ i → uaᶜ e i ⊸ uaᶜ e' i) f g
-  uaᶜ-⊸ (e , ee) (e' , ee') = conservativity-⊸ e ee e' ee'
+    (ua→ {e = e .U , ee} λ a → ua-gluePath (e' .U , ee') (funExtᶜ⁻ nat a))
 
 idEquivᶜ : (A : 𝒞) → A ≃ᶜ A
 idEquivᶜ A = idᶜ , equivIsEquiv (idEquiv (U A))

@@ -94,9 +94,6 @@ opaque
 join : ◯ (◯ X) → ◯ X
 join x◦◦ abs = x◦◦ abs abs
 
-join′≡join : join′ {X} ≡ join
-join′≡join = sym (◯-rec-unique isModal◯ refl)
-
 bind : ◯ X → (X → ◯ Y) → ◯ Y
 bind x◦ f = join (map f x◦)
 

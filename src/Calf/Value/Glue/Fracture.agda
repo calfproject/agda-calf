@@ -161,6 +161,3 @@ module _ where
     ⟩
       Fracture-Square (toFracture X) (toFracture Y)
     ■
-
-  toSquare : (X → Y) → Fracture-Square (toFracture X) (toFracture Y)
-  toSquare = equivFun fracture-and-gluing-square

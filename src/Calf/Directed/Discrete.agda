@@ -68,10 +68,6 @@ isLocalTerminal→isEquivConst : {A : Type} {S : A → Type}
 isLocalTerminal→isEquivConst l α =
   equivIsEquiv (compEquiv (invEquiv (UnitToType≃ _)) (_ , toIsEquiv _ (l α)))
 
-isEquivConst→isLocalTerminal : {A : Type} {S : A → Type}
-  → ((α : A) → isEquiv (const {A = X} {B = S α})) → isLocal (λ α → terminal (S α)) X
-isEquivConst→isLocalTerminal e α = fromIsEquiv _ (compEquiv (UnitToType≃ _) (_ , e α) .snd)
-
 null[Unit] : isEquiv (const {A = X} {B = Unit})
 null[Unit] {X} = isEquivEv→isEquivConst tt (equivIsEquiv (UnitToType≃ X))
 

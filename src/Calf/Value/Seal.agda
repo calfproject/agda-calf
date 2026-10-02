@@ -23,15 +23,6 @@ module _ {X• X◦ : 𝒱} {χ• : X• → ● X◦} where
   proj•→◦ᵈ = proj₂
 
   opaque
-    Glueᵈ-path : ∀ {x x' : Glueᵈ χ•}
-      → isPreorder X◦
-      → proj•ᵈ x ≡ proj•ᵈ x'
-      → proj◦ᵈ x ≡ proj◦ᵈ x'
-      → x ≡ x'
-    Glueᵈ-path isPreorderX◦ p• p◦ =
-      Σ≡Prop (λ _ → isPreorder→isThin (isPreorder● isPreorderX◦) _ _) (ΣPathP (p• , p◦))
-
-  opaque
     isPreorderGlueᵈ : isPreorder X• → isPreorder X◦ → isPreorder (Glueᵈ χ•)
     isPreorderGlueᵈ isPreorderX• isPreorderX◦ =
       isLocalComma isPreorderX• isPreorderX◦ (isPreorder● isPreorderX◦)

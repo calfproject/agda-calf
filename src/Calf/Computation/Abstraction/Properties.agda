@@ -67,19 +67,6 @@ squareᶜ-⨾ᶜ {C-abs = C-abs} f-⊤ f-abs f-coh g-⊤ g-abs g-coh =
       (●.map-∘ (f-⊤ .U) (g-⊤ .U) (proj• a))
       (◯.map-∘ (f-abs .U) (g-abs .U) (proj◦ a))
 
-squareᶜ-≡ : ∀ {A-⊤ A-abs α B-⊤ B-abs β}
-  {f-⊤ f-⊤' : A-⊤ ⊸ B-⊤} {f-abs f-abs' : A-abs ⊸ B-abs}
-  {f-coh : (a : U A-⊤) → β .U (f-⊤ .U a) ≡ f-abs .U (α .U a)}
-  {f-coh' : (a : U A-⊤) → β .U (f-⊤' .U a) ≡ f-abs' .U (α .U a)}
-  → f-⊤ ≡ f-⊤'
-  → f-abs ≡ f-abs'
-  → squareᶜ α β f-⊤ f-abs f-coh ≡ squareᶜ α β f-⊤' f-abs' f-coh'
-squareᶜ-≡ {B-⊤ = B-⊤} {B-abs} {β} {f-coh = f-coh} {f-coh' = f-coh'} p p' =
-  funExtᶜ λ a →
-    Glue-path (is-set (◯ᶜ B-abs))
-      (cong (λ f → ●.map (f .U) (proj• a)) p)
-      (cong (λ f → ◯.map (f .U) (proj◦ a)) p')
-
 Abstractionᶜ-fuse : ∀ {A-⊤ A-abs B-⊤ B-abs}
     (α : A-⊤ ⊸ A-abs) (β : B-⊤ ⊸ B-abs)
     (f-⊤ : A-⊤ ⊸ B-⊤) (f-abs : A-abs ⊸ B-abs)
