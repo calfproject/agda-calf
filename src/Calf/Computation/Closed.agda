@@ -67,6 +67,9 @@ map : (A ⊸ B) → (●ᶜ A ⊸ ●ᶜ B)
 map f .U = ●.map (f .U)
 map f .charge = map-charge f
 
+●ᶜ-≃ : A ≃ᶜ B → ●ᶜ A ≃ᶜ ●ᶜ B
+●ᶜ-≃ e = map (equivFunᶜ e) , ●.map-isEquiv (equivIsEquivᶜ e)
+
 map-∘ : (f : A ⊸ B) (g : B ⊸ C) → map f ⨾ᶜ map g ≡ map (f ⨾ᶜ g)
 map-∘ f g = funExtᶜ (●.map-∘ (f .U) (g .U))
 

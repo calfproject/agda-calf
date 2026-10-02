@@ -86,6 +86,10 @@ map-∘ : (f : X → Y) (g : Y → Z) (x◦ : ◯ X) →
   map g (map f x◦) ≡ map (g ∘ f) x◦
 map-∘ f g x◦ = refl
 
+opaque
+  map-isEquiv : {f : X → Y} → isEquiv f → isEquiv (map f)
+  map-isEquiv {f = f} e = subst isEquiv (funExt⁻ map′≡map f) (equivIsEquiv (◯-equiv (f , e)))
+
 join : ◯ (◯ X) → ◯ X
 join x◦◦ abs = x◦◦ abs abs
 
