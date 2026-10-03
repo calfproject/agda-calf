@@ -109,7 +109,7 @@ module _ (X : 𝒱₌) where
           (Σᶜ-charge Φ)
     F-Σᶜ-potential Φ =
       conservativity-⊸ F-Σᶜ-fwd F-Σᶜ-fwd-equiv F-Σᶜ-fwd F-Σᶜ-fwd-equiv
-        (funExtĉ naturality)
+        (funExtᶜ naturality)
       where
         naturality : (e : U (F ⟨ X ⟩)) →
           F-Σᶜ-fwd .U (F-rec {A = F _} (λ x → F _ .charge (Φ x) (ret x)) .U e)

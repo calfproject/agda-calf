@@ -2,7 +2,7 @@ module Calf.Directed.Thin where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
-open import Cubical.Foundations.Equiv.Fiberwise
+open import Cubical.Foundations.Equiv.Fiberwise using (fiberEquiv)
 open import Cubical.Foundations.Equiv.PathSplit
 open import Cubical.Foundations.Equiv.Properties
   using (isEquiv[equivFunA≃B∘f]→isEquiv[f])
@@ -31,30 +31,28 @@ private variable X Y : Type
 𝕊-map f (push (x , b) i) = push (f x , b) i
 
 𝕊-cocone : Type → Type → Type
-𝕊-cocone X Y = Σ (X × X) (λ (x , x') → Y → x ⊑ x')
-
-open Iso
-
-𝕊-elim : (Y : Type) → Iso (𝕊 Y → X) (𝕊-cocone X Y)
-𝕊-elim Y .fun k =
-  (k (inr false) , k (inr true)) , λ y →
-      (λ 𝕚 → k (inl (y , 𝕚)))
-    , cong k (push (y , false))
-    , cong k (push (y , true))
-𝕊-elim Y .inv (_ , q) (inl (y , 𝕚)) = path (q y) 𝕚
-𝕊-elim Y .inv ((x , x') , q) (inr false) = x
-𝕊-elim Y .inv ((x , x') , q) (inr true) = x'
-𝕊-elim Y .inv (_ , q) (push (y , false) j) = path₀ (q y) j
-𝕊-elim Y .inv (_ , q) (push (y , true) j) = path₁ (q y) j
-𝕊-elim Y .rightInv (_ , q) = refl
-𝕊-elim Y .leftInv k i (inl (y , 𝕚)) = k (inl (y , 𝕚))
-𝕊-elim Y .leftInv k i (inr false) = k (inr false)
-𝕊-elim Y .leftInv k i (inr true) = k (inr true)
-𝕊-elim Y .leftInv k i (push (y , false) j) = k (push (y , false) j)
-𝕊-elim Y .leftInv k i (push (y , true) j) = k (push (y , true) j)
+𝕊-cocone X Y = Σ[ x ∈ X ] Σ[ x' ∈ X ] (Y → x ⊑ x')
 
 𝕊-elim≃ : (Y : Type) → (𝕊 Y → X) ≃ 𝕊-cocone X Y
-𝕊-elim≃ Y = isoToEquiv (𝕊-elim Y)
+𝕊-elim≃ {X} Y = isoToEquiv 𝕊-elim
+  where
+  𝕊-elim : Iso (𝕊 Y → X) (𝕊-cocone X Y)
+  𝕊-elim .Iso.fun k =
+    k (inr false) , k (inr true) , λ y →
+        (λ 𝕚 → k (inl (y , 𝕚)))
+      , cong k (push (y , false))
+      , cong k (push (y , true))
+  𝕊-elim .Iso.inv (_ , _ , q) (inl (y , 𝕚)) = path (q y) 𝕚
+  𝕊-elim .Iso.inv (x , x' , q) (inr false) = x
+  𝕊-elim .Iso.inv (x , x' , q) (inr true) = x'
+  𝕊-elim .Iso.inv (_ , _ , q) (push (y , false) j) = path₀ (q y) j
+  𝕊-elim .Iso.inv (_ , _ , q) (push (y , true) j) = path₁ (q y) j
+  𝕊-elim .Iso.rightInv (_ , _ , q) = refl
+  𝕊-elim .Iso.leftInv k i (inl (y , 𝕚)) = k (inl (y , 𝕚))
+  𝕊-elim .Iso.leftInv k i (inr false) = k (inr false)
+  𝕊-elim .Iso.leftInv k i (inr true) = k (inr true)
+  𝕊-elim .Iso.leftInv k i (push (y , false) j) = k (push (y , false) j)
+  𝕊-elim .Iso.leftInv k i (push (y , true) j) = k (push (y , true) j)
 
 isBoundarySeparated : Type → Type
 isBoundarySeparated = isLocal {A = Unit} (const (𝕊-map (terminal Bool)))
@@ -67,43 +65,51 @@ isThin→𝟚-injective isThinX {P} {Q} p q = cong path (isThinX _ _ (P , refl ,
 
 isBoundarySeparated≡isThin : isBoundarySeparated X ≡ isThin X
 isBoundarySeparated≡isThin {X} =
-  hPropExt
-    (isPropΠ λ _ → isPropIsPathSplitEquiv _)
+  hPropExt 
+    (isPropΠ λ _ → isPropIsPathSplitEquiv _) 
     (isPropΠ2 λ _ _ → isPropIsProp)
-    isBoundarySeparated→isThin
-    isThin→isBoundarySeparated
+    separated→thin 
+    thin→separated
   where
-    P Q : X × X → Type
-    P (x , x') = Unit → x ⊑ x'
-    Q (x , x') = Bool → x ⊑ x'
+  separated→thin : isBoundarySeparated X → isThin X
+  separated→thin separated x y p q =
+    p           ≡⟨ sym (common-path≡pair false) ⟩
+    common-path ≡⟨ common-path≡pair true ⟩
+    q ∎
+    where
+    cocones≃ : 𝕊-cocone X Unit ≃ 𝕊-cocone X Bool
+    cocones≃ =
+        𝕊-cocone X Unit
+      ≃⟨ invEquiv (𝕊-elim≃ Unit) ⟩
+        (𝕊 Unit → X)
+      ≃⟨ _ , toIsEquiv _ (separated tt) ⟩
+        (𝕊 Bool → X)
+      ≃⟨ 𝕊-elim≃ Bool ⟩
+        𝕊-cocone X Bool
+      ■
 
-    φ : (xx' : X × X) → P xx' → Q xx'
-    φ _ q _ = q tt
+    paths≃ : (Unit → x ⊑ y) ≃ (Bool → x ⊑ y)
+    paths≃ = _ , fiberEquiv _ _ _
+      (fiberEquiv _ _ _ (equivIsEquiv cocones≃) x) y
 
-    isBoundarySeparated→isThin : isBoundarySeparated X → isThin X
-    isBoundarySeparated→isThin isBoundarySeparatedX x x' p p' =
-      sym (funExt⁻ secφ false) ∙ funExt⁻ secφ true
-      where
-        totalφ-isEquiv : isEquiv (λ ((xx' , q) : Σ (X × X) P) → xx' , φ xx' q)
-        totalφ-isEquiv = equivIsEquiv $
-          𝕊-cocone X Unit ≃⟨ invEquiv (𝕊-elim≃ Unit) ⟩
-          (𝕊 Unit → X)    ≃⟨ _ , toIsEquiv _ (isBoundarySeparatedX tt) ⟩
-          (𝕊 Bool → X)    ≃⟨ 𝕊-elim≃ Bool ⟩
-          𝕊-cocone X Bool ■
+    pair : Bool → x ⊑ y
+    pair false = p
+    pair true = q
 
-        φ≃ : P (x , x') ≃ Q (x , x')
-        φ≃ = φ (x , x') , fiberEquiv P Q φ totalφ-isEquiv (x , x')
+    common-path : x ⊑ y
+    common-path = invEq paths≃ pair tt
 
-        secφ : φ (x , x') (invEq φ≃ (if_then p' else p)) ≡ (if_then p' else p)
-        secφ = secEq φ≃ (if_then p' else p)
+    common-path≡pair : (b : Bool) → common-path ≡ pair b
+    common-path≡pair = funExt⁻ (secEq paths≃ pair)
 
-    isThin→isBoundarySeparated : isThin X → isBoundarySeparated X
-    isThin→isBoundarySeparated isThinX _ =
-      fromIsEquiv _
-        (isEquiv[equivFunA≃B∘f]→isEquiv[f] _ (𝕊-elim≃ Bool)
-          (equivIsEquiv (compEquiv (𝕊-elim≃ Unit) (_ , totalEquiv P Q φ φ-equiv))))
-      where
-        φ-equiv : (xx' : X × X) → isEquiv (φ xx')
-        φ-equiv (x , x') = isoToIsEquiv
-          (isProp→Iso (isPropΠ λ _ → isThinX x x') (isPropΠ λ _ → isThinX x x')
-            (φ (x , x')) (λ q _ → q false))
+  thin→separated : isThin X → isBoundarySeparated X
+  thin→separated thin _ = fromIsEquiv _ $
+    isEquiv[equivFunA≃B∘f]→isEquiv[f] _ (𝕊-elim≃ Bool) $ equivIsEquiv $
+        (𝕊 Unit → X)
+      ≃⟨ 𝕊-elim≃ Unit ⟩
+        𝕊-cocone X Unit
+      ≃⟨ Σ-cong-equiv-snd (λ x → Σ-cong-equiv-snd (λ y →
+           propBiimpl→Equiv (isPropΠ λ _ → thin x y) (isPropΠ λ _ → thin x y)
+             (λ f _ → f tt) (λ f _ → f true))) ⟩
+        𝕊-cocone X Bool
+      ■
