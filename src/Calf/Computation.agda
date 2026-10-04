@@ -265,6 +265,14 @@ chargeᶜ-+ {A = A} c₁ c₂ = funExtᶜ λ a → A .charge-+
 ⨾ᶜ-assoc : {A B C D : 𝒞} (f : A ⊸ B) (g : B ⊸ C) (h : C ⊸ D) → (f ⨾ᶜ g) ⨾ᶜ h ≡ f ⨾ᶜ (g ⨾ᶜ h)
 ⨾ᶜ-assoc f g h = funExtᶜ λ _ → refl
 
+infixr 30 _∙ᴾᶜ_
+_∙ᴾᶜ_ :
+  ∀ {A B C : I → 𝒞} {f₀ f₁ g₀ g₁}
+  → PathP (λ i → A i ⊸ B i) f₀ f₁
+  → PathP (λ i → B i ⊸ C i) g₀ g₁
+  → PathP (λ i → A i ⊸ C i) (f₀ ⨾ᶜ g₀) (f₁ ⨾ᶜ g₁)
+_∙ᴾᶜ_ = congP₂ λ _ → _⨾ᶜ_
+
 opaque
   charge-path
     : {X Y : 𝒱}

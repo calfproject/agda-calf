@@ -141,7 +141,7 @@ opaque
               0 , α .U (BQ .charge (# length back) (ret ([] , [])))
             ≡⟨ cong (0 ,_) (α .charge (# length back) _) ⟩
               0 , F _ .charge (# length back) (α .U (ret ([] , [])))
-            ≡⟨ cong (λ e → 0 , F _ .charge (# length back) e) F-rec-β ⟩
+            ≡⟨ cong (λ e → 0 , F _ .charge (# length back) e) (F-rec-β {_} {F _}) ⟩
               0 , F _ .charge (# length back) (LQ .charge 0 (ret []))
             ≡⟨ cong (λ e → 0 , F _ .charge (# length back) e) (LQ .charge-0) ⟩
               (ℕₚ ⋊ LQ) .charge (# length back) (0 , ret [])
@@ -183,8 +183,8 @@ batched-queue .spec abs i .empty =
   triangleᶜ-openP α emptyᴮ emptyᴸ empty-coherent abs i
 batched-queue .spec abs i .enqueue e =
   square-openP α α (enqueueᴮ e) (enqueueᴸ e) (enqueue-coherent e) abs i
-batched-queue .spec abs i .dequeue = {!   !}
-  -- ( (λ i →
-  --     square-openP α (⋊-map ℕₚ α) dequeueᴮ dequeueᴸ Dequeue.dequeue-coherent abs i
-  --       ⨾ᶜ ⋊-Abstractionᶜ-openP ℕₚ α abs i)
-  -- ▷ ⨾ᶜ-identityʳ dequeueᴸ) i
+batched-queue .spec abs i .dequeue =
+  ( (square-openP α (⋊-map ℕₚ α) dequeueᴮ dequeueᴸ dequeue-coherent abs)
+    ∙ᴾᶜ (⋊-Abstractionᶜ-openP ℕₚ α abs)
+    ▷ ⨾ᶜ-identityʳ _
+  ) i

@@ -20,6 +20,14 @@ id x = x
 _⨾_ : (X → Y) → (Y → Z) → X → Z
 f ⨾ g = g ∘ f
 
+infixr 30 _∙ᴾ_
+_∙ᴾ_ :
+  ∀ {X Y Z : I → 𝒱} {f₀ f₁ g₀ g₁}
+  → PathP (λ i → X i → Y i) f₀ f₁
+  → PathP (λ i → Y i → Z i) g₀ g₁
+  → PathP (λ i → X i → Z i) (f₀ ⨾ g₀) (f₁ ⨾ g₁)
+_∙ᴾ_ = congP₂ λ _ → _⨾_
+
 𝒱₌ : 𝒱₁
 𝒱₌ = TypeWithStr _ λ X → isSet X × isDiscrete X
   where open import Cubical.Data.Sigma
