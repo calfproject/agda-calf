@@ -9,11 +9,11 @@ open import Cubical.Foundations.Univalence using (hPropExt)
 open import Cubical.Data.Bool hiding (elim)
 open import Cubical.Data.Sigma
 open import Cubical.Data.Unit
-open import Cubical.HITs.Localization as Localization hiding (rec)
-open import Cubical.HITs.S1 hiding (rec; elim)
+open import Cubical.HITs.Localization as Localization
+open import Cubical.HITs.S1
 
 open import Calf.Core.Interval
-open import Calf.Directed.Localization hiding (rec-unique)
+open import Calf.Directed.Localization
 open import Calf.Directed.Set
 open import Calf.Directed.Thin
 open import Calf.Directed.Transitive
@@ -54,14 +54,14 @@ isPreorderᴾ = isLocal-Localize Fᴾ _
 isPropIsPreorder : isProp (isPreorder X)
 isPropIsPreorder = isPropΠ (λ _ → isPropIsPathSplitEquiv _)
 
-rec : isPreorder Y → (X → Y) → ∥ X ∥ᴾ → Y
-rec = Localization.rec
+recᴾ : isPreorder Y → (X → Y) → ∥ X ∥ᴾ → Y
+recᴾ = Localization.rec
 
 mapᴾ : (X → Y) → ∥ X ∥ᴾ → ∥ Y ∥ᴾ
-mapᴾ f = rec isPreorderᴾ (ηᴾ ∘ f)
+mapᴾ f = recᴾ isPreorderᴾ (ηᴾ ∘ f)
 
 map2ᴾ : (X → Y → Z) → ∥ X ∥ᴾ → ∥ Y ∥ᴾ → ∥ Z ∥ᴾ
-map2ᴾ f = rec (isLocalΠ λ _ → isPreorderᴾ) (mapᴾ ∘ f)
+map2ᴾ f = recᴾ (isLocalΠ λ _ → isPreorderᴾ) (mapᴾ ∘ f)
 
 open isPathSplitEquiv
 
@@ -75,7 +75,7 @@ opaque
   ⊑-trans isPreorderX = isPathTransitive→isTransitive (isPreorder→isPathTransitive isPreorderX)
 
   isPreorder→isThin : isPreorder X → isThin X
-  isPreorder→isThin isPreorderX = 
+  isPreorder→isThin isPreorderX =
     transport isBoundarySeparated≡isThin (const (isPreorderX thin))
 
   isPreorder→isSet : isPreorder X → isSet X
@@ -92,7 +92,7 @@ opaque
 
   isSet∧isThin∧isPathTransitive→isPreorder :
     isSet X → isThin X → isPathTransitive X → isPreorder X
-  isSet∧isThin∧isPathTransitive→isPreorder setX thinX pathTransX tran = 
+  isSet∧isThin∧isPathTransitive→isPreorder setX thinX pathTransX tran =
     pathTransX _
   isSet∧isThin∧isPathTransitive→isPreorder setX thinX pathTransX thin =
     transport (sym isBoundarySeparated≡isThin) thinX _
@@ -108,31 +108,31 @@ isPreorder≡ {X} =
     (λ (setX , thinX , pathTransX) →
       isSet∧isThin∧isPathTransitive→isPreorder setX thinX pathTransX)
 
-rec-unique :
+recᴾ-unique :
   isPreorder Y
   → (f g : ∥ X ∥ᴾ → Y)
   → ((x : X) → f (ηᴾ x) ≡ g (ηᴾ x))
   → (z : ∥ X ∥ᴾ) → f z ≡ g z
-rec-unique = Calf.Directed.Localization.rec-unique
+recᴾ-unique = Calf.Directed.Localization.rec-unique
 
 isContrᴾ : (x₀ : X) → ((x : X) → ηᴾ x₀ ≡ ηᴾ x) → isContr ∥ X ∥ᴾ
-isContrᴾ x₀ h = ηᴾ x₀ , rec-unique isPreorderᴾ (λ _ → ηᴾ x₀) (λ z → z) h
+isContrᴾ x₀ h = ηᴾ x₀ , recᴾ-unique isPreorderᴾ (λ _ → ηᴾ x₀) (λ z → z) h
 
-rec-uniqueP : (P : I → Type) → isPreorder (P i1)
+recᴾ-uniqueP : (P : I → Type) → isPreorder (P i1)
   → (f : ∥ X ∥ᴾ → P i0) (g : ∥ X ∥ᴾ → P i1)
   → ((x : X) → PathP P (f (ηᴾ x)) (g (ηᴾ x)))
   → (z : ∥ X ∥ᴾ) → PathP P (f z) (g z)
-rec-uniqueP P isPreorderᴾ₁ f g h z =
-  toPathP (rec-unique isPreorderᴾ₁ (transport (λ i → P i) ∘ f) g (λ x → fromPathP (h x)) z)
+recᴾ-uniqueP P isPreorderᴾ₁ f g h z =
+  toPathP (recᴾ-unique isPreorderᴾ₁ (transport (λ i → P i) ∘ f) g (λ x → fromPathP (h x)) z)
 
-rec-unique2 :
+recᴾ-unique2 :
   isPreorder Z
   → (f g : ∥ X ∥ᴾ → ∥ Y ∥ᴾ → Z)
   → ((x : X) (y : Y) → f (ηᴾ x) (ηᴾ y) ≡ g (ηᴾ x) (ηᴾ y))
   → (x : ∥ X ∥ᴾ) (y : ∥ Y ∥ᴾ) → f x y ≡ g x y
-rec-unique2 isPreorderZ f g p x y =
+recᴾ-unique2 isPreorderZ f g p x y =
   funExt⁻
-    (rec-unique (isLocalΠ λ _ → isPreorderZ) f g
-      (λ x → funExt (rec-unique isPreorderZ (f (ηᴾ x)) (g (ηᴾ x)) (p x)))
+    (recᴾ-unique (isLocalΠ λ _ → isPreorderZ) f g
+      (λ x → funExt (recᴾ-unique isPreorderZ (f (ηᴾ x)) (g (ηᴾ x)) (p x)))
       x)
     y

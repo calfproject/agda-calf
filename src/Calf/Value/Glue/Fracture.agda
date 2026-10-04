@@ -136,7 +136,7 @@ module _ where
           Σ[ (x• , x◦) ∈ ⟨ F .X• ⟩ × ⟨ F .X◦ ⟩ ] F .χ• x• ≡ η• x◦
         ≃⟨ Σ-contractSnd (λ _ → isContr→isContrPath (◯-isConnected abs) _ _) ⟩
           ⟨ F .X• ⟩ × ⟨ F .X◦ ⟩
-        ≃⟨ Σ-contractFst (isConnected→◯isContr (isModal●→isConnected◯ (str (F .X•))) abs) ⟩
+        ≃⟨ Σ-contractFst (equivFun isConnected≃◯isContr (isModal●→isConnected◯ (str (F .X•))) abs) ⟩
           ⟨ F .X◦ ⟩
         ■
 

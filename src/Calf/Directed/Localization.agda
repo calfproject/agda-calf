@@ -144,6 +144,10 @@ opaque
         (S α → (x : X) → Y x) ■
 
 opaque
+  isLocal→ : isLocal F Y → isLocal F (X → Y)
+  isLocal→ = isLocalΠ ∘ const
+
+opaque
   isLocalEqualizer :
     isLocal F X → isLocal F Y → (φ ψ : X → Y)
     → isLocal F (Σ[ x ∈ X ] φ x ≡ ψ x)
