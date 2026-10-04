@@ -24,11 +24,11 @@ Abstractionᶜ-≃
   → (e-abs : A-abs ≃ᶜ B-abs)
   → ((a-⊤ : U A-⊤) → β .U (equivFunᶜ e-⊤ .U a-⊤) ≡ equivFunᶜ e-abs .U (α .U a-⊤))
   → Abstractionᶜ α ≃ᶜ Abstractionᶜ β
-Abstractionᶜ-≃ e-⊤ e-abs e-coh =
-  Glueᶜ-≃ (●ᶜ-≃ e-⊤) (◯ᶜ-≃ e-abs) $
-    ●ᶜ.map-∘ (equivFunᶜ e-⊤) _
-    ∙ (funExtᶜ λ a• → cong (flip ●.map a• ∘ (η◦ ∘_)) (funExt e-coh))
-    ∙ sym (●ᶜ.map-∘ _ (equivFunᶜ (◯ᶜ-≃ e-abs)))
+Abstractionᶜ-≃ {α = α} {β = β} e-⊤ e-abs e-coh =
+  Glueᶜ-≃
+    (●ᶜ-≃ e-⊤)
+    (◯ᶜ-≃ e-abs)
+    (●ᶜ.elim (λ _ → ●ᶜ.●-≡-isModal _ _) λ a → cong (η• ∘ η◦) (e-coh a))
 
 squareᶜ
   : ∀ {A-⊤ A-abs B-⊤ B-abs}
@@ -37,10 +37,10 @@ squareᶜ
   → ((a-⊤ : U A-⊤) → U β (U f-⊤ a-⊤) ≡ U f-abs (U α a-⊤))
   → Abstractionᶜ α ⊸ Abstractionᶜ β
 squareᶜ α β f-⊤ f-abs f-coherence =
-  Glueᶜ.squareᶜ {α• = ●ᶜ.map (α ⨾ᶜ η◦ᶜ)} {β• = ●ᶜ.map (β ⨾ᶜ η◦ᶜ)}
+  Glueᶜ.squareᶜ
     (●ᶜ.map f-⊤)
     (◯ᶜ.map f-abs)
-    (funExtᶜ (●ᶜ.elim (λ _ → ●ᶜ.●-≡-isModal _ _) λ a → cong (η• ∘ η◦) (f-coherence a)))
+    (●ᶜ.elim (λ _ → ●ᶜ.●-≡-isModal _ _) λ a → cong (η• ∘ η◦) (f-coherence a))
 
 module _ {A-⊤ A-abs} (α : A-⊤ ⊸ A-abs) where
   triangleᶜ : ∀ (a-⊤ : U A-⊤) (a-abs : U A-abs)

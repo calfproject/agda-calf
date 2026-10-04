@@ -3,12 +3,12 @@ module Calf.Value.Glue.Base where
 open import Cubical.Foundations.Equiv.Properties using (congEquiv)
 open import Cubical.Foundations.Path using (compPathlEquiv)
 open import Cubical.Foundations.Univalence using (ua; ua→)
-open import Cubical.Data.Sigma using (ΣPathP; Σ≡Prop; Σ-cong-equiv; ≃-×)
 
 open import Calf.Value
 open import Calf.Value.Closed as ●
 open import Calf.Value.Open as ◯
 open import Calf.Value.Product
+open import Calf.Value.Sigma
 
 Glue : {X• X◦ : 𝒱} (χ• : X• → ● X◦) → 𝒱
 Glue {X•} {X◦} χ• = Σ[ (x• , x◦) ∈ X• × X◦ ] χ• x• ≡ η• x◦
@@ -68,13 +68,13 @@ Fracture-ua
   : {F F' : Fracture}
   → (e• : ⟨ F .X• ⟩ ≃ ⟨ F' .X• ⟩)
   → (e◦ : ⟨ F .X◦ ⟩ ≃ ⟨ F' .X◦ ⟩)
-  → F' .χ• ∘ equivFun e• ≡ ●.map (equivFun e◦) ∘ F .χ•
+  → ((x : ⟨ F .X• ⟩) → F' .χ• (equivFun e• x) ≡ ●.map (equivFun e◦) (F .χ• x))
   → F ≡ F'
 Fracture-ua e• e◦ e•→◦ =
   Fracture-path
     (𝒱•-path (ua e•))
     (𝒱◦-path (ua e◦))
-    (ua→ λ x• → ●-ua-gluePath e◦ (sym (funExt⁻ e•→◦ x•)))
+    (ua→ λ x• → ●-ua-gluePath e◦ (sym (e•→◦ x•)))
 
 fromFracture : Fracture → 𝒱
 fromFracture F = Glue (F .χ•)
@@ -87,7 +87,7 @@ toFracture X .χ• = ●.map η◦
 Fracture-Square : Fracture → Fracture → 𝒱
 Fracture-Square F₁ F₂ =
   Σ[ (f• , f◦) ∈ (⟨ F₁ .X• ⟩ → ⟨ F₂ .X• ⟩) × (⟨ F₁ .X◦ ⟩ → ⟨ F₂ .X◦ ⟩) ]
-    F₂ .χ• ∘ f• ≡ ●.map f◦ ∘ F₁ .χ•
+    ((x : ⟨ F₁ .X• ⟩) → F₂ .χ• (f• x) ≡ ●.map f◦ (F₁ .χ• x))
 
 square
   : ∀ {X• X◦ χ Y• Y◦ ψ}

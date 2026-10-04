@@ -80,7 +80,7 @@ Abstractionᶜ-fuse {A-⊤} {A-abs} {B-⊤} {B-abs} α β f-⊤ f-abs f-coh =
     Glueᶜ-≃
       (●ᶜ-Abstractionᶜ α)
       (◯ᶜ-Abstractionᶜ β)
-      (funExtᶜ (●.elim (λ _ → ●-≡-isModal _ _) lemma))
+      (●.elim (λ _ → ●-≡-isModal _ _) lemma)
   ⟩
     Glueᶜ (●ᶜ.map (α ⨾ᶜ f-abs ⨾ᶜ η◦ᶜ))
   ≃ᶜ⟨⟩

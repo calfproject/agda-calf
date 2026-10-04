@@ -1,7 +1,5 @@
 module Calf.Computation.Seal where
 
-open import Cubical.Data.Sigma using (ΣPathP; Σ≡Prop; Σ-cong-equiv; ≃-×)
-
 open import Calf.Core.Abstract
 open import Calf.Value
 import Calf.Value.Closed as ●
@@ -9,16 +7,13 @@ open import Calf.Value.Glue using (proj•; proj◦)
 import Calf.Value.Open as ◯
 open import Calf.Value.Product
 open import Calf.Value.Seal
+open import Calf.Value.Sigma
 open import Calf.Computation
 open import Calf.Computation.Abstraction
 open import Calf.Computation.Closed as ●ᶜ hiding (map; join)
 open import Calf.Computation.Glue
   using (Glueᶜ; Fractureᶜ; toFractureᶜ; fromFractureᶜ; glue•ᶜ; glue◦ᶜ; glue•→◦ᶜ)
 open import Calf.Computation.Open as ◯ᶜ hiding (map; join)
-
-private
-  thin● : (A : 𝒞) → isThin (● (U A))
-  thin● A = isPreorder→isThin (isPreorder● (A .is-preorder))
 
 Glueᵈᶜ : {A• A◦ : 𝒞} (α• : A• ⊸ ●ᶜ A◦) → 𝒞
 Glueᵈᶜ {A•} {A◦} α• .U = Glueᵈ (U α•)
@@ -30,9 +25,9 @@ Glueᵈᶜ {A•} {A◦} α• .charge c ((x• , x◦) , p) =
   (A• .charge c x• , A◦ .charge c x◦) ,
   ≡∙⊑ (α• .charge c x•) (mono (●ᶜ A◦ .charge c) p)
 Glueᵈᶜ {A•} {A◦} α• .charge-0 =
-  Σ≡Prop (λ _ → thin● A◦ _ _) (ΣPathP (A• .charge-0 , A◦ .charge-0))
+  Glueᵈ-path (A◦ .is-preorder) (A• .charge-0) (A◦ .charge-0)
 Glueᵈᶜ {A•} {A◦} α• .charge-+ =
-  Σ≡Prop (λ _ → thin● A◦ _ _) (ΣPathP (A• .charge-+ , A◦ .charge-+))
+  Glueᵈ-path (A◦ .is-preorder) (A• .charge-+) (A◦ .charge-+)
 
 module _ {A• A◦ : 𝒞} {α• : A• ⊸ ●ᶜ A◦} where
   proj•ᵈᶜ : Glueᵈᶜ α• ⊸ A•
@@ -46,46 +41,71 @@ module _ {A• A◦ : 𝒞} {α• : A• ⊸ ●ᶜ A◦} where
   proj•→◦ᵈᶜ : (aᵈ : U (Glueᵈᶜ α•)) → α• .U (proj•ᵈᶜ .U aᵈ) ⊑ η• (proj◦ᵈᶜ .U aᵈ)
   proj•→◦ᵈᶜ = proj•→◦ᵈ
 
+  ⊸-Glueᵈᶜ-≃ : {A : 𝒞}
+    → (A ⊸ Glueᵈᶜ α•)
+    ≃ (Σ[ (f• , f◦) ∈ (A ⊸ A•) × (A ⊸ A◦) ] ((a : U A) → α• .U (f• .U a) ⊑ η• (f◦ .U a)))
+  ⊸-Glueᵈᶜ-≃ {A} = isoToEquiv (iso fwd bwd sec ret)
+    where
+      fwd :
+        (A ⊸ Glueᵈᶜ α•)
+        → Σ[ (f• , f◦) ∈ (A ⊸ A•) × (A ⊸ A◦) ] ((a : U A) → α• .U (f• .U a) ⊑ η• (f◦ .U a))
+      fwd f = (f ⨾ᶜ proj•ᵈᶜ , f ⨾ᶜ proj◦ᵈᶜ) , proj•→◦ᵈᶜ ∘ f .U
+
+      bwd :
+        (Σ[ (f• , f◦) ∈ (A ⊸ A•) × (A ⊸ A◦) ] ((a : U A) → α• .U (f• .U a) ⊑ η• (f◦ .U a)))
+        → (A ⊸ Glueᵈᶜ α•)
+      bwd ((f• , f◦) , f-coh) .U a =
+        (f• .U a , f◦ .U a) , f-coh a
+      bwd ((f• , f◦) , f-coh) .charge c a =
+        Glueᵈ-path (A◦ .is-preorder) (f• .charge c a) (f◦ .charge c a)
+
+      sec : section fwd bwd
+      sec _ =
+        Σ≡Prop (λ _ → isPropΠ λ _ → is-thin (●ᶜ A◦) _ _)
+          (ΣPathP (funExtᶜ (λ _ → refl) , funExtᶜ (λ _ → refl)))
+
+      ret : retract fwd bwd
+      ret _ = funExtᶜ λ _ → refl
+
 open Fractureᶜ
 
 fromFractureᵈᶜ : Fractureᶜ → 𝒞
 fromFractureᵈᶜ F = Glueᵈᶜ (F .α•)
 
-Fractureᵈᶜ-Square : Fractureᶜ → Fractureᶜ → 𝒱
-Fractureᵈᶜ-Square F F' =
-  Σ[ (f• , f◦) ∈ (⟨ F .A• ⟩ᶜ ⊸ ⟨ F' .A• ⟩ᶜ) × (⟨ F .A◦ ⟩ᶜ ⊸ ⟨ F' .A◦ ⟩ᶜ) ]
-    f• ⨾ᶜ F' .α• ⊑ F .α• ⨾ᶜ ●ᶜ.map f◦
+Fractureᶜ-Squareᵈ : Fractureᶜ → Fractureᶜ → 𝒱
+Fractureᶜ-Squareᵈ F₁ F₂ =
+  Σ[ (f• , f◦) ∈ (⟨ F₁ .A• ⟩ᶜ ⊸ ⟨ F₂ .A• ⟩ᶜ) × (⟨ F₁ .A◦ ⟩ᶜ ⊸ ⟨ F₂ .A◦ ⟩ᶜ) ]
+    ((a : U ⟨ F₁ .A• ⟩ᶜ) → F₂ .α• .U (f• .U a) ⊑ ●ᶜ.map f◦ .U (F₁ .α• .U a))
 
-squareᵈ-Glueᶜ
-  : ∀ {A• A◦ α• B• B◦ β•}
-  → (f• : A• ⊸ B•)
-  → (f◦ : A◦ ⊸ B◦)
-  → f• ⨾ᶜ β• ⊑ α• ⨾ᶜ ●ᶜ.map f◦
-  → Glueᶜ α• ⊸ Glueᵈᶜ β•
-squareᵈ-Glueᶜ f• f◦ f-coh .U =
-  squareᵈ (f• .U) (f◦ .U) (funExtᵈ⁻ (mono U f-coh))
-squareᵈ-Glueᶜ {B◦ = B◦} f• f◦ f-coh .charge c a =
-  Σ≡Prop (λ _ → is-thin (●ᶜ B◦) _ _)
-    (ΣPathP (f• .charge c (proj• a) , f◦ .charge c (proj◦ a)))
+module _ {A• A◦} {α• : A• ⊸ ●ᶜ A◦} {B• B◦} {β• : B• ⊸ ●ᶜ B◦} where
+  squareᵈ-Glueᶜ
+    : (f• : A• ⊸ B•)
+    → (f◦ : A◦ ⊸ B◦)
+    → ((a : U A•) → β• .U (f• .U a) ⊑ ●ᶜ.map f◦ .U (α• .U a))
+    → Glueᶜ α• ⊸ Glueᵈᶜ β•
+  squareᵈ-Glueᶜ f• f◦ f-coh .U = squareᵈ (f• .U) (f◦ .U) f-coh
+  squareᵈ-Glueᶜ f• f◦ f-coh .charge c a =
+    Glueᵈ-path (is-preorder B◦) (f• .charge c (proj• a)) (f◦ .charge c (proj◦ a))
 
-Glueᵈᶜ-≃
-  : ∀ {A• A◦ α• B• B◦ β•}
-  → (e• : A• ≃ᶜ B•)
-  → (e◦ : A◦ ≃ᶜ B◦)
-  → equivFunᶜ e• ⨾ᶜ β• ≡ α• ⨾ᶜ ●ᶜ.map (equivFunᶜ e◦)
-  → Glueᵈᶜ α• ≃ᶜ Glueᵈᶜ β•
-Glueᵈᶜ-≃ {α• = α•} {B◦ = B◦} {β•} e• e◦ e-coh = fwd , equivIsEquiv equiv
-  where
-    equiv : Glueᵈ (U α•) ≃ Glueᵈ (U β•)
-    equiv =
-      Σ-cong-equiv (≃-× (U-≃ e•) (U-≃ e◦)) λ (a• , _) →
-        monoEquiv (U-≃ (●ᶜ-≃ e◦)) ∙ₑ ≡∙⊑Equiv (funExtᶜ⁻ e-coh a•)
+  Glueᵈᶜ-≃
+    : (e• : A• ≃ᶜ B•)
+    → (e◦ : A◦ ≃ᶜ B◦)
+    → ((a : U A•) → β• .U (equivFunᶜ e• .U a) ≡ ●ᶜ.map (equivFunᶜ e◦) .U (α• .U a))
+    → Glueᵈᶜ α• ≃ᶜ Glueᵈᶜ β•
+  Glueᵈᶜ-≃ e• e◦ e-coh = fwd , equivIsEquiv equiv
+    where
+      equiv : Glueᵈ (U α•) ≃ Glueᵈ (U β•)
+      equiv =
+        Σ-cong-equiv (≃-× (U-≃ e•) (U-≃ e◦)) λ (a• , _) →
+          monoEquiv (U-≃ (●ᶜ-≃ e◦)) ∙ₑ ≡∙⊑Equiv (e-coh a•)
 
-    fwd : _ ⊸ _
-    fwd .U = equivFun equiv
-    fwd .charge c aᵈ =
-      Σ≡Prop (λ _ → is-thin (●ᶜ B◦) _ _)
-        (ΣPathP (equivFunᶜ e• .charge c (proj•ᵈ aᵈ) , equivFunᶜ e◦ .charge c (proj◦ᵈ aᵈ)))
+      fwd : _ ⊸ _
+      fwd .U = equivFun equiv
+      fwd .charge c aᵈ =
+        Glueᵈ-path
+          (is-preorder B◦)
+          (equivFunᶜ e• .charge c (proj•ᵈ aᵈ))
+          (equivFunᶜ e◦ .charge c (proj◦ᵈ aᵈ))
 
 Sealᶜ : 𝒞 → 𝒞
 Sealᶜ = fromFractureᵈᶜ ∘ toFractureᶜ
@@ -100,15 +120,26 @@ Sealᶜ-open {A} abs =
     (funExt λ a → transportRefl _ ∙ cong (proj◦ᵈ a) (transportRefl _))
     (equivIsEquiv (Seal-open abs))
 
+fracture-and-gluing-squareᵈᶜ : (A ⊸ Sealᶜ B) ≃ Fractureᶜ-Squareᵈ (toFractureᶜ A) (toFractureᶜ B)
+fracture-and-gluing-squareᵈᶜ {A} {B} =
+    (A ⊸ Sealᶜ B)
+  ≃⟨ ⊸-Glueᵈᶜ-≃ ⟩
+    (Σ[ (f• , f◦) ∈ (A ⊸ ●ᶜ B) × (A ⊸ ◯ᶜ B) ] ((a : U A) → ●.map η◦ (f• .U a) ⊑ η• (f◦ .U a)))
+  ≃⟨
+    invEquiv
+      (Σ-cong-equiv
+        (≃-× (⊸-precomp-η•ᶜ-≃ (●ᶜ• B)) (⊸-precomp-η◦ᶜ-≃ (◯ᶜ◦ B)))
+        (λ _ → ●.precomp-η-≃Π λ _ → ●.isModal⊑ ●.isModal●))
+  ⟩
+    Fractureᶜ-Squareᵈ (toFractureᶜ A) (toFractureᶜ B)
+  ■
+
 pairᵈᶜ
   : (f• : A ⊸ ●ᶜ B)
   → (f◦ : A ⊸ ◯ᶜ B)
   → ((a : U A) → ●.map η◦ (f• .U a) ⊑ η• (f◦ .U a))
   → A ⊸ Sealᶜ B
-pairᵈᶜ f• f◦ f-coh .U aᵈ = (f• .U aᵈ , f◦ .U aᵈ) , f-coh aᵈ
-pairᵈᶜ {A} {B} f• f◦ f-coh .charge c a =
-  Σ≡Prop (λ _ → is-thin (●ᶜ (◯ᶜ B)) _ _)
-    (ΣPathP (f• .charge c a , f◦ .charge c a))
+pairᵈᶜ f• f◦ f-coh = invEq ⊸-Glueᵈᶜ-≃ ((f• , f◦) , f-coh)
 
 map : (A ⊸ B) → (Sealᶜ A ⊸ Sealᶜ B)
 map {A} {B} f =
@@ -154,7 +185,7 @@ A ⊸ᵈ B = A ⊸ Sealᶜ B
 
 idᵈ : A ⊸ᵈ A
 idᵈ .U = fractureᵈ
-idᵈ {A} .charge c a = Σ≡Prop (λ _ → thin● (◯ᶜ A) _ _) refl
+idᵈ {A} .charge c a = Glueᵈ-path (◯ᶜ A .is-preorder) refl refl
 
 ⌈_⌉ : (A ⊸ B) → (A ⊸ᵈ B)
 ⌈ f ⌉ = f ⨾ᶜ idᵈ
@@ -174,7 +205,7 @@ squareᵈᶜ {B-abs = B-abs} α β f-⊤ f-abs f-coh =
   where
     aux : Abstractionᶜ α ⊸ fromFractureᵈᶜ (Abstractionᶜ-Fracture β)
     aux =
-      squareᵈ-Glueᶜ (●ᶜ.map f-⊤) (◯ᶜ.map f-abs) $ funExtᵈᶜ λ a• →
+      squareᵈ-Glueᶜ (●ᶜ.map f-⊤) (◯ᶜ.map f-abs) λ a• →
         let open ⊑-Reasoning (●ᶜ (◯ᶜ B-abs)) in
         begin
           ●.map (η◦ ∘ β .U) (●.map (f-⊤ .U) a•)

@@ -189,6 +189,7 @@ import Examples.Queue using
 import Calf.Computation.Seal using
   ( Sealᶜ
   ; Sealᶜ-open
+  ; fracture-and-gluing-squareᵈᶜ
   ; _⊸ᵈ_
   ; idᵈ
   ; _⨾ᵈ_

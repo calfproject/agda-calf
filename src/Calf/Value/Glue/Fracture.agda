@@ -4,7 +4,6 @@ open import Cubical.Foundations.Equiv.Properties using (congEquiv)
 open import Cubical.Foundations.Path
 open import Cubical.Foundations.Univalence using (ua)
 open import Cubical.Data.Sigma
-open import Cubical.Functions.FunExtEquiv using (funExtEquiv)
 
 open import Calf.Core.Abstract
 open import Calf.Value
@@ -117,7 +116,7 @@ module _ where
   glue-fracture-section : section toFracture fromFracture
   glue-fracture-section F =
     Fracture-ua (glue• F) (glue◦ F) $
-    ●.η-ext (λ _ → ●.isModal●) $ funExt λ x →
+    ●.elim (λ _ → ●-≡-isModal _ _) λ x →
       proj•→◦ x ∙ cong η• (sym (glue◦-β F x))
 
   fracture-and-gluing : 𝒱 ≃ Fracture
@@ -151,13 +150,11 @@ module _ where
       (Σ[ f ∈ (X → ● Y × ◯ Y) ] ((x : X) → ●.map η◦ (f x .fst) ≡ η• (f x .snd)))
     ≃⟨ Σ-cong-equiv-fst Σ-Π-≃ ⟩
       (Σ[ (f• , f◦) ∈ (X → ● Y) × (X → ◯ Y) ] ((x : X) → ●.map η◦ (f• x) ≡ η• (f◦ x)))
-    ≃⟨ Σ-cong-equiv-snd (λ _ → funExtEquiv) ⟩
-      (Σ[ (f• , f◦) ∈ (X → ● Y) × (X → ◯ Y) ] (●.map η◦ ∘ f• ≡ η• ∘ f◦))
     ≃⟨
       invEquiv
         (Σ-cong-equiv
           (≃-× (●.precomp-η-≃ ●.isModal●) (◯.precomp-η-≃ ◯.isModal◯))
-          (λ (f• , f◦) → congEquiv (●.precomp-η-≃ ●.isModal●)))
+          (λ _ → ●.precomp-η-≃Π λ _ → ●-≡-isModal _ _))
     ⟩
       Fracture-Square (toFracture X) (toFracture Y)
     ■

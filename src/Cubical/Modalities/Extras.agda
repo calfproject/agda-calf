@@ -283,10 +283,18 @@ module _ where
         (reflection-sec w conn) (reflection-ret w conn))
 
   opaque
-    precomp-η-isEquiv : (w : isModal Y) → isEquiv (λ (h : ◯ X → Y) → h ∘ η)
-    precomp-η-isEquiv w = isoToIsEquiv (iso (_∘ η) (◯-rec w)
-      (λ k → funExt (◯-rec-β w k))
-      (λ h → η-ext (λ _ → w) (funExt (◯-rec-β w (h ∘ η)))))
+    precomp-η-isEquivΠ : {Y : ◯ X → Type ℓ} (w : (x◦ : ◯ X) → isModal (Y x◦))
+      → isEquiv (λ (h : (x◦ : ◯ X) → Y x◦) → h ∘ η)
+    precomp-η-isEquivΠ w = isoToIsEquiv (iso (_∘ η) (◯-elim w)
+      (λ k → funExt (◯-elim-β w k))
+      (λ h → η-ext w (funExt (◯-elim-β w (h ∘ η)))))
+
+  precomp-η-≃Π : {Y : ◯ X → Type ℓ} → ((x◦ : ◯ X) → isModal (Y x◦))
+    → ((x◦ : ◯ X) → Y x◦) ≃ ((x : X) → Y (η x))
+  precomp-η-≃Π w = (_∘ η) , precomp-η-isEquivΠ w
+
+  precomp-η-isEquiv : (w : isModal Y) → isEquiv (λ (h : ◯ X → Y) → h ∘ η)
+  precomp-η-isEquiv w = precomp-η-isEquivΠ (λ _ → w)
 
   precomp-η-≃ : isModal Y → (◯ X → Y) ≃ (X → Y)
   precomp-η-≃ w = (_∘ η) , precomp-η-isEquiv w

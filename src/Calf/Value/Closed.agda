@@ -231,6 +231,9 @@ opaque
       (isSet● (isPreorder→isSet isPreorderX))
       (BEH⇒isDiscrete refl)
 
+isModal⊑ : isModal X → {x x' : X} → isModal (x ⊑ x')
+isModal⊑ w = isModalΣ (isModal→ w) λ _ → isModalΣ (isModal≡ w) λ _ → isModal≡ w
+
 module _ {X Y Z : 𝒱} {f : X → Z} {g : Y → Z} where
   ●-pullback :
       ● (Σ[ (x , y) ∈ X × Y ] (f x ≡ g y))

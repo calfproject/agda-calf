@@ -1,10 +1,5 @@
 module Calf.Computation.Glue.Fracture where
 
-open import Cubical.Foundations.Equiv.Properties using (congEquiv)
-open import Cubical.Foundations.Path
-  using (compPathlEquiv; compPathrEquiv; symIso)
-open import Cubical.Foundations.Univalence using (ua)
-
 open import Calf.Core.Abstract
 open import Calf.Value
 import Calf.Value.Closed as ●
@@ -46,16 +41,17 @@ module _ where
     → equivFunᶜ (glue◦ᶜ F) .U (η◦ a) ≡ proj◦ a
   glue◦ᶜ-β = glue◦-β ∘ U-Fracture
 
-  glue•→◦ᶜ : (F : Fractureᶜ)
-    → equivFunᶜ (glue•ᶜ F) ⨾ᶜ F .α• ≡ ●ᶜ.map η◦ᶜ ⨾ᶜ ●ᶜ.map (equivFunᶜ (glue◦ᶜ F))
+  glue•→◦ᶜ : (F : Fractureᶜ) (a• : U (●ᶜ (fromFractureᶜ F)))
+    → F .α• .U (equivFunᶜ (glue•ᶜ F) .U a•)
+    ≡ ●ᶜ.map (equivFunᶜ (glue◦ᶜ F)) .U (●.map η◦ a•)
   glue•→◦ᶜ F =
-    funExtᶜ (●.elim (λ _ → ●.●-≡-isModal _ _) λ a →
-      proj•→◦ a ∙ cong η• (sym (glue◦ᶜ-β F a)))
+    ●.elim (λ _ → ●.●-≡-isModal _ _) λ a →
+      proj•→◦ a ∙ cong η• (sym (glue◦ᶜ-β F a))
 
   opaque
     glue-fracture-sectionᶜ : section toFractureᶜ fromFractureᶜ
     glue-fracture-sectionᶜ F =
-      Fractureᶜ-ua (glue•ᶜ F) (glue◦ᶜ F) (cong U (glue•→◦ᶜ F))
+      Fractureᶜ-ua (glue•ᶜ F) (glue◦ᶜ F) (glue•→◦ᶜ F)
 
   fracture-and-gluingᶜ : 𝒞 ≃ Fractureᶜ
   fracture-and-gluingᶜ =
@@ -78,15 +74,12 @@ module _ where
     ≃⟨ equiv⊸Cod (fractureᶜ , fracture-isEquiv) ⟩
       A ⊸ FractureGlueᶜ B
     ≃⟨ ⊸-Glueᶜ-≃ ⟩
-      (Σ[ (f• , f◦) ∈ (A ⊸ ●ᶜ B) × (A ⊸ ◯ᶜ B) ] f• ⨾ᶜ ●ᶜ.map η◦ᶜ ≡ f◦ ⨾ᶜ η•ᶜ)
+      (Σ[ (f• , f◦) ∈ (A ⊸ ●ᶜ B) × (A ⊸ ◯ᶜ B) ] (((a : U A) → ●.map η◦ (f• .U a) ≡ η• (f◦ .U a))))
     ≃⟨
       invEquiv
         (Σ-cong-equiv
           (≃-× (⊸-precomp-η•ᶜ-≃ (●ᶜ• B)) (⊸-precomp-η◦ᶜ-≃ (◯ᶜ◦ B)))
-          (λ (f• , f◦) →
-            congEquiv (⊸-precomp-η•ᶜ-≃ (●ᶜ• (◯ᶜ B)))
-            ∙ₑ compPathlEquiv (⨾ᶜ-assoc η•ᶜ f• (●ᶜ.map η◦ᶜ))
-            ∙ₑ compPathrEquiv (funExtᶜ λ _ → refl)))
+          (λ _ → ●.precomp-η-≃Π λ _ → ●.●-≡-isModal _ _))
     ⟩
       Fractureᶜ-Square (toFractureᶜ A) (toFractureᶜ B)
     ■

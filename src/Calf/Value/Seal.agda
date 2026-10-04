@@ -23,6 +23,15 @@ module _ {X• X◦ : 𝒱} {χ• : X• → ● X◦} where
   proj•→◦ᵈ = proj₂
 
   opaque
+    Glueᵈ-path : ∀ {x x' : Glueᵈ χ•}
+      → isPreorder X◦
+      → proj•ᵈ x ≡ proj•ᵈ x'
+      → proj◦ᵈ x ≡ proj◦ᵈ x'
+      → x ≡ x'
+    Glueᵈ-path isPreorderX◦ p• p◦ =
+      Σ≡Prop (λ _ → isPreorder→isThin (isPreorder● isPreorderX◦) _ _) (ΣPathP (p• , p◦))
+
+  opaque
     isPreorderGlueᵈ : isPreorder X• → isPreorder X◦ → isPreorder (Glueᵈ χ•)
     isPreorderGlueᵈ isPreorderX• isPreorderX◦ =
       isLocalComma isPreorderX• isPreorderX◦ (isPreorder● isPreorderX◦)
@@ -66,7 +75,7 @@ squareᵈ f• f◦ f-coh ((x• , x◦) , h) =
 Fracture-Squareᵈ : Fracture → Fracture → 𝒱
 Fracture-Squareᵈ F₁ F₂ =
   Σ[ (f• , f◦) ∈ (⟨ F₁ .X• ⟩ → ⟨ F₂ .X• ⟩) × (⟨ F₁ .X◦ ⟩ → ⟨ F₂ .X◦ ⟩) ]
-    F₂ .χ• ∘ f• ⊑ ●.map f◦ ∘ F₁ .χ•
+    ((x : ⟨ F₁ .X• ⟩) → F₂ .χ• (f• x) ⊑ ●.map f◦ (F₁ .χ• x))
 
 fracture-and-gluing-squareᵈ : (X → Seal Y) ≃ Fracture-Squareᵈ (toFracture X) (toFracture Y)
 fracture-and-gluing-squareᵈ {X} {Y} =
@@ -75,13 +84,11 @@ fracture-and-gluing-squareᵈ {X} {Y} =
     (Σ[ f ∈ (X → ● Y × ◯ Y) ] ((x : X) → ●.map η◦ (f x .fst) ⊑ η• (f x .snd)))
   ≃⟨ Σ-cong-equiv-fst Σ-Π-≃ ⟩
     (Σ[ (f• , f◦) ∈ (X → ● Y) × (X → ◯ Y) ] ((x : X) → ●.map η◦ (f• x) ⊑ η• (f◦ x)))
-  ≃⟨ Σ-cong-equiv-snd (λ _ → funExtᵈEquiv) ⟩
-    (Σ[ (f• , f◦) ∈ (X → ● Y) × (X → ◯ Y) ] (●.map η◦ ∘ f• ⊑ η• ∘ f◦))
   ≃⟨
     invEquiv
       (Σ-cong-equiv
         (≃-× (●.precomp-η-≃ ●.isModal●) (◯.precomp-η-≃ ◯.isModal◯))
-        (λ (f• , f◦) → monoEquiv (●.precomp-η-≃ ●.isModal●)))
+        (λ _ → ●.precomp-η-≃Π λ _ → ●.isModal⊑ ●.isModal●))
   ⟩
     Fracture-Squareᵈ (toFracture X) (toFracture Y)
   ■
