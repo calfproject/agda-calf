@@ -3,9 +3,8 @@ module Calf.Core.Interval where
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels using (isProp×; isPropΠ3)
 open import Cubical.Data.Sigma using (_×_; Σ≡Prop)
-open import Cubical.Data.Sum using (_⊎_; inl; inr)
 open import Cubical.Data.Unit
-open import Cubical.HITs.PropositionalTruncation as PT using (∥_∥₁; ∣_∣₁)
+open import Cubical.Functions.Logic
 open import Relation.Binary.Definitions
   using (Antisymmetric; Maximum; Minimum; Reflexive; Transitive)
 
@@ -34,8 +33,8 @@ opaque
   ≤𝟚-antisym : Antisymmetric _≡_ _≤𝟚_
   ≤𝟚-antisym = isContr→isProp isContrUnit
 
-  ≤𝟚-total : (i j : 𝟚) → ∥ (i ≤𝟚 j) ⊎ (j ≤𝟚 i) ∥₁
-  ≤𝟚-total _ _ = ∣ inl tt ∣₁
+  ≤𝟚-total : (i j : 𝟚) → (i ≤𝟚 j) ⊔′ (j ≤𝟚 i)
+  ≤𝟚-total _ _ = inl tt
 
   0𝟚 1𝟚 : 𝟚
   0𝟚 = tt
@@ -59,11 +58,11 @@ private
       (≤𝟚-antisym (ng m ml mr) (mg n nl nr))
 
   meet : (i j : 𝟚) → Meet i j
-  meet i j = PT.rec (isPropMeet i j)
-    (λ { (inl p) → i , ≤𝟚-refl , p , (λ k ki kj → ki)
-       ; (inr p) → j , p , ≤𝟚-refl , (λ k ki kj → kj)
-       })
-    (≤𝟚-total i j)
+  meet i j =
+    ⊔-elim (i ≤𝟚 j , ≤𝟚-isProp) (j ≤𝟚 i , ≤𝟚-isProp) (λ _ → Meet i j , isPropMeet i j)
+      (λ p → i , ≤𝟚-refl , p , (λ k ki kj → ki))
+      (λ p → j , p , ≤𝟚-refl , (λ k ki kj → kj))
+      (≤𝟚-total i j)
 
   Join : 𝟚 → 𝟚 → Type
   Join i j = Σ[ m ∈ 𝟚 ] ((i ≤𝟚 m) × (j ≤𝟚 m)
@@ -76,11 +75,11 @@ private
       (≤𝟚-antisym (mlst n nl nr) (nlst m ml mr))
 
   join : (i j : 𝟚) → Join i j
-  join i j = PT.rec (isPropJoin i j)
-    (λ { (inl p) → j , p , ≤𝟚-refl , (λ k ik jk → jk)
-       ; (inr p) → i , ≤𝟚-refl , p , (λ k ik jk → ik)
-       })
-    (≤𝟚-total i j)
+  join i j =
+    ⊔-elim (i ≤𝟚 j , ≤𝟚-isProp) (j ≤𝟚 i , ≤𝟚-isProp) (λ _ → Join i j , isPropJoin i j)
+      (λ p → j , p , ≤𝟚-refl , (λ k ik jk → jk))
+      (λ p → i , ≤𝟚-refl , p , (λ k ik jk → ik))
+      (≤𝟚-total i j)
 
 _∧𝟚_ : 𝟚 → 𝟚 → 𝟚
 i ∧𝟚 j = meet i j .fst
