@@ -40,6 +40,7 @@ import Calf.Computation.Product
 import Calf.Computation.Seal
 import Calf.Computation.Sum
 import Calf.Computation.Tensor
+import Calf.Computation.Top
 import Calf.Computation.Unit
 
 import Calf.Giralf

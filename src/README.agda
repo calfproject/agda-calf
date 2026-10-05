@@ -118,6 +118,9 @@ import Calf.Computation.Power using
 import Calf.Computation.Tensor using
   ( _⊗_
   )
+import Calf.Computation.Top using
+  ( ⊤
+  )
 
 {-
     Theorem 2.15. Computation-level fracture and gluing.

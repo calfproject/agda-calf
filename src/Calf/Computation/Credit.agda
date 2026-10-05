@@ -18,7 +18,7 @@ open import Calf.Computation.Seal
 open Fractureᶜ
 
 opaque
-  infixl 5 ▷[_]_
+  infixr 5 ▷[_]_
 
   ▷[_]_ : ℂ → 𝒞 → 𝒞
   ▷[ c ] A = Abstractionᶜ (chargeᶜ {A} c)

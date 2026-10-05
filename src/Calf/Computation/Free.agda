@@ -21,11 +21,11 @@ opaque
   ret x = retᴹ (ηᴾ x)
 
   bind : U (F X) → (X → U A) → U A
-  bind {A = A} (c , x) k = rec (A .is-preorder) (A .charge c ∘ k) x
+  bind {A = A} (c , x) k = recᴾ (A .is-preorder) (A .charge c ∘ k) x
 
   bind-charge : ∀ {c e k} → bind {A = A} (F X .charge c e) k ≡ A .charge c (bind {A = A} e k)
   bind-charge {A = A} {e = e} =
-    rec-unique
+    recᴾ-unique
       (A .is-preorder)
       (λ z → bind {A = A} (_ , z) _)
       (λ z → A .charge _ (bind {A = A} (_ , z) _))
@@ -50,9 +50,9 @@ opaque
     Δ : 𝒞
 
   F-rec : (X → U A) → (F X ⊸ A)
-  F-rec {A = A} k .U (c , x) = rec (A .is-preorder) (A .charge c ∘ k) x
+  F-rec {A = A} k .U (c , x) = recᴾ (A .is-preorder) (A .charge c ∘ k) x
   F-rec {A = A} _ .charge _ (c , x) =
-    rec-unique
+    recᴾ-unique
       (A .is-preorder)
       (λ z → bind {A = A} (_ , z) _)
       (λ z → A .charge _ (bind {A = A} (_ , z) _))
@@ -65,7 +65,7 @@ opaque
   F-rec-η : F-rec (ret {X}) ≡ idᶜ
   F-rec-η =
     funExtᶜ λ (c , x) →
-      rec-unique
+      recᴾ-unique
         (F _ .is-preorder)
         (λ z → F-rec {A = F _} ret .U (c , z))
         (λ z → c , z)
@@ -79,7 +79,7 @@ opaque
     → F-rec {A = A} k .U (F-rec {A = F Y} h .U e)
       ≡ F-rec {A = A} (λ x → F-rec {A = A} k .U (h x)) .U e
   F-rec-assoc {Y = Y} {A = A} h k (c , x) =
-    rec-unique
+    recᴾ-unique
       (A .is-preorder)
       (λ z → F-rec {A = A} k .U (F-rec {A = F Y} h .U (c , z)))
       (λ z → F-rec {A = A} (λ x → F-rec {A = A} k .U (h x)) .U (c , z))
@@ -93,7 +93,7 @@ opaque
     → F-rec {A = A} (λ x → A .charge c (h x)) .U e
       ≡ F-rec {A = A} h .U (F X .charge c e)
   F-rec-charge {A = A} h c (c' , x) =
-    cong (λ e → rec (A .is-preorder) e x) $
+    cong (λ e → recᴾ (A .is-preorder) e x) $
     funExt λ x →
     sym (A .charge-+) ∙ cong (λ d → A .charge d (h x)) (+ℂ-comm c' c)
 
@@ -104,7 +104,7 @@ opaque
     → f .U (F-rec {A = A} h .U e)
       ≡ F-rec {A = B} (λ x → f .U (h x)) .U e
   F-rec-map {A = A} {B = B} f h (c , x) =
-    rec-unique
+    recᴾ-unique
       (B .is-preorder)
       (λ z → f .U (F-rec {A = A} h .U (c , z)))
       (λ z → F-rec {A = B} (λ x → f .U (h x)) .U (c , z))
