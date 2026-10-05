@@ -88,14 +88,17 @@ map f = rec◯ (η ∘ f)
 map-β : (f : X → Y) (x : X) → map f (η x) ≡ η (f x)
 map-β _ = rec◯-β
 
+map-id : (x◦ : ◯ X) → x◦ ≡ map (idfun _) x◦
+map-id = elim (λ _ → isModal◯≡) λ x → sym (map-β (idfun _) x)
+
 map-∘ : (f : X → Y) (g : Y → Z) (x◦ : ◯ X) →
   map g (map f x◦) ≡ map (g ∘ f) x◦
 map-∘ f g =
   elim (λ _ → isModal◯≡) λ x →
     cong (map g) (map-β f x) ∙ map-β g (f x) ∙ sym (map-β (g ∘ f) x)
 
-map-η-isEquiv : isEquiv (map (η {X}))
-map-η-isEquiv = {!   !}
+◯-≃ : X ≃ Y → ◯ X ≃ ◯ Y
+◯-≃ e = map (equivFun e) , {!   !}
 
 -- map-≃ : A ≃ B → (○ A) ≃ (○ B)
 -- map-≃ e = map (e .fst) , is-iso→is-equiv λ where
@@ -107,6 +110,17 @@ map-η-isEquiv = {!   !}
 
 join : ◯ (◯ X) → ◯ X
 join = rec◯ (idfun _)
+
+join-identityˡ : {x◦ : ◯ X} → join (η x◦) ≡ x◦
+join-identityˡ = {!   !}
+
+map-η-isEquiv : isEquiv (map (η {X}))
+map-η-isEquiv =
+  isoToIsEquiv
+    (iso _
+    join
+    (elim {!   !} λ _ → cong (rec◯ _) (rec◯-β _) ∙ {!   !})
+    {!   !})
 
 bind : ◯ X → (X → ◯ Y) → ◯ Y
 bind = flip rec◯
@@ -256,9 +270,6 @@ isConnectedΣ = {!   !}
 --   opaque
 --     map-η-isEquiv : isEquiv (map (η {X}))
 --     map-η-isEquiv = subst isEquiv (sym map-η≡η) (isModalToIsEquiv isModal◯)
-
-map-isEquiv : {f : X → Y} → isEquiv f → isEquiv (map f)
-map-isEquiv isEquivf = {!   !}
 
 -- -- ○Σ○ is equivalent to ○Σ
 -- module _ {X : Type ℓ} {Y : X → Type ℓ} where

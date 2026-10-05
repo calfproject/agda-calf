@@ -85,14 +85,14 @@ Fractureᶜ-ua
   → (e◦ : ⟨ F .A◦ ⟩ᶜ ≃ᶜ ⟨ F' .A◦ ⟩ᶜ)
   → ((a : U ⟨ F .A• ⟩ᶜ) → F' .α• .U (equivFunᶜ e• .U a) ≡ ●ᶜ.map (equivFunᶜ e◦) .U (F .α• .U a))
   → F ≡ F'
-Fractureᶜ-ua e• e◦ e•→◦ =
+Fractureᶜ-ua {F} e• e◦ e•→◦ =
   Fractureᶜ-path
     (uaᶜ e•)
     (uaᶜ e◦)
     (⊸-path
       (uaᶜ e•)
       (cong ●ᶜ (uaᶜ e◦))
-      (ua→ λ a• → ●-ua-gluePath (U-≃ e◦) (sym (e•→◦ a•))))
+      (ua→ λ a• → ●-ua-gluePath (U-≃ e◦) (F .α• .U a•) ▷ sym (e•→◦ a•)))
 
 fromFractureᶜ : Fractureᶜ → 𝒞
 fromFractureᶜ F = Glueᶜ (F .α•)

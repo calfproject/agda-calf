@@ -29,12 +29,16 @@ module _ where
 
   glue•ᶜ : (F : Fractureᶜ) → ●ᶜ (fromFractureᶜ F) ≃ᶜ ⟨ F .A• ⟩ᶜ
   glue•ᶜ F =
-    ●ᶜ-rec (F .A•) (proj•ᶜ {α• = F .α•}) ,
+    ●ᶜ.rec (F .A•) (proj•ᶜ {α• = F .α•}) ,
     equivIsEquiv (glue• (U-Fracture F))
+
+  glue•ᶜ-β : (F : Fractureᶜ) (a : U (fromFractureᶜ F))
+    → equivFunᶜ (glue•ᶜ F) .U (η• a) ≡ proj• a
+  glue•ᶜ-β = glue•-β ∘ U-Fracture
 
   glue◦ᶜ : (F : Fractureᶜ) → ◯ᶜ (fromFractureᶜ F) ≃ᶜ ⟨ F .A◦ ⟩ᶜ
   glue◦ᶜ F =
-    ◯ᶜ-rec (F .A◦) (proj◦ᶜ {α• = F .α•}) ,
+    ◯ᶜ.rec (F .A◦) (proj◦ᶜ {α• = F .α•}) ,
     ◯.rec-isEquiv (strᶜ (F .A◦)) (glue◦ (U-Fracture F)) (glue◦-β (U-Fracture F))
 
   glue◦ᶜ-β : (F : Fractureᶜ) (a : U (fromFractureᶜ F))
@@ -44,9 +48,7 @@ module _ where
   glue•→◦ᶜ : (F : Fractureᶜ) (a• : U (●ᶜ (fromFractureᶜ F)))
     → F .α• .U (equivFunᶜ (glue•ᶜ F) .U a•)
     ≡ ●ᶜ.map (equivFunᶜ (glue◦ᶜ F)) .U (●.map η◦ a•)
-  glue•→◦ᶜ F =
-    ●.elim (λ _ → ●.●-≡-isModal _ _) λ a →
-      proj•→◦ a ∙ cong η• (sym (glue◦ᶜ-β F a))
+  glue•→◦ᶜ = glue•→◦ ∘ U-Fracture
 
   opaque
     glue-fracture-sectionᶜ : section toFractureᶜ fromFractureᶜ
@@ -78,8 +80,8 @@ module _ where
     ≃⟨
       invEquiv
         (Σ-cong-equiv
-          (≃-× (⊸-precomp-η•ᶜ-≃ (●ᶜ• B)) (⊸-precomp-η◦ᶜ-≃ (◯ᶜ◦ B)))
-          (λ _ → ●.precomp-η-≃Π λ _ → ●.●-≡-isModal _ _))
+          (≃-× (●ᶜ.∘ηᶜ-≃ (●ᶜ• B)) (◯ᶜ.∘ηᶜ-≃ (◯ᶜ◦ B)))
+          (λ _ → ●.∘η-≃ λ _ → isModal●≡))
     ⟩
       Fractureᶜ-Square (toFractureᶜ A) (toFractureᶜ B)
     ■

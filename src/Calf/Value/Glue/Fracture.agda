@@ -117,11 +117,15 @@ module _ where
     → equivFun (glue◦ F) (η◦ g) ≡ proj◦ g
   glue◦-β F = ◯.rec-β (str (F .X◦))
 
-  glue-fracture-section : section toFracture fromFracture
-  glue-fracture-section F =
-    Fracture-ua (glue• F) (glue◦ F) $
+  glue•→◦ : (F : Fracture) (x• : ● (fromFracture F))
+    → F .χ• (equivFun (glue• F) x•)
+    ≡ ●.map (equivFun (glue◦ F)) (●.map η◦ x•)
+  glue•→◦ F =
     ●.elim (λ _ → isModal●≡) λ x →
       cong (F .χ•) (glue•-β F x) ∙ proj•→◦ x ∙ cong η• (sym (glue◦-β F x))
+
+  glue-fracture-section : section toFracture fromFracture
+  glue-fracture-section F = Fracture-ua (glue• F) (glue◦ F) (glue•→◦ F)
 
   fracture-and-gluing : 𝒱 ≃ Fracture
   fracture-and-gluing =

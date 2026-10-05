@@ -71,6 +71,7 @@ open import Cubical.Modalities.Extras
   public
   renaming
     ( isModal◯ to isModal●
+    ; ◯-≃ to ●-≃
     ; ◯-ua-gluePath to ●-ua-gluePath
     )
 

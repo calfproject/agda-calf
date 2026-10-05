@@ -105,4 +105,4 @@ square-isEquiv
 square-isEquiv χ ψ {f•} {f◦} f-coh e• e◦ =
   equivIsEquiv
     (Σ-cong-equiv (≃-× (f• , e•) (f◦ , e◦)) λ (x• , x◦) →
-      congEquiv (●.map f◦ , ●.map-isEquiv e◦) ∙ₑ compPathlEquiv (f-coh x•))
+      congEquiv (●-≃ (f◦ , e◦)) ∙ₑ compPathlEquiv (f-coh x•))

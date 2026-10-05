@@ -1,7 +1,5 @@
 module Calf.Computation.Open where
 
-open import Cubical.Foundations.Univalence using (ua; ua→; ua-gluePath)
-
 open import Calf.Core.Abstract
 open import Calf.Value
 open import Calf.Computation
@@ -10,7 +8,7 @@ open import Calf.Computation.Power
 open import Calf.Computation.Pullback
 
 open import Calf.Value.Open as ◯ public
-  hiding (map; map-∘; join; bind)
+  hiding (map; join; bind; rec)
 
 ◯ᶜ : 𝒞 → 𝒞
 ◯ᶜ = ⟨ ABS ⟩ ⇀_
@@ -28,45 +26,45 @@ isModalᶜ A = isModal (U A)
 𝒞◦-path : {A◦ B◦ : 𝒞◦} → ⟨ A◦ ⟩ᶜ ≡ ⟨ B◦ ⟩ᶜ → A◦ ≡ B◦
 𝒞◦-path p = Σ≡Prop (λ A → isPropIsEquiv (η◦ᶜ {A} .U)) p
 
-isModalᶜ◯ᶜ : isModalᶜ (◯ᶜ A)
-isModalᶜ◯ᶜ = isModal◯
-
 ◯ᶜ◦ : 𝒞 → 𝒞◦
-◯ᶜ◦ A = ◯ᶜ A , isModalᶜ◯ᶜ {A}
+◯ᶜ◦ A = ◯ᶜ A , isModal◯
 
 U◦ : 𝒞◦ → 𝒱◦
 U◦ A◦ = U ⟨ A◦ ⟩ᶜ , strᶜ A◦
 
 map : (A ⊸ B) → (◯ᶜ A ⊸ ◯ᶜ B)
 map f .U = ◯.map (f .U)
-map f .charge c a◦ = funExt λ abs → f .charge c (a◦ abs)
+map f .charge c = elim (λ _ → isModal◯≡) (cong η◦ ∘ f .charge c)
 
 ◯ᶜ-≃ : A ≃ᶜ B → ◯ᶜ A ≃ᶜ ◯ᶜ B
-◯ᶜ-≃ e = map (equivFunᶜ e) , ◯.map-isEquiv (equivIsEquivᶜ e)
-
-map-∘ : (f : A ⊸ B) (g : B ⊸ C) → map f ⨾ᶜ map g ≡ map (f ⨾ᶜ g)
-map-∘ f g = funExtᶜ (◯.map-∘ (f .U) (g .U))
+◯ᶜ-≃ e = map (equivFunᶜ e) , equivIsEquiv (◯-≃ (U-≃ e))
 
 join : ◯ᶜ (◯ᶜ A) ⊸ ◯ᶜ A
 join .U = ◯.join
-join .charge c a◦ = refl
+join .charge c = elim (λ _ → isModal◯≡) λ _ → ◯.join-identityˡ
 
 bind : (A ⊸ ◯ᶜ B) → (◯ᶜ A ⊸ ◯ᶜ B)
-bind {B = B} k = map k ⨾ᶜ join {B}
+bind f = map f ⨾ᶜ join
 
-◯ᶜ-rec : (B◦ : 𝒞◦) → (A ⊸ ⟨ B◦ ⟩ᶜ) → (◯ᶜ A ⊸ ⟨ B◦ ⟩ᶜ)
-◯ᶜ-rec B◦ g .U = ◯.elim (λ _ → strᶜ B◦) (g .U)
-◯ᶜ-rec {A = A} B◦ g .charge c =
-  ◯.elim (λ a◦ → ◯.isModal≡ (strᶜ B◦)) λ a →
-      ◯.elim-β (λ _ → strᶜ B◦) (g .U) (A .charge c a)
-    ∙ g .charge c a
-    ∙ cong (⟨ B◦ ⟩ᶜ .charge c) (sym (◯.elim-β (λ _ → strᶜ B◦) (g .U) a))
+rec : (B◦ : 𝒞◦) → (A ⊸ ⟨ B◦ ⟩ᶜ) → (◯ᶜ A ⊸ ⟨ B◦ ⟩ᶜ)
+rec B◦ f .U = ◯.rec (strᶜ B◦) (f .U)
+rec {A} B◦ f .charge c =
+  elim
+    (λ _ → isModal≡ (strᶜ B◦))
+    (λ a →
+      rec-β (strᶜ B◦) {f .U} (A .charge c a)
+      ∙ f .charge c a
+      ∙ cong (⟨ B◦ ⟩ᶜ .charge c) (sym (rec-β (strᶜ B◦) {f .U} a)))
 
+∘ηᶜ-≃ : (B◦ : 𝒞◦) → (◯ᶜ A ⊸ ⟨ B◦ ⟩ᶜ) ≃ (A ⊸ ⟨ B◦ ⟩ᶜ)
+∘ηᶜ-≃ B◦ = η◦ᶜ ⨾ᶜ_ , {!   !}
+
+{-
 opaque
   ⊸-precomp-η◦ᶜ-isEquiv : {A : 𝒞} (B◦ : 𝒞◦)
     → isEquiv (λ (f : ◯ᶜ A ⊸ ⟨ B◦ ⟩ᶜ) → η◦ᶜ {A} ⨾ᶜ f)
   ⊸-precomp-η◦ᶜ-isEquiv B◦ =
-    isoToIsEquiv (iso (η◦ᶜ ⨾ᶜ_) (◯ᶜ-rec B◦)
+    isoToIsEquiv (iso (η◦ᶜ ⨾ᶜ_) (rec◯ᶜ B◦)
       (λ g → funExtᶜ (◯.elim-β (λ _ → strᶜ B◦) (g .U)))
       (λ f → funExtᶜ (funExt⁻ (sym (◯.◯-rec-unique (strᶜ B◦) refl)))))
 
@@ -121,3 +119,4 @@ private
 Σᶜ-◯ᶜ : (X : 𝒱₌) (A : ⟨ X ⟩ → 𝒞) → ◯ᶜ (Σᶜ₌ X A) ≡ ◯ᶜ (Σᶜ₌ X (◯ᶜ ∘ A))
 Σᶜ-◯ᶜ X A =
   conservativity (Σᶜ-◯ᶜ-fwd X A) (Σᶜ-◯ᶜ-fwd-equiv X A)
+-}
