@@ -5,7 +5,6 @@ open import Calf.Value
 open import Calf.Computation
 open import Calf.Computation.Copower
 open import Calf.Computation.Power
-open import Calf.Computation.Pullback
 
 open import Calf.Value.Open as ◯ public
   hiding (map; join; bind; rec)
@@ -67,22 +66,6 @@ rec {A} B◦ f .charge c =
 ◯ᶜ-open {A} abs = rec (A , ◯isModal abs) idᶜ , equivIsEquiv (invEquiv (_ , ◯isModal abs))
 
 {-
-
-Pullback-◯ᶜ : ∀ {A B C} (f : A ⊸ C) (g : B ⊸ C) → ◯ᶜ (Pullback f g) ≡ Pullback (map f) (map g)
-Pullback-◯ᶜ {A} {B} {C} f g = conservativity fwd fwd-equiv
-  where
-    fwd : ◯ᶜ (Pullback f g) ⊸ Pullback (map f) (map g)
-    fwd .U e =
-      ((λ abs → e abs .fst .fst) , (λ abs → e abs .fst .snd)) ,
-      funExt (λ abs → e abs .snd)
-    fwd .charge c e =
-      ΣPathP (refl , isProp→PathP (λ i → is-set (◯ᶜ C) _ _) _ _)
-
-    inv : U (Pullback (map f) (map g)) → U (◯ᶜ (Pullback f g))
-    inv ((a◦ , b◦) , p) abs = (a◦ abs , b◦ abs) , funExt⁻ p abs
-
-    fwd-equiv : isEquivᶜ fwd
-    fwd-equiv = isoToIsEquiv (iso (fwd .U) inv (λ _ → refl) (λ _ → refl))
 
 private
   embed : ∀ {X A} → Σᶜ₌ X A .U → Σᶜ₌ X (◯ᶜ ∘ A) .U

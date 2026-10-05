@@ -67,28 +67,24 @@ import Calf.Value.Abstraction using
     Definition 2.9. Abstract computation types and the open computation
     modality.
     Lemma 2.13. U commutes with the open modalities.
-    Lemma 2.14. The modality is lex, preserving pullbacks.
 -}
 import Calf.Computation.Open using
   ( ◯ᶜ
   ; η◦ᶜ
   ; 𝒞◦
   ; U◦
-  ; Pullback-◯ᶜ
   )
 
 {-
     Definition 2.10. Concrete computation types and the closed computation
     modality.
     Lemma 2.13. U commutes with the open and closed modalities.
-    Lemma 2.14. The modality is lex, preserving pullbacks.
 -}
 import Calf.Computation.Closed using
   ( ●ᶜ
   ; η•ᶜ
   ; 𝒞•
   ; U•
-  ; Pullback-●ᶜ
   )
 
 {-
