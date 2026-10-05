@@ -80,7 +80,7 @@ opaque
 
   isPreorder→isSet : isPreorder X → isSet X
   isPreorder→isSet isPreorderX =
-    transport isS¹Local≡isSet (const (isPreorderX hset))
+    equivFun isS¹Local≃isSet (const (isPreorderX hset))
 
   isProp→isPreorder : isProp X → isPreorder X
   isProp→isPreorder =
@@ -97,7 +97,7 @@ opaque
   isSet∧isThin∧isPathTransitive→isPreorder setX thinX pathTransX thin =
     transport (sym isBoundarySeparated≡isThin) thinX _
   isSet∧isThin∧isPathTransitive→isPreorder setX thinX pathTransX hset =
-    transport (sym isS¹Local≡isSet) setX _
+    invEq isS¹Local≃isSet setX _
 
 isPreorder≡ : isPreorder X ≡ (isSet X × isThin X × isPathTransitive X)
 isPreorder≡ {X} =
