@@ -33,4 +33,4 @@ BEH⇒isDiscrete beh _ =
   isEquivPreComp (terminal 𝟚 , isEquivFromIsContr _ (isAlgorithmic𝟚 beh) isContrUnit)
 
 ⊑-BEH : BEH → {x x' : X} → x ⊑ x' → x ≡ x'
-⊑-BEH beh = invIsEq (isDiscrete→isEquiv[⊑-reflexive] (BEH⇒isDiscrete beh))
+⊑-BEH beh = invEq (isDiscrete→≡≃⊑ (BEH⇒isDiscrete beh))

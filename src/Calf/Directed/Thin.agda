@@ -34,25 +34,23 @@ cocone : Type → Type → Type
 cocone X Y = Σ[ (x , x') ∈ X × X ] (Y → x ⊑ x')
 
 elim≃ : (Y : Type) → (𝕊 Y → X) ≃ cocone X Y
-elim≃ {X} Y = isoToEquiv elim
-  where
-  elim : Iso (𝕊 Y → X) (cocone X Y)
-  elim .Iso.fun k =
+elim≃ {X} Y = isoToEquiv λ where
+  .Iso.fun k →
     (k (inr false) , k (inr true)) , λ y →
         (λ 𝕚 → k (inl (y , 𝕚)))
       , cong k (push (y , false))
       , cong k (push (y , true))
-  elim .Iso.inv (_ , q) (inl (y , 𝕚)) = path (q y) 𝕚
-  elim .Iso.inv ((x , _) , _) (inr false) = x
-  elim .Iso.inv ((_ , x') , _) (inr true) = x'
-  elim .Iso.inv (_ , q) (push (y , false) j) = path₀ (q y) j
-  elim .Iso.inv (_ , q) (push (y , true) j) = path₁ (q y) j
-  elim .Iso.rightInv (_ , q) = refl
-  elim .Iso.leftInv k i (inl (y , 𝕚)) = k (inl (y , 𝕚))
-  elim .Iso.leftInv k i (inr false) = k (inr false)
-  elim .Iso.leftInv k i (inr true) = k (inr true)
-  elim .Iso.leftInv k i (push (y , false) j) = k (push (y , false) j)
-  elim .Iso.leftInv k i (push (y , true) j) = k (push (y , true) j)
+  .Iso.inv (_ , q) (inl (y , 𝕚)) → path (q y) 𝕚
+  .Iso.inv ((x , _) , _) (inr false) → x
+  .Iso.inv ((_ , x') , _) (inr true) → x'
+  .Iso.inv (_ , q) (push (y , false) j) → path₀ (q y) j
+  .Iso.inv (_ , q) (push (y , true) j) → path₁ (q y) j
+  .Iso.rightInv (_ , q) → refl
+  .Iso.leftInv k i (inl (y , 𝕚)) → k (inl (y , 𝕚))
+  .Iso.leftInv k i (inr false) → k (inr false)
+  .Iso.leftInv k i (inr true) → k (inr true)
+  .Iso.leftInv k i (push (y , false) j) → k (push (y , false) j)
+  .Iso.leftInv k i (push (y , true) j) → k (push (y , true) j)
 
 isBoundarySeparated : Type → Type
 isBoundarySeparated = isLocal {A = Unit} (const (map (terminal Bool)))

@@ -72,7 +72,8 @@ opaque
   isPreorder→isPathTransitive isPreorderX = const (isPreorderX tran)
 
   ⊑-trans : isPreorder X → isTransitive X
-  ⊑-trans isPreorderX = isPathTransitive→isTransitive (isPreorder→isPathTransitive isPreorderX)
+  ⊑-trans isPreorderX =
+    isPathTransitive→isTransitive (isPreorder→isPathTransitive isPreorderX)
 
   isPreorder→isThin : isPreorder X → isThin X
   isPreorder→isThin isPreorderX =
