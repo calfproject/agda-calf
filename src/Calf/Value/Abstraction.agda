@@ -32,7 +32,7 @@ square χ ψ f-⊤ f-abs f-coh =
   Glue.square
     (●.map f-⊤)
     (◯.map f-abs)
-    (●.elim (λ x• → ●-≡-isModal _ _) (cong (η• ∘ η◦) ∘ f-coh))
+    (●.elim (λ _ → ●.isModal●≡) (cong (η• ∘ η◦) ∘ f-coh))
 
 module _ {X-⊤ X-abs} (χ : X-⊤ → X-abs) where
   triangle

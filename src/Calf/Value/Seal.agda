@@ -87,8 +87,8 @@ fracture-and-gluing-squareᵈ {X} {Y} =
   ≃⟨
     invEquiv
       (Σ-cong-equiv
-        (≃-× (●.precomp-η-≃ ●.isModal●) (◯.precomp-η-≃ ◯.isModal◯))
-        (λ _ → ●.precomp-η-≃Π λ _ → ●.isModal⊑ ●.isModal●))
+        (≃-× (●.∘η-≃ (const ●.isModal●)) (◯.∘η-≃ (const ◯.isModal◯)))
+        (λ _ → ●.∘η-≃ λ _ → ●.isModal⊑ ●.isModal●))
   ⟩
     Fracture-Squareᵈ (toFracture X) (toFracture Y)
   ■
