@@ -1,8 +1,8 @@
 module Calf.Value.Open where
 
-open import Cubical.Foundations.Univalence
-open import Cubical.Functions.FunExtEquiv
+open import Cubical.Foundations.Equiv.Properties
 open import Cubical.Data.Unit.Properties
+open import Cubical.Functions.FunExtEquiv
 open import Cubical.Modalities.Modality
 
 open import Calf.Core.Abstract
@@ -13,63 +13,40 @@ open import Calf.Value.Sigma
 ◯ : 𝒱 → 𝒱
 ◯ X = (abs : ⟨ ABS ⟩) → X
 
-◯Π : (⟨ ABS ⟩ → 𝒱) → 𝒱
-◯Π X = (abs : ⟨ ABS ⟩) → X abs
-
 η◦ : X → ◯ X
 η◦ x _ = x
 
-isModal : 𝒱 → 𝒱
-isModal X = isEquiv (η◦ {X})
+elim◯ : {Y : ◯ X → 𝒱}
+  → ((x : X) → ◯ (Y (η◦ x))) → (x : ◯ X) → ◯ (Y x)
+elim◯ {X} {Y} y x◦ abs =
+  subst Y (funExt (cong x◦ ∘ str ABS abs)) (y (x◦ abs) abs)
+
+isModal◯≡ : {x◦ x◦' : ◯ X} → isEquiv (η◦ {X = x◦ ≡ x◦'})
+isModal◯≡ = equivIsEquiv (congEquiv lemma ∙ₑ invEquiv funExtEquiv)
+  where
+    lemma : ◯ X ≃ ◯ (◯ X)
+    lemma = preCompEquiv (invEquiv (_ , isProp→isEquiv[diag] (str ABS))) ∙ₑ curryEquiv
+
+rec◯ : (X → ◯ Y) → ◯ X → ◯ Y
+rec◯ f x◦ abs = f (x◦ abs) abs
+
+open import Cubical.Modalities.Extras
+  elim◯
+  (λ _ → funExt λ abs → transportRefl _)
+  isModal◯≡
+  rec◯
+  (λ _ → refl)
+  public
 
 ◯isModal : ⟨ ABS ⟩ → isModal X
 ◯isModal abs = isoToIsEquiv (invIso (isContr→Iso2 (inhProp→isContr abs (str ABS))))
-
-isModal◯Π : {X : ⟨ ABS ⟩ → 𝒱} → isModal (◯Π X)
-isModal◯Π {X} =
-  equivIsEquiv $
-    ◯Π X
-  ≃⟨ equivΠCod (λ abs → η◦ , ◯isModal abs) ⟩
-    ◯Π (◯ ∘ X)
-  ≃⟨ isoToEquiv (iso flip flip (λ _ → refl) (λ _ → refl)) ⟩
-    ◯ (◯Π X)
-  ■
-
-isModal◯ : isModal (◯ X)
-isModal◯ = isModal◯Π
-
-rec : isModal Y → (X → Y) → ◯ X → Y
-rec isModalY f x◦ = invIsEq isModalY λ abs → f (x◦ abs)
-
-rec-β : (isModalY : isModal Y) (f : X → Y) (x : X) → rec isModalY f (η◦ x) ≡ f x
-rec-β isModalY f x = retIsEq isModalY (f x)
-
-◯Modality : Modality _
-◯Modality = record
-  { ◯ = ◯
-  ; isModal = isModal
-  ; isPropIsModal = isPropIsEquiv η◦
-  ; ◯-isModal = isModal◯
-  ; η = η◦
-  ; ◯-elim =
-      λ {X} {Y} isModalY f x◦ →
-      invIsEq (isModalY x◦) λ abs →
-      subst Y (funExt λ abs' → cong x◦ (str ABS abs abs')) (f (x◦ abs))
-  ; ◯-elim-β = λ {X} {Y} isModalY f x →
-      retIsEq (isModalY (η◦ x)) (transport refl (f x)) ∙ transportRefl (f x)
-  ; ◯-=-isModal = λ x◦ x◦' →
-      subst isModal (ua funExtEquiv) isModal◯Π
-  }
-
-open import Cubical.Modalities.Extras ◯Modality rec rec-β public
-  hiding (isModal◯)
 
 isConnected≃◯isContr : isConnected X ≃ ◯ (isContr X)
 isConnected≃◯isContr {X} =
     isConnected X
   ≃⟨ idEquiv _ ⟩
     (Σ[ x◦ ∈ ◯ X ] ((x◦' : ⟨ ABS ⟩ → X) → x◦ ≡ x◦'))
-  ≃⟨ Σ-cong-equiv-snd (λ x◦ → precomp-η-≃Π (◯-≡-isModal x◦)) ⟩
+  ≃⟨ Σ-cong-equiv-snd (λ x◦ → ∘η-≃ λ _ → isModal◯≡) ⟩
     (Σ[ x◦ ∈ ◯ X ] ((x : X) → x◦ ≡ η◦ x))
   ≃⟨ Σ-cong-equiv-snd (λ _ → equivΠCod λ _ → invEquiv funExtEquiv) ⟩
     (Σ[ x◦ ∈ ◯ X ] ((x : X) (abs : ⟨ ABS ⟩) → x◦ abs ≡ x))
@@ -79,10 +56,10 @@ isConnected≃◯isContr {X} =
     ◯ (isContr X)
   ■
 
-isLex◯ : IsLex◯
-isLex◯ = reflection-isEquiv η-≡-isModal (isConnectedMap-∘ₑ funExtEquiv isConnectedMapη)
+isLex◯ : IsLex
+isLex◯ = funExtEquiv
 
-open Lex isLex◯
+open Lex isLex◯ public
 
 isPreorder◯ : isPreorder X → isPreorder (◯ X)
 isPreorder◯ = isLocal→

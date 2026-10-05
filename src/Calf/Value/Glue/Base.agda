@@ -70,11 +70,11 @@ Fracture-ua
   → (e◦ : ⟨ F .X◦ ⟩ ≃ ⟨ F' .X◦ ⟩)
   → ((x : ⟨ F .X• ⟩) → F' .χ• (equivFun e• x) ≡ ●.map (equivFun e◦) (F .χ• x))
   → F ≡ F'
-Fracture-ua e• e◦ e•→◦ =
+Fracture-ua {F} e• e◦ e•→◦ =
   Fracture-path
     (𝒱•-path (ua e•))
     (𝒱◦-path (ua e◦))
-    (ua→ λ x• → ●-ua-gluePath e◦ (sym (e•→◦ x•)))
+    (ua→ λ x• → ●-ua-gluePath e◦ (F .χ• x•) ▷ sym (e•→◦ x•))
 
 fromFracture : Fracture → 𝒱
 fromFracture F = Glue (F .χ•)

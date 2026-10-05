@@ -28,6 +28,10 @@ _∙ᴾ_ :
   → PathP (λ i → X i → Z i) (f₀ ⨾ g₀) (f₁ ⨾ g₁)
 _∙ᴾ_ = congP₂ λ _ → _⨾_
 
+isProp→isEquiv[diag] : isProp X → isEquiv (λ (x : X) → x , x)
+isProp→isEquiv[diag] isPropX =
+  isoToIsEquiv (iso _ snd (λ (x , x') → cong (_, x') (isPropX x' x)) (λ _ → refl))
+
 𝒱₌ : 𝒱₁
 𝒱₌ = TypeWithStr _ λ X → isSet X × isDiscrete X
   where open import Cubical.Data.Sigma
