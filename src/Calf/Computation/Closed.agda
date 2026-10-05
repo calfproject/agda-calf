@@ -56,28 +56,21 @@ bind f = map f ⨾ᶜ join
 rec : (B• : 𝒞•) → (A ⊸ ⟨ B• ⟩ᶜ) → (●ᶜ A ⊸ ⟨ B• ⟩ᶜ)
 rec B• f .U = ●.rec (strᶜ B•) (f .U)
 rec {A} B• f .charge c =
-  elim
-    (λ _ → isModal≡ (strᶜ B•))
-    (λ a →
-      rec-β (strᶜ B•) {f .U} (A .charge c a)
-      ∙ f .charge c a
-      ∙ cong (⟨ B• ⟩ᶜ .charge c) (sym (rec-β (strᶜ B•) {f .U} a)))
+  η-ext (const (strᶜ B•)) λ a →
+    rec-β (strᶜ B•) {f .U} (A .charge c a)
+    ∙ f .charge c a
+    ∙ cong (⟨ B• ⟩ᶜ .charge c) (sym (rec-β (strᶜ B•) {f .U} a))
 
 ∘ηᶜ-≃ : (B• : 𝒞•) → (●ᶜ A ⊸ ⟨ B• ⟩ᶜ) ≃ (A ⊸ ⟨ B• ⟩ᶜ)
-∘ηᶜ-≃ B• = η•ᶜ ⨾ᶜ_ , {!   !}
+∘ηᶜ-≃ B• =
+  isoToEquiv
+    (iso
+      (η•ᶜ ⨾ᶜ_)
+      (rec B•)
+      (λ f → funExtᶜ (rec-β (strᶜ B•)))
+      (λ g → funExtᶜ (η-ext (const (strᶜ B•)) (rec-β (strᶜ B•)))))
 
 {-
-opaque
-  ⊸-precomp-η•ᶜ-isEquiv : {A : 𝒞} (B• : 𝒞•)
-    → isEquiv (λ (f : ●ᶜ A ⊸ ⟨ B• ⟩ᶜ) → η•ᶜ ⨾ᶜ f)
-  ⊸-precomp-η•ᶜ-isEquiv B• =
-    isoToIsEquiv (iso (η•ᶜ ⨾ᶜ_) (●ᶜ-rec B•)
-      (λ g → funExtᶜ λ _ → refl)
-      (λ f → funExtᶜ (●.elim (λ a• → ●.isModal≡ (strᶜ B•)) (λ a → refl))))
-
-⊸-precomp-η•ᶜ-≃ : {A : 𝒞} (B• : 𝒞•) → (●ᶜ A ⊸ ⟨ B• ⟩ᶜ) ≃ (A ⊸ ⟨ B• ⟩ᶜ)
-⊸-precomp-η•ᶜ-≃ B• = (η•ᶜ ⨾ᶜ_) , ⊸-precomp-η•ᶜ-isEquiv B•
-
 module _ {A B C : 𝒞} where
 
   Pullback-●ᶜ : (f : A ⊸ C) (g : B ⊸ C) → ●ᶜ (Pullback f g) ≡ Pullback (map f) (map g)

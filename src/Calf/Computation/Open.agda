@@ -49,27 +49,24 @@ bind f = map f ⨾ᶜ join
 rec : (B◦ : 𝒞◦) → (A ⊸ ⟨ B◦ ⟩ᶜ) → (◯ᶜ A ⊸ ⟨ B◦ ⟩ᶜ)
 rec B◦ f .U = ◯.rec (strᶜ B◦) (f .U)
 rec {A} B◦ f .charge c =
-  elim
-    (λ _ → isModal≡ (strᶜ B◦))
-    (λ a →
-      rec-β (strᶜ B◦) {f .U} (A .charge c a)
-      ∙ f .charge c a
-      ∙ cong (⟨ B◦ ⟩ᶜ .charge c) (sym (rec-β (strᶜ B◦) {f .U} a)))
+  η-ext (const (strᶜ B◦)) λ a →
+    rec-β (strᶜ B◦) {f .U} (A .charge c a)
+    ∙ f .charge c a
+    ∙ cong (⟨ B◦ ⟩ᶜ .charge c) (sym (rec-β (strᶜ B◦) {f .U} a))
 
 ∘ηᶜ-≃ : (B◦ : 𝒞◦) → (◯ᶜ A ⊸ ⟨ B◦ ⟩ᶜ) ≃ (A ⊸ ⟨ B◦ ⟩ᶜ)
-∘ηᶜ-≃ B◦ = η◦ᶜ ⨾ᶜ_ , {!   !}
+∘ηᶜ-≃ B◦ =
+  isoToEquiv
+    (iso
+      (η◦ᶜ ⨾ᶜ_)
+      (rec B◦)
+      (λ f → funExtᶜ (rec-β (strᶜ B◦)))
+      (λ g → funExtᶜ (η-ext (const (strᶜ B◦)) (rec-β (strᶜ B◦)))))
+
+◯ᶜ-open : ⟨ ABS ⟩ → ◯ᶜ A ≃ᶜ A
+◯ᶜ-open {A} abs = rec (A , ◯isModal abs) idᶜ , equivIsEquiv (invEquiv (_ , ◯isModal abs))
 
 {-
-opaque
-  ⊸-precomp-η◦ᶜ-isEquiv : {A : 𝒞} (B◦ : 𝒞◦)
-    → isEquiv (λ (f : ◯ᶜ A ⊸ ⟨ B◦ ⟩ᶜ) → η◦ᶜ {A} ⨾ᶜ f)
-  ⊸-precomp-η◦ᶜ-isEquiv B◦ =
-    isoToIsEquiv (iso (η◦ᶜ ⨾ᶜ_) (rec◯ᶜ B◦)
-      (λ g → funExtᶜ (◯.elim-β (λ _ → strᶜ B◦) (g .U)))
-      (λ f → funExtᶜ (funExt⁻ (sym (◯.◯-rec-unique (strᶜ B◦) refl)))))
-
-⊸-precomp-η◦ᶜ-≃ : {A : 𝒞} (B◦ : 𝒞◦) → (◯ᶜ A ⊸ ⟨ B◦ ⟩ᶜ) ≃ (A ⊸ ⟨ B◦ ⟩ᶜ)
-⊸-precomp-η◦ᶜ-≃ B◦ = (η◦ᶜ ⨾ᶜ_) , ⊸-precomp-η◦ᶜ-isEquiv B◦
 
 Pullback-◯ᶜ : ∀ {A B C} (f : A ⊸ C) (g : B ⊸ C) → ◯ᶜ (Pullback f g) ≡ Pullback (map f) (map g)
 Pullback-◯ᶜ {A} {B} {C} f g = conservativity fwd fwd-equiv
@@ -86,24 +83,6 @@ Pullback-◯ᶜ {A} {B} {C} f g = conservativity fwd fwd-equiv
 
     fwd-equiv : isEquivᶜ fwd
     fwd-equiv = isoToIsEquiv (iso (fwd .U) inv (λ _ → refl) (λ _ → refl))
-
-◯ᶜ-eval-open : ⟨ ABS ⟩ → (A : 𝒞) → ◯ᶜ A ⊸ A
-◯ᶜ-eval-open abs A .U a◦ = a◦ abs
-◯ᶜ-eval-open abs A .charge c a◦ = refl
-
-◯ᶜ-eval-open-isEquiv
-  : (abs : ⟨ ABS ⟩) (A : 𝒞)
-  → isEquivᶜ (◯ᶜ-eval-open abs A)
-◯ᶜ-eval-open-isEquiv abs A =
-  isoToIsEquiv
-    (iso
-      (◯ᶜ-eval-open abs A .U)
-      η◦
-      (λ _ → refl)
-      (λ a◦ → funExt λ abs' → cong a◦ (str ABS abs abs')))
-
-◯ᶜ-open : ⟨ ABS ⟩ → ◯ᶜ A ≃ᶜ A
-◯ᶜ-open {A} abs = ◯ᶜ-eval-open abs A , ◯ᶜ-eval-open-isEquiv abs A
 
 private
   embed : ∀ {X A} → Σᶜ₌ X A .U → Σᶜ₌ X (◯ᶜ ∘ A) .U

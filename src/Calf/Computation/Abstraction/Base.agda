@@ -28,7 +28,7 @@ Abstractionᶜ-≃ {α = α} {β = β} e-⊤ e-abs e-coh =
   Glueᶜ-≃
     (●ᶜ-≃ e-⊤)
     (◯ᶜ-≃ e-abs)
-    (●ᶜ.elim (λ _ → ●ᶜ.●-≡-isModal _ _) λ a → cong (η• ∘ η◦) (e-coh a))
+    (●ᶜ.elim (λ _ → ●ᶜ.isModal●≡) λ a → cong (η• ∘ η◦) (e-coh a))
 
 squareᶜ
   : ∀ {A-⊤ A-abs B-⊤ B-abs}
@@ -40,7 +40,7 @@ squareᶜ α β f-⊤ f-abs f-coherence =
   Glueᶜ.squareᶜ
     (●ᶜ.map f-⊤)
     (◯ᶜ.map f-abs)
-    (●ᶜ.elim (λ _ → ●ᶜ.●-≡-isModal _ _) λ a → cong (η• ∘ η◦) (f-coherence a))
+    (●ᶜ.elim (λ _ → ●ᶜ.isModal●≡) λ a → cong (η• ∘ η◦) (f-coherence a))
 
 module _ {A-⊤ A-abs} (α : A-⊤ ⊸ A-abs) where
   triangleᶜ : ∀ (a-⊤ : U A-⊤) (a-abs : U A-abs)

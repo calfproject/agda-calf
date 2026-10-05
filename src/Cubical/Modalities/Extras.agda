@@ -55,24 +55,26 @@ elim-β
 elim-β Y-isModal {y} x =
   cong (invIsEq (Y-isModal (η x))) (elim◯-β x) ∙ retIsEq (Y-isModal (η x)) (y x)
 
+map : (X → Y) → ◯ X → ◯ Y
+map f = rec◯ (η ∘ f)
+
+map-β : (f : X → Y) (x : X) → map f (η x) ≡ η (f x)
+map-β _ = rec◯-β
+
 rec
   : {X : Type ℓ} {Y : Type ℓ}
   → isModal Y
   → (X → Y) → ◯ X → Y
-rec = elim ∘ const
+rec Y-isModal f = invIsEq Y-isModal ∘ map f
 
 rec-β
   : ∀ {X : Type ℓ} {Y : Type ℓ} Y-isModal {y : X → Y}
   → (x : X) → rec Y-isModal y (η x) ≡ y x
-rec-β = elim-β ∘ const
+rec-β Y-isModal {y} x = cong (invIsEq Y-isModal) (map-β y x) ∙ retIsEq Y-isModal (y x)
 
 rec-isEquiv : (isModalY : isModal Y) {f : X → Y} (e : ◯ X ≃ Y)
   → ((x : X) → equivFun e (η x) ≡ f x) → isEquiv (rec isModalY f)
 rec-isEquiv = {!   !}
-
-∘η-≃ : {Y : ◯ X → Type ℓ} → ((x◦ : ◯ X) → isModal (Y x◦))
-  → ((x◦ : ◯ X) → Y x◦) ≃ ((x : X) → Y (η x))
-∘η-≃ Y-isModal = _∘ η , {!   !}
 
 -- ∘η-isEquiv : ∀ {X Y} → isModal Y → isEquiv (λ (f : ◯ X → Y) → f ∘ η)
 -- ∘η-isEquiv Y-isModal =
@@ -81,12 +83,6 @@ rec-isEquiv = {!   !}
 --       (rec Y-isModal)
 --       (λ g → {!   !}) -- funExt (rec-β {!   !}))
 --       (λ f → {! rec-β  !}))
-
-map : (X → Y) → ◯ X → ◯ Y
-map f = rec◯ (η ∘ f)
-
-map-β : (f : X → Y) (x : X) → map f (η x) ≡ η (f x)
-map-β _ = rec◯-β
 
 map-id : (x◦ : ◯ X) → x◦ ≡ map (idfun _) x◦
 map-id = elim (λ _ → isModal◯≡) λ x → sym (map-β (idfun _) x)
@@ -191,16 +187,6 @@ isModalΣ = {!   !}
 isModal× : isModal X → isModal Y → isModal (X × Y)
 isModal× X-isModal = isModalΣ X-isModal ∘ const
 
-  -- Σ-modal : {B : A → Type ℓ} → modal A → (∀ a → modal (B a)) → modal (Σ A B)
-  -- Σ-modal {B = B} A-modal B-modal = retract-○→modal
-  --   (Equiv.from Σ-Π-distrib
-  --     ( elim-modal (λ _ → A-modal) fst
-  --     , elim-modal (λ _ → B-modal _) λ (a , b) →
-  --         subst B (sym (elim-modal-β (λ _ → A-modal) (a , b))) b))
-  --   λ (a , b) →
-  --        elim-modal-β (λ _ → A-modal) (a , b)
-  --     ,ₚ elim-modal-β (λ _ → B-modal _) (a , b) ◁ to-pathp⁻ refl
-
   -- η-connected : connected-map (η○ {A = A})
   -- η-connected a = contr
   --   (○-elim {P = fibre η○} (λ a → η○ (a , refl)) a)
@@ -223,53 +209,6 @@ isConnectedΣ : {Y : X → Type ℓ}
   → ((x : X) → isConnected (Y x))
   → isConnected (Σ X Y)
 isConnectedΣ = {!   !}
-
-  -- Σ-connected : {B : A → Type ℓ} → connected A → (∀ a → connected (B a)) → connected (Σ A B)
-  -- Σ-connected A-conn B-conn = Equiv→is-hlevel 0 (○Σ○≃○Σ e⁻¹)
-  --   (connected-≃ (Σ-contr-snd B-conn) A-conn)
-
-
-
-
--- open import Cubical.Foundations.Equiv
--- open import Cubical.Foundations.Equiv.Properties
---   using (equivAdjointEquiv)
--- open import Cubical.Foundations.Function
--- open import Cubical.Foundations.HLevels
--- open import Cubical.Foundations.Isomorphism
--- open import Cubical.Foundations.Path
---   using (PathP≡Path⁻; PathP≃Path; compPathlEquiv; compPathrEquiv)
--- open import Cubical.Foundations.Univalence
---   using (isEquivTransport; ua; ua-gluePath)
--- open import Cubical.Data.Sigma
-
--- open Modality M
---   using (isModal≡; isModalToIsEquiv; equivPreservesIsModal; ◯-equiv; ◯-preservesProp)
---   -- hiding (isModal; ◯; η; ◯-rec◯; ◯-rec-β)
---   renaming
---     ( ◯-elim to elim
---     ; ◯-elim-β to elim-β
---     ; ◯-map to map
---     ; ◯-map-β to map-β
---     ; ◯-=-isModal to ◯-≡-isModal
---     ; ◯-isModal to isModal◯
---     ; Π-isModal to isModalΠ
---     ; →-isModal to isModal→
---     )
---   public
-
---   bind : ◯ X → (X → ◯ Y) → ◯ Y
---   bind x◦ k = join (map k x◦)
-
---   η-isNatural : (f : X → Y) → η ∘ f ≡ map f ∘ η
---   η-isNatural f = funExt λ x → sym (map-β f x)
-
---   map-η≡η : map (η {X}) ≡ η
---   map-η≡η = funExt (elim (λ _ → ◯-≡-isModal _ _) (map-β η))
-
---   opaque
---     map-η-isEquiv : isEquiv (map (η {X}))
---     map-η-isEquiv = subst isEquiv (sym map-η≡η) (isModalToIsEquiv isModal◯)
 
 -- -- ○Σ○ is equivalent to ○Σ
 -- module _ {X : Type ℓ} {Y : X → Type ℓ} where
@@ -303,86 +242,38 @@ isConnectedΣ = {!   !}
 --         ∙ map-∘ (x ,_) fwd₀ y◦
 --         ∙ lemma x y◦
 
--- -- isModal (inherited) and isConnected
--- module _ where
---   isConnected : Type ℓ → Type ℓ
---   isConnected X = isContr (◯ X)
-
---   isModalMap : (X → Y) → Type ℓ
---   isModalMap {Y = Y} f = (y : Y) → isModal (fiber f y)
-
---   isConnectedMap : (X → Y) → Type ℓ
---   isConnectedMap {Y = Y} f = (y : Y) → isConnected (fiber f y)
-
--- -- lemmas about isModal
--- module _ where
---   isModalΣ : {Y : X → Type ℓ}
---     → isModal X
---     → ((x : X) → isModal (Y x))
---     → isModal (Σ X Y)
---   isModalΣ = Σ-isModal _
-
---   isModalIsProp : isModal X → isModal (isProp X)
---   isModalIsProp w = isModalΠ λ _ → isModalΠ λ _ → isModal≡ w
-
 isModalPathP : {X : I → Type ℓ} → isModal (X i0) → ∀ {x x'} → isModal (PathP X x x')
 isModalPathP = {!   !}
 
 isModal≡ : isModal X → ∀ {x x'} → isModal (x ≡ x')
 isModal≡ {X} = isModalPathP {λ _ → X}
 
+η-ext : {Y : ◯ X → Type ℓ} (Y-isModal : (x◦ : ◯ X) → isModal (Y x◦))
+  → {y y' : (x◦ : ◯ X) → Y x◦}
+  → ((x : X) → y (η x) ≡ y' (η x))
+  → (x◦ : ◯ X)
+  → y x◦ ≡ y' x◦
+η-ext Y-isModal p = elim (λ x◦ → isModal≡ (Y-isModal x◦)) p
+
+∘η-≃ : {Y : ◯ X → Type ℓ} → ((x◦ : ◯ X) → isModal (Y x◦))
+  → ((x◦ : ◯ X) → Y x◦) ≃ ((x : X) → Y (η x))
+∘η-≃ Y-isModal =
+  isoToEquiv
+    (iso
+      (_∘ η)
+      (elim Y-isModal)
+      (λ _ → funExt (elim-β Y-isModal))
+      (λ _ → funExt (η-ext Y-isModal (elim-β Y-isModal))))
+
 --   opaque
 --     isModalPathP : {X : I → Type ℓ} → isModal (X i0) → ∀ {x x'} → isModal (PathP X x x')
 --     isModalPathP {X = X} h {x} {x'} =
 --       subst isModal (sym (PathP≡Path⁻ X x x')) (isModal≡ h)
 
---   η-ext : {Y : ◯ X → Type ℓ} (_ : (x◦ : ◯ X) → isModal (Y x◦))
---     {y y' : (x◦ : ◯ X) → Y x◦} → y ∘ η ≡ y' ∘ η → y ≡ y'
---   η-ext y p = funExt (elim (λ x◦ → isModal≡ (y x◦)) (funExt⁻ p))
-
---   ◯-rec-unique : {f : X → Y} (isModalY : isModal Y) {h : ◯ X → Y}
---     → h ∘ η ≡ f → h ≡ rec isModalY f
---   ◯-rec-unique isModalY p =
---     η-ext (λ _ → isModalY) (p ∙ sym (funExt (rec-β isModalY _)))
-
--- -- lemmas about rec
--- module _ where
---   ◯-rec-map : (isModalZ : isModal Z) (g : Y → Z) (h : X → Y) (x◦ : ◯ X)
---     → rec isModalZ g (map h x◦) ≡ rec isModalZ (g ∘ h) x◦
---   ◯-rec-map isModalZ g h =
---     funExt⁻ $ η-ext (λ _ → isModalZ) $ funExt λ x →
---       cong (rec isModalZ g) (map-β h x)
---     ∙ rec-β isModalZ g (h x) ∙ sym (rec-β isModalZ (g ∘ h) x)
-
---   ◯-rec-const : (isModalZ : isModal Y) (y : Y) (x◦ : ◯ X) → rec isModalZ (λ _ → y) x◦ ≡ y
---   ◯-rec-const isModalZ y =
---     funExt⁻ (η-ext (λ _ → isModalZ) (funExt (rec-β isModalZ (λ _ → y))))
-
---   opaque
---     rec-isEquiv : (isModalY : isModal Y) {f : X → Y} (e : ◯ X ≃ Y)
---       → ((x : X) → equivFun e (η x) ≡ f x) → isEquiv (rec isModalY f)
---     rec-isEquiv isModalY e β =
---       subst isEquiv (◯-rec-unique isModalY (funExt β)) (equivIsEquiv e)
-
 ◯-ua-gluePath : (e : X ≃ Y) (x◦ : ◯ X) → PathP (λ i → ◯ (ua e i)) x◦ (map (equivFun e) x◦)
 ◯-ua-gluePath e = {!   !}
   -- elim (λ _ → isModalPathP isModal◯) λ x →
   --   congP (λ _ → η) (ua-gluePath e refl) ▷ sym (map-β (equivFun e) x)
-
--- -- lemmas about isConnected
--- module _ where
---   opaque
---     isConnected-≃ : X ≃ Y → isConnected X → isConnected Y
---     isConnected-≃ e = isOfHLevelRespectEquiv 0 (◯-equiv e)
-
---   opaque
---     isConnectedΣ : {Y : X → Type ℓ}
---       → isConnected X
---       → ((x : X) → isConnected (Y x))
---       → isConnected (Σ X Y)
---     isConnectedΣ cX cY =
---       isOfHLevelRespectEquiv 0 ○Σ○≃○Σ
---         (isConnected-≃ (invEquiv (Σ-contractSnd cY)) cX)
 
 isConnectedMapη : isConnectedMap (η {X})
 isConnectedMapη = {!   !}
@@ -401,10 +292,6 @@ isConnectedMapη = {!   !}
 --     isContr→isConnected : isContr X → isConnected X
 --     isContr→isConnected (x , contr) =
 --       η x , elim (λ _ → ◯-≡-isModal _ _) (cong η ∘ contr)
-
---   opaque
---     isEquiv→isConnectedMap : {f : X → Y} → isEquiv f → isConnectedMap f
---     isEquiv→isConnectedMap f-equiv y = isContr→isConnected (f-equiv .equiv-proof y)
 
 isConnectedMap-∘ₑ : (e : Y ≃ Z) {f : X → Y}
   → isConnectedMap f → isConnectedMap (equivFun e ∘ f)
@@ -503,19 +390,6 @@ isConnectedMap-∘ₑ = {!   !}
 --         (reflection-sec w conn) (reflection-ret w conn))
 
 --   opaque
---     precomp-η-isEquivΠ : {Y : ◯ X → Type ℓ} (w : (x◦ : ◯ X) → isModal (Y x◦))
---       → isEquiv (λ (h : (x◦ : ◯ X) → Y x◦) → h ∘ η)
---     precomp-η-isEquivΠ w = isoToIsEquiv (iso (_∘ η) (elim w)
---       (λ k → funExt (elim-β w k))
---       (λ h → η-ext w (funExt (elim-β w (h ∘ η)))))
-
---   precomp-η-isEquiv : (w : isModal Y) → isEquiv (λ (h : ◯ X → Y) → h ∘ η)
---   precomp-η-isEquiv w = precomp-η-isEquivΠ (λ _ → w)
-
---   precomp-η-≃ : isModal Y → (◯ X → Y) ≃ (X → Y)
---   precomp-η-≃ w = (_∘ η) , precomp-η-isEquiv w
-
---   opaque
 --     reflection-≃ : {f : X → Y} (w : isModal Y) (conn : isConnectedMap f) → ◯ X ≃ Y
 --     reflection-≃ {f = f} w conn = rec w f , reflection-isEquiv w conn
 
@@ -529,19 +403,6 @@ isConnectedMap-∘ₑ = {!   !}
 --     reflection-connected {f = f} w h =
 --       subst isConnectedMap (funExt (rec-β w f))
 --         (isConnectedMap-∘ₑ (rec w f , h) isConnectedMapη)
-
--- module _ {X : Type ℓ} {Y : ◯ X → Type ℓ} (w : (x◦ : ◯ X) → isModal (Y x◦)) where
---   private
---     c-connected : isConnectedMap (map-Σ {Y' = Y} η (λ x → idfun (Y (η x))))
---     c-connected =
---       isConnectedMapΣ isConnectedMapη λ x → isEquiv→isConnectedMap (idIsEquiv (Y (η x)))
-
---   ◯Σ-modal : ◯ (Σ X (Y ∘ η)) ≃ Σ (◯ X) Y
---   ◯Σ-modal = reflection-≃ (isModalΣ isModal◯ w) c-connected
-
---   ◯Σ-modal-β : (x : X) (y : Y (η x))
---     → equivFun ◯Σ-modal (η (x , y)) ≡ (η x , y)
---   ◯Σ-modal-β x y = reflection-β (isModalΣ isModal◯ w) c-connected (x , y)
 
 IsLex : Type _
 IsLex = {X : Type ℓ} {x x' : X} → (◯ (x ≡ x')) ≃ (η x ≡ η x')

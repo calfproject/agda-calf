@@ -115,7 +115,7 @@ Sealᶜ-fromFractureᶜ F = Glueᵈᶜ-≃ (glue•ᶜ F) (glue◦ᶜ F) (glue�
 
 Sealᶜ-open : ⟨ ABS ⟩ → Sealᶜ A ≃ᶜ A
 Sealᶜ-open {A} abs =
-  proj◦ᵈᶜ ⨾ᶜ ◯ᶜ-eval-open abs A ,
+  proj◦ᵈᶜ ⨾ᶜ equivFunᶜ (◯ᶜ-open abs) ,
   subst isEquiv
     (funExt λ a → transportRefl _ ∙ cong (proj◦ᵈ a) (transportRefl _))
     (equivIsEquiv (Seal-open abs))
@@ -128,8 +128,8 @@ fracture-and-gluing-squareᵈᶜ {A} {B} =
   ≃⟨
     invEquiv
       (Σ-cong-equiv
-        (≃-× (⊸-precomp-η•ᶜ-≃ (●ᶜ• B)) (⊸-precomp-η◦ᶜ-≃ (◯ᶜ◦ B)))
-        (λ _ → ●.precomp-η-≃Π λ _ → ●.isModal⊑ ●.isModal●))
+        (≃-× (●ᶜ.∘ηᶜ-≃ (●ᶜ• B)) (◯ᶜ.∘ηᶜ-≃ (◯ᶜ◦ B)))
+        (λ _ → ●.∘η-≃ λ _ → ●.isModal⊑ ●.isModal●))
   ⟩
     Fractureᶜ-Squareᵈ (toFractureᶜ A) (toFractureᶜ B)
   ■
@@ -143,41 +143,32 @@ pairᵈᶜ f• f◦ f-coh = invEq ⊸-Glueᵈᶜ-≃ ((f• , f◦) , f-coh)
 
 map : (A ⊸ B) → (Sealᶜ A ⊸ Sealᶜ B)
 map {A} {B} f =
-  pairᵈᶜ (proj•ᵈᶜ ⨾ᶜ ●ᶜ.map f) (proj◦ᵈᶜ ⨾ᶜ ◯ᶜ.map f) λ a →
-    let open ⊑-Reasoning (●ᶜ (◯ᶜ B)) in
-    begin
-      ●.map η◦ (●.map (f .U) (proj•ᵈ a))
-    ≡ᴾ⟨ ●.map-∘ (f .U) η◦ (proj•ᵈ a) ⟩
-      ●.map (η◦ ∘ (f .U)) (proj•ᵈ a)
-    ≡ᴾ⟨ cong (λ g → ●.map g (proj•ᵈ a)) (η◦-isNatural (f .U)) ⟩
-      ●.map (◯.map (f .U) ∘ η◦) (proj•ᵈ a)
-    ≡ᴾ⟨ sym (●.map-∘ η◦ (◯.map (f .U)) (proj•ᵈ a)) ⟩
-      ●.map (◯.map (f .U)) (●.map η◦ (proj•ᵈ a))
-    ⊑⟨ mono (●.map (◯.map (f .U))) (proj•→◦ᵈ a) ⟩
-      ●.map (◯.map (f .U)) (η• (proj◦ᵈ a))
-    ≡ᴾ⟨ refl ⟩
-      η• (◯.map (f .U) (proj◦ᵈ a))
-    ∎ᴾ
+  pairᵈᶜ (proj•ᵈᶜ ⨾ᶜ ●ᶜ.map f) (proj◦ᵈᶜ ⨾ᶜ ◯ᶜ.map f) (uncurry (uncurry coh))
+  where
+    coh : (a• : ● (U A)) (a◦ : ◯ (U A))
+      → ●.map η◦ a• ⊑ η• a◦
+      → ●.map η◦ (●.map (f .U) a•) ⊑ η• (◯.map (f .U) a◦)
+    coh =
+      ●.elim (λ _ → ●.isModalΠ λ _ → ●.isModal→ (isModal⊑ isModal●)) λ _ _ →
+        mono (●.map (◯.map (f .U)))
 
 join : Sealᶜ (Sealᶜ A) ⊸ Sealᶜ A
 join {A} =
-  pairᵈᶜ (proj•ᵈᶜ ⨾ᶜ ●ᶜ.bind proj•ᵈᶜ) (proj◦ᵈᶜ ⨾ᶜ ◯ᶜ.bind proj◦ᵈᶜ) λ a →
-    let open ⊑-Reasoning (●ᶜ (◯ᶜ A)) in
-    begin
-      ●.map η◦ (●.bind (proj•ᵈ a) proj•ᵈ)
-    ≡ᴾ⟨ ●.bind-map proj•ᵈ η◦ (proj•ᵈ a) ⟩
-      ●.bind (proj•ᵈ a) (●.map η◦ ∘ proj•ᵈ)
-    ⊑⟨ mono (●.bind (proj•ᵈ a)) (funExtᵈ proj•→◦ᵈ) ⟩
-      ●.bind (proj•ᵈ a) (η• ∘ proj◦ᵈ)
-    ≡ᴾ⟨ ●.bind-η• proj◦ᵈ (proj•ᵈ a) ⟩
-      ●.map proj◦ᵈ (proj•ᵈ a)
-    ≡ᴾ⟨ refl ⟩
-      ●.map (flip ◯.bind proj◦ᵈ ∘ η◦) (proj•ᵈ a)
-    ≡ᴾ⟨ sym (●.map-∘ η◦ (flip ◯.bind proj◦ᵈ) (proj•ᵈ a)) ⟩
-      ●.map (flip ◯.bind proj◦ᵈ) (●.map η◦ (proj•ᵈ a))
-    ⊑⟨ mono (●.map (flip ◯.bind proj◦ᵈ)) (proj•→◦ᵈ a) ⟩
-      η• (◯.bind (proj◦ᵈ a) proj◦ᵈ)
-    ∎ᴾ
+  pairᵈᶜ (proj•ᵈᶜ ⨾ᶜ ●ᶜ.bind proj•ᵈᶜ) (proj◦ᵈᶜ ⨾ᶜ ◯ᶜ.bind proj◦ᵈᶜ) (uncurry (uncurry coh))
+  where
+    coh : (a• : ● (U (Sealᶜ A))) (a◦ : ◯ (U (Sealᶜ A)))
+      → ●.map η◦ a• ⊑ η• a◦
+      → ●.map η◦ (●.join (●.map proj•ᵈ a•)) ⊑ η• (◯.bind a◦ proj◦ᵈ)
+    coh =
+      ●.elim (λ _ → ●.isModalΠ λ _ → ●.isModal→ (isModal⊑ isModal●)) λ a a◦ h →
+        let open ⊑-Reasoning (●ᶜ (◯ᶜ A)) in
+        begin
+          ●.map η◦ (proj•ᵈ a)
+        ⊑⟨ proj•→◦ᵈ a ⟩
+          η• (proj◦ᵈ a)
+        ⊑⟨ mono (●.map (flip ◯.bind proj◦ᵈ)) h ⟩
+          η• (◯.bind a◦ proj◦ᵈ)
+        ∎ᴾ
 
 infix 1 _⊸ᵈ_
 _⊸ᵈ_ : 𝒞 → 𝒞 → 𝒱
