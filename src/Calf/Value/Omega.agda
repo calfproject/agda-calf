@@ -4,6 +4,7 @@ open import Cubical.Data.Nat
   using (ℕ; zero; suc; HasFromNat) renaming (_+_ to _+ℕ_)
 open import Data.Unit using (⊤)
 
+open import Calf.Directed.Thin
 open import Calf.Value
 
 data ω₀ : 𝒱 where
