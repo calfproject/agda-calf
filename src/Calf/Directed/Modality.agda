@@ -15,7 +15,7 @@ open import Cubical.HITs.S1
 open import Calf.Core.Interval
 open import Calf.Directed.Localization
 open import Calf.Directed.Set
-open import Calf.Directed.Thin
+open import Calf.Directed.Thin as 𝕊
 open import Calf.Directed.Transitive
 
 private variable X Y Z : Type
@@ -36,7 +36,7 @@ opaque
 
   Fᴾ : (α : Requirements) → Sᴾ α → Tᴾ α
   Fᴾ tran = ι-horn
-  Fᴾ thin = 𝕊-map (terminal Bool)
+  Fᴾ thin = 𝕊.map (terminal Bool)
   Fᴾ hset = terminal S¹
 
 isPreorder : Type → Type
@@ -76,7 +76,7 @@ opaque
 
   isPreorder→isThin : isPreorder X → isThin X
   isPreorder→isThin isPreorderX =
-    transport isBoundarySeparated≡isThin (const (isPreorderX thin))
+    equivFun isBoundarySeparated≃isThin (const (isPreorderX thin))
 
   isPreorder→isSet : isPreorder X → isSet X
   isPreorder→isSet isPreorderX =
@@ -95,7 +95,7 @@ opaque
   isSet∧isThin∧isPathTransitive→isPreorder setX thinX pathTransX tran =
     pathTransX _
   isSet∧isThin∧isPathTransitive→isPreorder setX thinX pathTransX thin =
-    transport (sym isBoundarySeparated≡isThin) thinX _
+    invEq isBoundarySeparated≃isThin thinX _
   isSet∧isThin∧isPathTransitive→isPreorder setX thinX pathTransX hset =
     invEq isS¹Local≃isSet setX _
 
