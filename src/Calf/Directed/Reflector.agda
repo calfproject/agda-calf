@@ -1,4 +1,4 @@
-module Calf.Directed.Modality where
+module Calf.Directed.Reflector where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv

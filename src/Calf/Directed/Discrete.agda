@@ -15,7 +15,7 @@ open import Cubical.Data.Unit
 open import Cubical.HITs.Localization
 
 open import Calf.Core.Interval
-open import Calf.Directed.Modality
+open import Calf.Directed.Reflector
 open import Calf.Directed.Path
 open import Calf.Directed.Thin as 𝕊
 open import Calf.Directed.Transitive
