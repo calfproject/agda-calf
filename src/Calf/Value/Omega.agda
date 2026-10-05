@@ -76,26 +76,26 @@ _+_ = map2ᴾ _+₀_
 open import Algebra.Definitions {A = ω} _≡_
 
 +-identityˡ : LeftIdentity 0ω _+_
-+-identityˡ = rec-unique isPreorderᴾ (0ω +_) (λ n → n) λ _ → refl
++-identityˡ = recᴾ-unique isPreorderᴾ (0ω +_) (λ n → n) λ _ → refl
 
 +-identityʳ : RightIdentity 0ω _+_
-+-identityʳ = rec-unique isPreorderᴾ (_+ 0ω) (λ n → n) λ n → cong ηᴾ (+₀-identityʳ n)
++-identityʳ = recᴾ-unique isPreorderᴾ (_+ 0ω) (λ n → n) λ n → cong ηᴾ (+₀-identityʳ n)
 
 +-assoc : Associative _+_
 +-assoc m n o =
   funExt⁻
-    (rec-unique2 (isLocalΠ λ _ → isPreorderᴾ)
+    (recᴾ-unique2 (isLocalΠ λ _ → isPreorderᴾ)
       (λ m n o → (m + n) + o)
       (λ m n o → m + (n + o))
-      (λ x y → funExt (rec-unique isPreorderᴾ _ _ λ z → cong ηᴾ (+₀-assoc x y z)))
+      (λ x y → funExt (recᴾ-unique isPreorderᴾ _ _ λ z → cong ηᴾ (+₀-assoc x y z)))
       m n)
     o
 
 ⊑-suc : ∀ c → c ⊑ 1ω + c
 ⊑-suc c =
     (λ 𝕚 → mapᴾ (rel 𝕚) c)
-  , rec-unique isPreorderᴾ (mapᴾ (rel 0𝟚)) (λ c → c) (λ n → cong ηᴾ (rel-0𝟚 n)) c
-  , rec-unique isPreorderᴾ (mapᴾ (rel 1𝟚)) (1ω +_) (λ n → cong ηᴾ (rel-1𝟚 n)) c
+  , recᴾ-unique isPreorderᴾ (mapᴾ (rel 0𝟚)) (λ c → c) (λ n → cong ηᴾ (rel-0𝟚 n)) c
+  , recᴾ-unique isPreorderᴾ (mapᴾ (rel 1𝟚)) (1ω +_) (λ n → cong ηᴾ (rel-1𝟚 n)) c
 
 private
   isSetω : isSet ω
@@ -151,7 +151,7 @@ private
       n
 
 +-comm : Commutative _+_
-+-comm = rec-unique2 isPreorderᴾ _+_ (λ m n → n + m) +₀-comm
++-comm = recᴾ-unique2 isPreorderᴾ _+_ (λ m n → n + m) +₀-comm
 
 isAlgorithmicω : isAlgorithmic ω
 isAlgorithmicω beh =
