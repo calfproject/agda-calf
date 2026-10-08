@@ -64,6 +64,9 @@ open Lex isLex◯ public
 isPreorder◯ : isPreorder X → isPreorder (◯ X)
 isPreorder◯ = isLocal→
 
+◯-open : ⟨ ABS ⟩ → ◯ X ≃ X
+◯-open abs = invEquiv (_ , ◯isModal abs)
+
 𝒱◦ : 𝒱₁
 𝒱◦ = TypeWithStr _ isModal
 

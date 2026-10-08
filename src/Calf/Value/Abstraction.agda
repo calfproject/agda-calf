@@ -1,12 +1,13 @@
 module Calf.Value.Abstraction where
 
 open import Cubical.Foundations.GroupoidLaws using (rUnit)
+open import Cubical.Foundations.Univalence
 
+open import Calf.Core.Abstract
 open import Calf.Value
 open import Calf.Value.Closed as ●
 open import Calf.Value.Glue as Glue hiding (square)
 open import Calf.Value.Open as ◯
-open import Calf.Value.Seal as Seal hiding (squareᵈ)
 
 open Fracture
 
@@ -55,3 +56,33 @@ module _ {X-⊤ X-abs} (χ : X-⊤ → X-abs) where
     ≡⟨ retEq (Abstraction-id X-abs) (χ x-⊤) ⟩
       χ x-⊤
     ∎
+
+
+Abstraction-open
+  : ∀ {X-⊤ X-abs} (χ : X-⊤ → X-abs)
+  → ⟨ ABS ⟩
+  → Abstraction χ ≃ X-abs
+Abstraction-open {X-⊤} {X-abs} χ abs =
+  Glue-open (Abstraction-Fracture χ) abs ∙ₑ ◯-open abs
+
+square-openP
+  : ∀ {X-⊤ X-abs} (χ : X-⊤ → X-abs) {Y-⊤ Y-abs} (β : Y-⊤ → Y-abs)
+  → (f-⊤ : X-⊤ → Y-⊤) (f-abs : X-abs → Y-abs)
+  → (f-coh : (x-⊤ : X-⊤) → β (f-⊤ x-⊤) ≡ f-abs (χ x-⊤))
+  → (abs : ⟨ ABS ⟩)
+  → PathP
+      (λ i → ua (Abstraction-open χ abs) i → ua (Abstraction-open β abs) i)
+      (square χ β f-⊤ f-abs f-coh)
+      f-abs
+square-openP χ β _ _ _ abs =
+  ua→ λ x → ua-gluePath (Abstraction-open β abs) refl
+
+triangle-openP
+  : ∀ {X-⊤ X-abs} (χ : X-⊤ → X-abs)
+  → (x-⊤ : X-⊤) (x-abs : X-abs) (x-coh : χ x-⊤ ≡ x-abs)
+  → (abs : ⟨ ABS ⟩)
+  → PathP (λ i → ua (Abstraction-open χ abs) i)
+      (triangle χ x-⊤ x-abs x-coh)
+      x-abs
+triangle-openP χ _ _ _ abs =
+  ua-gluePath (Abstraction-open χ abs) refl
