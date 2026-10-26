@@ -3,6 +3,7 @@ module Examples.QueueV where
 open import Cubical.Foundations.Univalence
 import Cubical.Data.List.Properties as List
 import Cubical.Data.Nat.Properties as Nat
+import Cubical.Data.Bool.Properties as Bool
 open import Cubical.Data.Sigma using (map-snd; ΣPathP)
 
 open import Calf.Core.Abstract
@@ -12,6 +13,7 @@ open import Calf.Value.Abstraction
 open import Calf.Value.Glue using (fracture-isEquiv)
 open import Calf.Value.List
 open import Calf.Value.Nat
+open import Calf.Value.Bool
 open import Calf.Value.Product
 
 
@@ -21,6 +23,8 @@ record PreQueue : 𝒱₁ where
     empty : Q
     enqueue : ℕ → Q → Q
     dequeue : Q → ℕ × Q
+    isEmpty : Q → Bool
+
 open PreQueue
 
 LQ : 𝒱
@@ -36,11 +40,19 @@ dequeueᴸ : LQ → ℕ × LQ
 dequeueᴸ [] = 0 , []
 dequeueᴸ (x ∷ l) = x , l
 
+isEmptyᴸ : LQ → Bool
+isEmptyᴸ [] = true
+isEmptyᴸ (x ∷ xs) = false
+
+
 list-prequeue : PreQueue
 list-prequeue .Q = LQ
 list-prequeue .empty = emptyᴸ
 list-prequeue .enqueue = enqueueᴸ
 list-prequeue .dequeue = dequeueᴸ
+list-prequeue .isEmpty = isEmptyᴸ
+
+
 
 BQ : 𝒱
 BQ = List ℕ × List ℕ
@@ -60,11 +72,16 @@ dequeueᴮ : BQ → ℕ × BQ
 dequeueᴮ (back , x ∷ front) = x , (back , front)
 dequeueᴮ (back , []) = reverse-front back
 
+isEmptyᴮ : BQ → Bool
+isEmptyᴮ ([] , []) = true
+isEmptyᴮ _ = false
+
 batched-prequeue : PreQueue
 batched-prequeue .Q = BQ
 batched-prequeue .empty = emptyᴮ
 batched-prequeue .enqueue = enqueueᴮ
 batched-prequeue .dequeue = dequeueᴮ
+batched-prequeue .isEmpty = isEmptyᴮ
 
 
 record Queue : 𝒱₁ where
@@ -87,7 +104,21 @@ enqueue-coherent x (back , front) = sym (List.++-assoc front (reverse back) [ x 
 
 dequeue-coherent :
   (q : BQ) → map-snd χ (dequeueᴮ q) ≡ dequeueᴸ (χ q)
-dequeue-coherent (back , front) = {!   !}
+dequeue-coherent (back , []) with reverse back
+... | [] = refl
+... | x ∷ xs = ΣPathP (refl , List.++-unit-r xs)
+dequeue-coherent (back , x ∷ front) = refl
+
+isEmpty-coherent  :
+  (q : BQ) → isEmptyᴮ q ≡ isEmptyᴸ (χ q)
+isEmpty-coherent ([] , []) = refl
+isEmpty-coherent ([] , x ∷ front) = refl
+isEmpty-coherent (x ∷ back , []) with reverse back
+... | [] = refl
+... | y ∷ ys = refl
+isEmpty-coherent (x ∷ back , y ∷ front) = refl
+
+
 
 module _ (Y : 𝒱) where
   ×-Abstraction : Abstraction (map-snd {A = Y} χ) → Y × Abstraction χ
@@ -103,12 +134,24 @@ module _ (Y : 𝒱) where
         ×-Abstraction
         id
   ×-Abstraction-openP abs =
-    ua→ λ p →
+    ua→
+     λ p →
       ΣPathP
         ( cong (equivFun (Abstraction-open id abs))
             (secIsEq fracture-isEquiv (square _ id proj₁ proj₁ (λ _ → refl) p))
         , ua-gluePath (Abstraction-open χ abs) refl
         )
+
+  out-Abstraction-openP : (abs : ⟨ ABS ⟩)
+    → PathP
+      (λ i →
+        ua (Abstraction-open id abs) i → Y)
+        (invEq (Abstraction-id Y))
+        id
+  out-Abstraction-openP abs =
+    ua→
+      λ y →
+        cong (equivFun (Abstraction-open id abs)) (secEq (Abstraction-id Y) y)
 
 batched-queue : Queue
 batched-queue .prequeue .Q = Abstraction χ
