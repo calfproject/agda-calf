@@ -2,8 +2,9 @@
 
 module Examples.QueueV where
 
-open import Cubical.Foundations.Univalence
 open import Cubical.Foundations.Function
+open import Cubical.Foundations.Path
+open import Cubical.Foundations.Univalence
 import Cubical.Data.List.Properties as List
 import Cubical.Data.Nat.Properties as Nat
 import Cubical.Data.Bool.Properties as Bool
@@ -19,8 +20,9 @@ open import Calf.Value.List
 open import Calf.Value.Nat
 open import Calf.Value.Bool
 open import Calf.Value.Product
+open import Calf.Value.Sigma
 open import Calf.Value.Open
-open import Calf.Value.Closed
+open import Calf.Value.Closed as ●
 
 
 record PreQueue : 𝒱₁ where
@@ -92,7 +94,7 @@ batched-prequeue .isEmpty = isEmptyᴮ
 
 
 spec : {X : 𝒱} (center : X) → 𝒱
-spec {X} center = Σ[ x ∈ X ] ◯ (x ≡ center) 
+spec {X} center = Σ[ x ∈ X ] ◯ (x ≡ center)
 
 
 Queue : 𝒱
@@ -218,7 +220,7 @@ batched-queue .snd abs i .dequeue =
 batched-queue .snd abs i .isEmpty =
   ((square-openP χ id isEmptyᴮ isEmptyᴸ isEmpty-coherent abs)
     ∙ᴾ out-Abstraction-openP Bool abs) i
-    
+
 
 list-queue : Queue
 list-queue .fst = list-prequeue
@@ -226,14 +228,14 @@ list-queue .snd abs = refl
 
 module Open where
   isConcrete : 𝒱 → 𝒱
-  isConcrete X = Calf.Value.Closed.isModal X
+  isConcrete X = ●.isModal X
 
   ◯Σ≃◯Σ◯ : ∀ {X Y} → ◯ (Σ X Y) ≃ (◯ (Σ X (◯ ∘ Y)))
   ◯Σ≃◯Σ◯ {X} {Y} = isoToEquiv isoΣ◯
     where
       isoΣ◯ : Iso (◯ (Σ X Y)) (◯ (Σ X (◯ ∘ Y)))
       isoΣ◯ .Iso.fun x,y abs = map-snd η◦ (x,y abs)
-      isoΣ◯ .Iso.inv x,y◦ abs = map-snd (_$ abs) (x,y◦ abs) 
+      isoΣ◯ .Iso.inv x,y◦ abs = map-snd (_$ abs) (x,y◦ abs)
       isoΣ◯ .Iso.rightInv x,y◦ =
         funExt (λ abs i → x,y◦ abs .proj₁ ,
                 λ abs' → x,y◦ abs .snd (str ABS abs abs' i))
@@ -249,20 +251,11 @@ module Open where
 
   isConcreteSpec : {X : 𝒱} (center : X) → isConcrete (spec center)
   isConcreteSpec center =
-    isConnected◯→isModal●
-      (invEq isConnected≃◯isContr (λ abs →
-        subst isContr (lemma abs) (isContrSingl center)))
-    where lemma : ⟨ ABS ⟩ → singl center ≡ spec center
-          lemma abs = {!!}
- 
-
-
-
-
-
-
-
-
+    isConnected◯→isModal● $ invEq isConnected≃◯isContr $ λ abs →
+    isOfHLevelRespectEquiv 0 (lemma abs) (isContrSingl center)
+    where
+      lemma : ⟨ ABS ⟩ → singl center ≃ spec center
+      lemma abs = Σ-cong-equiv-snd (λ _ → isoToEquiv symIso ∙ₑ invEquiv (◯-open abs))
 
 {-
   non-interference : ∀ {X Y} → isConcrete X → ◯ (((x : X) → Y x) ≃ Σ X Y)
@@ -282,7 +275,7 @@ module Open where
         contr-path = is-contr .snd
     in cong f ((sym $ contr-path x) ∙ (contr-path x'))
 
-  
+
 
 open Open
 
@@ -294,7 +287,7 @@ module QueueReverse where
 
   toList : (q : Queue) → ℕ → q .prequeue .Q → List ℕ
   toList q zero x = []
-  toList q (suc n) x = 
+  toList q (suc n) x =
     let e , x' = q .prequeue .dequeue x in
     e ∷ toList q n x'
  -}
@@ -305,7 +298,7 @@ module QueueReverse where
 
   toList : (q : Queue) → ℕ → q .fst .Q → List ℕ
   toList q zero x = []
-  toList q (suc n) x = 
+  toList q (suc n) x =
     let e , x' = q .fst .dequeue x in
     e ∷ toList q n x'
 
@@ -346,7 +339,7 @@ batched-prequeue' .dequeue (tilt abs n back [] i) = {!!}
 batched-prequeue' .dequeue (tilt abs n back (x ∷ front) i) = {!!}
 batched-prequeue' .dequeue (squash q q₁ x y i i₁) = {!!}
 batched-prequeue' .isEmpty = {!!}
-  
+
 batched-queue' : Queue
 batched-queue' .fst = batched-prequeue'
 batched-queue' .snd abs i .Q = {!!}
