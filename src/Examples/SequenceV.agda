@@ -132,8 +132,8 @@ module _ (E : 𝒱) where
         node :
             Invariant• c₁• c₂• c• n₁• n₂• n•
           → IRBT• c₁• n₁• → IRBT• c₂• n₂• → IRBT• c• n•
-        identityˡ• : ∀ (abs : ⟨ ABS ⟩) inv linv (t : IRBT• c• n•)
-          → node {c₁•} {c•} {c•} {n₁•} {n•} {n•} inv (null linv) t ≡ t
+        identityˡ• : ◯ (∀ inv linv t
+          → node {c₁•} {c•} {c•} {n₁•} {n•} {n•} inv (null linv) t ≡ t)
         identityʳ• : {!   !}
         assoc• : {!   !}
 
