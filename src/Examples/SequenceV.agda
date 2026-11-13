@@ -102,8 +102,13 @@ module _ (E : 𝒱) where
       RBT : 𝒱
       RBT = Σ[ c ∈ Color ] Σ[ n ∈ ℕ ] IRBT c n
 
-      χ : RBT → List ℕ
-      χ = {!   !}
+      elements : IRBT c n → List E
+      elements (leaf _ e) = [ e ]
+      elements (null _) = []
+      elements (node _ t₁ t₂) = elements t₁ ++ elements t₂
+
+      χ : RBT → List E
+      χ (_ , _ , t) = elements t
 
       rbt-sequence : Sequence
       rbt-sequence .monoid-on .Carrier = Abstraction χ
