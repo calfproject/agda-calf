@@ -35,7 +35,7 @@ record PreQueue : 𝒱₁ where
 
 open PreQueue
 
-prequeue-path
+PreQueue-path
   : ∀ {P P' : PreQueue} (P≃P' : P .Q ≃ P' .Q)
   → (equivFun P≃P' (P .empty) ≡ P' .empty)
   → (∀ e p → equivFun P≃P' (P .enqueue e p) ≡ P' .enqueue e (equivFun P≃P' p))
@@ -43,15 +43,15 @@ prequeue-path
   → (∀ p → equivFun P≃P' (snd (P .dequeue p)) ≡ snd (P' .dequeue (equivFun P≃P' p)))
   → (∀ p → P .isEmpty p ≡ P' .isEmpty (equivFun P≃P' p))
   → P ≡ P'
-prequeue-path P≃P' _ _ _ _ _ i .Q = ua P≃P' i
-prequeue-path P≃P' h-empty _ _ _ _ i .empty = ua-gluePath P≃P' h-empty i
-prequeue-path {P} {P'} P≃P' _ h-enqueue _ _ _ i .enqueue e =
+PreQueue-path P≃P' _ _ _ _ _ i .Q = ua P≃P' i
+PreQueue-path P≃P' h-empty _ _ _ _ i .empty = ua-gluePath P≃P' h-empty i
+PreQueue-path {P} {P'} P≃P' _ h-enqueue _ _ _ i .enqueue e =
   ua→ {e = P≃P'} {f₁ = P' .enqueue e} (ua-gluePath P≃P' ∘ h-enqueue e) i
-prequeue-path {P} {P'} P≃P' _ _ h-fst-dequeue _ _ i .dequeue p .fst =
+PreQueue-path {P} {P'} P≃P' _ _ h-fst-dequeue _ _ i .dequeue p .fst =
   ua→ {e = P≃P'} {f₁ = fst ∘ P' .dequeue} h-fst-dequeue i p
-prequeue-path {P} {P'} P≃P' _ _ _ h-snd-dequeue _ i .dequeue p .snd =
+PreQueue-path {P} {P'} P≃P' _ _ _ h-snd-dequeue _ i .dequeue p .snd =
   ua→ {e = P≃P'} {f₁ = snd ∘ P' .dequeue} (ua-gluePath P≃P' ∘ h-snd-dequeue) i p
-prequeue-path {P} {P'} P≃P' _ _ _ _ h-isEmpty i .isEmpty =
+PreQueue-path {P} {P'} P≃P' _ _ _ _ h-isEmpty i .isEmpty =
   ua→ {e = P≃P'} {f₁ = P' .isEmpty}  h-isEmpty i
 
 LQ : 𝒱
@@ -321,7 +321,7 @@ module QueueReverse where
     List.length++ (reverse xs) [ x ] ∙
     Nat.+-suc (length (reverse xs)) 0 ∙
     cong suc (Nat.+-zero (length (reverse xs))) ∙
-    cong suc (length-reverse xs) 
+    cong suc (length-reverse xs)
 
   ◯qreverse≡reverse : (q : Queue) → ◯ (qreverse q ≡ reverse)
   ◯qreverse≡reverse q abs = funExt λ l →
@@ -352,6 +352,30 @@ data Batch : 𝒱 where
     inj (back ++ [ n ]) front ≡ inj back (front ++ [ n ]))
   squash : isSet Batch
 
+Batch-rec :
+    isSet X
+  → (f : (back front : List ℕ) → X)
+  → ◯ ((n : ℕ) (back front : List ℕ) → f (back ++ [ n ]) front ≡ f back (front ++ [ n ]))
+  → Batch
+  → X
+Batch-rec isSetX f f-tilt (inj back front) = f back front
+Batch-rec isSetX f f-tilt (tilt abs n back front i) = f-tilt abs n back front i
+Batch-rec isSetX f f-tilt (squash q q' h h' i i') =
+  isSetX
+    _ _
+    (cong (Batch-rec isSetX f f-tilt) h) (cong (Batch-rec isSetX f f-tilt) h')
+    i i'
+
+Batch-ind-prop :
+  {P : Batch → 𝒱}
+  → ((q : Batch) → isProp (P q))
+  → ((back front : List ℕ) → P (inj back front))
+  → (q : Batch)
+  → P q
+Batch-ind-prop isPropP f (inj back front) = f back front
+Batch-ind-prop isPropP f (tilt abs n back front i) = {!   !}
+Batch-ind-prop isPropP f (squash q q₁ x y i i₁) = {!   !}
+
 dequeue-help : List ℕ → ℕ × Batch
 dequeue-help [] = 0 , inj [] []
 dequeue-help (x ∷ xs) = x , inj [] xs
@@ -362,7 +386,7 @@ multitilt abs back front [] =
     inj back (front ++ [])
   ≡⟨ cong (λ hole → inj back hole) (List.++-unit-r front) ⟩
     inj back front
-  ≡⟨ cong (λ hole → inj hole front) (sym (List.++-unit-r back)) ⟩    
+  ≡⟨ cong (λ hole → inj hole front) (sym (List.++-unit-r back)) ⟩
     inj (back ++ []) front
   ∎
 multitilt abs back front (x ∷ other) =
@@ -383,57 +407,54 @@ multitilt abs back front (x ∷ other) =
 batched-prequeue' : PreQueue
 batched-prequeue' .Q = Batch
 batched-prequeue' .empty = inj [] []
-batched-prequeue' .enqueue n (inj back front) = inj (n ∷ back) front
-batched-prequeue' .enqueue n (tilt abs n' back front i) =
-  tilt abs n' (n ∷ back) front i
-batched-prequeue' .enqueue n (squash l l₁ x y i i₁) = {!!}
-batched-prequeue' .dequeue q = batched-dequeue q
-  where
-    batched-dequeue : Batch → ℕ × Batch
-    batched-dequeue (inj back []) = dequeue-help (reverse back)
-    batched-dequeue (inj back (x ∷ xs)) = x , inj back xs
-    batched-dequeue (tilt abs n back [] i) = dequeue-path i
-     where
-        dequeue-path : dequeue-help (reverse (back ++ [ n ])) ≡ (n , inj back [])
-        dequeue-path = 
+batched-prequeue' .enqueue n =
+  Batch-rec squash
+    (λ back front → inj (n ∷ back) front)
+    λ abs n' back front → tilt abs n' (n ∷ back) front
+batched-prequeue' .dequeue =
+  Batch-rec (isSet× isSetℕ squash)
+    (λ { back [] → dequeue-help (reverse back)
+       ; back (x ∷ front) → x , inj back front })
+    (λ { abs n back [] →
             dequeue-help (reverse (back ++ [ n ]))
           ≡⟨ cong dequeue-help (List.rev-++ back [ n ]) ⟩
             n , inj [] ([] ++ reverse back)
           ≡⟨ cong (n ,_) (multitilt abs [] [] back) ⟩
             n , inj ([] ++ back) []
           ∎
-    batched-dequeue (tilt abs n back (x ∷ xs) i) = x , (tilt abs n back xs i)
-    batched-dequeue _ = {!!}
-batched-prequeue' .isEmpty (inj [] []) = true
-batched-prequeue' .isEmpty (inj [] (x ∷ front)) = false
-batched-prequeue' .isEmpty (inj (x ∷ back) front) = false
-batched-prequeue' .isEmpty (tilt x n [] [] i) = false
-batched-prequeue' .isEmpty (tilt x n [] (x₁ ∷ front) i) = false
-batched-prequeue' .isEmpty (tilt x n (x₁ ∷ back) front i) = false
-batched-prequeue' .isEmpty (squash q q₁ x y i i₁) = {!!}
+       ; abs n back (x ∷ front) → cong (x ,_) (tilt abs n back front) })
+batched-prequeue' .isEmpty =
+  Batch-rec isSetBool
+    (λ { [] [] → true
+       ; [] (x ∷ front) → false
+       ; (x ∷ back) front → false })
+    (λ { abs n [] [] → refl
+       ; abs n [] (x ∷ front) → refl
+       ; abs n (x ∷ back) front → refl })
 
 
 batched-queue' : Queue
 batched-queue' .fst = batched-prequeue'
 batched-queue' .snd abs =
-  prequeue-path
+  PreQueue-path
     (isoToEquiv (iso fwd bwd fwd∘bwd bwd∘fwd))
     refl
     enqueue-path
-    dequeue-fst-path
-    dequeue-snd-path
-    isEmpty-path
+    (Batch-ind-prop (λ _ → isSetℕ _ _) dequeue-fst-path)
+    (Batch-ind-prop (λ _ → isSetList isSetℕ _ _) dequeue-snd-path)
+    (Batch-ind-prop (λ _ → isSetBool _ _) isEmpty-path)
   where
     fwd : Batch → List ℕ
-    fwd (inj back front) = front ++ reverse back
-    fwd (tilt abs n back front i) =
-      ( front ++ reverse (back ++ [ n ])
-      ≡⟨ cong (front ++_) (List.rev-++ back [ n ]) ⟩
-        front ++ [ n ] ++ reverse back
-      ≡⟨ (sym $ List.++-assoc front [ n ] (reverse back)) ⟩
-        (front ++ [ n ]) ++ reverse back
-      ∎ ) i
-    fwd (squash x x₁ x₂ y i i₁) = {!!}
+    fwd =
+      Batch-rec (isSetList isSetℕ)
+        (λ back front → front ++ reverse back)
+        λ abs n back front →
+          front ++ reverse (back ++ [ n ])
+        ≡⟨ cong (front ++_) (List.rev-++ back [ n ]) ⟩
+          front ++ [ n ] ++ reverse back
+        ≡⟨ (sym $ List.++-assoc front [ n ] (reverse back)) ⟩
+          (front ++ [ n ]) ++ reverse back
+        ∎
 
     bwd : List ℕ → Batch
     bwd = inj []
@@ -442,45 +463,40 @@ batched-queue' .snd abs =
     fwd∘bwd = List.++-unit-r
 
     bwd∘fwd : (b : Batch) → (bwd ∘ fwd) b ≡ b
-    bwd∘fwd (inj back front) =
+    bwd∘fwd = Batch-ind-prop (λ _ → squash _ _) λ back front →
         (bwd ∘ fwd) (inj back front)
       ≡⟨ multitilt abs [] front back ⟩
         inj back front
       ∎
-    bwd∘fwd (tilt abs n back front i) = {!!}
-    bwd∘fwd (squash b b₁ x y i i₁) = {!!}
 
     enqueue-path : (n : ℕ) (b : Batch) →
       fwd (batched-prequeue' .enqueue n b) ≡
       enqueueᴸ n (fwd b)
-    enqueue-path n (inj back front) =
+    enqueue-path n = Batch-ind-prop (λ _ → isSetList isSetℕ _ _) λ back front →
       sym $ List.++-assoc front (reverse back) [ n ]
-    enqueue-path n (tilt abs n' back front i) = {!!}
-    enqueue-path n (squash b b₁ x y i i₁) = {!!}
 
-    dequeue-fst-path : (b : Batch) →
-      (batched-prequeue' .dequeue b) .proj₁ ≡ (dequeueᴸ (fwd b)) .proj₁
-    dequeue-fst-path (inj back []) with reverse back
+    dequeue-fst-path : (back front : List ℕ) →
+      let b = inj back front in
+      batched-prequeue' .dequeue b .proj₁ ≡ dequeueᴸ (fwd b) .proj₁
+    dequeue-fst-path back [] with reverse back
     ... | [] = refl
     ... | x ∷ xs = refl
-    dequeue-fst-path (inj back (x ∷ front)) = refl
-    dequeue-fst-path (tilt abs n back front i) = {!!}
-    dequeue-fst-path (squash b b₁ x y i i₁) = {!!}
+    dequeue-fst-path back (x ∷ front) = refl
 
-    dequeue-snd-path : (b : Batch) →
-      fwd ((batched-prequeue' .dequeue b) .proj₂) ≡ (dequeueᴸ (fwd b)) .proj₂
-    dequeue-snd-path (inj back []) with reverse back
+    dequeue-snd-path : (back front : List ℕ) →
+      let b = inj back front in
+      fwd (batched-prequeue' .dequeue b .proj₂) ≡ dequeueᴸ (fwd b) .proj₂
+    dequeue-snd-path back [] with reverse back
     ... | [] = refl
     ... | x ∷ b = List.++-unit-r b
-    dequeue-snd-path (inj back (x ∷ front)) = refl
-    dequeue-snd-path (tilt abs n back front i) = {!!}
-    dequeue-snd-path (squash b b₁ x y i i₁) = {!!}
+    dequeue-snd-path back (x ∷ front) = refl
 
-    isEmpty-path : (b : Batch) →
+    isEmpty-path : (back front : List ℕ) →
+      let b = inj back front in
       batched-prequeue' .isEmpty b ≡ isEmptyᴸ (fwd b)
-    isEmpty-path (inj [] []) = refl
-    isEmpty-path (inj [] (x ∷ front)) = refl
-    isEmpty-path (inj (x ∷ back) front) =
+    isEmpty-path [] [] = refl
+    isEmpty-path [] (x ∷ front) = refl
+    isEmpty-path (x ∷ back) front =
         batched-prequeue' .isEmpty (inj (x ∷ back) front)
       ≡⟨ (sym (non-empty (front ++ reverse back) x)) ⟩
         isEmptyᴸ ((front ++ reverse back) ++ [ x ])
@@ -491,5 +507,3 @@ batched-queue' .snd abs =
         non-empty : (l : List ℕ) (n : ℕ) → isEmptyᴸ (l ++ [ n ]) ≡ false
         non-empty [] n = refl
         non-empty (x ∷ l) n = refl
-    isEmpty-path (tilt abs n back front i) = {!!}
-    isEmpty-path (squash b b₁ x y i i₁) = {!!}
