@@ -373,8 +373,14 @@ Batch-ind-prop :
   → (q : Batch)
   → P q
 Batch-ind-prop isPropP f (inj back front) = f back front
-Batch-ind-prop isPropP f (tilt abs n back front i) = {!   !}
-Batch-ind-prop isPropP f (squash q q₁ x y i i₁) = {!   !}
+Batch-ind-prop {P} isPropP f (tilt abs n back front i) =
+  isProp→PathP (λ i → isPropP (tilt _ _ _ _ i))
+    (f (back ++ [ n ]) front) (f back (front ++ [ n ])) i
+Batch-ind-prop isPropP f (squash q q' h h' i i') =
+  isProp→SquareP (λ i i' → isPropP (squash q q' h h' i i'))
+    refl refl
+    (cong (Batch-ind-prop isPropP f) h) (cong (Batch-ind-prop isPropP f) h')
+    i i'
 
 dequeue-help : List ℕ → ℕ × Batch
 dequeue-help [] = 0 , inj [] []
