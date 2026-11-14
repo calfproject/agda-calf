@@ -29,11 +29,12 @@ x ≗ x' = ◯ (x ≡ x')
 isContr◦ : 𝒱 → 𝒱
 isContr◦ X = Σ[ x ∈ X ] (∀ x' → x ≗ x')
 
-module _ (E : 𝒱) where
+module _ (E : 𝒱) (isSetE : isSet E) where
 
   record MonoidOn : 𝒱 where
     field
       Carrier : 𝒱
+      is-set : isSet Carrier
       empty : Carrier
       append : Carrier → Carrier → Carrier
       identityˡ : (x : Carrier) → append empty x ≗ x
@@ -52,6 +53,29 @@ module _ (E : 𝒱) where
       singleton : ∀ e → Carrier (M .singleton e) ≗ N .singleton e
   open Hom
 
+  Hom-path
+    : {M N : MonoidOn} {f f' : Hom M N}
+    → ((m : M .Carrier) → f .Carrier m ≡ f' .Carrier m)
+    → f ≡ f'
+  Hom-path p i .Carrier = funExt p i
+  Hom-path {M} {N} {f} {f'} p i .empty abs =
+    isProp→PathP
+      (λ i → N .is-set (funExt p i (M .empty)) (N .empty))
+      (f .empty abs) (f' .empty abs)
+      i
+  Hom-path {M} {N} {f} {f'} p i .append m m' abs =
+    isProp→PathP
+      (λ i →
+         N .is-set (funExt p i (M .append m m'))
+         (N .append (funExt p i m) (funExt p i m')))
+      (f .append m m' abs) (f' .append m m' abs)
+    i
+  Hom-path {M} {N} {f} {f'} p i .singleton e abs =
+    isProp→PathP
+      (λ i → N .is-set (funExt p i (M .singleton e)) (N .singleton e))
+      (f .singleton e abs) (f' .singleton e abs)
+      i
+
   record Sequence : 𝒱 where
     field
       monoid-on : MonoidOn
@@ -60,6 +84,7 @@ module _ (E : 𝒱) where
 
   list-sequence : Sequence
   list-sequence .monoid-on .Carrier = List E
+  list-sequence .monoid-on .is-set = isSetList isSetE
   list-sequence .monoid-on .empty = []
   list-sequence .monoid-on .append = _++_
   list-sequence .monoid-on .identityˡ _ abs = refl
@@ -98,8 +123,7 @@ module _ (E : 𝒱) where
            (list-sequence .monoid-on .append (x ∷ m) m')
         ∎
   list-sequence .mapreduce M .fst .singleton = λ e → M .identityʳ (M .singleton e)
-  list-sequence .mapreduce M .snd f abs i .Carrier =
-    funExt carrier-lemma i
+  list-sequence .mapreduce M .snd f abs = Hom-path carrier-lemma
     where
       carrier-lemma :  (l : List E) →
         foldr (λ e → M .append (M .singleton e)) (M .empty) l ≡
@@ -118,9 +142,6 @@ module _ (E : 𝒱) where
          ≡⟨ ( sym (f .append [ x ] xs abs)) ⟩
            f .Carrier (x ∷ xs)
          ∎
-  list-sequence .mapreduce M .snd f abs i .empty = {!!}
-  list-sequence .mapreduce M .snd f abs i .append = {!!}
-  list-sequence .mapreduce M .snd f abs i .singleton = {!!}
 
 
   module Tree where
@@ -137,6 +158,7 @@ module _ (E : 𝒱) where
 
       tree-sequence : Sequence
       tree-sequence .monoid-on .Carrier = Abstraction χ
+      tree-sequence .monoid-on .is-set = {!   !}
       tree-sequence .monoid-on .empty = triangle χ null [] refl
       tree-sequence .monoid-on .append = square₂ χ χ χ node _++_ λ _ _ → refl
       tree-sequence .monoid-on .identityˡ = {!   !}
@@ -156,6 +178,7 @@ module _ (E : 𝒱) where
 
       tree-sequence : Sequence
       tree-sequence .monoid-on .Carrier = Tree•
+      tree-sequence .monoid-on .is-set = {!   !}
       tree-sequence .monoid-on .empty = null
       tree-sequence .monoid-on .append = node
       tree-sequence .monoid-on .identityˡ = identityˡ•
@@ -200,6 +223,7 @@ module _ (E : 𝒱) where
 
       rbt-sequence : Sequence
       rbt-sequence .monoid-on .Carrier = Abstraction χ
+      rbt-sequence .monoid-on .is-set = {!   !}
       rbt-sequence .monoid-on .empty = {!   !}
       rbt-sequence .monoid-on .append = λ z z₁ → z
       rbt-sequence .monoid-on .identityˡ = {!   !}
@@ -235,6 +259,7 @@ module _ (E : 𝒱) where
 
       rbt-sequence : Sequence
       rbt-sequence .monoid-on .Carrier = RBT•
+      rbt-sequence .monoid-on .is-set = {!   !}
       rbt-sequence .monoid-on .empty = η• black , η• zero , null {!   !}
       rbt-sequence .monoid-on .append = {!   !}
       rbt-sequence .monoid-on .identityˡ = {!   !}
