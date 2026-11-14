@@ -70,10 +70,36 @@ module _ (E : 𝒱) where
     foldr
       (λ e m → M .append (M .singleton e) m)
       (M .empty)
-  list-sequence .mapreduce M .fst .empty = {!   !}
-  list-sequence .mapreduce M .fst .append = {!   !}
-  list-sequence .mapreduce M .fst .singleton = {!   !}
-  list-sequence .mapreduce M .snd f abs = {!   !}
+  list-sequence .mapreduce M .fst .empty abs = refl   
+  list-sequence .mapreduce M .fst .append m m' abs = sym (append-lemma m m' abs)
+    where
+      append-lemma :
+        (m m' : list-sequence .monoid-on .Carrier) →
+        M .append (list-sequence .mapreduce M .proj₁ .Carrier m)
+        (list-sequence .mapreduce M .fst .Carrier m')
+        ≗
+        list-sequence .mapreduce M .fst .Carrier
+        (list-sequence .monoid-on .append m m')
+      append-lemma [] [] abs = M .identityˡ (M .empty) abs
+      append-lemma [] (x ∷ m') abs =
+        M .identityˡ (list-sequence .mapreduce M .fst .Carrier (x ∷ m')) abs
+      append-lemma (x ∷ m) m' abs =
+          M .append (list-sequence .mapreduce M .fst .Carrier (x ∷ m))
+           (list-sequence .mapreduce M .fst .Carrier m')
+        ≡⟨
+           M .assoc (M .singleton x)
+             (list-sequence .mapreduce M .fst .Carrier m)
+             (list-sequence .mapreduce M .fst .Carrier m') abs
+         ⟩
+           M .append (M .singleton x)
+             (M .append (list-sequence .mapreduce M .fst .Carrier m)
+             (list-sequence .mapreduce M .fst .Carrier m'))
+        ≡⟨ cong (M .append (M .singleton x)) (append-lemma m m' abs) ⟩
+          list-sequence .mapreduce M .fst .Carrier
+           (list-sequence .monoid-on .append (x ∷ m) m')
+        ∎
+  list-sequence .mapreduce M .fst .singleton = λ e → M .identityʳ (M .singleton e)
+  list-sequence .mapreduce M .snd f abs = {!!}
 
 
   module RedBlackTree where
@@ -113,7 +139,7 @@ module _ (E : 𝒱) where
       rbt-sequence : Sequence
       rbt-sequence .monoid-on .Carrier = Abstraction χ
       rbt-sequence .monoid-on .empty = {!   !}
-      rbt-sequence .monoid-on .append = {!   !}
+      rbt-sequence .monoid-on .append = λ z z₁ → z
       rbt-sequence .monoid-on .identityˡ = {!   !}
       rbt-sequence .monoid-on .identityʳ = {!   !}
       rbt-sequence .monoid-on .assoc = {!   !}
@@ -122,10 +148,10 @@ module _ (E : 𝒱) where
 
     module Quotient where
       LeafInvariant• : ● Color → ● ℕ → 𝒱
-      LeafInvariant• c• n• = {!   !}
+      LeafInvariant• c• n• = E
 
       Invariant• : (c₁• c₂• c• : ● Color) (n₁• n₂• n• : ● ℕ) → 𝒱
-      Invariant• = {!   !}
+      Invariant• = λ c₁• c₂• c• n₁• n₂• n• → E
 
       variable
         c₁• c₂• c• : ● Color
