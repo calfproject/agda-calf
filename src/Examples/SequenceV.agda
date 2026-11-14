@@ -99,7 +99,29 @@ module _ (E : 𝒱) where
            (list-sequence .monoid-on .append (x ∷ m) m')
         ∎
   list-sequence .mapreduce M .fst .singleton = λ e → M .identityʳ (M .singleton e)
-  list-sequence .mapreduce M .snd f abs = {!!}
+  list-sequence .mapreduce M .snd f abs i .Carrier =
+    funExt carrier-lemma i
+    where
+      carrier-lemma :  (l : List E) →
+        foldr (λ e → M .append (M .singleton e)) (M .empty) l ≡
+        f .Carrier l
+      carrier-lemma [] = sym (f .empty abs)
+      carrier-lemma (x ∷ xs) =
+          list-sequence .mapreduce M .fst .Carrier (x ∷ xs)
+        ≡⟨ cong (λ hole →
+                   M .append hole (list-sequence .mapreduce M .fst .Carrier xs))
+                (sym (f .singleton x abs))
+         ⟩
+           M .append (f .Carrier (list-sequence .monoid-on .singleton x))
+             (list-sequence .mapreduce M .fst .Carrier xs)
+         ≡⟨ ( cong (λ hole → M .append (f .Carrier [ x ]) hole) (carrier-lemma xs)) ⟩
+           M .append (f .Carrier [ x ]) (f .Carrier xs)            
+         ≡⟨ ( sym (f .append [ x ] xs abs)) ⟩
+           f .Carrier (x ∷ xs)
+         ∎
+  list-sequence .mapreduce M .snd f abs i .empty = {!!}
+  list-sequence .mapreduce M .snd f abs i .append = {!!}
+  list-sequence .mapreduce M .snd f abs i .singleton = {!!}
 
 
   module RedBlackTree where
