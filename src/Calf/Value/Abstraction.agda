@@ -17,15 +17,19 @@ Abstraction-Fracture {X-⊤} {X-abs} χ .X• = ●• X-⊤
 Abstraction-Fracture {X-⊤} {X-abs} χ .X◦ = ◯◦ X-abs
 Abstraction-Fracture {X-⊤} {X-abs} χ .χ• = ●.map (χ ⨾ η◦)
 
-Abstraction : {X-⊤ X-abs : 𝒱} → (X-⊤ → X-abs) → 𝒱
+private variable X-⊤ X-abs Y-⊤ Y-abs Z-⊤ Z-abs : 𝒱
+
+Abstraction : (X-⊤ → X-abs) → 𝒱
 Abstraction = fromFracture ∘ Abstraction-Fracture
+
+isSetAbstraction : {χ : X-⊤ → X-abs} → isSet X-⊤ → isSet X-abs → isSet (Abstraction χ)
+isSetAbstraction isSetX-⊤ isSetX-abs = isSetGlue (isSet● isSetX-⊤) (isSet◯ isSetX-abs)
 
 Abstraction-id : (X : 𝒱) → X ≃ Abstraction (id {X})
 Abstraction-id X = fracture , fracture-isEquiv
 
 square
-  : ∀ {X-⊤ X-abs Y-⊤ Y-abs}
-  → (χ : X-⊤ → X-abs) (ψ : Y-⊤ → Y-abs)
+  : (χ : X-⊤ → X-abs) (ψ : Y-⊤ → Y-abs)
   → (f-⊤ : X-⊤ → Y-⊤)
   → (f-abs : X-abs → Y-abs)
   → ((x-⊤ : X-⊤) → ψ (f-⊤ x-⊤) ≡ f-abs (χ x-⊤))
@@ -36,7 +40,7 @@ square χ ψ f-⊤ f-abs f-coh =
     (◯.map f-abs)
     (●.elim (λ _ → ●.isModal●≡) (cong (η• ∘ η◦) ∘ f-coh))
 
-module _ {X-⊤ X-abs} (χ : X-⊤ → X-abs) where
+module _ (χ : X-⊤ → X-abs) where
   triangle
     : (x-⊤ : X-⊤) (x-abs : X-abs)
     → χ x-⊤ ≡ x-abs
@@ -59,7 +63,7 @@ module _ {X-⊤ X-abs} (χ : X-⊤ → X-abs) where
     ∎
 
 Abstraction-× :
-  ∀ {X-⊤ X-abs} (χ : X-⊤ → X-abs) {Y-⊤ Y-abs} (ψ : Y-⊤ → Y-abs)
+  (χ : X-⊤ → X-abs) (ψ : Y-⊤ → Y-abs)
   → Abstraction χ × Abstraction ψ ≃ Abstraction (×.map χ ψ)
 Abstraction-× χ ψ =
   isoToEquiv $ iso
@@ -69,7 +73,7 @@ Abstraction-× χ ψ =
     {!   !}
 
 square₂
-  : ∀ {X-⊤ X-abs} (χ : X-⊤ → X-abs) {Y-⊤ Y-abs} (ψ : Y-⊤ → Y-abs) {Z-⊤ Z-abs} (ζ : Z-⊤ → Z-abs)
+  : (χ : X-⊤ → X-abs) (ψ : Y-⊤ → Y-abs) (ζ : Z-⊤ → Z-abs)
   → (f-⊤ : X-⊤ → Y-⊤ → Z-⊤)
   → (f-abs : X-abs → Y-abs → Z-abs)
   → ((x-⊤ : X-⊤) (y-⊤ : Y-⊤) → ζ (f-⊤ x-⊤ y-⊤) ≡ f-abs (χ x-⊤) (ψ y-⊤))
@@ -80,14 +84,14 @@ square₂ χ ψ ζ f-⊤ f-abs f-coh =
   equivFun (Abstraction-× χ ψ)
 
 Abstraction-open
-  : ∀ {X-⊤ X-abs} (χ : X-⊤ → X-abs)
+  : (χ : X-⊤ → X-abs)
   → ⟨ ABS ⟩
   → Abstraction χ ≃ X-abs
 Abstraction-open {X-⊤} {X-abs} χ abs =
   Glue-open (Abstraction-Fracture χ) abs ∙ₑ ◯-open abs
 
 square-openP
-  : ∀ {X-⊤ X-abs} (χ : X-⊤ → X-abs) {Y-⊤ Y-abs} (β : Y-⊤ → Y-abs)
+  : (χ : X-⊤ → X-abs) (β : Y-⊤ → Y-abs)
   → (f-⊤ : X-⊤ → Y-⊤) (f-abs : X-abs → Y-abs)
   → (f-coh : (x-⊤ : X-⊤) → β (f-⊤ x-⊤) ≡ f-abs (χ x-⊤))
   → (abs : ⟨ ABS ⟩)
@@ -99,7 +103,7 @@ square-openP χ β _ _ _ abs =
   ua→ λ x → ua-gluePath (Abstraction-open β abs) refl
 
 triangle-openP
-  : ∀ {X-⊤ X-abs} (χ : X-⊤ → X-abs)
+  : (χ : X-⊤ → X-abs)
   → (x-⊤ : X-⊤) (x-abs : X-abs) (x-coh : χ x-⊤ ≡ x-abs)
   → (abs : ⟨ ABS ⟩)
   → PathP (λ i → ua (Abstraction-open χ abs) i)

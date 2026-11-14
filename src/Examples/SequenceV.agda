@@ -158,7 +158,7 @@ module _ (E : 𝒱) (isSetE : isSet E) where
 
       tree-sequence : Sequence
       tree-sequence .monoid-on .Carrier = Abstraction χ
-      tree-sequence .monoid-on .is-set = {!   !}
+      tree-sequence .monoid-on .is-set = isSetAbstraction {!   !} (isSetList isSetE)
       tree-sequence .monoid-on .empty = triangle χ null [] refl
       tree-sequence .monoid-on .append = square₂ χ χ χ node _++_ λ _ _ → refl
       tree-sequence .monoid-on .identityˡ = {!   !}
@@ -175,6 +175,7 @@ module _ (E : 𝒱) (isSetE : isSet E) where
         identityˡ• : ∀ t → node null t ≗ t
         identityʳ• : {!   !}
         assoc• : {!   !}
+        squash : isSet Tree•
 
       tree-sequence : Sequence
       tree-sequence .monoid-on .Carrier = Tree•
@@ -223,7 +224,7 @@ module _ (E : 𝒱) (isSetE : isSet E) where
 
       rbt-sequence : Sequence
       rbt-sequence .monoid-on .Carrier = Abstraction χ
-      rbt-sequence .monoid-on .is-set = {!   !}
+      rbt-sequence .monoid-on .is-set = isSetAbstraction {!   !} (isSetList isSetE)
       rbt-sequence .monoid-on .empty = {!   !}
       rbt-sequence .monoid-on .append = λ z z₁ → z
       rbt-sequence .monoid-on .identityˡ = {!   !}
@@ -253,6 +254,7 @@ module _ (E : 𝒱) (isSetE : isSet E) where
           → node {c₁•} {c•} {c•} {n₁•} {n•} {n•} inv (null linv) t ≗ t
         identityʳ• : {!   !}
         assoc• : {!   !}
+        squash : isSet (Tree• c₁• n₁•)
 
       RBT• : 𝒱
       RBT• = Σ[ c• ∈ ● Color ] Σ[ n• ∈ ● ℕ ] Tree• c• n•
