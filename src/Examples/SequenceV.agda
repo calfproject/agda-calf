@@ -179,7 +179,7 @@ module _ (E : 𝒱) (isSetE : isSet E) where
 
       tree-sequence : Sequence
       tree-sequence .monoid-on .Carrier = Tree•
-      tree-sequence .monoid-on .is-set = {!   !}
+      tree-sequence .monoid-on .is-set = squash
       tree-sequence .monoid-on .empty = null
       tree-sequence .monoid-on .append = node
       tree-sequence .monoid-on .identityˡ = identityˡ•
@@ -261,7 +261,10 @@ module _ (E : 𝒱) (isSetE : isSet E) where
 
       rbt-sequence : Sequence
       rbt-sequence .monoid-on .Carrier = RBT•
-      rbt-sequence .monoid-on .is-set = {!   !}
+      rbt-sequence .monoid-on .is-set =
+        isSetΣ (isSet● {!   !}) λ _ →
+        isSetΣ (isSet● isSetℕ) λ _ →
+        squash
       rbt-sequence .monoid-on .empty = η• black , η• zero , null {!   !}
       rbt-sequence .monoid-on .append = {!   !}
       rbt-sequence .monoid-on .identityˡ = {!   !}
