@@ -80,9 +80,8 @@ module _ (E : 𝒱) where
         ≗
         list-sequence .mapreduce M .fst .Carrier
         (list-sequence .monoid-on .append m m')
-      append-lemma [] [] abs = M .identityˡ (M .empty) abs
-      append-lemma [] (x ∷ m') abs =
-        M .identityˡ (list-sequence .mapreduce M .fst .Carrier (x ∷ m')) abs
+      append-lemma [] m' abs =
+        M .identityˡ (list-sequence .mapreduce M .fst .Carrier m') abs
       append-lemma (x ∷ m) m' abs =
           M .append (list-sequence .mapreduce M .fst .Carrier (x ∷ m))
            (list-sequence .mapreduce M .fst .Carrier m')
