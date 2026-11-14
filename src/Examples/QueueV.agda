@@ -8,6 +8,7 @@ open import Cubical.Foundations.Univalence
 import Cubical.Data.List.Properties as List
 import Cubical.Data.Nat.Properties as Nat
 import Cubical.Data.Bool.Properties as Bool
+open import Cubical.HITs.SetTruncation as ∥_∥₂ using (∥_∥₂; ∣_∣₂; squash₂)
 
 open import Cubical.Data.Sigma using (map-snd; ΣPathP; Σ-contractFst; Σ-cong-snd)
 
@@ -21,8 +22,8 @@ open import Calf.Value.Nat
 open import Calf.Value.Bool
 open import Calf.Value.Product
 open import Calf.Value.Sigma
-open import Calf.Value.Open
-open import Calf.Value.Closed as ●
+open import Calf.Value.Open as ◯ hiding (rec)
+open import Calf.Value.Closed as ● hiding (rec)
 
 
 record PreQueue : 𝒱₁ where
@@ -346,41 +347,42 @@ module QueueReverse where
       toList-lemma [] = refl
       toList-lemma (x ∷ xs) = cong (x ∷_) (toList-lemma xs)
 
-data Batch : 𝒱 where
-  inj : (back front : List ℕ) → Batch
-  tilt : ◯ ((n : ℕ) (back front : List ℕ) →
-    inj (back ++ [ n ]) front ≡ inj back (front ++ [ n ]))
-  squash : isSet Batch
+data Batch₀ : 𝒱 where
+  inj₀ : (back front : List ℕ) → Batch₀
+  tilt₀ : ◯ ((n : ℕ) (back front : List ℕ) →
+    inj₀ (back ++ [ n ]) front ≡ inj₀ back (front ++ [ n ]))
 
-Batch-rec :
-    isSet X
-  → (f : (back front : List ℕ) → X)
-  → ◯ ((n : ℕ) (back front : List ℕ) → f (back ++ [ n ]) front ≡ f back (front ++ [ n ]))
-  → Batch
-  → X
-Batch-rec isSetX f f-tilt (inj back front) = f back front
-Batch-rec isSetX f f-tilt (tilt abs n back front i) = f-tilt abs n back front i
-Batch-rec isSetX f f-tilt (squash q q' h h' i i') =
-  isSetX
-    _ _
-    (cong (Batch-rec isSetX f f-tilt) h) (cong (Batch-rec isSetX f f-tilt) h')
-    i i'
+Batch : 𝒱
+Batch = ∥ Batch₀ ∥₂
 
-Batch-ind-prop :
-  {P : Batch → 𝒱}
-  → ((q : Batch) → isProp (P q))
-  → ((back front : List ℕ) → P (inj back front))
-  → (q : Batch)
-  → P q
-Batch-ind-prop isPropP f (inj back front) = f back front
-Batch-ind-prop {P} isPropP f (tilt abs n back front i) =
-  isProp→PathP (λ i → isPropP (tilt _ _ _ _ i))
-    (f (back ++ [ n ]) front) (f back (front ++ [ n ])) i
-Batch-ind-prop isPropP f (squash q q' h h' i i') =
-  isProp→SquareP (λ i i' → isPropP (squash q q' h h' i i'))
-    refl refl
-    (cong (Batch-ind-prop isPropP f) h) (cong (Batch-ind-prop isPropP f) h')
-    i i'
+pattern inj back front = ∣ inj₀ back front ∣₂
+pattern tilt abs n back front i = ∣ tilt₀ abs n back front i ∣₂
+
+isSetBatch : isSet Batch
+isSetBatch = squash₂
+
+module Batch where
+  rec :
+      isSet X
+    → (f : (back front : List ℕ) → X)
+    → ◯ ((n : ℕ) (back front : List ℕ) → f (back ++ [ n ]) front ≡ f back (front ++ [ n ]))
+    → Batch
+    → X
+  rec isSetX f f-tilt = ∥_∥₂.rec isSetX $
+    λ { (inj₀ back front) → f back front
+      ; (tilt₀ abs n back front i) → f-tilt abs n back front i }
+
+  ind-prop :
+    {P : Batch → 𝒱}
+    → ((q : Batch) → isProp (P q))
+    → ((back front : List ℕ) → P (inj back front))
+    → (q : Batch)
+    → P q
+  ind-prop isPropP f = ∥_∥₂.elim (λ q → isProp→isSet (isPropP q)) $
+    (λ { (inj₀ back front) → f back front
+      ; (tilt₀ abs n back front i) →
+            isProp→PathP (λ i → isPropP (tilt abs n back front i))
+              (f (back ++ [ n ]) front) (f back (front ++ [ n ])) i })
 
 dequeue-help : List ℕ → ℕ × Batch
 dequeue-help [] = 0 , inj [] []
@@ -414,11 +416,11 @@ batched-prequeue' : PreQueue
 batched-prequeue' .Q = Batch
 batched-prequeue' .empty = inj [] []
 batched-prequeue' .enqueue n =
-  Batch-rec squash
+  Batch.rec isSetBatch
     (λ back front → inj (n ∷ back) front)
     λ abs n' back front → tilt abs n' (n ∷ back) front
 batched-prequeue' .dequeue =
-  Batch-rec (isSet× isSetℕ squash)
+  Batch.rec (isSet× isSetℕ isSetBatch)
     (λ { back [] → dequeue-help (reverse back)
        ; back (x ∷ front) → x , inj back front })
     (λ { abs n back [] →
@@ -430,7 +432,7 @@ batched-prequeue' .dequeue =
           ∎
        ; abs n back (x ∷ front) → cong (x ,_) (tilt abs n back front) })
 batched-prequeue' .isEmpty =
-  Batch-rec isSetBool
+  Batch.rec isSetBool
     (λ { [] [] → true
        ; [] (x ∷ front) → false
        ; (x ∷ back) front → false })
@@ -446,13 +448,13 @@ batched-queue' .snd abs =
     (isoToEquiv (iso fwd bwd fwd∘bwd bwd∘fwd))
     refl
     enqueue-path
-    (Batch-ind-prop (λ _ → isSetℕ _ _) dequeue-fst-path)
-    (Batch-ind-prop (λ _ → isSetList isSetℕ _ _) dequeue-snd-path)
-    (Batch-ind-prop (λ _ → isSetBool _ _) isEmpty-path)
+    (Batch.ind-prop (λ _ → isSetℕ _ _) dequeue-fst-path)
+    (Batch.ind-prop (λ _ → isSetList isSetℕ _ _) dequeue-snd-path)
+    (Batch.ind-prop (λ _ → isSetBool _ _) isEmpty-path)
   where
     fwd : Batch → List ℕ
     fwd =
-      Batch-rec (isSetList isSetℕ)
+      Batch.rec (isSetList isSetℕ)
         (λ back front → front ++ reverse back)
         λ abs n back front →
           front ++ reverse (back ++ [ n ])
@@ -469,7 +471,7 @@ batched-queue' .snd abs =
     fwd∘bwd = List.++-unit-r
 
     bwd∘fwd : (b : Batch) → (bwd ∘ fwd) b ≡ b
-    bwd∘fwd = Batch-ind-prop (λ _ → squash _ _) λ back front →
+    bwd∘fwd = Batch.ind-prop (λ _ → isSetBatch _ _) λ back front →
         (bwd ∘ fwd) (inj back front)
       ≡⟨ multitilt abs [] front back ⟩
         inj back front
@@ -478,7 +480,7 @@ batched-queue' .snd abs =
     enqueue-path : (n : ℕ) (b : Batch) →
       fwd (batched-prequeue' .enqueue n b) ≡
       enqueueᴸ n (fwd b)
-    enqueue-path n = Batch-ind-prop (λ _ → isSetList isSetℕ _ _) λ back front →
+    enqueue-path n = Batch.ind-prop (λ _ → isSetList isSetℕ _ _) λ back front →
       sym $ List.++-assoc front (reverse back) [ n ]
 
     dequeue-fst-path : (back front : List ℕ) →
