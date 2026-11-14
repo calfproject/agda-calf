@@ -70,7 +70,7 @@ module _ (E : 𝒱) where
     foldr
       (λ e m → M .append (M .singleton e) m)
       (M .empty)
-  list-sequence .mapreduce M .fst .empty abs = refl   
+  list-sequence .mapreduce M .fst .empty abs = refl
   list-sequence .mapreduce M .fst .append m m' abs = sym (append-lemma m m' abs)
     where
       append-lemma :
@@ -115,7 +115,7 @@ module _ (E : 𝒱) where
            M .append (f .Carrier (list-sequence .monoid-on .singleton x))
              (list-sequence .mapreduce M .fst .Carrier xs)
          ≡⟨ ( cong (λ hole → M .append (f .Carrier [ x ]) hole) (carrier-lemma xs)) ⟩
-           M .append (f .Carrier [ x ]) (f .Carrier xs)            
+           M .append (f .Carrier [ x ]) (f .Carrier xs)
          ≡⟨ ( sym (f .append [ x ] xs abs)) ⟩
            f .Carrier (x ∷ xs)
          ∎
@@ -123,6 +123,47 @@ module _ (E : 𝒱) where
   list-sequence .mapreduce M .snd f abs i .append = {!!}
   list-sequence .mapreduce M .snd f abs i .singleton = {!!}
 
+
+  module Tree where
+    module Abstraction where
+      data Tree : 𝒱 where
+        leaf : E → Tree
+        null : Tree
+        node : Tree → Tree → Tree
+
+      χ : Tree → List E
+      χ (leaf e) = [ e ]
+      χ null = []
+      χ (node t₁ t₂) = χ t₁ ++ χ t₂
+
+      tree-sequence : Sequence
+      tree-sequence .monoid-on .Carrier = Abstraction χ
+      tree-sequence .monoid-on .empty = triangle χ null [] refl
+      tree-sequence .monoid-on .append = square₂ χ χ χ node _++_ λ _ _ → refl
+      tree-sequence .monoid-on .identityˡ = {!   !}
+      tree-sequence .monoid-on .identityʳ = {!   !}
+      tree-sequence .monoid-on .assoc = {!   !}
+      tree-sequence .monoid-on .singleton = {!   !}
+      tree-sequence .mapreduce = {!   !}
+
+    module Quotient where
+      data Tree• : 𝒱 where
+        leaf : E → Tree•
+        null : Tree•
+        node : Tree• → Tree• → Tree•
+        identityˡ• : ∀ t → node null t ≗ t
+        identityʳ• : {!   !}
+        assoc• : {!   !}
+
+      tree-sequence : Sequence
+      tree-sequence .monoid-on .Carrier = Tree•
+      tree-sequence .monoid-on .empty = null
+      tree-sequence .monoid-on .append = node
+      tree-sequence .monoid-on .identityˡ = identityˡ•
+      tree-sequence .monoid-on .identityʳ = {!   !}
+      tree-sequence .monoid-on .assoc = {!   !}
+      tree-sequence .monoid-on .singleton = leaf
+      tree-sequence .mapreduce = {!   !}
 
   module RedBlackTree where
     data Color : 𝒱 where
@@ -170,28 +211,28 @@ module _ (E : 𝒱) where
 
     module Quotient where
       LeafInvariant• : ● Color → ● ℕ → 𝒱
-      LeafInvariant• c• n• = E
+      LeafInvariant• c• n• = {!   !}
 
       Invariant• : (c₁• c₂• c• : ● Color) (n₁• n₂• n• : ● ℕ) → 𝒱
-      Invariant• = λ c₁• c₂• c• n₁• n₂• n• → E
+      Invariant• = {!   !}
 
       variable
         c₁• c₂• c• : ● Color
         n₁• n₂• n• : ● ℕ
 
-      data IRBT• : ● Color → ● ℕ → 𝒱 where
-        leaf : LeafInvariant• c• n• → E → IRBT• c• n•
-        null : LeafInvariant• c• n• → IRBT• c• n•
+      data Tree• : ● Color → ● ℕ → 𝒱 where
+        leaf : LeafInvariant• c• n• → E → Tree• c• n•
+        null : LeafInvariant• c• n• → Tree• c• n•
         node :
             Invariant• c₁• c₂• c• n₁• n₂• n•
-          → IRBT• c₁• n₁• → IRBT• c₂• n₂• → IRBT• c• n•
-        identityˡ• : ◯ (∀ inv linv t
-          → node {c₁•} {c•} {c•} {n₁•} {n•} {n•} inv (null linv) t ≡ t)
+          → Tree• c₁• n₁• → Tree• c₂• n₂• → Tree• c• n•
+        identityˡ• : ∀ inv linv t
+          → node {c₁•} {c•} {c•} {n₁•} {n•} {n•} inv (null linv) t ≗ t
         identityʳ• : {!   !}
         assoc• : {!   !}
 
       RBT• : 𝒱
-      RBT• = Σ[ c• ∈ ● Color ] Σ[ n• ∈ ● ℕ ] IRBT• c• n•
+      RBT• = Σ[ c• ∈ ● Color ] Σ[ n• ∈ ● ℕ ] Tree• c• n•
 
       rbt-sequence : Sequence
       rbt-sequence .monoid-on .Carrier = RBT•

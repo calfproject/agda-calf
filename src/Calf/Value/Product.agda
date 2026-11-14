@@ -6,7 +6,7 @@ open import Cubical.Foundations.HLevels public
   using (isSet×)
 open import Cubical.Data.Sigma public
   using (_×_; _,_)
-  renaming (fst to proj₁; snd to proj₂)
+  renaming (fst to proj₁; snd to proj₂; map-× to map)
 
 opaque
   isDiscrete× : isDiscrete X → isDiscrete Y → isDiscrete (X × Y)

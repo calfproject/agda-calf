@@ -8,6 +8,7 @@ open import Calf.Value
 open import Calf.Value.Closed as ●
 open import Calf.Value.Glue as Glue hiding (square)
 open import Calf.Value.Open as ◯
+open import Calf.Value.Product as ×
 
 open Fracture
 
@@ -57,6 +58,26 @@ module _ {X-⊤ X-abs} (χ : X-⊤ → X-abs) where
       χ x-⊤
     ∎
 
+Abstraction-× :
+  ∀ {X-⊤ X-abs} (χ : X-⊤ → X-abs) {Y-⊤ Y-abs} (ψ : Y-⊤ → Y-abs)
+  → Abstraction χ × Abstraction ψ ≃ Abstraction (×.map χ ψ)
+Abstraction-× χ ψ =
+  isoToEquiv $ iso
+    (λ (x , y) → {!   !})
+    (λ p → square _ χ proj₁ proj₁ (λ _ → refl) p , square _ ψ proj₂ proj₂ (λ _ → refl) p)
+    {!   !}
+    {!   !}
+
+square₂
+  : ∀ {X-⊤ X-abs} (χ : X-⊤ → X-abs) {Y-⊤ Y-abs} (ψ : Y-⊤ → Y-abs) {Z-⊤ Z-abs} (ζ : Z-⊤ → Z-abs)
+  → (f-⊤ : X-⊤ → Y-⊤ → Z-⊤)
+  → (f-abs : X-abs → Y-abs → Z-abs)
+  → ((x-⊤ : X-⊤) (y-⊤ : Y-⊤) → ζ (f-⊤ x-⊤ y-⊤) ≡ f-abs (χ x-⊤) (ψ y-⊤))
+  → Abstraction χ → Abstraction ψ → Abstraction ζ
+square₂ χ ψ ζ f-⊤ f-abs f-coh =
+  curry $
+  square _ ζ (uncurry f-⊤) (uncurry f-abs) (uncurry f-coh) ∘
+  equivFun (Abstraction-× χ ψ)
 
 Abstraction-open
   : ∀ {X-⊤ X-abs} (χ : X-⊤ → X-abs)
