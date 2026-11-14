@@ -173,8 +173,8 @@ module _ (E : 𝒱) (isSetE : isSet E) where
         null : Tree•
         node : Tree• → Tree• → Tree•
         identityˡ• : ∀ t → node null t ≗ t
-        identityʳ• : {!   !}
-        assoc• : {!   !}
+        identityʳ• : ∀ t → node t null ≗ t
+        assoc• : ∀ t₁ t₂ t₃ → node (node t₁ t₂) t₃ ≗ node t₁ (node t₂ t₃)
         squash : isSet Tree•
 
       tree-sequence : Sequence
