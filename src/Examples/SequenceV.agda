@@ -43,7 +43,7 @@ module _ (E : 𝒱) (isSetE : isSet E) where
 
     field
       singleton : E → Carrier
-  open MonoidOn
+  open MonoidOn public
 
   record Hom (M N : MonoidOn) : 𝒱 where
     field
@@ -51,7 +51,7 @@ module _ (E : 𝒱) (isSetE : isSet E) where
       empty : Carrier (M .empty) ≗ N .empty
       append : ∀ m m' → Carrier (M .append m m') ≗ N .append (Carrier m) (Carrier m')
       singleton : ∀ e → Carrier (M .singleton e) ≗ N .singleton e
-  open Hom
+  open Hom public
 
   Hom-path
     : {M N : MonoidOn} {f f' : Hom M N}
@@ -80,7 +80,34 @@ module _ (E : 𝒱) (isSetE : isSet E) where
     field
       monoid-on : MonoidOn
       mapreduce : (M : MonoidOn) → isContr◦ (Hom monoid-on M)
-  open Sequence
+  open Sequence public
+
+  module Examples (S : Sequence) where
+    T : 𝒱
+    T = S .monoid-on .Carrier
+
+    -- reverse empty = empty
+    -- reverse (append s₁ s₂) = append (reverse s₂) (reverse s₁)
+    -- reverse (singleton e) = singleton e
+
+    rev : T → T
+    rev =
+      S .mapreduce
+        (record
+           { Carrier = T
+           ; is-set = S .monoid-on .is-set
+           ; empty = S .monoid-on .empty
+           ; append = λ s₁ s₂ → S .monoid-on .append s₂ s₁
+           ; identityˡ = S .monoid-on .identityʳ
+           ; identityʳ = S .monoid-on .identityˡ
+           ; assoc = λ s₁ s₂ s₃ → sym ∘ S .monoid-on .assoc s₃ s₂ s₁
+           ; singleton = S .monoid-on .singleton
+           })
+        .fst
+        .Carrier
+
+    rev-rev : ∀ s → rev (rev s) ≗ s
+    rev-rev = {!   !}
 
   list-sequence : Sequence
   list-sequence .monoid-on .Carrier = List E
@@ -226,7 +253,7 @@ module _ (E : 𝒱) (isSetE : isSet E) where
       rbt-sequence .monoid-on .Carrier = Abstraction χ
       rbt-sequence .monoid-on .is-set = isSetAbstraction {!   !} (isSetList isSetE)
       rbt-sequence .monoid-on .empty = {!   !}
-      rbt-sequence .monoid-on .append = λ z z₁ → z
+      rbt-sequence .monoid-on .append = {! node ?  !}
       rbt-sequence .monoid-on .identityˡ = {!   !}
       rbt-sequence .monoid-on .identityʳ = {!   !}
       rbt-sequence .monoid-on .assoc = {!   !}
@@ -272,3 +299,14 @@ module _ (E : 𝒱) (isSetE : isSet E) where
       rbt-sequence .monoid-on .assoc = {!   !}
       rbt-sequence .monoid-on .singleton = {!   !}
       rbt-sequence .mapreduce = {!   !}
+
+
+demo : List ℕ
+demo =
+  M.rev (app (sing 1) (sing 7))
+  where
+    S = list-sequence ℕ isSetℕ -- Tree.Quotient.tree-sequence ℕ isSetℕ
+    app = S .monoid-on .append
+    sing = S .monoid-on .singleton
+    emp = S .monoid-on .empty
+    module M = Examples ℕ isSetℕ S
