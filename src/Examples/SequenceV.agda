@@ -9,6 +9,7 @@ import Cubical.Data.List.Properties as List
 import Cubical.Data.Nat.Properties as Nat
 import Cubical.Data.Bool.Properties as Bool
 
+
 open import Cubical.Data.Sigma using (map-snd; ΣPathP; Σ-contractFst; Σ-cong-snd)
 
 open import Calf.Core.Abstract
@@ -22,6 +23,8 @@ open import Calf.Value.Product
 open import Calf.Value.Sigma
 open import Calf.Value.Open
 open import Calf.Value.Closed as ●
+open import Calf.Value.Empty
+open import Calf.Value.Unit
 
 _≗_ : X → X → 𝒱
 x ≗ x' = ◯ (x ≡ x')
@@ -44,6 +47,7 @@ module _ (E : 𝒱) (isSetE : isSet E) where
     field
       singleton : E → Carrier
   open MonoidOn public
+
 
   record Hom (M N : MonoidOn) : 𝒱 where
     field
@@ -127,11 +131,11 @@ module _ (E : 𝒱) (isSetE : isSet E) where
     where
       append-lemma :
         (m m' : list-sequence .monoid-on .Carrier) →
-        M .append (list-sequence .mapreduce M .proj₁ .Carrier m)
-        (list-sequence .mapreduce M .fst .Carrier m')
-        ≗
-        list-sequence .mapreduce M .fst .Carrier
-        (list-sequence .monoid-on .append m m')
+          M .append (list-sequence .mapreduce M .fst .Carrier m)
+            (list-sequence .mapreduce M .fst .Carrier m')
+          ≗
+          list-sequence .mapreduce M .fst .Carrier
+            (list-sequence .monoid-on .append m m')
       append-lemma [] m' abs =
         M .identityˡ (list-sequence .mapreduce M .fst .Carrier m') abs
       append-lemma (x ∷ m) m' abs =
@@ -142,9 +146,9 @@ module _ (E : 𝒱) (isSetE : isSet E) where
              (list-sequence .mapreduce M .fst .Carrier m)
              (list-sequence .mapreduce M .fst .Carrier m') abs
          ⟩
-           M .append (M .singleton x)
-             (M .append (list-sequence .mapreduce M .fst .Carrier m)
-             (list-sequence .mapreduce M .fst .Carrier m'))
+          M .append (M .singleton x)
+            (M .append (list-sequence .mapreduce M .fst .Carrier m)
+            (list-sequence .mapreduce M .fst .Carrier m'))
         ≡⟨ cong (M .append (M .singleton x)) (append-lemma m m' abs) ⟩
           list-sequence .mapreduce M .fst .Carrier
            (list-sequence .monoid-on .append (x ∷ m) m')
@@ -162,13 +166,13 @@ module _ (E : 𝒱) (isSetE : isSet E) where
                    M .append hole (list-sequence .mapreduce M .fst .Carrier xs))
                 (sym (f .singleton x abs))
          ⟩
-           M .append (f .Carrier (list-sequence .monoid-on .singleton x))
-             (list-sequence .mapreduce M .fst .Carrier xs)
-         ≡⟨ ( cong (λ hole → M .append (f .Carrier [ x ]) hole) (carrier-lemma xs)) ⟩
-           M .append (f .Carrier [ x ]) (f .Carrier xs)
-         ≡⟨ ( sym (f .append [ x ] xs abs)) ⟩
-           f .Carrier (x ∷ xs)
-         ∎
+          M .append (f .Carrier (list-sequence .monoid-on .singleton x))
+            (list-sequence .mapreduce M .fst .Carrier xs)
+        ≡⟨ ( cong (λ hole → M .append (f .Carrier [ x ]) hole) (carrier-lemma xs)) ⟩
+          M .append (f .Carrier [ x ]) (f .Carrier xs)
+        ≡⟨ ( sym (f .append [ x ] xs abs)) ⟩
+          f .Carrier (x ∷ xs)
+        ∎
 
 
   module Tree where
@@ -183,6 +187,47 @@ module _ (E : 𝒱) (isSetE : isSet E) where
       χ null = []
       χ (node t₁ t₂) = χ t₁ ++ χ t₂
 
+      module TreePath where
+
+        Cover : Tree → Tree → 𝒱
+        Cover (leaf e1) (leaf e2) = e1 ≡ e2
+        Cover null null = 1ᵛ
+        Cover (node t1 t2) (node t1' t2') = Cover t1 t1' × Cover t2 t2'
+        Cover (leaf _) null = 0ᵛ
+        Cover (leaf _) (node _ _) = 0ᵛ
+        Cover null (leaf _) = 0ᵛ
+        Cover null (node _ _) = 0ᵛ
+        Cover (node _ _) (leaf _) = 0ᵛ
+        Cover (node _ _) null = 0ᵛ
+
+        reflCode : (t : Tree) → Cover t t
+        reflCode (leaf _) = refl
+        reflCode null = tt
+        reflCode (node t1 t2) = reflCode t1 , reflCode t2
+
+        encode : (t1 t2 : Tree) → (p : t1 ≡ t2) → Cover t1 t2
+        encode t1 _ = J (λ t2 _ → Cover t1 t2) (reflCode t1)
+
+        encodeRefl : (t : Tree) → encode t t refl ≡ reflCode t
+        encodeRefl t1 = JRefl (λ t2 _ → Cover t1 t2) (reflCode t1)
+
+        decode : (t1 t2 : Tree) → Cover t1 t2 → t1 ≡ t2
+        decode (leaf e1) (leaf e2) p = cong leaf p
+        decode null null _ = refl
+        decode (node t1 t2) (node t1' t2') (p1 , p2) =
+          cong₂ node (decode t1 t1' p1) (decode t2 t2' p2) 
+        decode (leaf _) null ()
+        decode (leaf _) (node _ _) ()
+        decode null (leaf _) ()
+        decode null (node _ _) ()
+        decode (node _ _) (leaf _) ()
+        decode (node _ _) null ()
+
+        decodeRefl : (t : Tree) → decode t t (reflCode t) ≡ refl
+        decodeRefl (leaf e) = refl
+        decodeRefl null = refl
+        decodeRefl (node t1 t2) = {!!}
+      
       tree-sequence : Sequence
       tree-sequence .monoid-on .Carrier = Abstraction χ
       tree-sequence .monoid-on .is-set = isSetAbstraction {!   !} (isSetList isSetE)
