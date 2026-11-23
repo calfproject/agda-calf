@@ -226,11 +226,45 @@ module _ (E : 𝒱) (isSetE : isSet E) where
         decodeRefl : (t : Tree) → decode t t (reflCode t) ≡ refl
         decodeRefl (leaf e) = refl
         decodeRefl null = refl
-        decodeRefl (node t1 t2) = {!!}
+        decodeRefl (node t1 t2) =
+          cong₂ (λ p1 p2 → cong₂ node p1 p2) (decodeRefl t1) (decodeRefl t2)
+
+        decodeEncode : (t1 t2 : Tree) → (p : t1 ≡ t2)
+          → decode t1 t2 (encode t1 t2 p) ≡ p
+        decodeEncode t1 _ =
+          J (λ t2 p → decode t1 t2 (encode t1 t2 p) ≡ p)
+            (cong (decode t1 t1) (encodeRefl t1) ∙ decodeRefl t1 )
+
+        isOfHLevelCover : (n : HLevel) (p : isOfHLevel (suc (suc n)) E)
+          (t1 t2 : Tree) → isOfHLevel (suc n) (Cover t1 t2)
+        isOfHLevelCover n p (leaf e1) (leaf e2) = p e1 e2
+        isOfHLevelCover n p null null = (isProp→isOfHLevelSuc n isProp1ᵛ)
+        isOfHLevelCover n p (node t1 t2) (node t1' t2') =
+          isOfHLevelΣ (suc n) (isOfHLevelCover n p t1 t1')
+            (λ _ → isOfHLevelCover n p t2 t2')
+        isOfHLevelCover n p (leaf _) null = (isProp→isOfHLevelSuc n isProp0ᵛ)
+        isOfHLevelCover n p (leaf _) (node _ _) = (isProp→isOfHLevelSuc n isProp0ᵛ)
+        isOfHLevelCover n p null (leaf _) = (isProp→isOfHLevelSuc n isProp0ᵛ)
+        isOfHLevelCover n p null (node _ _) = (isProp→isOfHLevelSuc n isProp0ᵛ)
+        isOfHLevelCover n p (node _ _) (leaf _) = (isProp→isOfHLevelSuc n isProp0ᵛ)
+        isOfHLevelCover n p (node _ _) null = (isProp→isOfHLevelSuc n isProp0ᵛ)
+
+      isOfHLevelTree : (n : HLevel) → isOfHLevel (suc (suc n)) E
+        → isOfHLevel (suc (suc n)) Tree
+      isOfHLevelTree n ofLevel t1 t2 =
+        isOfHLevelRetract (suc n)
+          (TreePath.encode t1 t2)
+          (TreePath.decode t1 t2)
+          (TreePath.decodeEncode t1 t2)
+          (TreePath.isOfHLevelCover n ofLevel t1 t2)
+
+      isSetTree : isSet E → isSet Tree
+      isSetTree = isOfHLevelTree 0
       
       tree-sequence : Sequence
       tree-sequence .monoid-on .Carrier = Abstraction χ
-      tree-sequence .monoid-on .is-set = isSetAbstraction {!   !} (isSetList isSetE)
+      tree-sequence .monoid-on .is-set =
+        isSetAbstraction (isSetTree isSetE) (isSetList isSetE)
       tree-sequence .monoid-on .empty = triangle χ null [] refl
       tree-sequence .monoid-on .append = square₂ χ χ χ node _++_ λ _ _ → refl
       tree-sequence .monoid-on .identityˡ = {!   !}
