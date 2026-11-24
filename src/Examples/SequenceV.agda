@@ -215,7 +215,7 @@ module _ (E : 𝒱) (isSetE : isSet E) where
         decode (leaf e1) (leaf e2) p = cong leaf p
         decode null null _ = refl
         decode (node t1 t2) (node t1' t2') (p1 , p2) =
-          cong₂ node (decode t1 t1' p1) (decode t2 t2' p2) 
+          cong₂ node (decode t1 t1' p1) (decode t2 t2' p2)
         decode (leaf _) null ()
         decode (leaf _) (node _ _) ()
         decode null (leaf _) ()
@@ -260,14 +260,14 @@ module _ (E : 𝒱) (isSetE : isSet E) where
 
       isSetTree : isSet E → isSet Tree
       isSetTree = isOfHLevelTree 0
-      
+
       tree-sequence : Sequence
       tree-sequence .monoid-on .Carrier = Abstraction χ
       tree-sequence .monoid-on .is-set =
         isSetAbstraction (isSetTree isSetE) (isSetList isSetE)
       tree-sequence .monoid-on .empty = triangle χ null [] refl
       tree-sequence .monoid-on .append = square₂ χ χ χ node _++_ λ _ _ → refl
-      tree-sequence .monoid-on .identityˡ = {!   !}
+      tree-sequence .monoid-on .identityˡ x abs = Abstraction-path-open abs refl
       tree-sequence .monoid-on .identityʳ = {!   !}
       tree-sequence .monoid-on .assoc = {!   !}
       tree-sequence .monoid-on .singleton = {!   !}

@@ -73,6 +73,7 @@ open import Cubical.Modalities.Extras
     ( isModal◯ to isModal●
     ; ◯-≃ to ●-≃
     ; ◯-ua-gluePath to ●-ua-gluePath
+    ; ◯-× to ●-×
     )
 
 -- Based identity-system argument (https://1lab.dev/1Lab.Path.IdentitySystem.html#based-identity-systems)

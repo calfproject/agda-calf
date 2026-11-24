@@ -9,6 +9,7 @@ open import Calf.Value.Closed as ●
 open import Calf.Value.Glue as Glue hiding (square)
 open import Calf.Value.Open as ◯
 open import Calf.Value.Product as ×
+open import Calf.Value.Sigma
 
 open Fracture
 
@@ -22,8 +23,29 @@ private variable X-⊤ X-abs Y-⊤ Y-abs Z-⊤ Z-abs : 𝒱
 Abstraction : (X-⊤ → X-abs) → 𝒱
 Abstraction = fromFracture ∘ Abstraction-Fracture
 
-isSetAbstraction : {χ : X-⊤ → X-abs} → isSet X-⊤ → isSet X-abs → isSet (Abstraction χ)
-isSetAbstraction isSetX-⊤ isSetX-abs = isSetGlue (isSet● isSetX-⊤) (isSet◯ isSetX-abs)
+module _ {χ : X-⊤ → X-abs} where
+  Abstraction-path : ∀ {x x' : Abstraction χ}
+    → isSet X-abs
+    → proj• x ≡ proj• x'
+    → proj◦ x ≡ proj◦ x'
+    → x ≡ x'
+  Abstraction-path = Glue-path ∘ isSet◯
+
+  Abstraction-path-open : ∀ {x x' : Abstraction χ}
+    → (abs : ⟨ ABS ⟩)
+    → proj◦ x abs ≡ proj◦ x' abs
+    → x ≡ x'
+  Abstraction-path-open {x} {x'} abs p◦ =
+    Σ≡Prop
+      (λ _ → isProp→isSet (isContr→isProp (◯-isConnected abs)) _ _)
+      (ΣPathP
+        ( isContr→isProp (◯-isConnected abs) _ _
+        , funExt λ abs' →
+            cong (proj◦ x) (str ABS abs' abs) ∙ p◦ ∙ cong (proj◦ x') (str ABS abs abs')
+        ))
+
+  isSetAbstraction : isSet X-⊤ → isSet X-abs → isSet (Abstraction χ)
+  isSetAbstraction isSetX-⊤ isSetX-abs = isSetGlue (isSet● isSetX-⊤) (isSet◯ isSetX-abs)
 
 Abstraction-id : (X : 𝒱) → X ≃ Abstraction (id {X})
 Abstraction-id X = fracture , fracture-isEquiv
@@ -67,7 +89,7 @@ Abstraction-× :
   → Abstraction χ × Abstraction ψ ≃ Abstraction (×.map χ ψ)
 Abstraction-× χ ψ =
   isoToEquiv $ iso
-    (λ (x , y) → {!   !})
+    (λ (((x-⊤ , x-abs) , x-coh) , ((y-⊤ , y-abs) , y-coh)) → (equivFun ●-× (x-⊤ , y-⊤) , equivFun ◯-× (x-abs , y-abs)) , {!   !})
     (λ p → square _ χ proj₁ proj₁ (λ _ → refl) p , square _ ψ proj₂ proj₂ (λ _ → refl) p)
     {!   !}
     {!   !}

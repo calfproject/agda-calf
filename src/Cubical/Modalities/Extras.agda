@@ -184,6 +184,13 @@ isModalΣ : {Y : X → Type ℓ}
   → isModal (Σ X Y)
 isModalΣ = {!   !}
 
+◯-× : ◯ X × ◯ Y ≃ ◯ (X × Y)
+◯-× = isoToEquiv $ iso
+  (λ (x◦ , y◦) → bind x◦ λ x → bind y◦ λ y → η (x , y))
+  (λ p◦ → map fst p◦ , map snd p◦)
+  {!   !}
+  {!   !}
+
 isModal× : isModal X → isModal Y → isModal (X × Y)
 isModal× X-isModal = isModalΣ X-isModal ∘ const
 
