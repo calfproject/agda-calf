@@ -1,5 +1,6 @@
 module Calf.Value.Abstraction where
 
+open import Cubical.Foundations.Equiv.Properties using (congEquiv)
 open import Cubical.Foundations.GroupoidLaws using (rUnit)
 open import Cubical.Foundations.Univalence
 
@@ -24,26 +25,6 @@ Abstraction : (X-⊤ → X-abs) → 𝒱
 Abstraction = fromFracture ∘ Abstraction-Fracture
 
 module _ {χ : X-⊤ → X-abs} where
-  Abstraction-path : ∀ {x x' : Abstraction χ}
-    → isSet X-abs
-    → proj• x ≡ proj• x'
-    → proj◦ x ≡ proj◦ x'
-    → x ≡ x'
-  Abstraction-path = Glue-path ∘ isSet◯
-
-  Abstraction-path-open : ∀ {x x' : Abstraction χ}
-    → (abs : ⟨ ABS ⟩)
-    → proj◦ x abs ≡ proj◦ x' abs
-    → x ≡ x'
-  Abstraction-path-open {x} {x'} abs p◦ =
-    Σ≡Prop
-      (λ _ → isProp→isSet (isContr→isProp (◯-isConnected abs)) _ _)
-      (ΣPathP
-        ( isContr→isProp (◯-isConnected abs) _ _
-        , funExt λ abs' →
-            cong (proj◦ x) (str ABS abs' abs) ∙ p◦ ∙ cong (proj◦ x') (str ABS abs abs')
-        ))
-
   isSetAbstraction : isSet X-⊤ → isSet X-abs → isSet (Abstraction χ)
   isSetAbstraction isSetX-⊤ isSetX-abs = isSetGlue (isSet● isSetX-⊤) (isSet◯ isSetX-abs)
 
@@ -111,6 +92,12 @@ Abstraction-open
   → Abstraction χ ≃ X-abs
 Abstraction-open {X-⊤} {X-abs} χ abs =
   Glue-open (Abstraction-Fracture χ) abs ∙ₑ ◯-open abs
+
+Abstraction-path-open : ∀ {χ : X-⊤ → X-abs} {x x' : Abstraction χ}
+  → (abs : ⟨ ABS ⟩)
+  → proj◦ x abs ≡ proj◦ x' abs
+  → x ≡ x'
+Abstraction-path-open abs p◦ = invEq (congEquiv (Abstraction-open _ abs)) p◦
 
 square-openP
   : (χ : X-⊤ → X-abs) (β : Y-⊤ → Y-abs)
